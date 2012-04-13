@@ -11,15 +11,9 @@
 </head>
 <body>
 	<div id="content" class="container">
-		Play:
-		<ul>
-			<li>Breast Cancer prognosis game
-				<ol>
-					<li>Version 1 <a href="genecard1.jsp">game</a>, <a href="genecard1_inst.jsp">instructions</a>
-					</li>
-				</ol>
-			</li>
-		</ul>
+		<h1>Breast Cancer prognosis game, version 1, instructions</h1>
+		<p>Game play: maximize your score by choosing the best combination of genes</p>
+		<p><a href="genecard1.jsp">go play!</a></p>
 	</div>
 </body>
 </html>

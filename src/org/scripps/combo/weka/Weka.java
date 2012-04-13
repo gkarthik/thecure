@@ -1,16 +1,10 @@
 package org.scripps.combo.weka;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,36 +13,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
-import org.scripps.combo.model.Feature;
-import org.scripps.combo.weka.Weka.execution;
-import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Gene;
-import org.scripps.util.GenerateCSV;
-import org.scripps.util.JdbcConnection;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import weka.attributeSelection.ASEvaluation;
-import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
-import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.SMO;
 import weka.classifiers.meta.FilteredClassifier;
-import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
-import weka.classifiers.trees.ManualTree;
 import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.Range;
-import weka.core.SelectedTag;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
@@ -58,85 +32,60 @@ import weka.filters.unsupervised.attribute.Remove;
 
 public class Weka {
 
-	private Instances train = null;
+	Instances train = null;
 	Instances test = null;
 	Random rand;
-	String eval_method;  //{cross_validation, test_set, training_set}
-	Map<String, Feature> features;
-	String dataset;
+	String eval_method;
+	public Map<String, Weka.card> att_meta;
 
-	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset) throws Exception{
-		buildWeka(train_stream, test_stream, dataset, true);
-	}
-
-	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset, boolean setFeatures) throws Exception{
-		setDataset(dataset);
+	/**
+	 * This class controls the processes of:
+	 *  loading training and testing data, 
+	 *  parameterizing and executing classifiers, 
+	 *  backing interactions with dataset attributes (choosing random ones, name maps etc.)
+	 */
+	public Weka() {
 		//get the data 
-		DataSource source = new DataSource(train_stream);
-		setTrain(source.getDataSet());
-		if (getTrain().classIndex() == -1){
-			getTrain().setClassIndex(getTrain().numAttributes() - 1);
-		}
-		train_stream.close();
-		if(test_stream!=null){
-			source = new DataSource(test_stream);
-			test = source.getDataSet();
-			if (test.classIndex() == -1){
-				test.setClassIndex(test.numAttributes() - 1);
-			} 
-			test_stream.close();
-		}
-		rand = new Random(1);
-		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "training_set"; //"cross_validation";//
-		//assumes that feature table has already been loaded
-		//get the features related to this weka dataset
-		if(setFeatures){
-			setFeatures(Feature.getByDataset(dataset, false));
-		}
-	} 
-
-
-	public Map<String, Float> getRelief(){
-		ASEvaluation evaluator = new ReliefFAttributeEval();
-		Map<String, Float> index_value = getAttevalScore(evaluator);
-		return index_value;
-	}
-	
-	public Map<String, Float> getAttevalScore(ASEvaluation evaluator){
-		Map<String, Float> index_value = new HashMap<String, Float>();
-		//set the reliefF value for the attribute
-		AttributeSelection as = new AttributeSelection();
-		Ranker ranker = new Ranker();
-		//keep all
-		//	String[] options = {"-T","0.0","-N","-1"};
-		as.setEvaluator(evaluator);
-		as.setSearch(ranker);
+		DataSource source = null;
 		try {
-			as.setInputFormat(getTrain());
-			//ranker.setOptions(options);
-			Instances filtered = Filter.useFilter(getTrain(), as); 			
-			double[][] ranked = ranker.rankedAttributes();
-			//add the scores to the gene cards
-			for(int att=0; att<ranked.length; att++){
-				int att_id = (int)ranked[att][0];
-				float att_value = (float)ranked[att][1];
-				Attribute tmp = getTrain().attribute(att_id);
-				index_value.put(tmp.name(), att_value);
+			//	source = new DataSource("/Users/bgood/programs/Weka-3-6/data/breast_labor.arff");
+			//source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
+			source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
+
+			train = source.getDataSet();
+			if (train.classIndex() == -1){
+				train.setClassIndex(train.numAttributes() - 1);
 			}
-			setTrain(filtered);
-			//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
+			//			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+			//			test = source.getDataSet();
+			//			if (test.classIndex() == -1){
+			//				test.setClassIndex(test.numAttributes() - 1);
+			//			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return index_value;
+		//load the gene name mapping file
+		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
+		//filter zero information attributes
+		filterForNonZeroInfoGain();
+		//only use genes with metadata
+		filterForGeneIdMapping();
+		System.out.println("launching with "+train.numAttributes()+" attributes.");
+		//map the names so the trees look right..
+		remapAttNames();
+		//export file
+		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
+		//get the random set up
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
 	}
 
 	public void exportArff(Instances dataset, String outfile){
-		ArffSaver saver = new ArffSaver();
-		saver.setInstances(dataset);
-		try {
+		 ArffSaver saver = new ArffSaver();
+		 saver.setInstances(dataset);
+		 try {
 			saver.setFile(new File(outfile));
 			// saver.setDestination(new File("./data/test.arff"));   // **not** necessary in 3.5.4 and later
 			saver.writeBatch();
@@ -144,7 +93,225 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+	}
+	
+	public void filterForNonZeroInfoGain(){
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		InfoGainAttributeEval infogain = new InfoGainAttributeEval();
+		Ranker ranker = new Ranker();
+		String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(infogain);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(train);
+			ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(train, as); 			
+			double[][] ranked = ranker.rankedAttributes();
+			//add the scores to the gene cards
+			for(int att=0; att<ranked.length; att++){
+				int att_id = (int)ranked[att][0];
+				float att_value = (float)ranked[att][1];
+				Attribute tmp = train.attribute(att_id);
+				card c = att_meta.get(tmp.name());
+				if(c==null){
+					c = new card(0, tmp.name(), "_", "_");
+				}
+				c.setPower(att_value);
+				att_meta.put(tmp.name(), c);
+			}
+			train = filtered;
+			System.out.println(ranked[0][0]+" "+ranked[0][1]);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
+	public void filterForGeneIdMapping(){
+		Enumeration<Attribute> atts = train.enumerateAttributes();
+		String nodata = "";
+		while(atts.hasMoreElements()){
+			Attribute a = atts.nextElement();
+			if(train.classIndex()!=a.index()){
+				String n = a.name();
+				card meta = att_meta.get(n);
+				if(meta==null||meta.unique_id==null||meta.unique_id.equals("_")){
+					nodata+=(1+a.index())+",";				
+				}
+			}
+		}
+		Remove remove = new Remove();
+	    remove.setAttributeIndices(nodata);
+	 //    remove.setInvertSelection(new Boolean(args[2]).booleanValue());
+	     try {
+			remove.setInputFormat(train);
+		     train= Filter.useFilter(train, remove);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void remapAttNames(){
+		Enumeration<Attribute> input = train.enumerateAttributes();
+		while(input.hasMoreElements()){
+			Attribute a = input.nextElement();
+			card c = att_meta.get(a.name());
+			if(c!=null){
+				String symbol = c.getName();
+				if(symbol!=null){
+					train.renameAttribute(a, symbol);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get data to use for displaying the attributes
+	 * @param metadatafile
+	 */
+	public void loadAttributeMetadata(String metadatafile){
+		att_meta = new HashMap<String, card>();	
+		BufferedReader f;
+		try {
+			f = new BufferedReader(new FileReader(metadatafile));
+			String line = f.readLine();
+			line = f.readLine(); //skip header
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String name = item[1];
+				String id = item[2];
+				if(item!=null&&item.length>1){
+					card genecard = new card(0, attribute, name, id);
+					att_meta.put(attribute, genecard);
+					att_meta.put(name,genecard);
+				}
+				line = f.readLine();
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+	}
+
+
+	/**
+	 * a card represents an attribute in a training set such as a gene in an array experiment
+	 * @author bgood
+	 *
+	 */
+	public class card{
+		public int att_index;
+		public String att_name;
+		public String name;
+		public String unique_id;
+		public float power;
+		//more to come here
+		public card(int att_index, String att_name, String name,
+				String unique_id) {
+			super();
+			this.att_index = att_index;
+			this.att_name = att_name;
+			this.name = name;
+			this.unique_id = unique_id;
+			//if we have name metadata use now
+			if(att_meta!=null){
+				if(name==""||unique_id.equals("_")){
+					card tmp = att_meta.get(att_name);
+					if(tmp!=null){
+						name = tmp.name;
+						unique_id = tmp.unique_id;
+					}
+				}
+			}
+		}
+		public int getAtt_index() {
+			return att_index;
+		}
+		public void setAtt_index(int att_index) {
+			this.att_index = att_index;
+		}
+		public String getAtt_name() {
+			return att_name;
+		}
+		public void setAtt_name(String att_name) {
+			this.att_name = att_name;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getUnique_id() {
+			return unique_id;
+		}
+		public void setUnique_id(String unique_id) {
+			this.unique_id = unique_id;
+		}
+		public float getPower() {
+			return power;
+		}
+		public void setPower(float power) {
+			this.power = power;
+		}
+
+
+	}
+	/**
+	 * Get cards (with names..) from a list of index numbers
+	 * @param indices
+	 * @return
+	 */
+	public List<card> getCardsByIndices(String indices){
+		List<card> cards = new ArrayList<card>();
+		String[] index = indices.split(",");
+		for(String i : index){
+			Attribute a = train.attribute(Integer.parseInt(i));
+			if(a!=null){
+				card c = new card(a.index(),a.name(),"","");
+				cards.add(c);
+			}
+		}
+		return cards;
+	}
+	/**
+	 * Get a random selection of n attributes
+	 * @param n
+	 * @return
+	 */
+	public List<card> getRandomCards(int n, int ranseed){
+		rand.setSeed((long)ranseed);
+		Set<String> u = new HashSet<String>();
+		List<card> cards = new ArrayList<card>();
+		for(int i=0;i<n;i++){
+			int randomNum = rand.nextInt(train.numAttributes()-1);
+			//internal attribute index starts at 0
+			Attribute a = train.attribute(randomNum);
+			if(a.index()==train.classIndex()||(u.contains(randomNum+""))){
+				i--;
+			}else{
+				card c = new card(a.index(),a.name(),"","");
+				if(att_meta.get(a.name())!=null){
+					card tmp = att_meta.get(a.name());
+					c.name = tmp.name;
+					c.unique_id = tmp.unique_id;
+					c.setPower(tmp.getPower());
+				}
+				cards.add(c);
+				u.add(randomNum+"");
+			}
+		}
+		return cards;
 	}
 
 	/**
@@ -155,88 +322,66 @@ public class Weka {
 	public class execution{
 		public FilteredClassifier model;
 		public Evaluation eval;
-		public double avg_percent_correct;
-		public execution(FilteredClassifier model, Evaluation eval, double avg_percent_correct) {
+		public execution(FilteredClassifier model, Evaluation eval) {
 			super();
 			this.model = model;
 			this.eval = eval;
-			this.avg_percent_correct = avg_percent_correct;
-		}//model.getClassifier().toString()+
-		public String toString(){
-			return "Tree Accuracy on test set:"+avg_percent_correct;
-		}
-	}
-
-	public class metaExecution{
-		public Classifier model;
-		public Evaluation eval;
-		public double avg_percent_correct;
-		public metaExecution(Classifier model, Evaluation eval, double avg_percent_correct) {
-			super();
-			this.model = model;
-			this.eval = eval;
-			this.avg_percent_correct = avg_percent_correct;			
-		}
-		public metaExecution(Evaluation eval) {
-
-			this.eval = eval;
 		}
 		public String toString(){
-			return "Meta Accuracy on test set:"+eval.pctCorrect();
+			return model.getClassifier().toString()+"\nAccuracy on test set:"+(int)eval.pctCorrect();
 		}
 	}
-
-	public execution pruneAndExecuteWithEntrezIds(List<Integer> entrez_ids, Classifier wekamodel, String dataset, boolean all_probes, int nruns_cv) {
-		String indices = "";
-		for(Integer entrezid : entrez_ids){
-			List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
-			if(atts!=null&&atts.size()>0){
-				for(org.scripps.combo.model.Attribute a : atts){
-					if(a.getDataset().equals(dataset)){
-						indices+=a.getCol_index()+",";
-						if(!all_probes){
-							break;
-						}
-					}
-				}
-			}else{
-				System.out.println("Alert! entrez_id "+entrezid+" did not map to any attributes in dataset: "+dataset+" !!");
-			}
-		}
-		return pruneAndExecute(indices, wekamodel, nruns_cv);
-	}
-
 
 	/**
-	 * unique ids match are the keys in the features table
-	 * they are not external unique ids
-	 * @param unique_ids
-	 * @param wekamodel
-	 * @param dataset
+	 * Trains a j48 decision tree using just the attributes specified in indices
+	 * @param indices for the attributes to use to train the model
 	 * @return
 	 */
-	public execution pruneAndExecuteWithUniqueIds(List<String> unique_ids, Classifier wekamodel, String dataset, int nruns_cv) {
+	public execution pruneAndExecute(String indicesoff1){
 		String indices = "";
-		for(String fid : unique_ids){
-			Feature f = features.get(fid);
-			//Todo when a gene maps to multiple attributes (probe sets for example),
-			//pick the "best" one here.
-			for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-				if(a.getDataset().equals(dataset)){
-					indices+=a.getCol_index()+",";
-					//only add one for now (first = best at the moment..)
-					break;
-				}
+		for(String a : indicesoff1.split(",")){
+			if(!a.equals("")){
+				int i = 1+Integer.parseInt(a);
+				indices += i+",";
 			}
 		}
-		return pruneAndExecute(indices, wekamodel, nruns_cv);
-	}
 
-	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel, int n_runs_of_cv){
-		if(wekamodel==null){
-			wekamodel = new J48();
+		//specify a classifier
+		// classifier
+		J48 j48 = new J48();
+		j48.setUnpruned(true);        // using an unpruned J48		
+		// set a specific set of attributes to use to train the model
+		Remove rm = new Remove();
+		//don't remove the class attribute
+		rm.setAttributeIndices(indices+"last");
+		rm.setInvertSelection(true);
+		// build a classifier using only these attributes
+		FilteredClassifier fc = new FilteredClassifier();
+		fc.setFilter(rm);
+		fc.setClassifier(j48);
+		// train and evaluate on the test set
+		Evaluation eval = null;
+		try {
+			fc.buildClassifier(train);
+			// evaluate classifier and print some statistics
+			eval = new Evaluation(train);
+			if(eval_method.equals("cross_validation")){
+				eval.crossValidateModel(fc, train, 10, rand);
+			}else if(eval_method.equals("test_set")){
+				eval.evaluateModel(fc, test);
+			}else {
+				eval.evaluateModel(fc, train);
+			}
+			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
+		return new execution(fc,eval);
+	}
+
+	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel){
 		String indices = "";
 		for(String a : indicesoff1.split(",")){
 			if(!a.equals("")){
@@ -255,647 +400,37 @@ public class Weka {
 		fc.setClassifier(wekamodel);
 		// train and evaluate on the test set
 		Evaluation eval = null;
-		double avg_pct_correct = 0;
 		try {
-			fc.buildClassifier(getTrain());
+			fc.buildClassifier(train);
 			// evaluate classifier and print some statistics
-			eval = null;
+			eval = new Evaluation(train);
 			if(eval_method.equals("cross_validation")){
-				eval = new Evaluation(getTrain());
-				//this makes the game more stable in terms of scores
-				for(int r=0; r<n_runs_of_cv; r++){
-					eval.crossValidateModel(fc, getTrain(), 10, rand);
-					avg_pct_correct += eval.pctCorrect();
-				}
-				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
+				eval.crossValidateModel(fc, train, 10, rand);
 			}else if(eval_method.equals("test_set")){
-				eval = new Evaluation(getTest());
-				eval.evaluateModel(fc, getTest());
+				eval.evaluateModel(fc, test);
 			}else {
-				eval = new Evaluation(getTrain());
-				eval.evaluateModel(fc, getTrain());
+				eval.evaluateModel(fc, train);
 			}
 			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//	String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
-		//	double correct = eval.pctCorrect();
-		//	System.out.println("pae "+indices+" "+correct);
-		return new execution(fc,eval, avg_pct_correct);
-	}
 
-	/***
-	 * build and test a meta classifier - a non-random forest in this case
-	 * input, a set of feature sets and a classifier model
-	 * output an execution result for the whole thing
-	 */
-	public metaExecution executeNonRandomForestOnUniqueIds(List<List<String>> id_sets){
-
-		//create an array of classifiers that differ from each other based on the features that they use
-		Classifier[] classifiers = new Classifier[id_sets.size()];
-		int i = 0;
-		for(List<String> id_set : id_sets){
-			// set a specific set of attributes to use to train the model
-			Remove rm = new Remove();
-			//don't remove the class attribute
-			String indices = "";
-			for(String fid : id_set){
-				Feature f = features.get(fid);
-				if(f!=null&&f.getDataset_attributes()!=null){
-					for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-						if(a.getDataset().equals(dataset)){
-							//note the correction is being made here for the index problem
-							indices+=a.getCol_index()+1+",";
-							Attribute test = train.attribute(a.getCol_index());
-							Attribute test2 = train.attribute(a.getName());
-							if(test!=test2){
-								System.out.println("indexing problem");
-							}
-						}
-					}
-				}else{
-					System.out.println("No attribute found for geneid "+fid+" in "+dataset);
-				}
-			}
-			rm.setAttributeIndices(indices+"last");
-			rm.setInvertSelection(true);
-			// build a classifier using only these attributes
-			FilteredClassifier fc = new FilteredClassifier();
-			fc.setFilter(rm);
-			fc.setClassifier(new J48());
-			classifiers[i] = fc;
-			i++;
-		}
-		System.out.println(i+" Classifiers prepared, about to execute");
-
-		//		//build the non-random forest
-		Vote voter = new Vote();
-		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
-		try {
-			voter.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		voter.setClassifiers(classifiers);
-		voter.setDebug(true);
-		// train and evaluate 
-		Evaluation eval = null;
-		double avg_pct_correct = 0;
-		try {
-			voter.buildClassifier(getTrain());
-			// evaluate classifier and print some statistics
-			eval = new Evaluation(getTrain());
-			if(eval_method.equals("cross_validation")){
-				for(int r=0; r<10; r++){
-					Random keep_same = new Random();
-					keep_same.setSeed(r);
-					eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-					avg_pct_correct += eval.pctCorrect();
-				}
-				avg_pct_correct = avg_pct_correct/10;
-				//				//this makes the game more stable in terms of scores
-				//				Random keep_same = new Random();
-				//				keep_same.setSeed(0);
-				//				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-			}
-			else if(eval_method.equals("test_set")){
-				eval.evaluateModel(voter, test);
-			}else {
-				eval.evaluateModel(voter, getTrain());
-			}
-			//	System.out.println(eval.toSummaryString("\nResults\n======\n", false));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return new metaExecution(voter,eval,avg_pct_correct);
-
-	}
-
-	/***
-	 * build and test a meta classifier - a non-random forest in this case
-	 * input, a set of feature sets and a classifier model
-	 * output an execution result for the whole thing
-	 */
-	public metaExecution executeNonRandomForest(Set<String> indicesoff1){
-		Set<String> indices_set = new HashSet<String>();
-		//remap indexes
-		for(String indices_ : indicesoff1){
-			String indices = "";
-			for(String a : indices_.split(",")){
-				if(!a.equals("")){
-					int i = 1+Integer.parseInt(a);
-					indices += i+",";
-				}
-			}
-			indices_set.add(indices);
-		}
-
-		//create an array of classifiers that differ from each other based on the features that they use
-		Classifier[] classifiers = new Classifier[indices_set.size()];
-		int i = 0;
-		for(String indices : indices_set){
-			// set a specific set of attributes to use to train the model
-			Remove rm = new Remove();
-			//don't remove the class attribute
-			//128,224,91,21,
-			rm.setAttributeIndices(indices+"last");
-			rm.setInvertSelection(true);
-			// build a classifier using only these attributes
-			FilteredClassifier fc = new FilteredClassifier();
-			fc.setFilter(rm);
-			fc.setClassifier(new J48());
-			classifiers[i] = fc;
-			i++;
-		}
-
-
-		//		//build the non-random forest
-		Vote voter = new Vote();
-		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
-		try {
-			voter.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		voter.setClassifiers(classifiers);
-		voter.setDebug(true);
-		// train and evaluate 
-		Evaluation eval = null;
-		double avg_pct_correct = 0;
-		try {
-			voter.buildClassifier(getTrain());
-			// evaluate classifier and print some statistics
-			eval = new Evaluation(getTrain());
-			if(eval_method.equals("cross_validation")){
-				for(int r=0; r<10; r++){
-					Random keep_same = new Random();
-					keep_same.setSeed(r);
-					eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-					avg_pct_correct += eval.pctCorrect();
-				}
-				avg_pct_correct = avg_pct_correct/10;
-				//				//this makes the game more stable in terms of scores
-				//				Random keep_same = new Random();
-				//				keep_same.setSeed(0);
-				//				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-			}
-			else if(eval_method.equals("test_set")){
-				eval.evaluateModel(voter, test);
-			}else {
-				eval.evaluateModel(voter, getTrain());
-			}
-			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return new metaExecution(voter,eval,avg_pct_correct);
-
+		return new execution(fc,eval);
 	}
 	
-	/*
-	 * build a meta classifier using trees built by users.
-	 * input, set of classifiers to combine
-	 * output an execution result for the whole thing 
-	 */
-	public metaExecution executeRandomForest(Classifier[] classifiers){
-			GenerateCSV csv = new GenerateCSV();
-			String data = "";
-			Vote voter = new Vote();
-			//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-			String[] options = new String[2];
-			options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
-			try {
-				voter.setOptions(options);
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			voter.setClassifiers(classifiers);
-			//voter.setDebug(true);
-			// train and evaluate 
-			Evaluation eval = null;
-			double avg_pct_correct = 0;
-			try {
-				voter.buildClassifier(getTrain());
-				// evaluate classifier and print some statistics
-				eval = new Evaluation(getTrain());
-				for(Classifier classifier : classifiers){
-					eval.evaluateModel(classifier, test);
-					data+=eval.pctCorrect()+",";
-					data+=eval.recall(1)+",";
-					data+=eval.precision(1)+",";
-					data+=eval.fMeasure(1)+"\n";
-				}
-				if(eval_method.equals("cross_validation")){
-					for(int r=0; r<10; r++){
-						Random keep_same = new Random();
-						keep_same.setSeed(r);
-						eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-						avg_pct_correct += eval.pctCorrect();
-					}
-					avg_pct_correct = avg_pct_correct/10;
-				}
-				else if(eval_method.equals("test_set")){
-					eval.evaluateModel(voter, test);
-				}else {
-					eval.evaluateModel(voter, getTrain());
-				}
-				data+=eval.pctCorrect()+",";
-				data+=eval.recall(1)+",";
-				data+=eval.precision(1)+",";
-				data+=eval.fMeasure(1)+"\n\n\n\n";
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			csv.generateCsvFile("/home/karthik/Documents/testingdata.csv",data);
-			return new metaExecution(voter,eval,avg_pct_correct);
-	}
-		
-	public execution executeSMOorTree(Set<String> id_set, String type, int n_runs_of_cv){
-			// set a specific set of attributes to use to train the model
-			Remove rm = new Remove();
-			//don't remove the class attribute
-			String indices = "";
-			for(String fid : id_set){
-				Feature f = this.features.get(fid);
-				if(f!=null&&f.getDataset_attributes()!=null){
-					for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-						if(a.getDataset().equals(dataset)){
-							//note the correction is being made here for the index problem
-							indices+=a.getCol_index()+1+",";
-							Attribute test = train.attribute(a.getCol_index());
-							Attribute test2 = train.attribute(a.getName());
-							if(test!=test2){
-								System.out.println("indexing problem");
-							}
-						}
-					}
-				}else{
-					System.out.println("No attribute found for gene id "+fid+" in "+dataset);
-					/*
-					 * There may exist some trees with features that do not exist in metabric_with_clinical.
-					 * Possible from development runs with a faulty game.properties file.
-					 */
-				}
-			}
-			rm.setAttributeIndices(indices+"last");
-			rm.setInvertSelection(true);
-			// build a classifier using only these attributes
-			FilteredClassifier fc = new FilteredClassifier();
-			fc.setFilter(rm);
-			if(type.equals("SMO")){
-				fc.setClassifier(new SMO());
-			} else {
-				fc.setClassifier(new J48());
-			}
-		double avg_pct_correct = 0;
-		Evaluation eval = null;
-		try {
-			fc.buildClassifier(getTrain());
-			eval = new Evaluation(getTest());
-			if(eval_method.equals("cross_validation")){
-				for(int r=0; r<n_runs_of_cv; r++){
-					eval.crossValidateModel(fc, getTest(), 10, rand);
-					avg_pct_correct += eval.pctCorrect();
-				}
-				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
-			}else if(eval_method.equals("test_set")){
-				eval.evaluateModel(fc, getTest());
-				avg_pct_correct = eval.pctCorrect();
-			}else {
-				eval.evaluateModel(fc, getTrain());
-				avg_pct_correct = eval.pctCorrect();
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return new execution(fc,eval,avg_pct_correct);
-	}
-
 	/***
-	 * Choose which of the input attribute sets to include in the meta classifier using an evaluation step
-	 * included within the cross-validation
-	 * @param indicesoff1
-	 * @return
-	 * @throws Exception 
-	 */
-	public metaExecution executeNonRandomForestWithInternalCVparamselection(Set<String> indicesoff1) throws Exception{
-		Set<String> indices_set = new HashSet<String>();
-		//remap indexes
-		for(String indices_ : indicesoff1){
-			String indices = "";
-			for(String a : indices_.split(",")){
-				if(!a.equals("")){
-					int i = 1+Integer.parseInt(a);
-					indices += i+",";
-				}
-			}
-			indices_set.add(indices);
-		}
-
-		//start outer cross-validation loop
-		int numFolds = 10;
-		// Make a copy of the data we can reorder
-		Instances data = new Instances(getTrain());
-		Evaluation eval = new Evaluation(data);
-		data.randomize(getRand());
-		if (data.classAttribute().isNominal()) {
-			data.stratify(numFolds);
-		}
-
-		// Do the folds
-		for (int i = 0; i < numFolds; i++) {
-			Instances thistrain = data.trainCV(numFolds, i, getRand());
-			eval.setPriors(thistrain);
-			//execute attribute selection filter here
-			int n_trees = 7;
-			Classifier voter = getCVSelectedVoterBest(thistrain, indices_set, n_trees);
-			Classifier copiedClassifier = Classifier.makeCopy(voter);
-			copiedClassifier.buildClassifier(thistrain);
-			Instances thistest = data.testCV(numFolds, i);
-			eval.evaluateModel(copiedClassifier, thistest);
-		}
-
-		return new metaExecution(eval);
-
-
-	}
-
-
-	/**
-	 * Given a particular training set (e.g. the training set for one fold of a cross-validation run)
-	 * generate a voter classifier using only the subclassifiers that perform better than min_pctCorrect
-	 * in 10-f cross-validation within this dataset.
-	 * 
-	 * If no subclassifiers meet the threshold, return the single best tree
-	 * @param thistrain
-	 * @param classifiers
+	 * convenience method for running learning algorithms on a set of 'cards'
+	 * @param cards
 	 * @return
 	 */
-	public Classifier getCVSelectedVoterThresholded___(Instances thistrain, Classifier[] classifiers) {
-		int min = 69;
-		//first select only the finest component trees 
-		List<Classifier> selected = new ArrayList<Classifier>();
-		int best_index = 0; double best = 0;
-		for(int i=0; i<classifiers.length; i++){
-			Evaluation e;
-			try {
-				e = new Evaluation(thistrain);
-				e.crossValidateModel(classifiers[i], thistrain, 10, getRand());
-				if(e.pctCorrect()>min){
-					selected.add(classifiers[i]);
-				}
-				if(e.pctCorrect()>best){
-					best = e.pctCorrect();
-					best_index = i;
-				}
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+	public execution pruneAndExecute(List<card> cards){
+		String indices = "";
+		for(card c : cards){
+			indices+=c.att_index+",";
 		}
-		if(selected.size()<1){
-			return classifiers[best_index];
-		}
-		//now build the non-random forest
-		Vote voter = new Vote();
-		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
-		try {
-			voter.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		voter.setClassifiers(selected.toArray(new Classifier[selected.size()]));
-		return voter;
+		return pruneAndExecute(indices);
 	}
-	/**
-	 * Given a particular training set (e.g. the training set for one fold of a cross-validation run)
-	 * generate a voter classifier using only the best n_trees subclassifiers as determined by 10-f 
-	 * cross-validation within this dataset.
-	 * 
-	 * @param thistrain
-	 * @param classifiers
-	 * @return
-	 */
-	public Classifier getCVSelectedVoterBest(Instances thistrain, Set<String> indices_set, int n_trees) {
-		//create an array of classifiers that differ from each other based on the features that they use
-		Classifier[] classifiers = new Classifier[indices_set.size()];
-		int ii = 0;
-		for(String indices : indices_set){
-			// set a specific set of attributes to use to train the model
-			Remove rm = new Remove();
-			//don't remove the class attribute
-			//128,224,91,21,
-			rm.setAttributeIndices(indices+"last");
-			rm.setInvertSelection(true);
-			// build a classifier using only these attributes
-			FilteredClassifier fc = new FilteredClassifier();
-			fc.setFilter(rm);
-			fc.setClassifier(new J48());
-			classifiers[ii] = fc;
-			ii++;
-		}
-
-		if(classifiers.length<n_trees){
-			n_trees = classifiers.length;
-		}
-		//first select only the finest component trees 
-		Map<Integer, Double> selected = new HashMap<Integer, Double>();
-		for(int i=0; i<classifiers.length; i++){
-			Evaluation e;
-			try {
-				e = new Evaluation(thistrain);
-				e.crossValidateModel(classifiers[i], thistrain, 10, getRand());
-				selected.put(i, e.pctCorrect());
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		//now build the non-random forest
-		Vote voter = new Vote();
-		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..  
-		try {
-			voter.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		List<Integer> sorted_indexes = org.scripps.util.MapFun.sortMapByValue(selected);
-		Collections.reverse(sorted_indexes);
-		List<Classifier> keepers = new ArrayList<Classifier>();
-		for(int i=0; i<n_trees; i++){
-			keepers.add(classifiers[(int)sorted_indexes.get(i)]);
-		}
-		voter.setClassifiers(keepers.toArray(new Classifier[keepers.size()]));	
-		return voter;
-	} 
-
-
-
-	/**
-	 * Simple, manual attribute filtering.  Follows basic pattern of Vant'Veer 2002 and other early array processing approaches
-	 * Remove attributes that don't have at least n_samples_over_min with min_expression_change.
-	 * If outlier_deletion, remove any attributes that contain values over the outlier_threshold.
-	 * @param min_expression_change
-	 * @param n_samples_over_min
-	 * @param outlier_threshold
-	 * @param remove_atts_with_outliers
-	 */
-
-	public void executeManualAttFiltersTrainTest(float min_expression_change, int n_samples_over_min, int outlier_threshold, boolean remove_atts_with_outliers){
-		//reduce N genes by eliminating genes not significantly regulated in at least three samples
-		//	System.out.println("Train start n atts = "+getTrain().numAttributes());
-		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
-		List<Integer> keepers = new ArrayList<Integer>();
-		while(atts.hasMoreElements()){
-			Attribute att = atts.nextElement();
-			//check if we want to keep it
-			boolean keep = false;
-			Enumeration<Instance> instances = getTrain().enumerateInstances();
-			int n_sig_var = 0;
-			while(instances.hasMoreElements()){
-				Instance instance = instances.nextElement();
-				double value = instance.value(att);
-				if(value>min_expression_change||value<(-1*min_expression_change)){
-					n_sig_var++;
-				}
-				if(n_sig_var>2){
-					keep = true;
-				}
-				if(value > outlier_threshold||value<(1*-outlier_threshold)){
-					keep=false;
-					break;
-				}
-			}
-			if(keep){
-				keepers.add(att.index());				
-			}
-		}
-		//keep the class index
-		keepers.add(getTrain().classIndex());
-		//		System.out.println("Manual filter reduces atts to: "+keepers.size());
-		//remove the baddies
-		Remove remove = new Remove();
-		remove.setInvertSelection(true);
-		int[] karray = new int[keepers.size()];
-		int c = 0;
-		for(Integer i : keepers){
-			karray[c] = i;
-			c++;
-		}
-		remove.setAttributeIndicesArray(karray);
-		try {
-			remove.setInputFormat(getTrain());
-			setTrain(Filter.useFilter(getTrain(), remove));
-			if(getTest()!=null){
-				remove.setInputFormat(getTest());
-				setTest(Filter.useFilter(getTest(), remove));
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return;
-	}
-
-	/**
-	 * Convert all continuous variables into binary, nominal attributes (yes or no..)
-	 */
-	public void binarize(){
-
-	}
-
-	public void setTrain(Instances train) {
-		this.train = train;
-	}
-
-
-
-	public Instances getTrain() {
-		return train;
-	}
-
-
-
-	public Instances getTest() {
-		return test;
-	}
-
-
-
-	public void setTest(Instances test) {
-		this.test = test;
-	}
-
-
-
-	public Random getRand() {
-		return rand;
-	}
-
-
-
-	public void setRand(Random rand) {
-		this.rand = rand;
-	}
-
-
-
-	public String getEval_method() {
-		return eval_method;
-	}
-
-
-
-	public void setEval_method(String eval_method) {
-		this.eval_method = eval_method;
-	}
-
-
-	public String getDataset() {
-		return dataset;
-	}
-
-	public void setDataset(String dataset) {
-		this.dataset = dataset;
-	}
-
-
-
-
-	public Map<String, Feature> getFeatures() {
-		return features;
-	}
-
-
-
-
-	public void setFeatures(Map<String, Feature> features) {
-		this.features = features;
-	}
-
-
-
-
-
-
 
 }
