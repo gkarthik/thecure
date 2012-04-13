@@ -372,9 +372,6 @@ public class Weka {
 			}else {
 				eval.evaluateModel(fc, train);
 			}
-			//view tree
-			j48.graph();
-
 			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

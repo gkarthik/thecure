@@ -66,25 +66,28 @@ var cards = new Array();
 var nrows = 5;
 var ncols = 5;
 var seed = <%=ran%>;
-var hand_size = 0;
 var max_hand = 5;
 var score = 0;
+var par = 0;
 var p1_hand = new Array();
 var p2_hand = new Array();
 
+//playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
+function playSound(url) {
+	document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
+}
+
 function evaluateHand(cardsinhand){
-	console.log(cardsinhand);
 	var url = 'WekaServer?command=getscore&features=';
 	var features = "";
 	$.each(cardsinhand, function(index, value) {
 	    features+=value.att_index+",";
-	    console.log(value.att_name);
 	  });
 	url +=features;
-	console.log(url);
 	
 	//goes to server, runs the default evaluation with a decision tree
 	$.getJSON(url, function(data) {
+		var prev_score = score;
 		$("#player1_j48_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
 		score = data.accuracy;
 		//run the evlauation with ripper
@@ -95,6 +98,13 @@ function evaluateHand(cardsinhand){
 				score = data.accuracy;
 			}
 			$("#best_game_score").html("<strong>"+score+"</strong>");
+			if(score > prev_score){
+				playSound("sounds/human/MMMMM1.WAV");
+			}else if(score < prev_score){
+				playSound("sounds/human/SNORTAHH.WAV");
+			}else{
+				playSound("sounds/human/AHH3.WAV");
+			}
 		});	
 	});
 	
@@ -136,6 +146,7 @@ function generateBoardCell(cardindex){
 	boardhtml+="<td style=\""+cellstyle+"\">";
 	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"</div>";
 	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><img src=\"images/GoDe0.gif\"></div></td>";
+	
 	return boardhtml;
 }
 
@@ -168,12 +179,24 @@ function generateBoard(){
 	boardhtml+="</table>";
 	$("#board").empty(); 
 	$("#board").append(boardhtml);
+	
+	//set the par - use all the features on the board
+	var url = 'WekaServer?command=getscore&features=';
+	var features = "";
+	$.each(cards, function(index, value) {
+	    features+=value.att_index+",";
+	  });
+	url +=features;
+	
+	$.getJSON(url, function(data) {
+		par = data.accuracy;
+		$("#par_score").html("<strong>"+par+"</strong>");
+	});
 }
 
 
 function showgene(geneid, name){
     var gene_url = 'http://mygene.info/gene/'+geneid+'?filter=name,symbol,summary,go,genomic_pos&jsoncallback=?';
-    console.log(gene_url);
 //    show_loading("#infobox");
     if(geneid!="_"&&geneid!=""){
     	$.getJSON(gene_url, mygene_info_get_gene_callback);
@@ -184,7 +207,6 @@ function showgene(geneid, name){
 }
 
 function mygene_info_get_gene_callback(result){
-	console.log(result);
     $("#infobox").empty();    
     if (result && result.name && result.symbol){
     	var chromosome = "";
@@ -243,11 +265,15 @@ function setupShowInfoHandler(){
 
 function setupHandAddRemove(){
 	$(".select_card_button").on("click", function () {
+		if(p1_hand){
+			hand_size = p1_hand.length;
+		}else{
+			hand_size = 0;
+		}
 		if(hand_size < max_hand){
-			hand_size++;
+			console.log("hand size "+hand_size+" "+max_hand);
 			var cell_id = this.id.replace("card_index_", "");	
 			var cstyle = getStyleByScore(cards[cell_id].power);
-			console.log("style "+cstyle+" "+cards[cell_id].power+" "+cards[cell_id]);
 			$("#player1_hand").append('<td class=\'cardsinhand\' style=\''+cstyle+'\' id=\'p1_c_'+cell_id+'\'>'+cards[cell_id].displayname+'</td> ');
 			p1_hand.push(cards[cell_id]);
 			evaluateHand(p1_hand);
@@ -257,16 +283,13 @@ function setupHandAddRemove(){
 			$(this).parent().css('background-color', '#98AFC7');
 		//add the take out of hand handler
 			$(".cardsinhand").on("click", function () {
-				hand_size--;
 				var cell_id = this.id.replace("p1_c_", "");	
 				//put it back on the board
 				var table_cell_id = "#card_index_"+cell_id;
 				var cellcontents = generateUsedBoardCell(cell_id);
-				console.log("cell contents "+cellcontents+" cell id "+cell_id);
 				$(table_cell_id).parent().html(cellcontents);
 				//take it out of our hand representation
 				var tmp = new Array();
-				console.log("hand "+p1_hand);
 				var tmp_index = 0;
 				for (var r = 0; r < p1_hand.length; r++) {
 					if(p1_hand[r]!=cards[cell_id]){
@@ -332,9 +355,12 @@ $(document).ready(function() {
 	</div>
 
 	<div id="best_game_score_box" style="left: 850px; position: absolute; top: 15px; width: 100px;">
-	<h4>Score for hand</h4>
-	<div id="best_game_score" style="text-align: center;">0</div>
+		<h4>Par for this board</h4>
+		<div id="par_score" style="text-align: center;">0</div>
+		<h4>Score for hand</h4>
+		<div id="best_game_score" style="text-align: center;">0</div>
 	</div>
+
 	<div id="player1"
 		style="left: 450px; position: absolute; top: 15px; width: 500px;">
 		<div id="player_box" style="position: relative; top: 15px;">
@@ -368,6 +394,8 @@ $(document).ready(function() {
 		style="height: 500px; left: 15px; position: absolute; top: 500px; width: 450px;">
 		<strong>Click on a gene name for a clue</strong>
 	</div>
+	
+	<div id="sound"></div>
 </body>
 </html>
 

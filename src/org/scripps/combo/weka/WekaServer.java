@@ -87,9 +87,7 @@ public class WekaServer extends HttpServlet {
 				ran = Integer.parseInt(raninput);
 			}else{			
 				ran = (int)Math.rint(Math.random()*1000);
-				System.out.println(ran);
 			}
-
 			int nrows = Integer.parseInt(request.getParameter("y"));
 			int ncols = Integer.parseInt(request.getParameter("x"));
 			List<Weka.card> cards = weka.getRandomCards(nrows * ncols, ran);
