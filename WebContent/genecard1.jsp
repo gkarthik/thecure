@@ -4,16 +4,18 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 
-<jsp:declaration>//private Weka weka;
+<% 
+String username = (String)session.getAttribute("username");
+if(username==null){
+	username = "anonymous_hero";
+}
 
-	public void jspInit() {
-		//		weka = new Weka();
-	}</jsp:declaration>
-
-<%
-	/*int nrows = 5;
-	 int ncols = 5;
-	 List<Weka.card> cards = weka.getRandomCards(nrows * ncols); */
+String prev_score = request.getParameter("hand_score");
+int pscore = 0;
+if(prev_score!=null&&prev_score.length()>0){
+	pscore = Integer.parseInt(prev_score);
+}
+System.out.println("score!!!! "+pscore);
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -105,8 +107,14 @@ function evaluateHand(cardsinhand){
 			}else{
 				playSound("sounds/human/AHH3.WAV");
 			}
+			 $("#holdem_button").on("click", function () {
+				var diff = score - par;
+				$("#hid").html("<input type=\"hidden\" name=\"hand_score\" value=\""+diff+"\"/>");
+			});	 
 		});	
 	});
+	
+
 	
 }
 
@@ -307,7 +315,7 @@ function setupHandAddRemove(){
 			  });
 		
 		}else{
-			alert("Sorry, you can only have 5 cards in your hand in this game.  Click a card to remove it from your hand"); 
+			alert("Sorry, you can only have 5 cards in your hand in this game.  Click a card to remove it from your hand."); 
 		}
 	  });
 }
@@ -327,7 +335,16 @@ $(document).ready(function() {
 		setupShowInfoHandler();
 		//add to hand
 		setupHandAddRemove();
-		});
+	});			
+	//add help buttons
+	$("#help").on("click", function () {
+		alert("The samples came from primary breast tumours of young patients.  The goal is to use gene expression levels to predict a short interval to distant metastases ('poor prognosis' signature) in patients without tumour cells in local lymph nodes at diagnosis (lymph node negative).\n\nHint:genes regulating cell cycle, invasion, metastasis and angiogenesis may be important.\n\nThe decision tree and the rules shown to the right are generated automatically from real data based on the genes that you select.  Your score is determined by the performance of the trees in classifiying known samples.");
+	});	
+	//handhelp
+	$("#handhelp").on("click", function () {
+		alert("Click the blue icons to add cards to your hand (they will appear below).\n\nYour score is based on the best best scoring rule set below.  See the score to the right -->\n\nClick a card to put it back on the board. \n\nCareful though!. Once you put it back, you can't get it back in your hand.");
+	});	
+	
 	//show default empty results
 	$("#cv_results").accordion( "activate" , 1 );
 });
@@ -335,34 +352,45 @@ $(document).ready(function() {
 </head>
 <body>
 
-	<div id="phenotype_description"
-		style="height: 100px; left: 15px; position: absolute; top: 15px; width: 420px;"">
+<div id="header" style="text-align: right; height: 20px; left: 15px; position: absolute; top: 5px; width: 930px; margin:1px 1px 1px 1px; padding:1px 1px 1px 5px; background-color:#b0c4de">
+<%=username%> is currently playing <a href="index.jsp">logout</a>.  
+</div>
+
+	<div id="Instructions"
+		style="height: 100px; left: 15px; position: absolute; top: 30px; width: 420px;"">
+		<h3>Instructions</h3>
 		<p>
-			<strong>Sample source:</strong> primary breast tumours of young
-			patients<br /> <strong>Predict:</strong> short interval to distant
-			metastases ('poor prognosis' signature) in patients without tumour
-			cells in local lymph nodes at diagnosis (lymph node negative).<br />
-			<strong>Hint:</strong> genes regulating cell cycle, invasion,
-			metastasis and angiogenesis may be important
+			Click the blue buttons <img src="images/GoDe0.gif"/> to pick genes to put in your hand.  Try it..<br/>
+			The goal is to get the highest score possible.<br/>
+			The score is calculated based on how well breast cancer prognosis can be estimated based on the expression levels
+			of the genes in your hand (in the context of tumor samples). <span id="help"><a href="">more info</a></span>
 		</p>
 	</div>
 
 	<div>
 		<div id="board"
-			style="height: 500px; left: 15px; position: absolute; top: 120px; width: 500px;">
+			style="height: 500px; left: 15px; position: absolute; top: 150px; width: 500px;">
 
 		</div>
 	</div>
 
-	<div id="best_game_score_box" style="left: 850px; position: absolute; top: 15px; width: 100px;">
-		<h4>Par for this board</h4>
+	<div id="best_game_score_box" style="text-align: center; left: 800px; position: absolute; top: 30px; width: 200px; z-index:2;">
+		<h4>Par for this board <br/>(try to score higher...)</h4>
 		<div id="par_score" style="text-align: center;">0</div>
 		<h4>Score for hand</h4>
 		<div id="best_game_score" style="text-align: center;">0</div>
+		<form id="holdem_form" action="genecard1.jsp">
+			<input type="hidden" id="hid"/>
+			<input id="holdem_button" type="submit" value="Holdem!" /> 
+		</form>
 	</div>
 
+	<div id="hand_info_box"
+		style="left: 450px; position: absolute; top: 45px; width: 500px;">
+	<h3>Your hand of gene cards. <span id="handhelp"><a href="">?</a></span></h3>
+	</div>
 	<div id="player1"
-		style="left: 450px; position: absolute; top: 15px; width: 500px;">
+		style="left: 450px; position: absolute; top: 60px; width: 500px;">
 		<div id="player_box" style="position: relative; top: 15px;">
 			<table border='1'>
 				<tr id="player1_hand" align='center' style='height: 75px'>
@@ -370,7 +398,7 @@ $(document).ready(function() {
 				</tr>
 			</table>
 		</div>
-		<div style="text-align: center; position: relative; top: 15px;">
+		<div style="text-align: center; position: relative; top: 30px;">
 			<strong>Score</strong>
 		</div>
 
@@ -379,19 +407,19 @@ $(document).ready(function() {
 				<a href="#">Decision Tree</a>
 			</h3>
 			<div id="player1_j48_score">
-				<p style='height: 250px'> </p>
+				<p style='height: 270px'> </p>
 			</div>
 			<h3>
 				<a href="#">Ripper Rules</a>
 			</h3>
 			<div id="player1_jrip_score">
-				<p style='height: 250px'> </p>
+				<p style='height: 270px'> </p>
 			</div>
 		</div>
 	</div>
 
 	<div id="infobox"
-		style="height: 500px; left: 15px; position: absolute; top: 500px; width: 450px;">
+		style="height: 500px; left: 15px; position: absolute; top: 530px; width: 440px;">
 		<strong>Click on a gene name for a clue</strong>
 	</div>
 	
