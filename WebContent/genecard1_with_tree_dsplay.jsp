@@ -15,6 +15,7 @@ int pscore = 0;
 if(prev_score!=null&&prev_score.length()>0){
 	pscore = Integer.parseInt(prev_score);
 }
+System.out.println("score!!!! "+pscore);
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -89,15 +90,16 @@ function evaluateHand(cardsinhand){
 	//goes to server, runs the default evaluation with a decision tree
 	$.getJSON(url, function(data) {
 		var prev_score = score;
-//		$("#player1_j48_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
+		$("#player1_j48_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
 		score = data.accuracy;
 		//run the evlauation with ripper
 		url+="&wekamodel=jrip";
 		$.getJSON(url, function(data) {
-//			$("#player1_jrip_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
+			$("#player1_jrip_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
 			if(data.accuracy>score){
 				score = data.accuracy;
 			}
+			$("#best_game_score").html("<strong>"+score+"</strong>");
 			if(score > prev_score){
 				playSound("sounds/human/MMMMM1.WAV");
 			}else if(score < prev_score){
@@ -105,9 +107,8 @@ function evaluateHand(cardsinhand){
 			}else{
 				//playSound("sounds/human/AHH3.WAV");
 			}
-			var diff = score - par;
-			$("#best_game_score").text(diff);
-			 $("#holdem_button").on("click", function () {				
+			 $("#holdem_button").on("click", function () {
+				var diff = score - par;
 				$("#hid").html("<input type=\"hidden\" name=\"hand_score\" value=\""+diff+"\"/>");
 			});	 
 		});	
@@ -152,29 +153,12 @@ function generateBoardCell(cardindex){
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\">";
 	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"</div>";
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><img src=\"images/BlurMetalLc0.gif\" alt=\"select card\"></div></td>";
-	
-	return boardhtml;
-}
-
-function generateHandCell(cardindex){
-	var boardhtml = "";
-	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
-	if(displayname==null||displayname.length==0){
-		displayname = cards[cardindex].att_name;
-	}
-	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"</div>";
-	boardhtml+="<div class=\"cardsinhand\" id=\"p1_c_"+cardindex+"\"><img style=\"background-color:#98AFC7;\" src=\"images/BlurMetalDb3.gif\"></div></td>";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><img src=\"images/BlurMetalLc0.gif\"></div></td>";
 	
 	return boardhtml;
 }
 
 function generateUsedBoardCell(cardindex){
-
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
 	var power = cards[cardindex].power;
@@ -295,11 +279,10 @@ function setupHandAddRemove(){
 			hand_size = 0;
 		}
 		if(hand_size < max_hand){
+			console.log("hand size "+hand_size+" "+max_hand);
 			var cell_id = this.id.replace("card_index_", "");	
-			var handcell = generateHandCell(cell_id);
-			$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-		//	$("#player1_hand").append(handcell);
-			setupShowInfoHandler();
+			var cstyle = getStyleByScore(cards[cell_id].power);
+			$("#player1_hand").append('<td class=\'cardsinhand\' style=\''+cstyle+'\' id=\'p1_c_'+cell_id+'\'>'+cards[cell_id].displayname+'</td> ');
 			p1_hand.push(cards[cell_id]);
 			evaluateHand(p1_hand);
 			//hide button from board
@@ -312,9 +295,6 @@ function setupHandAddRemove(){
 				//put it back on the board
 				var table_cell_id = "#card_index_"+cell_id;
 				var cellcontents = generateUsedBoardCell(cell_id);
-				//$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-				
-				
 				$(table_cell_id).parent().html(cellcontents);
 				//take it out of our hand representation
 				var tmp = new Array();
@@ -331,7 +311,7 @@ function setupHandAddRemove(){
 					evaluateHand(p1_hand);
 				}
 				//remove button from hand
-				$(this).parent().remove(); //fadeOut(1000);
+				$(this).remove();
 			  });
 		
 		}else{
@@ -356,7 +336,15 @@ $(document).ready(function() {
 		//add to hand
 		setupHandAddRemove();
 	});			
-
+	//add help buttons
+	$("#help").on("click", function () {
+		alert("The goal is to use gene expression levels to predict a short interval to distant metastases ('poor prognosis' signature) in patients without tumour cells in local lymph nodes at diagnosis (lymph node negative).\n\nHint:genes regulating cell cycle, invasion, metastasis and angiogenesis may be important.\n\nYour score is determined by using the genes that you select to train machine learning algorithms to classify real biological samples.  The better the genes reflect the phenotype, the better you will score in the game.");
+	});	
+	//handhelp
+	$("#handhelp").on("click", function () {
+		alert("Click the buttons next to the gene cards to add them to your hand (they will appear below).\n\nYour score will be calculated each time your hand is changed.  See the score to the right -->\n\nClick a card to put it back on the board. \n\nCareful though!. Once you put it back on the board, you can't get it back in your hand.");
+	});	
+	
 	//show default empty results
 	$("#cv_results").accordion( "activate" , 1 );
 });
@@ -364,7 +352,7 @@ $(document).ready(function() {
 </head>
 <body>
 
-<div id="header" style="text-align: right; height: 20px; left: 15px; position: absolute; top: 5px; width: 830px; margin:1px 1px 1px 1px; padding:1px 1px 1px 5px; background-color:#b0c4de">
+<div id="header" style="text-align: right; height: 20px; left: 15px; position: absolute; top: 5px; width: 930px; margin:1px 1px 1px 1px; padding:1px 1px 1px 5px; background-color:#b0c4de">
 <%=username%> is currently playing <a href="index.jsp">logout</a>.  
 </div>
 
@@ -374,7 +362,7 @@ $(document).ready(function() {
 		<p>
 			Click the buttons <img src="images/BlurMetalLc0.gif"/> to pick genes to put in your hand.  Try it..<br/>
 			Click a gene name to see more information about it.<br/>  
-			Maximize your score by selecting groups of genes whose expression may correlate with breast cancer prognosis.<a target="_blank" href="genecard1_inst.jsp">(more info)</a>
+			Maximize your score by selecting groups of genes whose expression may correlate with breast cancer prognosis.<span id="help"><a href="">(more info)</a></span>
 		</p>
 	</div>
 
@@ -385,54 +373,35 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="best_game_score_box" style="text-align: center; left: 550px; position: absolute; top: 300px; width: 200px; z-index:2;">
+	<div id="best_game_score_box" style="text-align: center; left: 800px; position: absolute; top: 30px; width: 200px; z-index:2;">
+		<h4>Par for this board <br/>(try to score higher...)</h4>
+		<div id="par_score" style="text-align: center;">0</div>
 		<h4>Score for hand</h4>
-		<h1 id="best_game_score" style="text-align: center;">0</h1>
+		<div id="best_game_score" style="text-align: center;">0</div>
 		<form id="holdem_form" action="genecard1.jsp">
 			<input type="hidden" id="hid"/>
 			<input id="holdem_button" type="submit" value="Holdem!" /> 
 		</form>
 	</div>
-	
-	<div id="player1" style="left: 450px; position: absolute; top: 120px; width: 500px;">
-	<h3>Your hand of gene cards</h3>
+
+	<div id="hand_info_box"
+		style="left: 450px; position: absolute; top: 45px; width: 500px;">
+	<h3>Your hand of gene cards. <span id="handhelp"><a href="">?</a></span></h3>
 	</div>
-	
-	<div id="player1" style="left: 450px; position: absolute; top: 100px; width: 500px;">
-		<div id="hand_info_box" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box" style="position: relative; top: 15px; width: 400px;">
+	<div id="player1"
+		style="left: 450px; position: absolute; top: 60px; width: 500px;">
+		<div id="player_box" style="position: relative; top: 15px;">
 			<table border='1'>
-				<tr id="player1_hand" align='center' style='height: 75px;'>
+				<tr id="player1_hand" align='center' style='height: 75px'>
 
 				</tr>
 			</table>
-			</div>
 		</div>
-	</div>
-
-	<div id="player1_masked" style="left: 450px; position: absolute; top: 100px; width: 500px; z-index:-1">
-		<div id="hand_info_box_masked" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked" style="position: relative; top: 15px; width: 400px;">
-			<table border='1'>
-				<tr id="player1_hand_masked" align='center' style='height: 75px;'>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-				</tr>
-			</table>
-			</div>
-		</div>
-	</div>
-	
-		
-<!--		
 		<div style="text-align: center; position: relative; top: 30px;">
 			<strong>Score</strong>
 		</div>
 
-	<div id="cv_results">
+		<div id="cv_results">
 			<h3>
 				<a href="#">Decision Tree</a>
 			</h3>
@@ -446,11 +415,10 @@ $(document).ready(function() {
 				<p style='height: 270px'> </p>
 			</div>
 		</div>
-  -->			
 	</div>
 
 	<div id="infobox"
-		style="height: 500px; left: 15px; position: absolute; top: 530px; width: 840px;">
+		style="height: 500px; left: 15px; position: absolute; top: 530px; width: 440px;">
 		<strong>Click on a gene name for a clue</strong>
 	</div>
 	
