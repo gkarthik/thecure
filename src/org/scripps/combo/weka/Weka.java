@@ -366,7 +366,10 @@ public class Weka {
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(train);
 			if(eval_method.equals("cross_validation")){
-				eval.crossValidateModel(fc, train, 10, rand);
+				Random keep_same = new Random();
+				keep_same.setSeed(0);
+				System.out.println("seed "+keep_same.nextInt());
+				eval.crossValidateModel(fc, train, 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
@@ -405,7 +408,10 @@ public class Weka {
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(train);
 			if(eval_method.equals("cross_validation")){
-				eval.crossValidateModel(fc, train, 10, rand);
+				//this makes the game more stable in terms of scores
+				Random keep_same = new Random();
+				keep_same.setSeed(0);
+				eval.crossValidateModel(fc, train, 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
