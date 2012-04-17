@@ -20,8 +20,8 @@ public class JdbcConnection {
 	public JdbcConnection(){
 		String serverLocation = "127.0.0.1";
 		String db = "combo";
-		String user = "root";
-		String password = "";
+		String user = "combo";
+		String password = "combo";
 		createConnection(serverLocation, db, user, password);
 	}
 	/**
@@ -87,12 +87,11 @@ public class JdbcConnection {
 	}
 
 	public boolean executeUpdate(String theStatement)	{
-		int  response;
 		Statement stmt;		
 
 		try{
 			stmt = connection.createStatement();
-			response = stmt.executeUpdate(theStatement); //	Send the request
+			stmt.executeUpdate(theStatement); //	Send the request
 			return true;
 			}
 		catch ( SQLException e ) {
