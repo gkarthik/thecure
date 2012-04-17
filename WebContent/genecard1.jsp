@@ -9,12 +9,6 @@ String username = (String)session.getAttribute("username");
 if(username==null){
 	username = "anonymous_hero";
 }
-
-String prev_score = request.getParameter("hand_score");
-int pscore = 0;
-if(prev_score!=null&&prev_score.length()>0){
-	pscore = Integer.parseInt(prev_score);
-}
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -50,8 +44,8 @@ body {
 
 <%
 	String ran = request.getParameter("ran");
-	if (ran == null) {
-		ran = "0";
+	if (ran == null) {		
+		ran = ""+(int)Math.rint(Math.random()*1000);
 	}
 %>
 <link
@@ -69,9 +63,12 @@ var ncols = 5;
 var seed = <%=ran%>;
 var max_hand = 5;
 var score = 0;
+var par_score = 0;
 var par = 0;
 var p1_hand = new Array();
 var p2_hand = new Array();
+var player_name = "<%=username%>";
+var features = "";
 
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
@@ -80,7 +77,7 @@ function playSound(url) {
 
 function evaluateHand(cardsinhand){
 	var url = 'WekaServer?command=getscore&features=';
-	var features = "";
+	features = "";
 	$.each(cardsinhand, function(index, value) {
 	    features+=value.att_index+",";
 	  });
@@ -89,28 +86,17 @@ function evaluateHand(cardsinhand){
 	//goes to server, runs the default evaluation with a decision tree
 	$.getJSON(url, function(data) {
 		var prev_score = score;
-//		$("#player1_j48_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
 		score = data.accuracy;
-		//run the evlauation with ripper
-		url+="&wekamodel=jrip";
-		$.getJSON(url, function(data) {
-//			$("#player1_jrip_score").html('<strong> score </strong><span style="background-color:#FF9933;>">'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
-			if(data.accuracy>score){
-				score = data.accuracy;
-			}
-			if(score > prev_score){
-				playSound("sounds/human/MMMMM1.WAV");
-			}else if(score < prev_score){
-				playSound("sounds/human/SNORTAHH.WAV");
-			}else{
-				//playSound("sounds/human/AHH3.WAV");
-			}
-			var diff = score - par;
-			$("#best_game_score").text(diff);
-			 $("#holdem_button").on("click", function () {				
-				$("#hid").html("<input type=\"hidden\" name=\"hand_score\" value=\""+diff+"\"/>");
-			});	 
-		});	
+		if(score > prev_score){
+			playSound("sounds/human/MMMMM1.WAV");
+		}else if(score < prev_score){
+			playSound("sounds/human/SNORTAHH.WAV");
+		}else{
+			//playSound("sounds/human/AHH3.WAV");
+		}
+		par_score = score - par;
+		$("#best_game_score").text(par_score);
+
 	});
 	
 
@@ -286,6 +272,18 @@ function setupShowInfoHandler(){
 	  });
 }
 
+function setupHoldem(){
+	//add the save handler
+	 $("#holdem_button").on("click", function () {				
+			var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+score+'&board_id='+seed;
+			//player_name , score, cv_accuracy, board_id
+			console.log("saved "+saveurl);
+			$.getJSON(saveurl, function(data) {
+				//and go to the next board
+				window.location.reload(true);
+			});
+	});	
+}
 
 function setupHandAddRemove(){
 	$(".select_card_button").on("click", function () {
@@ -297,8 +295,9 @@ function setupHandAddRemove(){
 		if(hand_size < max_hand){
 			var cell_id = this.id.replace("card_index_", "");	
 			var handcell = generateHandCell(cell_id);
-			$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-		//	$("#player1_hand").append(handcell);
+		// does not work in firefox	
+		//	$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
+			$("#player1_hand").append(handcell);
 			setupShowInfoHandler();
 			p1_hand.push(cards[cell_id]);
 			evaluateHand(p1_hand);
@@ -355,10 +354,15 @@ $(document).ready(function() {
 		setupShowInfoHandler();
 		//add to hand
 		setupHandAddRemove();
+		//save hand
+		setupHoldem();
+		
 	});			
 
+	
 	//show default empty results
-	$("#cv_results").accordion( "activate" , 1 );
+	//$("#cv_results").accordion( "activate" , 1 );
+ 
 });
 </script>
 </head>
@@ -388,13 +392,10 @@ $(document).ready(function() {
 	<div id="best_game_score_box" style="text-align: center; left: 550px; position: absolute; top: 300px; width: 200px; z-index:2;">
 		<h4>Score for hand</h4>
 		<h1 id="best_game_score" style="text-align: center;">0</h1>
-		<form id="holdem_form" action="genecard1.jsp">
-			<input type="hidden" id="hid"/>
 			<input id="holdem_button" type="submit" value="Holdem!" /> 
-		</form>
 	</div>
 	
-	<div id="player1" style="left: 450px; position: absolute; top: 120px; width: 500px;">
+	<div id="player1_title_area" style="left: 450px; position: absolute; top: 120px; width: 500px;">
 	<h3>Your hand of gene cards</h3>
 	</div>
 	

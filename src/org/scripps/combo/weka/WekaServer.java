@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.scripps.combo.Hand;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 
@@ -96,6 +97,34 @@ public class WekaServer extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			out.write(r.toString());
 			out.close();
+		}else if(command.equals("savehand")){
+			String player_name = request.getParameter("player_name");
+			String ip = request.getRemoteAddr();
+			String features = request.getParameter("features");
+			String score_s = request.getParameter("score");
+			int score = -1000;
+			if(score_s!=null){
+				score = Integer.parseInt(score_s);
+			}
+			String cv_accuracy_s = request.getParameter("cv_accuracy");
+			int cv_accuracy = -1000;
+			if(cv_accuracy_s!=null){
+				cv_accuracy = Integer.parseInt(cv_accuracy_s);
+			}
+			String board_id_s = request.getParameter("board_id");
+			int board_id = -1000;
+			if(board_id_s!=null){
+				board_id = Integer.parseInt(board_id_s);
+			}
+			Hand hand = new Hand();
+			hand.setBoard_id(board_id);
+			hand.setCv_accuracy(cv_accuracy);
+			hand.setFeatures(features);
+			hand.setIp(ip);
+			hand.setPlayer_name(player_name);
+			hand.setScore(score);
+			hand.save();
+			System.out.println("saved a hand "+player_name+" "+score);
 		}
 	}
 
