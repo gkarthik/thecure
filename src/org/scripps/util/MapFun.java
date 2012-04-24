@@ -3,10 +3,6 @@
  */
 package org.scripps.util;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 
 
 /**
@@ -67,38 +62,6 @@ public class MapFun {
 		return keys;
 	}
 
-	public static Map<Integer, Double> convertCountsToEmpiricalPtable(Map<Integer, Integer> count_map){
-		Map<Integer, Double> count_p = new TreeMap<Integer, Double>();
-		int runs = 0;
-		for(Entry<Integer,Integer> countin : count_map.entrySet()){
-			runs+= countin.getValue();
-		}
-		for(Entry<Integer,Integer> inmap : count_map.entrySet()){
-			int k = inmap.getKey();
-			int n_greater = 0;
-			for(Entry<Integer,Integer> countin : count_map.entrySet()){
-				int cvin = countin.getKey();
-				if(cvin>=k){
-					n_greater+=countin.getValue();
-				}
-			}
-			count_p.put(k, n_greater/(double)runs);
-		}
-		return count_p;
-	}
-	
-	public static Map<Object, Double> convertCountsToPercentagesGeneric(Map<Object, Integer> inmap){
-		Map<Object, Double> outmap = new HashMap<Object,Double>();
-		float sum = 0;
-		for(Integer i : inmap.values()){
-			sum+= i;
-		}
-		for(Object key : inmap.keySet()){
-			outmap.put(key, (double)inmap.get(key)/sum);
-		}
-		return outmap;
-	}
-	
 	public static Map<String, Float> convertCountsToPercentages(Map<String, Integer> inmap){
 		Map<String, Float> outmap = new HashMap<String, Float>();
 		float sum = 0;
@@ -160,46 +123,5 @@ public class MapFun {
 			outmap.put(in.getValue(), in.getKey());
 		}
 		return outmap;
-	}
-	
-	public static HashMap<String, String> read2columnMap(String file){
-		HashMap<String, String> map = new HashMap<String, String>();
-		try {
-			BufferedReader f = new BufferedReader(new FileReader(file));
-			String line = f.readLine().trim();
-			while(line!=null){
-				if(!line.startsWith("#")){
-					String[] item = line.split("\t");
-					if(item!=null&&item.length>1){
-						map.put(item[0], item[1]);
-					}
-				}
-				line = f.readLine();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return map;
-	}
-	
-	public static String list2string(List<String> things, String delimiter){
-		String list = "";
-		for(String thing : things){
-			list+=thing+delimiter;
-		}
-		return list;
-	}
-	
-	public static List<String> string2list(String del, String delimiter){
-		List<String> l = new ArrayList<String>();
-		String[] split = del.split(delimiter);
-		for(String s : split){
-			l.add(s);
-		}
-		return l;
 	}
 }
