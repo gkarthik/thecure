@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.weka.Weka"%>
+<%@ page import="org.scripps.combo.GameLog"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 
@@ -427,7 +428,39 @@ $(document).ready(function() {
 		</div>
 	</div>
 	
-		
+	<div id="scoreboard" style="left: 550px; position: absolute; top: 30px; width: 300px; z-index:-1">
+		<table>
+			<caption><b><u>Score for board (<%=ran%>)</u></b></caption>
+				<thead>
+					<tr>
+						<th>Best score</th>
+						<th>Avg. score</th>
+					</tr>
+				</thead>
+				<tbody>
+					<%
+					GameLog log = new GameLog();
+					GameLog.high_score sb = log.getScoreBoard();	
+					Integer board_id = Integer.parseInt(ran);
+					Integer max = 0;
+					int attempts = 0;
+					 if(sb.getBoard_max()!=null&&sb.getBoard_max().get(board_id)!=null){
+						 max = sb.getBoard_max().get(board_id);
+					 }
+					Float avg = new Float(0);
+					if(sb.getBoard_avg()!=null&&sb.getBoard_avg().get(board_id)!=null){
+						 avg = sb.getBoard_avg().get(board_id);
+					 }
+					
+						%>
+						<tr align="center">
+						<td><%=max %></td>
+						<td><%=avg %></td>
+						</tr>
+
+				</tbody>
+			</table>
+	</div>	
 <!--		
 		<div style="text-align: center; position: relative; top: 30px;">
 			<strong>Score</strong>

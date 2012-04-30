@@ -18,7 +18,7 @@
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <title>Welcome to COMBO, games of prediction and discovery</title>
-<link rel="stylesheet" href="styles/styles.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
@@ -35,12 +35,12 @@ $(document).ready(function() {
 	</script>
 </head>
 <body>
-	<div id="content" class="container">
+	<div id="content">
 		<%
 			if (username == null) {
 		%>
 		<div id="login">
-			<form target="index.jsp">
+			<form target="">
 				Enter a username (for the high score list) to start: <input id="usernameinput" type="text" name="username" value="anonymous_hero" />
 				<input	type="submit" value="Submit" />
 			</form>
@@ -64,6 +64,7 @@ $(document).ready(function() {
 		<%
 			}
 		%>
+		<br/>
 		<div id="scoreboard">
 			<table>
 			<caption><b><u>Breast Cancer Challenge score board</u></b></caption>
