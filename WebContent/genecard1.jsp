@@ -9,6 +9,7 @@
 String username = (String)session.getAttribute("username");
 if(username==null){
 	username = "anonymous_hero";
+	//touch to check if bitbucket migration worked
 }
 %>
 
