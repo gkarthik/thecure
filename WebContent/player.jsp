@@ -1,26 +1,22 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
 <%@ page import="org.scripps.combo.Player"%>	
-<%@ page import="org.scripps.combo.GameLog"%>
+<%@ page import="org.scripps.combo.GameLog"%>    
 <%
-	Player player = (Player)session.getAttribute("player");
-if (player == null) {
-	response.sendRedirect("/combo/login.jsp");   
+String username = request.getParameter("username");
+if(username==null){
+	response.sendRedirect("/combo/");  
 }
-	String username = player.getName();
-	GameLog log = new GameLog();
-	GameLog.high_score sb = log.getScoreBoard();
-%>
-
-<!DOCTYPE html>
+Player player = Player.lookupPlayer(username);
+GameLog log = new GameLog();
+GameLog.high_score sb = log.getScoreBoard();
+%>    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO, games of prediction and discovery</title>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title><%=player.getName() %></title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
-	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
@@ -34,36 +30,26 @@ if (player == null) {
           <a class="brand" href="/combo/">COMBO</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
               <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
-              <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li>
+              <li><a href="casino.jsp">Play!</a></li>
               <li><a href="index.jsp">logout</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
       </div>
     </div>
-
-  <div class="container">
+    
+    <div class="container">
     <div class="hero-unit">
     <div class="row">
-    <div class="span7" id="games">
-		<h2>Choose your game</h2>
-		<br>
-		<div id="breastcancergame">
-			
-		<a href="genecard1.jsp" class="btn btn-large btn-primary"><strong>Breast Cancer<br>Challenge</strong></a>
-		<span class="btn btn-large btn-primary"><strong>More coming..</strong></span>	
-			
-		
-		</div>	
-
-
-    </div>
     
-    <div class="span2">		
-		<div id="scoreboard">
+    <div class="span10">
+    
+    <div id="content">
+    <h3><%=username %></h3>
+<div id="scoreboard">
+			<div class="span5">
 			<table>
 			<caption><b><u>Breast Cancer Challenge score board</u></b></caption>
 				<thead>
@@ -80,9 +66,12 @@ if (player == null) {
 					int r = 0;
 					for(String name : sb.getPlayer_avg().keySet()){
 						r++;
-						
+						String rowhighlight = "";
+						if(name.equals(username)){
+							rowhighlight = "style=\"background-color:#F5CC6C\";";
+						}
 						%>
-						<tr align="center">
+						<tr align="center" <%=rowhighlight %>>
 						<td><%=r%></td>
 						<td><%=name %></td>
 						<td><%=sb.getPlayer_avg().get(name) %></td>
@@ -95,10 +84,11 @@ if (player == null) {
 				</tbody>
 			</table>
 		</div>
-	</div>
-</div>
-</div>
-</div>
-
+		</div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
 </body>
 </html>
