@@ -1,7 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
+<%@ page import="org.scripps.combo.Player"%>	
 <%@ page import="org.scripps.combo.GameLog"%>
 <%
+	Player player = (Player)session.getAttribute("player");
+	String username = player.getName()+" "+player.getId();
 	GameLog log = new GameLog();
 	GameLog.high_score sb = log.getScoreBoard();
 %>
@@ -15,17 +18,6 @@
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-<script>
-function clearInput(){
-	$('input[type=text]').focus(function() {
-		$(this).val('');
-	    });		
-}
-
-$(document).ready(function() {
-	clearInput();
-	});	
-	</script>
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
@@ -42,7 +34,6 @@ $(document).ready(function() {
               <li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
               <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
-              <li><a href="login.jsp">Play!</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -52,8 +43,23 @@ $(document).ready(function() {
   <div class="container">
     <div class="hero-unit">
     <div class="row">
+    <div class="span4">
+    <div id="header">
+			Welcome
+			<%=username%>! <a href="index.jsp">logout</a>
+		</div>
+		<div id="games">
+			Play:
+			<ul>
+				<li>Breast Cancer prognosis game
+					<ol>
+						<li>Version 1 <a href="genecard1.jsp">Play!</a></li>
+					</ol></li>
+			</ul>
+		</div>
+    </div>
     <div class="span5">
-
+		
 		<div id="scoreboard">
 			<table>
 			<caption><b><u>Breast Cancer Challenge score board</u></b></caption>

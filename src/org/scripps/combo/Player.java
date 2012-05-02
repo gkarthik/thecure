@@ -21,21 +21,20 @@ public class Player {
 	String password;
 	int top_score;
 	int games_played;
+	String email;
 	
 	
-	public static Player lookupPlayer(String name, String password){
+	public static Player lookupPlayer(String name){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "select * from player where name = ? and password = ?";
+		String insert = "select * from player where name = ?";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, name);
-			p.setString(2,password);
 			ResultSet r = p.executeQuery();
 			if(r.next()){
 				player = new Player();
-				player.setName(r.getString(name));
-				player.setPassword(r.getString(password));
+				player.setName(r.getString("name"));
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
@@ -48,25 +47,53 @@ public class Player {
 		return player;
 	}
 	
-	public static Player createPlayer(String name, String password){
+	public Player lookupByUserPassword(){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into player values(null,?,?,?,0,0)";
+		String insert = "select * from player where name = ? and password = ?";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
-			p.setString(1, "ben");
-			p.setString(2,"local");
-			p.setString(3,"123");
-			if(p.execute()){
+			p.setString(1, name);
+			p.setString(2,password);
+			ResultSet r = p.executeQuery();
+			if(r.next()){
 				player = new Player();
-				player.setName(name);
-				player.setPassword(password);
+				player.setName(r.getString("name"));
+				player.setPassword(r.getString("password"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return player;
+	}
+	
+	public static Player create(String name, String ip, String password, String email){
+		//first check if username taken
+		Player player =  lookupPlayer(name);
+		if(player!=null){
+			return null;
+		}
+		//if no player exists make a new one
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "insert into player values(null,?,?,?,0,0,?)";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setString(1, name);
+			p.setString(2,ip);
+			p.setString(3,password);
+			p.setString(4,email);
+			p.executeUpdate();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		player = lookupPlayer(name);
 		return player;
 	}
 	
@@ -106,6 +133,14 @@ public class Player {
 	}
 	public void setGames_played(int games_played) {
 		this.games_played = games_played;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 	
