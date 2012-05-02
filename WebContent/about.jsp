@@ -19,9 +19,9 @@
           <a class="brand" href="/combo/">COMBO</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="https://groups.google.com/forum/#!forum/genegames">Contact</a></li>
-              <li><a href="http://www.genegames.org" target="_blank">Other games available at<strong>GeneGames.org</strong></a></li>
+              <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
+              <li><a href="login.jsp">Play!</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -38,7 +38,7 @@
     <h1>Synopsis</h1>
     <p>COMBO is a card game (and a hard game!).  Assemble the best hands and you can win - just like poker.  The challenge with COMBO is that
 	we don't know the rules yet!  Until you play, the game can't tell you if you have the equivalent of a royal flush or a 
-	pair of 2s.  By playing the game, you will be teaching it the rules of nature.  
+	pair of 2s.  By playing the game, you will be both teaching and learning the rules of nature.  
     </p>
     <h2>Background</h2>
     <p>Using the latest technology it is now possible to measure enormous numbers of biological variables.  We 
@@ -70,7 +70,7 @@
     card game.  Every time a game is played, the hands are evaluated and stored.  Eventually predictors will be developed using advanced machine 
     learning algorithms that are informed by the hands played in the game.  
     </p>
-    <strong><center><a href="/combo/genecard1.jsp">Play COMBO</a> and share in discovery!</center></strong>
+    <strong><center><a href="login.jsp">Play COMBO</a> and share in discovery!</center></strong>
     </div>
     </div>
     </div>
