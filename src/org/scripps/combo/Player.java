@@ -131,6 +131,32 @@ public class Player {
 		return player;
 	}
 	
+	public void updateBarneyLevelsInDatabase(){
+		//if no player exists make a new one
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "update player set barney_levels = ? where name = ?";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setString(1, barneyLevels2string());
+			p.setString(2, name);
+			p.executeUpdate();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public String barneyLevels2string(){
+		String levels = "";
+		if(barney_levels!=null&&barney_levels.size()>0){
+			for(Integer i : barney_levels){
+				levels+=i.toString()+",";
+			}
+			levels = levels.substring(0,levels.lastIndexOf(","));
+		}
+		return levels;
+	}
 	
 	public int getId() {
 		return id;

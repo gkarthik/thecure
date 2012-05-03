@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.scripps.combo.Hand;
+import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 
@@ -124,6 +125,25 @@ public class WekaServer extends HttpServlet {
 			hand.setPlayer_name(player_name);
 			hand.setScore(score);
 			hand.save();
+			//update player info
+			String game = request.getParameter("game");
+			if(game!=null&&game.equals("barney")){
+				//update stars
+				Player player = Player.lookupPlayer(player_name);
+				//check if they passed
+				if(score>0){
+					int stars = 1;
+					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
+						stars += player.getBarney_levels().get(board_id);
+						player.getBarney_levels().set(board_id, stars);
+					}else{
+						player.getBarney_levels().add(stars);
+					}
+					player.updateBarneyLevelsInDatabase();
+				}
+				
+			}
+			
 			System.out.println("saved a hand "+player_name+" "+score);
 		}
 	}
