@@ -4,11 +4,15 @@
 <%@ page import="org.scripps.combo.Player"%>	
 <%@ page import="org.scripps.combo.GameLog"%>
 <%
+String username = "";
 	Player player = (Player)session.getAttribute("player");
+	//refresh.. ack ugly..
+	player = Player.lookupPlayer(player.getName());
 if (player == null) {
 	response.sendRedirect("/combo/login.jsp");   
+}else{
+	username = player.getName();
 }
-	String username = player.getName();
 	GameLog log = new GameLog();
 	GameLog.high_score sb = log.getScoreBoard();
 %>
@@ -57,31 +61,12 @@ if (player == null) {
 		<br>
 		<div id="barneygames">
 			<table class="table-games">
-			<tr>
-				<td><div id="game1">
-					1 <a href="genecard1.jsp" class="btn btn-large "><img src="images/64px-Pink_ribbon.png"></a>
-					<br>
-					<div class="stars"><div class="icon-star-empty"></div><div class="icon-star-empty"></div><div class="icon-star-empty"></div></div>				
-				</div></td>
-				<td><div id="game2">
-					2 <div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
-					<br>
-					<div class="stars"><div class="icon-star-empty"></div><div class="icon-star-empty"></div><div class="icon-star-empty"></div></div>			
-				</div></td>
-				<td><div id="game3">
-					3 <div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
-					<br>
-					<div class="stars"><div class="icon-star-empty"></div><div class="icon-star-empty"></div><div class="icon-star-empty"></div></div>				
-				</div></td>
-				<td><div id="game4">
-					4 <div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
-					<br>
-					<div class="stars">
-						<div class="icon-star-empty"></div><div class="icon-star-empty"></div><div class="icon-star-empty"></div></div>				
-				</div></td>
-			</tr>
 			<%
 			int level = -1; 
+			int levels_passed = 0;
+			if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>0){
+				levels_passed = player.getBarney_levels().size();
+			}
 			for(int i=0; i<Config.num_barney_rows; i++){
 			%>
 			   <tr>
@@ -89,13 +74,13 @@ if (player == null) {
 				for(int j=0; j<Config.num_barney_cols; j++){
 					level++;
 					int stars = 0;
-					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>level){
+					if(levels_passed>level){
 						stars = player.getBarney_levels().get(level);
 					}
 					%>
 					<td><div id="level_<%=level %>">
-					<%=level %> <% if(stars>0||level==0){ %>
-						<a href="genecard1.jsp?level=<%=level %>" class="btn btn-large "><img src="images/64px-Pink_ribbon.png"></a>
+					<%=level %> <% if(levels_passed >= level){ %>
+						<a href="genecard2.jsp?level=<%=level %>" class="btn btn-large "><img src="images/64px-Pink_ribbon.png"></a>
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>
