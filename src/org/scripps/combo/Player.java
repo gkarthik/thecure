@@ -6,6 +6,8 @@ package org.scripps.combo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.scripps.util.JdbcConnection;
 
@@ -22,7 +24,15 @@ public class Player {
 	int top_score;
 	int games_played;
 	String email;
-	
+	//levels unlocked
+	//position in the list corresponds to the level index
+	//0 unlocked, 1 = 1 star, 2 = 2 stars...
+	List<Integer> barney_levels;
+
+	public static boolean isNumeric(String str)
+	{
+	  return str.matches("-?\\d+(.\\d+)?");
+	}
 	
 	public static Player lookupPlayer(String name){
 		Player player = null;
@@ -38,6 +48,18 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
+				//storing as a comma delimited string in db for now.
+				String levels_ = r.getString("barney_levels");
+				List<Integer> barney_levels = new ArrayList<Integer>();
+				if(levels_!=null){
+					String[] levels = levels_.split(",");
+					for(String level : levels){
+						if(isNumeric(level)){
+							barney_levels.add(Integer.parseInt(level));
+						}
+					}
+				}
+				player.setBarney_levels(barney_levels);
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -63,6 +85,18 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
+				//storing as a comma delimited string in db for now.
+				String levels_ = r.getString("barney_levels");
+				List<Integer> barney_levels = new ArrayList<Integer>();
+				if(levels_!=null){
+					String[] levels = levels_.split(",");
+					for(String level : levels){
+						if(isNumeric(level)){
+							barney_levels.add(Integer.parseInt(level));
+						}
+					}
+				}
+				player.setBarney_levels(barney_levels);
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -141,6 +175,14 @@ public class Player {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public List<Integer> getBarney_levels() {
+		return barney_levels;
+	}
+
+	public void setBarney_levels(List<Integer> barney_levels) {
+		this.barney_levels = barney_levels;
 	}
 	
 	

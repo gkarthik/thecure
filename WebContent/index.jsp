@@ -52,42 +52,21 @@ $(document).ready(function() {
   <div class="container">
     <div class="hero-unit">
     <div class="row">
-    <div class="span5">
+    <div class="span10">
 
-		<div id="scoreboard">
-			<table>
-			<caption><b><u>Breast Cancer Challenge score board</u></b></caption>
-				<thead>
-					<tr>
-						<th>Rank</th>
-						<th>Player</th>
-						<th>Rating</th>
-						<th>Games Played</th>
-						<th>Personal Best</th>
-					</tr>
-				</thead>
-				<tbody>
-					<%
-					int r = 0;
-					for(String name : sb.getPlayer_avg().keySet()){
-						r++;
-						
-						%>
-						<tr align="center">
-						<td><%=r%></td>
-						<td><%=name %></td>
-						<td><%=sb.getPlayer_avg().get(name) %></td>
-						<td><%=sb.getPlayer_games().get(name) %></td>
-						<td><%= sb.getPlayer_max().get(name)%></td>
-					</tr>
-					<% 
-					}
-					%>
-				</tbody>
-			</table>
+		<div id="welcome">
+			<h1 class="offset1">Under Construction!</h1>
+			<p>Feel free to come on in and <a href="login.jsp">play</a> during construction, but watch out for those
+			bulldozers!  Even better, read <a href="about.jsp" target="_blank">about</a> the COMBO concept and sign up for our <a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">mailing list</a> so you can be notified when 
+			COMBO is <i>really</i> ready, meet other players, and let us know what you think.</p>
 		</div>
 	</div>
-</div>
+	</div>
+	<div class ="row">
+	<div class="offset1">
+	<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/CAT-D10N-pic001.jpg/640px-CAT-D10N-pic001.jpg">
+	</div>
+	</div>
 </div>
 </div>
 
