@@ -5,32 +5,69 @@
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO, games of prediction and discovery</title>
-<link rel="stylesheet" href="styles/styles.css" type="text/css"
-	media="screen">
+<title>Defeat Barney!</title>
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
+
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 </head>
 <body>
-	<div id="content" class="container">
-		<h1>Breast Cancer prognosis game, version 1, instructions</h1>
-		<p>Game play: maximize your score by choosing the best combination of genes</p>
-		<p>Click the buttons next to the gene cards to add them to your hand. Your score will be calculated each time your hand is changed.<br/>  
-		Click a card in your hand to put it back on the board. Careful though!. Once you put it back on the board, you can't get it back in 
-		your hand. <br/>
-		The goal is to use gene expression levels to predict a short interval to distant metastases ('poor prognosis' signature) 
-		in patients without tumour cells in local lymph nodes at diagnosis (lymph node negative).<br/>
-		Hint:genes regulating cell cycle, invasion, metastasis and angiogenesis may be important.<br/>
-		Your score is determined by using the genes that you select to train machine learning algorithms to classify real biological samples.  
-		The better the genes reflect the phenotype, the better you will score in the game.
-			</p>
-	</div>
-	<div id="Instructions"
-		style="height: 100px; left: 15px; position: absolute; top: 30px; width: 420px;"">
-		<h3>Instructions</h3>
+	<div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="/combo/">COMBO</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="about.jsp" target="_blank">About</a></li>
+              <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+  <div class="container">
+    <div class="hero-unit">
+    <div class="row">
+    <div  id="games">
+		<h2>Help defeat <img src="images/barney.png">!</h2>
+		<p></p>
+		<br>
+		<div id="game result">
+			<h1>COMBO instructions</h1>
+		<p>Basic game play: maximize your score by choosing the best combination of genes</p>
+		<p>Click the name of a gene to add it to your hand. Your score will be calculated each time your hand is changed.</p>  
+		<p>Careful though!. Once you add a card to your hand it will stay there for the whole round - no takebacks! </p>
+		<p>After your turn, your opponent Barney will select a card just like you did and then it will be your turn again.</p>
+		<p>After you both have 5 cards, the round is over and the player with the highest score wins the round.</p>
+		<p>Click on the <img src="images/info-icon.png"> buttons to reveal information about a gene.</p>
+		<h2>The biomedical point</h2>
 		<p>
-			Click the buttons <img src="images/BlurMetalLc0.gif"/> to pick genes to put in your hand.  Try it..<br/>
-			Click a gene name to see more information about it.<br/>  
-			Maximize your score by selecting groups of genes whose expression may correlate with breast cancer prognosis.<a target="_blank" href="genecard2_inst.jsp">(more info)</a>
+		The goal of this particular game is to use gene expression levels to predict a short interval to distant metastases ('poor prognosis' signature) 
+		in breast patients without tumour cells in local lymph nodes at diagnosis (lymph node negative). <strong>Hint</strong>, genes regulating cell cycle, 
+		invasion, metastasis and angiogenesis may be important.</p>
+		<h2>Scoring</h2>
+		<p>Your score is determined by using the genes that you select to train machine learning algorithms to classify real biological samples. 
+		The better the genes reflect the phenotype, the better you will score in the game.  This all happens under the hood in real time!
 		</p>
-	</div>
+
+			
+		</div>	
+
+
+    </div>
+    
+   
+</div>
+</div>
+</div>
+
 </body>
 </html>
