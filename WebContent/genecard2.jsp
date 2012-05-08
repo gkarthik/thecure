@@ -91,6 +91,7 @@ function evaluateHand(cardsinhand, player){
  	$.getJSON(url, function(data) {
  		if(player=="1"){
  			//var prev_score = p1_score;
+ 			$("#player1_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p1_score = data.accuracy;
  			if(p1_score >= p2_score){
  				playSound("sounds/human/MMMMM1.WAV");
@@ -100,6 +101,7 @@ function evaluateHand(cardsinhand, player){
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
  			//var prev_score = p2_score;
+ 			$("#player2_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p2_score = data.accuracy;
  			if(p2_score < p1_score){
  				playSound("sounds/human/MMMMM1.WAV");
@@ -154,7 +156,7 @@ function generateBoardCell(cardindex){
 	}
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 	
 	return boardhtml;
 }
@@ -317,7 +319,7 @@ function saveHand(){
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
-			window.location.replace("gamereview.jsp?win="+win+"&level="+seed);
+			window.location.replace("barney.jsp");
 		});
 }
 
@@ -368,14 +370,14 @@ function addCardToBarney(){
 			$("#player2_hand").append(handcell);
 			setupShowInfoHandler();
 		});
-	}, 4000); 
+	}, 1000); 
 	
 	p2_hand.push(cards[card_index]);
 		
 	//hide button from board
 	card_index = "#card_index_"+card_index;
 	
-	$(card_index).parent().fadeTo(3000, 0.75, function (){
+	$(card_index).parent().fadeTo(1000, 0.75, function (){
 		$(card_index).parent().css('background-color', '#FBBBB9');
 		$(card_index).parent().html("");
 	});
@@ -383,9 +385,14 @@ function addCardToBarney(){
 	window.setTimeout(function() {  
 		evaluateHand(p2_hand, "2");
 		if(p2_hand.length==5){
-			$("#holdem_button").show();
+			if(p1_score<p2_score){
+				$("#winner").text("Sorry, you lost this hand. ");
+			}else{
+				$("#winner").text("You beat Barney! ");
+			}
+			$("#endgame").show();
 		}
-	}, 6000); 
+	}, 2000); 
 }
 
 function setupHandAddRemove(){
@@ -451,8 +458,7 @@ function setupHandAddRemoveFirstVersion(){
 				var table_cell_id = "#card_index_"+cell_id;
 				var cellcontents = generateUsedBoardCell(cell_id);
 				//$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-				
-				
+							
 				$(table_cell_id).parent().html(cellcontents);
 				//take it out of our hand representation
 				var tmp = new Array();
@@ -478,11 +484,33 @@ function setupHandAddRemoveFirstVersion(){
 	  });
 }
 
+function createTooltip(event){       
+	
+    $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
+	positionTooltip(event);        
+};
+
+function positionTooltip(event){
+    var tPosX = event.pageX - 10;
+    var tPosY = event.pageY - 100;
+    $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
+    console.log("moused over 3");
+};
+
+function hideTooltip(event){       
+	$('div.tooltippy').hide();
+	positionTooltip(event);        
+};
+
 $(document).ready(function() {
+	  var agent =  navigator.userAgent;
+	  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
+	  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
+	  }
 	//set up accordian for result viewer
-	 $("#cv_results").accordion({ collapsible: true });
+	// $("#cv_results").accordion({ collapsible: true });
 	//hide the end button
-	$("#holdem_button").hide();
+	$("#endgame").hide();
 	//set up the baord
 	url = "WekaServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
 	//data will contain the array of cards used to build the board for this game
@@ -498,6 +526,13 @@ $(document).ready(function() {
 		setupHoldem();
 		//set up opponent
 		setupOpponent();
+		//add mouseover handler for genes
+		/* $('.selectable').mouseover(function(event) {
+		    createTooltip(event);               
+		}).mouseout(function(){
+		    hideTooltip(); 
+		}); */
+
 		
 	});			
 
@@ -518,7 +553,7 @@ $(document).ready(function() {
 					class="brand" href="/combo/">COMBO</a>
 				<div class="nav-collapse">
 					<ul class="nav">
-						<li><a href="help.jsp">Help!</a>
+						<li><a href="help.jsp" target="blank">Help!</a>
 						</li>
 						<li><a href="index.jsp">logout</a>
 						</li>
@@ -540,7 +575,6 @@ $(document).ready(function() {
 		style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index: 2;">
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
-		<input id="holdem_button" type="submit" value="OK!" /> 
 	</div>
 
 	<div id="player1_title_area"
@@ -637,6 +671,32 @@ $(document).ready(function() {
 		</strong>
 	</div>
 
+	<div id="endgame"
+		style="height: 420px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
+		<div class="row">
+		<div id="cv_results_1" 
+		style="left: 5px; position: absolute; top: 50px; width: 400px;">
+			<h3>
+				<a href="#">Your Predictor</a>
+			</h3>
+			<div id="player1_j48_score">
+				<p style='height: 270px'> </p>
+			</div>
+		</div>
+		<div id="cv_results_2"
+			style="left: 455px; position: absolute; top: 50px; width: 400px;">
+			<h3>
+				<a href="#">Barney's Predictor</a>
+			</h3>
+			<div id="player2_j48_score">
+				<p style='height: 270px'> </p>
+			</div>
+		</div>
+		</div>
+	
+	</div>
+	
 	<div id="sound"></div>
 </body>
 </html>

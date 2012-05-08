@@ -6,12 +6,12 @@
 <%
 String username = "";
 	Player player = (Player)session.getAttribute("player");
-	//refresh.. ack ugly..
-	player = Player.lookupPlayer(player.getName());
 if (player == null) {
 	response.sendRedirect("/combo/login.jsp");   
 }else{
 	username = player.getName();
+	//refresh.. ack ugly..
+	player = Player.lookupPlayer(username);
 }
 	GameLog log = new GameLog();
 	GameLog.high_score sb = log.getScoreBoard();

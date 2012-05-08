@@ -12,6 +12,16 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
+<script type="text/javascript">
+$(document).ready(function() {
+  var agent =  navigator.userAgent;
+  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
+  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
+  }
+});
+
+</script>
+
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
