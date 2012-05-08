@@ -130,8 +130,10 @@ public class WekaServer extends HttpServlet {
 			if(game!=null&&game.equals("barney")){
 				//update stars
 				Player player = Player.lookupPlayer(player_name);
-				//check if they passed
-				if(score>0){
+				//check if they passed the level
+				String win = request.getParameter("win");
+				if(win!=null&&win.equals("1")){
+				//if(score>0){
 					int stars = 1;
 					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
 						stars += player.getBarney_levels().get(board_id);

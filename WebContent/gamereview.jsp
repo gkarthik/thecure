@@ -1,17 +1,33 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
+<%@ page import="org.scripps.combo.Config"%>
+<%@ page import="org.scripps.combo.Player"%>	
 <%@ page import="org.scripps.combo.GameLog"%>
+<%
+String win = request.getParameter("win");
+String level = request.getParameter("level");
+String username = "";
+	Player player = (Player)session.getAttribute("player");
+	//refresh.. ack ugly..
+if (player == null) {
+	response.sendRedirect("/combo/login.jsp");   
+}else{
+	player = Player.lookupPlayer(player.getName());
+	username = player.getName();
+}
+%>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO, games of prediction and discovery</title>
+<title>Defeat Barney!</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
+
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
@@ -28,7 +44,8 @@
               <li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
               <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
-              <li><a href="login.jsp">Play!</a></li>
+              <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li>
+              <li><a href="index.jsp">logout</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -38,21 +55,27 @@
   <div class="container">
     <div class="hero-unit">
     <div class="row">
-    <div class="span10">
+    <div  id="games">
+		<h2>Game review <img src="images/barney.png"></h2>
+		<p></p>
+		<br>
+		<div id="game result">
+			<% 		if(win!=null&&win.equals("1")&&level!=null){ %>
+				Congratulations you defeated Barney level <%=level %>!
+	
+	<% }else{
+			%>
+				Too bad, Barney level <%=level %> beat you
+			<%} %>
+				<p><a href="barney.jsp">next</a></p>
+			
+		</div>	
 
-		<div id="welcome">
-			<h1 class="offset1">Under Construction!</h1>
-			<p>Feel free to come on in and <a href="login.jsp">play</a> during construction, but watch out for those
-			bulldozers!  Even better, read <a href="about.jsp" target="_blank">about</a> the COMBO concept and sign up for our <a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">mailing list</a> so you can be notified when 
-			COMBO is <i>really</i> ready, meet other players, and let us know what you think.</p>
-		</div>
-	</div>
-	</div>
-	<div class ="row">
-	<div class="offset1">
-	<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/CAT-D10N-pic001.jpg/640px-CAT-D10N-pic001.jpg">
-	</div>
-	</div>
+
+    </div>
+    
+   
+</div>
 </div>
 </div>
 
