@@ -24,22 +24,15 @@ if(username==null){
 <meta name="description" content="A game">
 <meta name="author" content="Ben">
 
-<link href="assets/css/bootstrap.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
 <style>
 body {
 	padding-top: 60px;
 	/* 60px to make the container go all the way to the bottom of the topbar */
 }
 </style>
-<link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
 
-<link rel="shortcut icon" href="../assets/ico/favicon.ico">
-<link rel="apple-touch-icon-precomposed" sizes="114x114"
-	href="assets/ico/apple-touch-icon-114-precomposed.png">
-<link rel="apple-touch-icon-precomposed" sizes="72x72"
-	href="assets/ico/apple-touch-icon-72-precomposed.png">
-<link rel="apple-touch-icon-precomposed"
-	href="assets/ico/apple-touch-icon-57-precomposed.png">
 
 
 <title>Welcome to COMBO: game Breast Cancer prognosis</title>
@@ -60,54 +53,65 @@ body {
 
 <script>	
 var cards = new Array();
+var opponent_sort = new Array();
 var nrows = 5;
 var ncols = 5;
 var seed = <%=ran%>;
 var max_hand = 5;
-var score = 0;
+var p1_score = 0;
+var p2_score = 0;
 var par_score = 0;
 var par = 0;
 var p1_hand = new Array();
+var p1_indexes = new Array();
 var p2_hand = new Array();
+var p2_indexes = new Array();
 var player_name = "<%=username%>";
 var features = "";
+var barney_init = 0;
 
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
 	document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
 }
 
-function evaluateHand(cardsinhand){
+function evaluateHand(cardsinhand, player){
 	var url = 'WekaServer?command=getscore&features=';
 	features = "";
+	var chand = "cardsinhand_"+player;
+
 	$.each(cardsinhand, function(index, value) {
 	    features+=value.att_index+",";
 	  });
 	url +=features;
-	
+
 	//goes to server, runs the default evaluation with a decision tree
-	$.getJSON(url, function(data) {
-		var prev_score = score;
-		score = data.accuracy;
-		if(score > prev_score){
-			playSound("sounds/human/MMMMM1.WAV");
-		}else if(score < prev_score){
-			playSound("sounds/human/SNORTAHH.WAV");
-		}else{
-			//playSound("sounds/human/AHH3.WAV");
-		}
-		par_score = score - par;
-		$("#best_game_score").text(par_score);
-
-	});
-	
-
-	
+ 	$.getJSON(url, function(data) {
+ 		if(player=="1"){
+ 			//var prev_score = p1_score;
+ 			p1_score = data.accuracy;
+ 			if(p1_score >= p2_score){
+ 				playSound("sounds/human/MMMMM1.WAV");
+ 			}else{
+ 				playSound("sounds/human/SNORTAHH.WAV");
+ 			}
+			$("#game_score_1").text(p1_score);
+ 		}else if(player=="2"){
+ 			//var prev_score = p2_score;
+ 			p2_score = data.accuracy;
+ 			if(p2_score < p1_score){
+ 				playSound("sounds/human/MMMMM1.WAV");
+ 			}else{
+ 				playSound("sounds/human/SNORTAHH.WAV");
+ 			}
+ 			$("#game_score_2").text(p2_score);
+ 		}
+	}); 
 }
 
 function getStyleByScore(power){
 	var colors = ["#F8F0DF","#F7E6C1","#F7DB9B","#F5CC6C","#F5BE3F", "#F26B10"];
-	var cellstyle = "width: 75px;";
+	var cellstyle = "width: 75px; position:relative; ";
 	//color by estimated individual predictive power
 	if(power==0){
 		//cellstyle+=" background-color:"+colors[0]+";";
@@ -127,25 +131,36 @@ function getStyleByScore(power){
 	return cellstyle;
 }
 
+function getChessStyle(cell_index){
+	var cellstyle = "width: 75px; position:relative; ";
+	if(cell_index % 2 == 0){
+		cellstyle+=" background-color:#F26B10;";
+	}else{
+		cellstyle+=" background-color:#F8F0DF;";
+	}
+	return cellstyle;
+}
 
 
 function generateBoardCell(cardindex){
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
 	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
+	var cellstyle = getChessStyle(cardindex);
 	if(displayname==null||displayname.length==0){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"</div>";
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><img src=\"images/BlurMetalLc0.gif\" alt=\"select card\"></div></td>";
+	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 	
 	return boardhtml;
 }
 
-function generateHandCell(cardindex){
+/**
+ * cardindex refers to the location on the board and the handle in the board card Map
+ */
+function generateHandCell(cardindex, player){
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
 	var power = cards[cardindex].power;
@@ -154,9 +169,8 @@ function generateHandCell(cardindex){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"</div>";
-	boardhtml+="<div class=\"cardsinhand\" id=\"p1_c_"+cardindex+"\"><img style=\"background-color:#98AFC7;\" src=\"images/BlurMetalDb3.gif\"></div></td>";
+	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
 	
 	return boardhtml;
 }
@@ -174,6 +188,23 @@ function generateUsedBoardCell(cardindex){
 	boardhtml+="<td style=\""+cellstyle+"\">";
 	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"<br/>Used..</div>";
 	return boardhtml;
+}
+
+
+function setupOpponent(){
+	opponent_sort = cards.slice(0);
+	//maintain the indexes to the board
+	$.each(opponent_sort, function(index, value) {
+		opponent_sort[index].board_index = index;
+	  });
+	//rank by the power value - now ascending
+	opponent_sort.sort(function(a, b){
+		 return a.power - b.power;
+		});
+	//check
+	//$.each(opponent_sort, function(index, value) {
+	//    console.log(index+" "+value.power+" "+opponent_sort[index].board_index);
+	//  });
 }
 
 function generateBoard(){
@@ -277,18 +308,105 @@ function setupShowInfoHandler(){
 function setupHoldem(){
 	//add the save handler
 	 $("#holdem_button").on("click", function () {				
-			var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+score+'&board_id='+seed+"&game=barney";
+		 par_score = p1_score - par;
+		 var win = "0";
+		 if(p1_score > p2_score){
+			 win = "1";
+		 }
+			var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
 			//player_name , score, cv_accuracy, board_id
 			console.log("saved "+saveurl);
 			$.getJSON(saveurl, function(data) {
-				//and go to the next board
-				//window.location.reload(true);
-				window.location.replace("barney.jsp");
+				window.location.replace("gamereview.jsp?win="+win+"&level="+seed);
 			});
 	});	
 }
 
+//function to get random number upto m
+function randomXToY(minVal,maxVal,floatVal)
+{
+  var randVal = minVal+(Math.random()*(maxVal-minVal));
+  return typeof floatVal=='undefined'?Math.round(randVal):randVal.toFixed(floatVal);
+}
+
+function getBarneysNextCard(){
+	var lower = seed;
+	if((lower+10)>=cards.length){
+		lower = cards.length - 11;
+	}
+	var upper = lower+10;
+	
+	sorted_index = randomXToY(lower,upper);
+	console.log("sorted index "+sorted_index);
+	card_index = opponent_sort[sorted_index].board_index+"";
+
+	if((($.inArray(card_index, p1_indexes)==-1)&&($.inArray(card_index, p2_indexes)==-1))){
+		console.log(p1_indexes);
+		console.log(p2_indexes);//
+		//console.log(" returned "+card_index);
+		return card_index;
+	}else{
+		console.log(" iterated on "+card_index);
+		return getBarneysNextCard();
+	}
+}
+
+function addCardToBarney(){
+	card_index = getBarneysNextCard();
+	p2_indexes.push(card_index);
+	var handcell = generateHandCell(card_index);
+	$("#player2_hand").fadeTo(1000, 1, function (){
+		$("#player2_hand").append(handcell);
+		setupShowInfoHandler();
+	});
+	
+	p2_hand.push(cards[card_index]);
+	evaluateHand(p2_hand, "2");
+	//hide button from board
+	card_index = "#card_index_"+card_index;
+	//console.log(card_index);	
+	
+	$(card_index).parent().fadeTo(500, 0.75, function (){
+		$(card_index).parent().css('background-color', '#FBBBB9');
+		$(card_index).parent().html("");
+	});
+}
+
 function setupHandAddRemove(){
+	$(".select_card_button").on("click", function () {
+		if(p1_hand){
+			hand_size = p1_hand.length;
+		}else{
+			hand_size = 0;
+		}
+		if(hand_size < max_hand){
+			var cell_id = this.id.replace("card_index_", "");
+			p1_indexes.push(cell_id);
+		//temp add it to barney's hand		
+			addCardToBarney();
+			
+			var handcell = generateHandCell(cell_id);
+			$("#player1_hand").fadeTo(1000, 1, function (){
+				$("#player1_hand").append(handcell);
+				setupShowInfoHandler();
+			});
+			p1_hand.push(cards[cell_id]);
+			evaluateHand(p1_hand, 1);
+			//hide button from board
+		//	$(this).parent().fadeOut(1000);
+			$(this).parent().fadeTo(500, 0.75, function (){
+				$(this).css('background-color', '#82CAFA');
+				$(this).html("");
+			});
+					
+		}else{
+			alert("Sorry, you can only have 5 cards in your hand in this game.  Click a card to remove it from your hand."); 
+		}
+	  });
+}
+
+
+function setupHandAddRemoveFirstVersion(){
 	$(".select_card_button").on("click", function () {
 		if(p1_hand){
 			hand_size = p1_hand.length;
@@ -351,14 +469,15 @@ $(document).ready(function() {
 	$.getJSON(url, function(data) {
 		cards = data;
 		generateBoard();
-		
+		//add to hand
+		setupHandAddRemove();		
 		//set up handlers
 		// info box
 		setupShowInfoHandler();
-		//add to hand
-		setupHandAddRemove();
 		//save hand
 		setupHoldem();
+		//set up opponent
+		setupOpponent();
 		
 	});			
 
@@ -370,41 +489,45 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
-
-<div id="header" style="text-align: right; height: 20px; left: 15px; position: absolute; top: 5px; width: 830px; margin:1px 1px 1px 1px; padding:1px 1px 1px 5px; background-color:#b0c4de">
-<%=username%> is currently playing <a href="index.jsp">logout</a>.  
-</div>
-
-	<div id="Instructions"
-		style="height: 100px; left: 15px; position: absolute; top: 30px; width: 420px;"">
-		<h3>Instructions</h3>
-		<p>
-			Click the buttons <img src="images/BlurMetalLc0.gif"/> to pick genes to put in your hand.  Try it..<br/>
-			Click a gene name to see more information about it.<br/>  
-			Maximize your score by selecting groups of genes whose expression may correlate with breast cancer prognosis.<a target="_blank" href="genecard2_inst.jsp">(more info)</a>
-		</p>
-	</div>
+	<div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="/combo/">COMBO</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="help.jsp">Help!</a></li>
+              <li><a href="index.jsp">logout</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
 
 	<div>
 		<div id="board"
-			style="height: 500px; left: 15px; position: absolute; top: 150px; width: 500px;">
+			style="height: 500px; left: 30px; position: absolute; top: 200px; width: 500px;">
 
 		</div>
 	</div>
 
-	<div id="best_game_score_box" style="text-align: center; left: 550px; position: absolute; top: 300px; width: 200px; z-index:2;">
-		<h4>Score for hand</h4>
-		<h1 id="best_game_score" style="text-align: center;">0</h1>
+	<div id="game_score_box_1" style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index:2;">
+		<h4>Your score</h4>
+		<h1 id="game_score_1" style="text-align: center;">0</h1>
 			<input id="holdem_button" type="submit" value="Holdem!" /> 
 	</div>
 	
-	<div id="player1_title_area" style="left: 450px; position: absolute; top: 120px; width: 500px;">
-	<h3>Your hand of gene cards</h3>
+	<div id="player1_title_area" style="left: 30px; position: absolute; top: 590px;">
+	<h3>Your hand</h3>
 	</div>
 	
-	<div id="player1" style="left: 450px; position: absolute; top: 100px; width: 500px;">
-		<div id="hand_info_box" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box" style="position: relative; top: 15px; width: 400px;">
+	<div id="player1" style="height: 500px; left: 30px; position: absolute; top: 565px;">
+		<div id="hand_info_box_1" style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_1" style="position: relative; top: 15px; width: 400px;">
 			<table border='1'>
 				<tr id="player1_hand" align='center' style='height: 75px;'>
 
@@ -414,11 +537,11 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="player1_masked" style="left: 450px; position: absolute; top: 100px; width: 500px; z-index:-1">
-		<div id="hand_info_box_masked" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked" style="position: relative; top: 15px; width: 400px;">
+	<div id="player1_masked" style="height: 500px; left: 30px; position: absolute; top: 565px; z-index:-1">
+		<div id="hand_info_box_masked_1" style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_masked_1" style="position: relative; top: 15px; width: 400px;">
 			<table border='1'>
-				<tr id="player1_hand_masked" align='center' style='height: 75px;'>
+				<tr id="player1_hand_masked" align='center' style='height: 75px; background-color:#82CAFA'>
 					<td style="width: 75px;">?</td>
 					<td style="width: 75px;">?</td>
 					<td style="width: 75px;">?</td>
@@ -429,65 +552,49 @@ $(document).ready(function() {
 			</div>
 		</div>
 	</div>
+
+
+	<div id="game_score_box_2" style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index:2;">
+		<img src="images/barney.png">Level <%=ran %>
+		<h4>Barney's score </h4>
+		<h1 id="game_score_2" style="text-align: center;">0</h1> 
+	</div>
 	
-	<div id="scoreboard" style="left: 550px; position: absolute; top: 30px; width: 300px; z-index:-1">
-		<table>
-			<caption><b><u>Score for level: <%=ran%></u></b></caption>
-				<thead>
-					<tr>
-						<th>Best score</th>
-						<th>Avg. score</th>
-					</tr>
-				</thead>
-				<tbody>
-					<%
-					GameLog log = new GameLog();
-					GameLog.high_score sb = log.getScoreBoard();	
-					Integer board_id = Integer.parseInt(ran);
-					Integer max = 0;
-					int attempts = 0;
-					 if(sb.getBoard_max()!=null&&sb.getBoard_max().get(board_id)!=null){
-						 max = sb.getBoard_max().get(board_id);
-					 }
-					Float avg = new Float(0);
-					if(sb.getBoard_avg()!=null&&sb.getBoard_avg().get(board_id)!=null){
-						 avg = sb.getBoard_avg().get(board_id);
-					 }
-					
-						%>
-						<tr align="center">
-						<td><%=max %></td>
-						<td><%=avg %></td>
-						</tr>
+	<div id="player2_title_area" style=" left: 30px; position: absolute; top: 80px;">
+	<h3>Barney's hand</h3>
+	</div>
+	
+	<div id="player2" style="left: 30px; position: absolute; top: 55px;">
+		<div id="hand_info_box_2" style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_2" style="position: relative; top: 15px; width: 400px;">
+			<table border='1'>
+				<tr id="player2_hand" align='center' style='height: 75px;'>
 
-				</tbody>
+				</tr>
 			</table>
-	</div>	
-<!--		
-		<div style="text-align: center; position: relative; top: 30px;">
-			<strong>Score</strong>
-		</div>
-
-	<div id="cv_results">
-			<h3>
-				<a href="#">Decision Tree</a>
-			</h3>
-			<div id="player1_j48_score">
-				<p style='height: 270px'> </p>
-			</div>
-			<h3>
-				<a href="#">Ripper Rules</a>
-			</h3>
-			<div id="player1_jrip_score">
-				<p style='height: 270px'> </p>
 			</div>
 		</div>
-  -->			
 	</div>
 
+	<div id="player2_masked" style="left: 30px; position: absolute; top: 55px; z-index:-1">
+		<div id="hand_info_box_masked_2" style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_masked_2" style="position: relative; top: 15px; width: 400px;">
+			<table border='1'>
+				<tr id="player2_hand_masked" align='center' style='height: 75px; background-color:#FBBBB9'>
+					<td style="width: 75px;">?</td>
+					<td style="width: 75px;">?</td>
+					<td style="width: 75px;">?</td>
+					<td style="width: 75px;">?</td>
+					<td style="width: 75px;">?</td>
+				</tr>
+			</table>
+			</div>
+		</div>
+	</div>
+ 
 	<div id="infobox"
-		style="height: 500px; left: 15px; position: absolute; top: 530px; width: 840px;">
-		<strong>Click on a gene name for a clue</strong>
+		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow:scroll;">
+		<strong>Click on a <img src="images/info-icon.png"> for a clue</strong>
 	</div>
 	
 	<div id="sound"></div>
