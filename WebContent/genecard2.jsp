@@ -24,8 +24,10 @@ if(username==null){
 <meta name="description" content="A game">
 <meta name="author" content="Ben">
 
-<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
-<link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css"
+	type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css"
+	media="screen">
 <style>
 body {
 	padding-top: 60px;
@@ -305,20 +307,24 @@ function setupShowInfoHandler(){
 	  });
 }
 
+function saveHand(){
+	par_score = p1_score - par;
+	 var win = "0";
+	 if(p1_score > p2_score){
+		 win = "1";
+	 }
+		var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
+		//player_name , score, cv_accuracy, board_id
+		console.log("saved "+saveurl);
+		$.getJSON(saveurl, function(data) {
+			window.location.replace("gamereview.jsp?win="+win+"&level="+seed);
+		});
+}
+
 function setupHoldem(){
 	//add the save handler
 	 $("#holdem_button").on("click", function () {				
-		 par_score = p1_score - par;
-		 var win = "0";
-		 if(p1_score > p2_score){
-			 win = "1";
-		 }
-			var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
-			//player_name , score, cv_accuracy, board_id
-			console.log("saved "+saveurl);
-			$.getJSON(saveurl, function(data) {
-				window.location.replace("gamereview.jsp?win="+win+"&level="+seed);
-			});
+		 saveHand();
 	});	
 }
 
@@ -341,35 +347,45 @@ function getBarneysNextCard(){
 	card_index = opponent_sort[sorted_index].board_index+"";
 
 	if((($.inArray(card_index, p1_indexes)==-1)&&($.inArray(card_index, p2_indexes)==-1))){
-		console.log(p1_indexes);
-		console.log(p2_indexes);//
+		//console.log(p1_indexes);
+		//console.log(p2_indexes);//
 		//console.log(" returned "+card_index);
 		return card_index;
 	}else{
-		console.log(" iterated on "+card_index);
+		//console.log(" iterated on "+card_index);
 		return getBarneysNextCard();
 	}
 }
+ 
 
 function addCardToBarney(){
 	card_index = getBarneysNextCard();
 	p2_indexes.push(card_index);
 	var handcell = generateHandCell(card_index);
-	$("#player2_hand").fadeTo(1000, 1, function (){
-		$("#player2_hand").append(handcell);
-		setupShowInfoHandler();
-	});
+	
+	window.setTimeout(function() {  
+		$("#player2_hand").fadeTo(1000, 1, function (){
+			$("#player2_hand").append(handcell);
+			setupShowInfoHandler();
+		});
+	}, 4000); 
 	
 	p2_hand.push(cards[card_index]);
-	evaluateHand(p2_hand, "2");
+		
 	//hide button from board
 	card_index = "#card_index_"+card_index;
-	//console.log(card_index);	
 	
-	$(card_index).parent().fadeTo(500, 0.75, function (){
+	$(card_index).parent().fadeTo(3000, 0.75, function (){
 		$(card_index).parent().css('background-color', '#FBBBB9');
 		$(card_index).parent().html("");
 	});
+
+	window.setTimeout(function() {  
+		evaluateHand(p2_hand, "2");
+		if(p2_hand.length==5){
+			$("#holdem_button").show();
+		}
+	}, 6000); 
 }
 
 function setupHandAddRemove(){
@@ -391,7 +407,9 @@ function setupHandAddRemove(){
 				setupShowInfoHandler();
 			});
 			p1_hand.push(cards[cell_id]);
-			evaluateHand(p1_hand, 1);
+			window.setTimeout(function() { 
+				evaluateHand(p1_hand, 1);
+			}, 2000); 
 			//hide button from board
 		//	$(this).parent().fadeOut(1000);
 			$(this).parent().fadeTo(500, 0.75, function (){
@@ -463,6 +481,8 @@ function setupHandAddRemoveFirstVersion(){
 $(document).ready(function() {
 	//set up accordian for result viewer
 	 $("#cv_results").accordion({ collapsible: true });
+	//hide the end button
+	$("#holdem_button").hide();
 	//set up the baord
 	url = "WekaServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
 	//data will contain the array of cards used to build the board for this game
@@ -490,23 +510,24 @@ $(document).ready(function() {
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="/combo/">COMBO</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li><a href="help.jsp">Help!</a></li>
-              <li><a href="index.jsp">logout</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </div>
-    </div>
+		<div class="navbar-inner">
+			<div class="container">
+				<a class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
+					class="brand" href="/combo/">COMBO</a>
+				<div class="nav-collapse">
+					<ul class="nav">
+						<li><a href="help.jsp">Help!</a>
+						</li>
+						<li><a href="index.jsp">logout</a>
+						</li>
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+		</div>
+	</div>
 
 	<div>
 		<div id="board"
@@ -515,88 +536,107 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="game_score_box_1" style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index:2;">
+	<div id="game_score_box_1"
+		style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index: 2;">
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
-			<input id="holdem_button" type="submit" value="Holdem!" /> 
+		<input id="holdem_button" type="submit" value="OK!" /> 
 	</div>
-	
-	<div id="player1_title_area" style="left: 30px; position: absolute; top: 590px;">
-	<h3>Your hand</h3>
-	</div>
-	
-	<div id="player1" style="height: 500px; left: 30px; position: absolute; top: 565px;">
-		<div id="hand_info_box_1" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_1" style="position: relative; top: 15px; width: 400px;">
-			<table border='1'>
-				<tr id="player1_hand" align='center' style='height: 75px;'>
 
-				</tr>
-			</table>
+	<div id="player1_title_area"
+		style="left: 30px; position: absolute; top: 590px;">
+		<h3>Your hand</h3>
+	</div>
+
+	<div id="player1"
+		style="height: 500px; left: 30px; position: absolute; top: 565px;">
+		<div id="hand_info_box_1"
+			style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_1"
+				style="position: relative; top: 15px; width: 400px;">
+				<table border='1'>
+					<tr id="player1_hand" align='center' style='height: 75px;'>
+
+					</tr>
+				</table>
 			</div>
 		</div>
 	</div>
 
-	<div id="player1_masked" style="height: 500px; left: 30px; position: absolute; top: 565px; z-index:-1">
-		<div id="hand_info_box_masked_1" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_1" style="position: relative; top: 15px; width: 400px;">
-			<table border='1'>
-				<tr id="player1_hand_masked" align='center' style='height: 75px; background-color:#82CAFA'>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-				</tr>
-			</table>
+	<div id="player1_masked"
+		style="height: 500px; left: 30px; position: absolute; top: 565px; z-index: -1">
+		<div id="hand_info_box_masked_1"
+			style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_masked_1"
+				style="position: relative; top: 15px; width: 400px;">
+				<table border='1'>
+					<tr id="player1_hand_masked" align='center'
+						style='height: 75px; background-color: #82CAFA'>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 	</div>
 
 
-	<div id="game_score_box_2" style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index:2;">
+	<div id="game_score_box_2"
+		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
 		<img src="images/barney.png">Level <%=ran %>
-		<h4>Barney's score </h4>
-		<h1 id="game_score_2" style="text-align: center;">0</h1> 
+		<h4>Barney's score</h4>
+		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>
-	
-	<div id="player2_title_area" style=" left: 30px; position: absolute; top: 80px;">
-	<h3>Barney's hand</h3>
+
+	<div id="player2_title_area"
+		style="left: 30px; position: absolute; top: 80px;">
+		<h3>Barney's hand</h3>
 	</div>
-	
+
 	<div id="player2" style="left: 30px; position: absolute; top: 55px;">
-		<div id="hand_info_box_2" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_2" style="position: relative; top: 15px; width: 400px;">
-			<table border='1'>
-				<tr id="player2_hand" align='center' style='height: 75px;'>
+		<div id="hand_info_box_2"
+			style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_2"
+				style="position: relative; top: 15px; width: 400px;">
+				<table border='1'>
+					<tr id="player2_hand" align='center' style='height: 75px;'>
 
-				</tr>
-			</table>
+					</tr>
+				</table>
 			</div>
 		</div>
 	</div>
 
-	<div id="player2_masked" style="left: 30px; position: absolute; top: 55px; z-index:-1">
-		<div id="hand_info_box_masked_2" style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_2" style="position: relative; top: 15px; width: 400px;">
-			<table border='1'>
-				<tr id="player2_hand_masked" align='center' style='height: 75px; background-color:#FBBBB9'>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-					<td style="width: 75px;">?</td>
-				</tr>
-			</table>
+	<div id="player2_masked"
+		style="left: 30px; position: absolute; top: 55px; z-index: -1">
+		<div id="hand_info_box_masked_2"
+			style="position: relative; top: 45px; width: 500px;">
+			<div id="player_box_masked_2"
+				style="position: relative; top: 15px; width: 400px;">
+				<table border='1'>
+					<tr id="player2_hand_masked" align='center'
+						style='height: 75px; background-color: #FBBBB9'>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+						<td style="width: 75px;">?</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 	</div>
- 
+
 	<div id="infobox"
-		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow:scroll;">
-		<strong>Click on a <img src="images/info-icon.png"> for a clue</strong>
+		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow: scroll;">
+		<strong>Click on a <img src="images/info-icon.png"> for
+				a clue
+		</strong>
 	</div>
-	
+
 	<div id="sound"></div>
 </body>
 </html>
