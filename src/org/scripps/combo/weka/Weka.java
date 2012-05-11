@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.scripps.MapFun;
+import org.scripps.ontologies.go.Annotations;
+import org.scripps.ontologies.go.GOterm;
 import org.scripps.util.Gene;
 
 import weka.attributeSelection.InfoGainAttributeEval;
@@ -37,6 +40,8 @@ public class Weka {
 	Random rand;
 	String eval_method;
 	public Map<String, Weka.card> att_meta;
+	public Map<String, List<Weka.card>> geneid_cards; //could be multiple cards per gene if multiple reporters
+	public Map<String, Set<String>> go2genes;
 
 	/**
 	 * This class controls the processes of:
@@ -49,8 +54,8 @@ public class Weka {
 		DataSource source = null;
 		try {
 			//	source = new DataSource("/Users/bgood/programs/Weka-3-6/data/breast_labor.arff");
-			//source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
-			source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
+			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
+			//source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
 
 			train = source.getDataSet();
 			if (train.classIndex() == -1){
@@ -68,18 +73,28 @@ public class Weka {
 		//load the gene name mapping file
 		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
 		//filter zero information attributes
-		filterForNonZeroInfoGain();
+//		filterForNonZeroInfoGain();
 		//only use genes with metadata
 		filterForGeneIdMapping();
 		System.out.println("launching with "+train.numAttributes()+" attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
+		//add the right indexes
+		
 		//export file
 		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
 		//get the random set up
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
+		//load cached go2gene mappings
+		try {
+			String go2gene_file = "/usr/local/data/go2gene_3_50.txt";
+			go2genes = Annotations.readCachedGo2Genes(go2gene_file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		}
 	}
 
 	public void exportArff(Instances dataset, String outfile){
@@ -159,6 +174,8 @@ public class Weka {
 		while(input.hasMoreElements()){
 			Attribute a = input.nextElement();
 			card c = att_meta.get(a.name());
+			//also sets index properly for the first time..
+			c.setAtt_index(a.index());
 			if(c!=null){
 				String symbol = c.getName();
 				if(symbol!=null){
@@ -169,11 +186,14 @@ public class Weka {
 	}
 
 	/**
+	 * attribute       symbol  geneid
 	 * Get data to use for displaying the attributes
 	 * @param metadatafile
 	 */
 	public void loadAttributeMetadata(String metadatafile){
+		int count = 0;
 		att_meta = new HashMap<String, card>();	
+		geneid_cards = new HashMap<String, List<card>>();
 		BufferedReader f;
 		try {
 			f = new BufferedReader(new FileReader(metadatafile));
@@ -187,7 +207,18 @@ public class Weka {
 				if(item!=null&&item.length>1){
 					card genecard = new card(0, attribute, name, id);
 					att_meta.put(attribute, genecard);
-					att_meta.put(name,genecard);
+					if(name!=null){
+						att_meta.put(name,genecard);
+					}
+					if(id!=null){
+						List<card> cards = geneid_cards.get(id);
+						if(cards==null){
+							cards = new ArrayList<card>();
+						}
+						cards.add(genecard);
+						geneid_cards.put(id, cards);
+						count++;
+					}
 				}
 				line = f.readLine();
 			}
@@ -199,8 +230,8 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-
+		System.out.println("mapped "+count+" ids");
+		System.out.println("mapped "+count+" ids");
 	}
 
 
@@ -368,7 +399,7 @@ public class Weka {
 			if(eval_method.equals("cross_validation")){
 				Random keep_same = new Random();
 				keep_same.setSeed(0);
-				System.out.println("seed "+keep_same.nextInt());
+			//	System.out.println("seed "+keep_same.nextInt());
 				eval.crossValidateModel(fc, train, 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
