@@ -81,7 +81,24 @@ public class WekaServer extends HttpServlet {
 				out.write(r.toString());
 				out.close();
 			}
-			// initialize a random 'board' - a list of attributes from the training set of specified size	
+			// initialize a random GO 'board' - a list of attributes from the training set of specified size	
+//		}else if(command.equals("getgoboard")){
+//			String raninput = request.getParameter("ran");
+//			int ran = 1;
+//			if(raninput!=null&&!raninput.equals("0")){
+//				ran = Integer.parseInt(raninput);
+//			}else{			
+//				ran = (int)Math.rint(Math.random()*1000);
+//			}
+//			int nrows = Integer.parseInt(request.getParameter("y"));
+//			int ncols = Integer.parseInt(request.getParameter("x"));
+//			List<Weka.card> cards = weka.getRandomGoCards(nrows * ncols, ran);
+//			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
+//			response.setContentType("text/json");
+//			PrintWriter out = response.getWriter();
+//			out.write(r.toString());
+//			out.close();
+			// initialize a random gene 'board' - a list of attributes from the training set of specified size
 		}else if(command.equals("getboard")){
 			String raninput = request.getParameter("ran");
 			int ran = 1;
