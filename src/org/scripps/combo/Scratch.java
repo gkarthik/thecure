@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.scripps.combo.weka.GoWeka;
 import org.scripps.combo.weka.Weka;
 import org.scripps.ontologies.go.Annotations;
 import org.scripps.ontologies.go.GOowl;
@@ -28,40 +29,43 @@ public class Scratch {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args)  {
-		String gos = "/Users/bgood/genegames/go_group_trees.txt";
-		String gos2 = "/Users/bgood/genegames/go_group_trees_2.txt";
-		GOowl gowl = new GOowl();
-		String goowlfile = "file:/users/bgood/data/ontologies/5-12-2012/go_daily-termdb.owl";
-		gowl.init(goowlfile, false);
-		BufferedReader f = null;
-		try {
-			FileWriter w = new FileWriter(gos2);
-			f = new BufferedReader(new FileReader(gos));			
-			String line = f.readLine();
-			while(line!=null){
-				String[] item = line.split("\t");
-				GOterm t = gowl.makeGOterm(item[0]);
-				if(t!=null){
-					w.write(t.getRoot()+"\t"+t.getTerm()+"\t"+line+"\n");
-				}else{
-					w.write("\t\t"+line+"\n");
-				}
-				line = f.readLine();
-			}
-			w.close();
-			f.close();
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+		
+		cacheExpandedGoAnnotations();
+		
+//		String gos = "/Users/bgood/genegames/go_group_trees.txt";
+//		String gos2 = "/Users/bgood/genegames/go_group_trees_2.txt";
+//		GOowl gowl = new GOowl();
+//		String goowlfile = "file:/users/bgood/data/ontologies/5-12-2012/go_daily-termdb.owl";
+//		gowl.init(goowlfile, false);
+//		BufferedReader f = null;
+//		try {
+//			FileWriter w = new FileWriter(gos2);
+//			f = new BufferedReader(new FileReader(gos));			
+//			String line = f.readLine();
+//			while(line!=null){
+//				String[] item = line.split("\t");
+//				GOterm t = gowl.makeGOterm(item[0]);
+//				if(t!=null){
+//					w.write(t.getRoot()+"\t"+t.getTerm()+"\t"+line+"\n");
+//				}else{
+//					w.write("\t\t"+line+"\n");
+//				}
+//				line = f.readLine();
+//			}
+//			w.close();
+//			f.close();
+//			
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}		
 	}
 //makeGOterm
 public static void testAllGoClassesAsFeatureSets() throws IOException{
-	Weka s = new Weka();
+	GoWeka s = new GoWeka();
 	//	System.out.println(s.pruneAndExecute("1,2,"));
 	int ngo = 0; 
 	Set<String> missing_geneids = new HashSet<String>();
@@ -121,13 +125,13 @@ public static void cacheExpandedGoAnnotations(){
 	//cache go2genes
 			String goowlfile = "file:/users/bgood/data/ontologies/5-12-2012/go_daily-termdb.owl";
 			String anno_file = "/users/bgood/data/ontologies/5-12-2012/gene2go";
-			String outputfile = "/users/bgood/data/ontologies/5-12-2012/go2gene_3_50.txt";
+			String outputfile = "/users/bgood/data/ontologies/5-12-2012/go2gene_3_51.txt";
 			int min_set_size = 3; int max_set_size = 50;
 			try {
-				Annotations.cacheGo2Genes(anno_file, "9606", false, true, goowlfile, outputfile, min_set_size, max_set_size);
+				//Annotations.cacheGo2Genes(anno_file, "9606", false, true, goowlfile, outputfile, min_set_size, max_set_size);
 				//read them in
-				Map<String, Set<String>> go2genes = Annotations.readCachedGo2Genes(outputfile);
-				System.out.println(go2genes.get("GO:0010915"));
+				Map<String, Set<String>> go2genes = Annotations.readCachedGoAcc2Genes(outputfile);
+				System.out.println(go2genes.get("GO:0070830\tProcess\ttight junction assembly"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -16,6 +16,10 @@ public class Gene implements Comparable{
 		return(geneID+"\t"+geneSymbol+"\t"+geneDescription+"\tis pseudo\t"+isPseudo);
 	}
 	
+	public String toHTMLString(){
+		return(geneSymbol+"<br>"+geneDescription);
+	}
+	
 	public String getGeneID() {
 		return geneID;
 	}

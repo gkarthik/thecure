@@ -19,4 +19,14 @@
     <servlet-name>WekaServer</servlet-name>
     <url-pattern>/WekaServer</url-pattern>
   </servlet-mapping>
+      <servlet>
+    <description></description>
+    <display-name>GoWekaServer</display-name>
+    <servlet-name>GoWekaServer</servlet-name>
+    <servlet-class>org.scripps.combo.weka.GoWekaServer</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GoWekaServer</servlet-name>
+    <url-pattern>/GoWekaServer</url-pattern>
+  </servlet-mapping>
 </web-app>

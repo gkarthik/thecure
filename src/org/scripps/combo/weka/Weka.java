@@ -41,7 +41,6 @@ public class Weka {
 	String eval_method;
 	public Map<String, Weka.card> att_meta;
 	public Map<String, List<Weka.card>> geneid_cards; //could be multiple cards per gene if multiple reporters
-	public Map<String, Set<String>> go2genes;
 
 	/**
 	 * This class controls the processes of:
@@ -61,11 +60,11 @@ public class Weka {
 			if (train.classIndex() == -1){
 				train.setClassIndex(train.numAttributes() - 1);
 			}
-			//			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
-			//			test = source.getDataSet();
-			//			if (test.classIndex() == -1){
-			//				test.setClassIndex(test.numAttributes() - 1);
-			//			}
+//						source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+//						test = source.getDataSet();
+//						if (test.classIndex() == -1){
+//							test.setClassIndex(test.numAttributes() - 1);
+//						}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,14 +86,7 @@ public class Weka {
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
-		//load cached go2gene mappings
-		try {
-			String go2gene_file = "/usr/local/data/go2gene_3_50.txt";
-			go2genes = Annotations.readCachedGo2Genes(go2gene_file);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-		}
+
 	}
 
 	public void exportArff(Instances dataset, String outfile){
@@ -230,8 +222,6 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("mapped "+count+" ids");
-		System.out.println("mapped "+count+" ids");
 	}
 
 

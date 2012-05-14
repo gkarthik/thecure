@@ -54,11 +54,11 @@ if (player == null) {
 		<div id="breastcancergame">
 		<img src ="images/100px-DrawingIntellectGirl.png">	
 		<a href="genecard1.jsp" class="btn btn-large btn-primary"><img src="images/Pink_ribbon.png"><strong>Breast Cancer 1<br>(Random Walk)</strong></a>
-		<div> <br><br></div>
-		
+		<div> <br><br></div>	
 		<a href="barney.jsp" class="btn btn-large btn-primary"><img src="images/Pink_ribbon.png"><strong>Breast Cancer 2<br>(Defeat Barney!)</strong></a>
-		<br>	
-		
+		<div> <br><br></div>	
+		<a href="gocard1.jsp" class="btn btn-large btn-primary"><img src="images/Pink_ribbon.png"><strong>Breast Cancer 3<br>(GO)</strong></a>
+			
 		</div>	
 
 
