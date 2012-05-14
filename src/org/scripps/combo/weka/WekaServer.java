@@ -39,7 +39,7 @@ public class WekaServer extends HttpServlet {
 	}
 
 	public void init(ServletConfig config){
-		weka = new Weka();
+		weka = new Weka(true);
 	}
 
 	/**

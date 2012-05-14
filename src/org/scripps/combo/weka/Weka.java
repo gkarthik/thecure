@@ -48,14 +48,15 @@ public class Weka {
 	 *  parameterizing and executing classifiers, 
 	 *  backing interactions with dataset attributes (choosing random ones, name maps etc.)
 	 */
-	public Weka() {
+	public Weka(boolean filtered) {
 		//get the data 
 		DataSource source = null;
 		try {
-			//	source = new DataSource("/Users/bgood/programs/Weka-3-6/data/breast_labor.arff");
-			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
-			//source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
-
+			if(filtered){
+				source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
+			}else{
+				source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
+			}
 			train = source.getDataSet();
 			if (train.classIndex() == -1){
 				train.setClassIndex(train.numAttributes() - 1);
@@ -86,8 +87,9 @@ public class Weka {
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
-
 	}
+
+	
 
 	public void exportArff(Instances dataset, String outfile){
 		 ArffSaver saver = new ArffSaver();
