@@ -9,7 +9,6 @@
 String username = (String)session.getAttribute("username");
 if(username==null){
 	username = "anonymous_hero";
-	//touch to check if bitbucket migration worked
 }
 %>
 
@@ -37,7 +36,7 @@ body {
 
 
 
-<title>Welcome to COMBO: game Breast Cancer prognosis</title>
+<title>Welcome to GO COMBO: game Breast Cancer prognosis</title>
 
 <%
 	String ran = request.getParameter("level");
@@ -57,9 +56,9 @@ body {
 var cards = new Array();
 var opponent_sort = new Array();
 var nrows = 5;
-var ncols = 5;
+var ncols = 4;
 var seed = <%=ran%>;
-var max_hand = 5;
+var max_hand = 4;
 var p1_score = 0;
 var p2_score = 0;
 var par_score = 0;
@@ -78,12 +77,12 @@ function playSound(url) {
 }
 
 function evaluateHand(cardsinhand, player){
-	var url = 'WekaServer?command=getscore&features=';
+	var url = 'GoWekaServer?command=getscore&accs=';
 	features = "";
-	var chand = "cardsinhand_"+player;
+	//var chand = "cardsinhand_"+player;
 
 	$.each(cardsinhand, function(index, value) {
-	    features+=value.att_index+",";
+	    features+=value.acc+",";
 	  });
 	url +=features;
 
@@ -94,9 +93,9 @@ function evaluateHand(cardsinhand, player){
  			$("#player1_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p1_score = data.accuracy;
  			if(p1_score >= p2_score){
- 				playSound("sounds/human/MMMMM1.WAV");
+ 		//		playSound("sounds/human/MMMMM1.WAV");
  			}else{
- 				playSound("sounds/human/SNORTAHH.WAV");
+ 		//		playSound("sounds/human/SNORTAHH.WAV");
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
@@ -104,9 +103,9 @@ function evaluateHand(cardsinhand, player){
  			$("#player2_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p2_score = data.accuracy;
  			if(p2_score < p1_score){
- 				playSound("sounds/human/MMMMM1.WAV");
+ 		//		playSound("sounds/human/MMMMM1.WAV");
  			}else{
- 				playSound("sounds/human/SNORTAHH.WAV");
+ 		//		playSound("sounds/human/SNORTAHH.WAV");
  			}
  			$("#game_score_2").text(p2_score);
  		}
@@ -115,7 +114,7 @@ function evaluateHand(cardsinhand, player){
 
 function getStyleByScore(power){
 	var colors = ["#F8F0DF","#F7E6C1","#F7DB9B","#F5CC6C","#F5BE3F", "#F26B10"];
-	var cellstyle = "width: 75px; position:relative; ";
+	var cellstyle = "width:200px; position:relative; ";
 	//color by estimated individual predictive power
 	if(power==0){
 		//cellstyle+=" background-color:"+colors[0]+";";
@@ -135,8 +134,22 @@ function getStyleByScore(power){
 	return cellstyle;
 }
 
+function getGroupStyle(group){
+	var colors = ["#F8F0DF","#F7E6C1","#F7DB9B","#F5CC6C","#F5BE3F", "#F26B10"];
+	var cellstyle = "width:200px; position:relative; ";
+	//color by go category
+	if(group=='Process'){
+		cellstyle+=" background-color:"+colors[1]+";";
+	}else if(group=='Function'){
+		cellstyle+=" background-color:"+colors[1]+";";
+	}else if(group=='Component'){
+		cellstyle+=" background-color:"+colors[1]+";";
+	}
+	return cellstyle;
+}
+
 function getChessStyle(cell_index){
-	var cellstyle = "width: 75px; position:relative; ";
+	var cellstyle = "width: 200px; position:relative; ";
 	if(cell_index % 2 == 0){
 		cellstyle+=" background-color:#F26B10;";
 	}else{
@@ -146,16 +159,33 @@ function getChessStyle(cell_index){
 }
 
 
-function generateBoardCell(cardindex){
+function generateBoardCellWithInfoButton(cardindex){
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getChessStyle(cardindex);
+//	var power = cards[cardindex].power;
+	var group = cards[cardindex].group;
+	var cellstyle = getGroupStyle(group);
 	if(displayname==null||displayname.length==0){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].acc+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+	
+	return boardhtml;
+}
+
+function generateBoardCell(cardindex){
+	var boardhtml = "";
+	var displayname = cards[cardindex].name;
+//	var power = cards[cardindex].power;
+	var group = cards[cardindex].group;
+	var cellstyle = getGroupStyle(group);
+	if(displayname==null||displayname.length==0){
+		displayname = cards[cardindex].att_name;
+	}
+	cards[cardindex].displayname = displayname;
+	boardhtml+="<td style=\""+cellstyle+"\">";
 	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 	
 	return boardhtml;
@@ -167,14 +197,20 @@ function generateBoardCell(cardindex){
 function generateHandCell(cardindex, player){
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
+
+	var genes = "";
+	for(i=0;i<cards[cardindex].geneids.length; i++){
+		genes = genes+cards[cardindex].geneids[i]+", ";
+	}
+	
+	var cellstyle = "";
 	if(displayname==null||displayname.length==0){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
+	boardhtml+="<td style=\""+cellstyle+"\">";
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div>"+
+	"<div>"+genes+"</div></td>";
 	
 	return boardhtml;
 }
@@ -183,14 +219,15 @@ function generateUsedBoardCell(cardindex){
 
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
+//	var power = cards[cardindex].power;
+//	var cellstyle = getStyleByScore(power);
+	var cellstyle = "";
 	if(displayname==null||displayname.length==0){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"<br/>Used..</div>";
+	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].acc+"\">"+displayname+"<br/>Used..</div>";
 	return boardhtml;
 }
 
@@ -202,10 +239,10 @@ function setupOpponent(){
 		opponent_sort[index].board_index = index;
 	  });
 	//rank by the power value - now ascending
-	opponent_sort.sort(function(a, b){
+/* 	opponent_sort.sort(function(a, b){
 		 return a.power - b.power;
 		});
-	//check
+ */	//check
 	//$.each(opponent_sort, function(index, value) {
 	//    console.log(index+" "+value.power+" "+opponent_sort[index].board_index);
 	//  });
@@ -228,10 +265,10 @@ function generateBoard(){
 	$("#board").append(boardhtml);
 	
 	//set the par - use all the features on the board
-	var url = 'WekaServer?command=getscore&features=';
+	var url = 'GoWekaServer?command=getscore&accs=';
 	var features = "";
 	$.each(cards, function(index, value) {
-	    features+=value.att_index+",";
+	    features+=value.acc+",";
 	  });
 	url +=features;
 	
@@ -315,11 +352,12 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-		var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
+		var saveurl = 'GoWekaServer?command=savehand&accs='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
-			window.location.replace("barney.jsp");
+			//window.location.replace("barney.jsp");
+			window.location.reload();
 		});
 }
 
@@ -383,8 +421,9 @@ function addCardToBarney(){
 	});
 
 	window.setTimeout(function() {  
+		$('div.tooltippy').hide();
 		evaluateHand(p2_hand, "2");
-		if(p2_hand.length==5){
+		if(p2_hand.length==max_hand){
 			if(p1_score<p2_score){
 				$("#winner").text("Sorry, you lost this hand. ");
 			}else{
@@ -418,7 +457,6 @@ function setupHandAddRemove(){
 				evaluateHand(p1_hand, 1);
 			}, 2000); 
 			//hide button from board
-		//	$(this).parent().fadeOut(1000);
 			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
 				$(this).html("");
@@ -484,22 +522,20 @@ function setupHandAddRemoveFirstVersion(){
 	  });
 }
 
-function createTooltip(event){       
-	
-    $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
-	positionTooltip(event);        
-};
-
-function positionTooltip(event){
+function createTooltip(event, cell_id){       
+	var index = cell_id.replace("card_index_","");
+	var genes = "";
+	for(i=0;i<cards[index].geneids.length; i++){
+		genes = genes+cards[index].geneids[i]+", ";
+	}
+    $('body').append('<div class="tooltippy"><p>'+cards[index].name+'</p><p>'+genes+'</p></div>');
     var tPosX = event.pageX - 10;
     var tPosY = event.pageY - 100;
     $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
-    console.log("moused over 3");
 };
 
 function hideTooltip(event){       
-	$('div.tooltippy').hide();
-	positionTooltip(event);        
+	$('div.tooltippy').hide();    
 };
 
 $(document).ready(function() {
@@ -512,7 +548,8 @@ $(document).ready(function() {
 	//hide the end button
 	$("#endgame").hide();
 	//set up the baord
-	url = "WekaServer?command=getgoboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+	url = "GoWekaServer?command=getgoboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+	console.log(url);
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
 		cards = data;
@@ -527,11 +564,12 @@ $(document).ready(function() {
 		//set up opponent
 		setupOpponent();
 		//add mouseover handler for genes
-		/* $('.selectable').mouseover(function(event) {
-		    createTooltip(event);               
+		$('.select_card_button').mouseover(function(event) {
+			var cell_id = this.id;	
+		    createTooltip(event, cell_id);               
 		}).mouseout(function(){
 		    hideTooltip(); 
-		}); */
+		}); 
 
 		
 	});			
@@ -566,29 +604,29 @@ $(document).ready(function() {
 
 	<div>
 		<div id="board"
-			style="height: 500px; left: 30px; position: absolute; top: 200px; width: 500px;">
+			style="height: 600px; left: 30px; position: absolute; top: 250px; width: 900px;">
 
 		</div>
 	</div>
 
 	<div id="game_score_box_1"
-		style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 850px; position: absolute; top: 730px; width: 100px; z-index: 2;">
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
 	</div>
 
 	<div id="player1_title_area"
-		style="left: 30px; position: absolute; top: 590px;">
+		style="left: 30px; position: absolute; top: 690px;">
 		<h3>Your hand</h3>
 	</div>
 
 	<div id="player1"
-		style="height: 500px; left: 30px; position: absolute; top: 565px;">
+		style="height: 500px; left: 30px; position: absolute; top: 665px; ">
 		<div id="hand_info_box_1"
-			style="position: relative; top: 45px; width: 500px;">
+			style="position: relative; top: 45px; width: 800px;">
 			<div id="player_box_1"
-				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
+				style="position: relative; top: 15px; background-color: #82CAFA;">
+				<table border='1' >
 					<tr id="player1_hand" align='center' style='height: 75px;'>
 
 					</tr>
@@ -597,29 +635,9 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="player1_masked"
-		style="height: 500px; left: 30px; position: absolute; top: 565px; z-index: -1">
-		<div id="hand_info_box_masked_1"
-			style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_1"
-				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
-					<tr id="player1_hand_masked" align='center'
-						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
-
 
 	<div id="game_score_box_2"
-		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 810px; position: absolute; top: 60px; width: 200px; z-index: 2;">
 		<img src="images/barney.png">Level <%=ran %>
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
@@ -632,9 +650,9 @@ $(document).ready(function() {
 
 	<div id="player2" style="left: 30px; position: absolute; top: 55px;">
 		<div id="hand_info_box_2"
-			style="position: relative; top: 45px; width: 500px;">
+			style="position: relative; top: 45px; width: 800px;">
 			<div id="player_box_2"
-				style="position: relative; top: 15px; width: 400px;">
+				style="position: relative; top: 15px; background-color:  #FBBBB9;">
 				<table border='1'>
 					<tr id="player2_hand" align='center' style='height: 75px;'>
 
@@ -644,35 +662,8 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="player2_masked"
-		style="left: 30px; position: absolute; top: 55px; z-index: -1">
-		<div id="hand_info_box_masked_2"
-			style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_2"
-				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
-					<tr id="player2_hand_masked" align='center'
-						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
-
-	<div id="infobox"
-		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow: scroll;">
-		<strong>Click on a <img src="images/info-icon.png"> for
-				a clue
-		</strong>
-	</div>
-
 	<div id="endgame"
-		style="height: 420px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		style="height: 420px; left: 30px; position: absolute; top: 210px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
 		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
 		<div class="row">
 		<div id="cv_results_1" 
@@ -699,6 +690,15 @@ $(document).ready(function() {
 	
 	<div id="sound"></div>
 </body>
+
+<!--  
+	<div id="gene_infobox"
+		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow: scroll;">
+		<strong>Click on a <img src="images/info-icon.png"> for
+				a clue
+		</strong>
+	</div>
+-->
 </html>
 
 

@@ -2,20 +2,14 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <display-name>combo</display-name>
   <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
     <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
-  <servlet>
-    <description></description>
-    <display-name>SocialServer</display-name>
-    <servlet-name>SocialServer</servlet-name>
-    <servlet-class>org.scripps.combo.SocialServer</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>SocialServer</servlet-name>
-    <url-pattern>/SocialServer</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
+    <servlet>
     <description></description>
     <display-name>WekaServer</display-name>
     <servlet-name>WekaServer</servlet-name>
@@ -25,7 +19,7 @@
     <servlet-name>WekaServer</servlet-name>
     <url-pattern>/WekaServer</url-pattern>
   </servlet-mapping>
-  <servlet>
+      <servlet>
     <description></description>
     <display-name>GoWekaServer</display-name>
     <servlet-name>GoWekaServer</servlet-name>
@@ -34,15 +28,5 @@
   <servlet-mapping>
     <servlet-name>GoWekaServer</servlet-name>
     <url-pattern>/GoWekaServer</url-pattern>
-  </servlet-mapping>
-  <servlet>
-    <description></description>
-    <display-name>MetaServer</display-name>
-    <servlet-name>MetaServer</servlet-name>
-    <servlet-class>org.scripps.combo.weka.MetaServer</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>MetaServer</servlet-name>
-    <url-pattern>/MetaServer</url-pattern>
   </servlet-mapping>
 </web-app>
