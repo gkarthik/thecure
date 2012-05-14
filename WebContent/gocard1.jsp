@@ -90,7 +90,7 @@ function evaluateHand(cardsinhand, player){
  	$.getJSON(url, function(data) {
  		if(player=="1"){
  			//var prev_score = p1_score;
- 			$("#player1_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
+ 			$("#player1_j48_score").html('<strong> score </strong><span>'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p1_score = data.accuracy;
  			if(p1_score >= p2_score){
  		//		playSound("sounds/human/MMMMM1.WAV");
@@ -100,7 +100,7 @@ function evaluateHand(cardsinhand, player){
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
  			//var prev_score = p2_score;
- 			$("#player2_j48_score").html('<strong> score </strong><span>"'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
+ 			$("#player2_j48_score").html('<strong> score </strong><span>'+data.accuracy+'</span><p><pre>'+data.modelrep+'</pre></p>');
  			p2_score = data.accuracy;
  			if(p2_score < p1_score){
  		//		playSound("sounds/human/MMMMM1.WAV");
@@ -198,19 +198,22 @@ function generateHandCell(cardindex, player){
 	var boardhtml = "";
 	var displayname = cards[cardindex].name;
 
-	var genes = "";
+	var genes = "<div><ul class='compact-list'>";
 	for(i=0;i<cards[cardindex].geneids.length; i++){
-		genes = genes+cards[cardindex].geneids[i]+", ";
+		genes = genes+"<li>"+cards[cardindex].geneids[i]+"</li>";
 	}
+	genes = genes+"</ul></div>";
 	
-	var cellstyle = "";
+	var cellstyle = "vertical-align:top;";
 	if(displayname==null||displayname.length==0){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div>"+
-	"<div>"+genes+"</div></td>";
+	console.log("bkfwf "+cards[cardindex].acc);
+	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+
+	"<h4><a target=\"blank\" href=\"http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+cards[cardindex].acc+"\">"+displayname+"</a></h4></div>"+genes+
+	"</td>";
 	
 	return boardhtml;
 }
@@ -420,14 +423,16 @@ function addCardToBarney(){
 		$(card_index).parent().html("");
 	});
 
+	evaluateHand(p2_hand, "2");
 	window.setTimeout(function() {  
 		$('div.tooltippy').hide();
-		evaluateHand(p2_hand, "2");
 		if(p2_hand.length==max_hand){
 			if(p1_score<p2_score){
 				$("#winner").text("Sorry, you lost this hand. ");
-			}else{
+			}else if (p1_score>p2_score){
 				$("#winner").text("You beat Barney! ");
+			}else if(p1_score==p2_score&&p1_score>0){
+				$("#winner").text("You tied Barney! ");
 			}
 			$("#endgame").show();
 		}
@@ -444,18 +449,20 @@ function setupHandAddRemove(){
 		if(hand_size < max_hand){
 			var cell_id = this.id.replace("card_index_", "");
 			p1_indexes.push(cell_id);
-		//temp add it to barney's hand		
-			addCardToBarney();
-			
+			p1_hand.push(cards[cell_id]);
+		
 			var handcell = generateHandCell(cell_id);
 			$("#player1_hand").fadeTo(1000, 1, function (){
 				$("#player1_hand").append(handcell);
 				setupShowInfoHandler();
 			});
-			p1_hand.push(cards[cell_id]);
+			
 			window.setTimeout(function() { 
 				evaluateHand(p1_hand, 1);
-			}, 2000); 
+				//temp add it to barney's hand		
+				addCardToBarney();
+			}, 1000);
+
 			//hide button from board
 			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
@@ -517,21 +524,25 @@ function setupHandAddRemoveFirstVersion(){
 			  });
 		
 		}else{
-			alert("Sorry, you can only have 5 cards in your hand in this game.  Click a card to remove it from your hand."); 
+			alert("Sorry, you can only have 4 cards in your hand in this game.  Click a card to remove it from your hand."); 
 		}
 	  });
 }
 
-function createTooltip(event, cell_id){       
+function createTooltip(event, cell_id){      
+	$('div.tooltippy').remove(); 
 	var index = cell_id.replace("card_index_","");
 	var genes = "";
 	for(i=0;i<cards[index].geneids.length; i++){
 		genes = genes+cards[index].geneids[i]+", ";
 	}
-    $('body').append('<div class="tooltippy"><p>'+cards[index].name+'</p><p>'+genes+'</p></div>');
-    var tPosX = event.pageX - 10;
-    var tPosY = event.pageY - 100;
-    $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
+    $('body').append('<div class="tooltippy"><h4><a target=\"blank\" href=\"http://amigo.geneontology.org/cgi-bin/amigo/term_details?term='+cards[index].acc+'\">'+cards[index].name+'</a></h4><p>'+genes+'</p></div>');
+    var tPosX = event.pageX + 30;
+    var tPosY = event.pageY - 150;
+    $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX });
+    window.setTimeout(function() { 
+    	$('div.tooltippy').hide(); 
+	}, 10000);
 };
 
 function hideTooltip(event){       
@@ -567,9 +578,9 @@ $(document).ready(function() {
 		$('.select_card_button').mouseover(function(event) {
 			var cell_id = this.id;	
 		    createTooltip(event, cell_id);               
-		}).mouseout(function(){
-		    hideTooltip(); 
-		}); 
+		}); //.mouseout(function(){
+		    //hideTooltip(); 
+		    //}); 
 
 		
 	});			
@@ -610,7 +621,7 @@ $(document).ready(function() {
 	</div>
 
 	<div id="game_score_box_1"
-		style="text-align: center; left: 850px; position: absolute; top: 730px; width: 100px; z-index: 2;">
+		style="text-align: center; left: 850px; position: absolute; top: 730px; width: 100px; ">
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
 	</div>
@@ -625,7 +636,7 @@ $(document).ready(function() {
 		<div id="hand_info_box_1"
 			style="position: relative; top: 45px; width: 800px;">
 			<div id="player_box_1"
-				style="position: relative; top: 15px; background-color: #82CAFA;">
+				style="position: relative; top: 15px; background-color: #82CAFA; height: 100px; overflow: scroll;">
 				<table border='1' >
 					<tr id="player1_hand" align='center' style='height: 75px;'>
 
@@ -637,7 +648,7 @@ $(document).ready(function() {
 
 
 	<div id="game_score_box_2"
-		style="text-align: center; left: 810px; position: absolute; top: 60px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 810px; position: absolute; top: 60px; width: 200px; ">
 		<img src="images/barney.png">Level <%=ran %>
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
@@ -652,7 +663,7 @@ $(document).ready(function() {
 		<div id="hand_info_box_2"
 			style="position: relative; top: 45px; width: 800px;">
 			<div id="player_box_2"
-				style="position: relative; top: 15px; background-color:  #FBBBB9;">
+				style="position: relative; top: 15px; background-color:  #FBBBB9; height: 100px; overflow: scroll;">
 				<table border='1'>
 					<tr id="player2_hand" align='center' style='height: 75px;'>
 
@@ -663,11 +674,11 @@ $(document).ready(function() {
 	</div>
 
 	<div id="endgame"
-		style="height: 420px; left: 30px; position: absolute; top: 210px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		style="height: 475px; left: 30px; position: absolute; top: 210px; width: 950px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
 		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
 		<div class="row">
 		<div id="cv_results_1" 
-		style="left: 5px; position: absolute; top: 50px; width: 400px;">
+		style="left: 5px; position: absolute; top: 50px; width: 425px;">
 			<h3>
 				<a href="#">Your Predictor</a>
 			</h3>
@@ -676,7 +687,7 @@ $(document).ready(function() {
 			</div>
 		</div>
 		<div id="cv_results_2"
-			style="left: 455px; position: absolute; top: 50px; width: 400px;">
+			style="left: 455px; position: absolute; top: 50px; width: 425px;">
 			<h3>
 				<a href="#">Barney's Predictor</a>
 			</h3>

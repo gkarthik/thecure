@@ -34,7 +34,8 @@ public class GoWeka extends Weka {
 	 * 
 	 */
 	public GoWeka() {
-		String annotations = "/users/bgood/data/ontologies/5-12-2012/go2gene_3_51.txt";		
+		super(false);//load unfiltered data (filter seems to screw things up somewhere here)		
+		String annotations = "/usr/local/data/go2gene_3_51.txt";		
 		try {
 			go2genes = Annotations.readCachedGoAcc2Genes(annotations);
 			acc2name = Annotations.readCachedGoName(annotations);
@@ -131,7 +132,7 @@ public class GoWeka extends Weka {
 				try {
 					Map<String, Gene> gene_info = MyGeneInfo.getBatchGeneInfo(genes, true);
 					for(Gene gene : gene_info.values()){
-						gene_symbols.add(gene.getGeneSymbol());
+						gene_symbols.add("<a target=\"blank\" href=http://www.ncbi.nlm.nih.gov/gene/"+gene.getGeneID()+">"+gene.getGeneSymbol()+"</a>");
 					}
 				} catch (UnsupportedEncodingException e) {
 					// TODO Auto-generated catch block
