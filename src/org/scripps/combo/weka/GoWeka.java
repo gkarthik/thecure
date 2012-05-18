@@ -34,7 +34,7 @@ public class GoWeka extends Weka {
 	 * 
 	 */
 	public GoWeka() {
-		super(false);//load unfiltered data (filter seems to screw things up somewhere here)		
+		super(true);//false to load unfiltered data (filter seems to screw things up somewhere here)		
 		String annotations = "/usr/local/data/go2gene_3_51.txt";		
 		try {
 			go2genes = Annotations.readCachedGoAcc2Genes(annotations);
@@ -52,7 +52,7 @@ public class GoWeka extends Weka {
 	 */
 	public static void main(String[] args) {
 		GoWeka w = new GoWeka();
-		
+
 		List<card> gocars = w.getRandomGoCards(5,1);
 		for(card c : gocars){
 			System.out.println(c.acc+" "+c.geneids);
@@ -75,7 +75,7 @@ public class GoWeka extends Weka {
 		public String name;
 		public String group;
 		public Set<String> geneids;
-		
+
 		public card(String acc, String name, Set<String> geneids) {
 			this.group = name.substring(0, name.indexOf('	')).trim();
 			this.acc = acc;
@@ -106,7 +106,7 @@ public class GoWeka extends Weka {
 		public void setGroup(String group) {
 			this.group = group;
 		}
-		
+
 	}
 
 	/**
@@ -118,8 +118,10 @@ public class GoWeka extends Weka {
 		rand.setSeed((long)ranseed);
 		Set<String> u = new HashSet<String>();
 		List<card> cards = new ArrayList<card>();
+		List<String> keys = new ArrayList<String>(acc2name.keySet());
+		//only use go that map to at least one gene in the filtered dataset
+		keys = getGoAccsWithMapInFilteredData(keys);
 		for(int i=0;i<n;i++){
-			List<String> keys = new ArrayList<String>(acc2name.keySet());
 			int randomNum = rand.nextInt(keys.size()-1);
 			if(u.contains(randomNum+"")){
 				i--;
@@ -138,7 +140,7 @@ public class GoWeka extends Weka {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
+
 				card c = new card(acc, name, gene_symbols);
 				cards.add(c);
 				u.add(randomNum+"");
@@ -146,12 +148,38 @@ public class GoWeka extends Weka {
 		}
 		return cards;
 	}
-	
+
+	public List<String> getGoAccsWithMapInFilteredData(List<String> accs){
+		List<String> acc_out = new ArrayList<String>();		
+		for(String go_acc : accs){
+			boolean keep = false;
+			Set<String> genes = go2genes.get(go_acc);
+			String atts = "";
+			for(String gene : genes){
+				String id = gene;
+				List<Weka.card> cards = geneid_cards.get(id);
+				if(cards!=null){
+					for(Weka.card card : cards){
+						atts+=card.getAtt_index()+",";
+						keep = true;
+						acc_out.add(go_acc);
+						break;
+					}
+				}
+				if(keep){
+					break;
+				}
+			} 
+		}
+		return acc_out;
+	}
+
+
 	/**
 	 * Given a go accession, get the right list of genes, get the related attributes in this dataset and run 
 	 * the requested classifier
 	 */
-	
+
 	public Weka.execution limitByGoAndExecute(String go_acc, Classifier wekamodel){
 		Set<String> genes = go2genes.get(go_acc);
 		String atts = "";
@@ -173,7 +201,7 @@ public class GoWeka extends Weka {
 			return null;
 		}
 	}
-	
+
 	public Weka.execution limitByGoSetAndExecute(Set<String> go_accs, Classifier wekamodel){
 		Set<String> genes = new HashSet<String>();
 		for(String acc : go_accs){	
