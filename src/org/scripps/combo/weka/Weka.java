@@ -35,7 +35,7 @@ import weka.filters.unsupervised.attribute.Remove;
 
 public class Weka {
 
-	Instances train = null;
+	private Instances train = null;
 	Instances test = null;
 	Random rand;
 	String eval_method;
@@ -55,11 +55,11 @@ public class Weka {
 			if(filtered){
 				source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
 			}else{
-				source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff");
+				source = new DataSource("/usr/local/data/vantveer/breastCancer-train.arff");
 			}
-			train = source.getDataSet();
-			if (train.classIndex() == -1){
-				train.setClassIndex(train.numAttributes() - 1);
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
 			}
 //						source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
 //						test = source.getDataSet();
@@ -76,7 +76,7 @@ public class Weka {
 //		filterForNonZeroInfoGain();
 		//only use genes with metadata
 		filterForGeneIdMapping();
-		System.out.println("launching with "+train.numAttributes()+" attributes.");
+		System.out.println("launching with "+getTrain().numAttributes()+" attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
 		//add the right indexes
@@ -114,15 +114,15 @@ public class Weka {
 		as.setEvaluator(infogain);
 		as.setSearch(ranker);
 		try {
-			as.setInputFormat(train);
+			as.setInputFormat(getTrain());
 			ranker.setOptions(options);
-			Instances filtered = Filter.useFilter(train, as); 			
+			Instances filtered = Filter.useFilter(getTrain(), as); 			
 			double[][] ranked = ranker.rankedAttributes();
 			//add the scores to the gene cards
 			for(int att=0; att<ranked.length; att++){
 				int att_id = (int)ranked[att][0];
 				float att_value = (float)ranked[att][1];
-				Attribute tmp = train.attribute(att_id);
+				Attribute tmp = getTrain().attribute(att_id);
 				card c = att_meta.get(tmp.name());
 				if(c==null){
 					c = new card(0, tmp.name(), "_", "_");
@@ -130,7 +130,7 @@ public class Weka {
 				c.setPower(att_value);
 				att_meta.put(tmp.name(), c);
 			}
-			train = filtered;
+			setTrain(filtered);
 			System.out.println(ranked[0][0]+" "+ranked[0][1]);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -139,11 +139,11 @@ public class Weka {
 	}
 
 	public void filterForGeneIdMapping(){
-		Enumeration<Attribute> atts = train.enumerateAttributes();
+		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
 		String nodata = "";
 		while(atts.hasMoreElements()){
 			Attribute a = atts.nextElement();
-			if(train.classIndex()!=a.index()){
+			if(getTrain().classIndex()!=a.index()){
 				String n = a.name();
 				card meta = att_meta.get(n);
 				if(meta==null||meta.unique_id==null||meta.unique_id.equals("_")){
@@ -155,8 +155,8 @@ public class Weka {
 	    remove.setAttributeIndices(nodata);
 	 //    remove.setInvertSelection(new Boolean(args[2]).booleanValue());
 	     try {
-			remove.setInputFormat(train);
-		     train= Filter.useFilter(train, remove);
+			remove.setInputFormat(getTrain());
+		     setTrain(Filter.useFilter(getTrain(), remove));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -164,7 +164,7 @@ public class Weka {
 	}
 
 	public void remapAttNames(){
-		Enumeration<Attribute> input = train.enumerateAttributes();
+		Enumeration<Attribute> input = getTrain().enumerateAttributes();
 		while(input.hasMoreElements()){
 			Attribute a = input.nextElement();
 			card c = att_meta.get(a.name());
@@ -173,7 +173,7 @@ public class Weka {
 			if(c!=null){
 				String symbol = c.getName();
 				if(symbol!=null){
-					train.renameAttribute(a, symbol);
+					getTrain().renameAttribute(a, symbol);
 				}
 			}
 		}
@@ -299,7 +299,7 @@ public class Weka {
 		List<card> cards = new ArrayList<card>();
 		String[] index = indices.split(",");
 		for(String i : index){
-			Attribute a = train.attribute(Integer.parseInt(i));
+			Attribute a = getTrain().attribute(Integer.parseInt(i));
 			if(a!=null){
 				card c = new card(a.index(),a.name(),"","");
 				cards.add(c);
@@ -317,10 +317,10 @@ public class Weka {
 		Set<String> u = new HashSet<String>();
 		List<card> cards = new ArrayList<card>();
 		for(int i=0;i<n;i++){
-			int randomNum = rand.nextInt(train.numAttributes()-1);
+			int randomNum = rand.nextInt(getTrain().numAttributes()-1);
 			//internal attribute index starts at 0
-			Attribute a = train.attribute(randomNum);
-			if(a.index()==train.classIndex()||(u.contains(randomNum+""))){
+			Attribute a = getTrain().attribute(randomNum);
+			if(a.index()==getTrain().classIndex()||(u.contains(randomNum+""))){
 				i--;
 			}else{
 				card c = new card(a.index(),a.name(),"","");
@@ -385,18 +385,18 @@ public class Weka {
 		// train and evaluate on the test set
 		Evaluation eval = null;
 		try {
-			fc.buildClassifier(train);
+			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
-			eval = new Evaluation(train);
+			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				Random keep_same = new Random();
 				keep_same.setSeed(0);
 			//	System.out.println("seed "+keep_same.nextInt());
-				eval.crossValidateModel(fc, train, 10, keep_same);
+				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
-				eval.evaluateModel(fc, train);
+				eval.evaluateModel(fc, getTrain());
 			}
 			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
@@ -427,18 +427,18 @@ public class Weka {
 		// train and evaluate on the test set
 		Evaluation eval = null;
 		try {
-			fc.buildClassifier(train);
+			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
-			eval = new Evaluation(train);
+			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
 				Random keep_same = new Random();
 				keep_same.setSeed(0);
-				eval.crossValidateModel(fc, train, 10, keep_same);
+				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
-				eval.evaluateModel(fc, train);
+				eval.evaluateModel(fc, getTrain());
 			}
 			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
@@ -460,6 +460,78 @@ public class Weka {
 			indices+=c.att_index+",";
 		}
 		return pruneAndExecute(indices);
+	}
+
+
+
+	public void setTrain(Instances train) {
+		this.train = train;
+	}
+
+
+
+	public Instances getTrain() {
+		return train;
+	}
+
+
+
+	public Instances getTest() {
+		return test;
+	}
+
+
+
+	public void setTest(Instances test) {
+		this.test = test;
+	}
+
+
+
+	public Random getRand() {
+		return rand;
+	}
+
+
+
+	public void setRand(Random rand) {
+		this.rand = rand;
+	}
+
+
+
+	public String getEval_method() {
+		return eval_method;
+	}
+
+
+
+	public void setEval_method(String eval_method) {
+		this.eval_method = eval_method;
+	}
+
+
+
+	public Map<String, Weka.card> getAtt_meta() {
+		return att_meta;
+	}
+
+
+
+	public void setAtt_meta(Map<String, Weka.card> att_meta) {
+		this.att_meta = att_meta;
+	}
+
+
+
+	public Map<String, List<Weka.card>> getGeneid_cards() {
+		return geneid_cards;
+	}
+
+
+
+	public void setGeneid_cards(Map<String, List<Weka.card>> geneid_cards) {
+		this.geneid_cards = geneid_cards;
 	}
 
 }
