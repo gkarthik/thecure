@@ -61,11 +61,11 @@ public class Weka {
 			if (getTrain().classIndex() == -1){
 				getTrain().setClassIndex(getTrain().numAttributes() - 1);
 			}
-//						source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
-//						test = source.getDataSet();
-//						if (test.classIndex() == -1){
-//							test.setClassIndex(test.numAttributes() - 1);
-//						}
+			//						source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+			//						test = source.getDataSet();
+			//						if (test.classIndex() == -1){
+			//							test.setClassIndex(test.numAttributes() - 1);
+			//						}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,14 +73,14 @@ public class Weka {
 		//load the gene name mapping file
 		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
 		//filter zero information attributes
-//		filterForNonZeroInfoGain();
+		//		filterForNonZeroInfoGain();
 		//only use genes with metadata
 		filterForGeneIdMapping();
 		System.out.println("launching with "+getTrain().numAttributes()+" attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
 		//add the right indexes
-		
+
 		//export file
 		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
 		//get the random set up
@@ -89,12 +89,12 @@ public class Weka {
 		eval_method = "cross_validation";//"training_set";
 	}
 
-	
+
 
 	public void exportArff(Instances dataset, String outfile){
-		 ArffSaver saver = new ArffSaver();
-		 saver.setInstances(dataset);
-		 try {
+		ArffSaver saver = new ArffSaver();
+		saver.setInstances(dataset);
+		try {
 			saver.setFile(new File(outfile));
 			// saver.setDestination(new File("./data/test.arff"));   // **not** necessary in 3.5.4 and later
 			saver.writeBatch();
@@ -102,9 +102,9 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public void filterForNonZeroInfoGain(){
 		//weka.filters.Filter.
 		AttributeSelection as = new AttributeSelection();
@@ -152,11 +152,11 @@ public class Weka {
 			}
 		}
 		Remove remove = new Remove();
-	    remove.setAttributeIndices(nodata);
-	 //    remove.setInvertSelection(new Boolean(args[2]).booleanValue());
-	     try {
+		remove.setAttributeIndices(nodata);
+		//    remove.setInvertSelection(new Boolean(args[2]).booleanValue());
+		try {
 			remove.setInputFormat(getTrain());
-		     setTrain(Filter.useFilter(getTrain(), remove));
+			setTrain(Filter.useFilter(getTrain(), remove));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -165,18 +165,33 @@ public class Weka {
 
 	public void remapAttNames(){
 		Enumeration<Attribute> input = getTrain().enumerateAttributes();
+		geneid_cards = new HashMap<String, List<card>>();
 		while(input.hasMoreElements()){
 			Attribute a = input.nextElement();
 			card c = att_meta.get(a.name());
-			//also sets index properly for the first time..
-			c.setAtt_index(a.index());
+			if(c.getUnique_id().equals("1999")){
+				System.out.println("ELF3333 "+c.getName()+" "+c.getAtt_name());
+			}
 			if(c!=null){
+				//also sets index properly for the first time..
+				c.setAtt_index(a.index());
+				//put the card back in
+				if(c.getUnique_id()!=null){
+					List<card> gcards = geneid_cards.get(c.getUnique_id());
+					if(gcards==null){
+						gcards = new ArrayList<card>();
+					}					
+					gcards.add(c);
+					geneid_cards.put(c.getUnique_id(), gcards);
+				}
+				att_meta.put(a.name(),c);
 				String symbol = c.getName();
 				if(symbol!=null){
 					getTrain().renameAttribute(a, symbol);
 				}
 			}
 		}
+
 	}
 
 	/**
@@ -185,9 +200,8 @@ public class Weka {
 	 * @param metadatafile
 	 */
 	public void loadAttributeMetadata(String metadatafile){
-		int count = 0;
+		//int count = 0;
 		att_meta = new HashMap<String, card>();	
-		geneid_cards = new HashMap<String, List<card>>();
 		BufferedReader f;
 		try {
 			f = new BufferedReader(new FileReader(metadatafile));
@@ -203,15 +217,6 @@ public class Weka {
 					att_meta.put(attribute, genecard);
 					if(name!=null){
 						att_meta.put(name,genecard);
-					}
-					if(id!=null){
-						List<card> cards = geneid_cards.get(id);
-						if(cards==null){
-							cards = new ArrayList<card>();
-						}
-						cards.add(genecard);
-						geneid_cards.put(id, cards);
-						count++;
 					}
 				}
 				line = f.readLine();
@@ -391,7 +396,7 @@ public class Weka {
 			if(eval_method.equals("cross_validation")){
 				Random keep_same = new Random();
 				keep_same.setSeed(0);
-			//	System.out.println("seed "+keep_same.nextInt());
+				//	System.out.println("seed "+keep_same.nextInt());
 				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
@@ -445,10 +450,10 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
 		return new execution(fc,eval);
 	}
-	
+
 	/***
 	 * convenience method for running learning algorithms on a set of 'cards'
 	 * @param cards
