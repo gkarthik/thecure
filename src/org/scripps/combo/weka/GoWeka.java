@@ -51,18 +51,18 @@ public class GoWeka extends Weka {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		GoWeka w = new GoWeka();
+//		GoWeka w = new GoWeka();
 
-		List<card> gocars = w.getRandomGoCards(5,1);
-		for(card c : gocars){
-			System.out.println(c.acc+" "+c.geneids);
-			Weka.execution e = w.limitByGoAndExecute(c.acc, new J48());
-			if(e!=null){
-				System.out.println(e.toString());
-			}else{
-				System.out.println("could not run "+c.acc);
-			}
-		}
+//		List<card> gocars = w.getRandomGoCards(5,1);
+//		for(card c : gocars){
+//			System.out.println(c.acc+" "+c.geneids);
+//			Weka.execution e = w.limitByGoSetAndExecute(c.acc, new J48());
+//			if(e!=null){
+//				System.out.println(e.toString());
+//			}else{
+//				System.out.println("could not run "+c.acc);
+//			}
+//		}
 	}
 
 	/**
@@ -180,27 +180,27 @@ public class GoWeka extends Weka {
 	 * the requested classifier
 	 */
 
-	public Weka.execution limitByGoAndExecute(String go_acc, Classifier wekamodel){
-		Set<String> genes = go2genes.get(go_acc);
-		String atts = "";
-		int found = 0;
-		for(String gene : genes){
-			String id = gene;
-			List<Weka.card> cards = geneid_cards.get(id);
-			if(cards!=null){
-				for(Weka.card card : cards){
-					atts+=card.getAtt_index()+",";
-					found++;
-				}
-			}
-		} 
-		if(found>1){
-			Weka.execution e = pruneAndExecute(atts, wekamodel);
-			return e;
-		}else{
-			return null;
-		}
-	}
+//	public Weka.execution limitByGoAndExecute(String go_acc, Classifier wekamodel){
+//		Set<String> genes = go2genes.get(go_acc);
+//		String atts = "";
+//		int found = 0;
+//		for(String gene : genes){
+//			String id = gene;
+//			List<Weka.card> cards = geneid_cards.get(id);
+//			if(cards!=null){
+//				for(Weka.card card : cards){
+//					atts+=card.getAtt_index()+",";
+//					found++;
+//				}
+//			}
+//		} 
+//		if(found>1){
+//			Weka.execution e = pruneAndExecute(atts, wekamodel);
+//			return e;
+//		}else{
+//			return null;
+//		}
+//	}
 
 	public Weka.execution limitByGoSetAndExecute(Set<String> go_accs, Classifier wekamodel){
 		Set<String> genes = new HashSet<String>();
@@ -221,7 +221,7 @@ public class GoWeka extends Weka {
 				}
 			}
 		} 
-		if(found>1){
+		if(found>0){
 			Weka.execution e = pruneAndExecute(atts, wekamodel);
 			return e;
 		}else{
