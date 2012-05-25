@@ -23,9 +23,11 @@ import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
+import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.Instances;
+import weka.core.SelectedTag;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
@@ -354,12 +356,26 @@ public class Weka {
 			super();
 			this.model = model;
 			this.eval = eval;
-		}
+		}//model.getClassifier().toString()+
 		public String toString(){
-			return model.getClassifier().toString()+"\nAccuracy on test set:"+(int)eval.pctCorrect();
+			return "\nTree Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
 
+	public class metaExecution{
+		public Classifier model;
+		public Evaluation eval;
+		public metaExecution(Classifier model, Evaluation eval) {
+			super();
+			this.model = model;
+			this.eval = eval;
+		}
+		public String toString(){
+			return "\nMeta Accuracy on test set:"+eval.pctCorrect();
+		}
+	}
+	
+	
 	/**
 	 * Trains a j48 decision tree using just the attributes specified in indices
 	 * @param indices for the attributes to use to train the model
@@ -453,6 +469,82 @@ public class Weka {
 		String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
 		return new execution(fc,eval);
 	}
+
+	/***
+	 * build and test a meta classifier - a non-random forest in this case
+	 * input, a set of feature sets and a classifier model
+	 * output an execution result for the whole thing
+	 */
+	public metaExecution executeNonRandomForest(Set<String> indicesoff1, Classifier wekamodel){
+		Set<String> indices_set = new HashSet<String>();
+		//remap indexes
+		for(String indices_ : indicesoff1){
+			String indices = "";
+			for(String a : indices_.split(",")){
+				if(!a.equals("")){
+					int i = 1+Integer.parseInt(a);
+					indices += i+",";
+				}
+			}
+			indices_set.add(indices);
+		}
+
+		//create an array of classifiers that differ from each other based on the features that they use
+		Classifier[] classifiers = new Classifier[indices_set.size()];
+		int i = 0;
+		for(String indices : indices_set){
+			// set a specific set of attributes to use to train the model
+			Remove rm = new Remove();
+			//don't remove the class attribute
+			rm.setAttributeIndices(indices+"last");
+			rm.setInvertSelection(true);
+			// build a classifier using only these attributes
+			FilteredClassifier fc = new FilteredClassifier();
+			fc.setFilter(rm);
+			fc.setClassifier(wekamodel);
+			classifiers[i] = fc;
+			i++;
+		}
+		
+		//build the non-random forest
+		Vote voter = new Vote();
+		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+		String[] options = new String[2];
+		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+		try {
+			voter.setOptions(options);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		voter.setClassifiers(classifiers);
+		voter.setDebug(true);
+		//TODO set this properly voter.setCombinationRule();
+		// train and evaluate on the test set
+		Evaluation eval = null;
+		try {
+			voter.buildClassifier(getTrain());
+			// evaluate classifier and print some statistics
+			eval = new Evaluation(getTrain());
+			if(eval_method.equals("cross_validation")){
+				//this makes the game more stable in terms of scores
+				Random keep_same = new Random();
+				keep_same.setSeed(0);
+				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+			}else if(eval_method.equals("test_set")){
+				eval.evaluateModel(voter, test);
+			}else {
+				eval.evaluateModel(voter, getTrain());
+			}
+			//System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new metaExecution(voter,eval);
+	}
+
+
 
 	/***
 	 * convenience method for running learning algorithms on a set of 'cards'
