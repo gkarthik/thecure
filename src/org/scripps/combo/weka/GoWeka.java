@@ -43,7 +43,7 @@ public class GoWeka extends Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(go2genes.get("GO:0070830"));
+		//System.out.println(go2genes.get("GO:0070830"));
 		eval_method = "cross_validation";//"test_set";//"training_set";
 	}
 
