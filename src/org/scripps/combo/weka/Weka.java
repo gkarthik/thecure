@@ -78,7 +78,7 @@ public class Weka {
 		//		filterForNonZeroInfoGain();
 		//only use genes with metadata
 		filterForGeneIdMapping();
-		System.out.println("launching with "+getTrain().numAttributes()+" attributes.");
+//		System.out.println("launching with "+getTrain().numAttributes()+" attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
 		//add the right indexes
@@ -358,7 +358,7 @@ public class Weka {
 			this.eval = eval;
 		}//model.getClassifier().toString()+
 		public String toString(){
-			return "\nTree Accuracy on test set:"+eval.pctCorrect();
+			return "Tree Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
 
@@ -371,7 +371,7 @@ public class Weka {
 			this.eval = eval;
 		}
 		public String toString(){
-			return "\nMeta Accuracy on test set:"+eval.pctCorrect();
+			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
 	
@@ -466,7 +466,9 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
+	//	String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
+	//	double correct = eval.pctCorrect();
+	//	System.out.println("pae "+indices+" "+correct);
 		return new execution(fc,eval);
 	}
 
@@ -475,7 +477,7 @@ public class Weka {
 	 * input, a set of feature sets and a classifier model
 	 * output an execution result for the whole thing
 	 */
-	public metaExecution executeNonRandomForest(Set<String> indicesoff1, Classifier wekamodel){
+	public metaExecution executeNonRandomForest(Set<String> indicesoff1){
 		Set<String> indices_set = new HashSet<String>();
 		//remap indexes
 		for(String indices_ : indicesoff1){
@@ -488,7 +490,7 @@ public class Weka {
 			}
 			indices_set.add(indices);
 		}
-
+		
 		//create an array of classifiers that differ from each other based on the features that they use
 		Classifier[] classifiers = new Classifier[indices_set.size()];
 		int i = 0;
@@ -496,19 +498,31 @@ public class Weka {
 			// set a specific set of attributes to use to train the model
 			Remove rm = new Remove();
 			//don't remove the class attribute
+		//128,224,91,21,
 			rm.setAttributeIndices(indices+"last");
 			rm.setInvertSelection(true);
 			// build a classifier using only these attributes
 			FilteredClassifier fc = new FilteredClassifier();
 			fc.setFilter(rm);
-			fc.setClassifier(wekamodel);
+			fc.setClassifier(new J48());
 			classifiers[i] = fc;
 			i++;
+//			Evaluation eval;
+//			try {
+//				eval = new Evaluation(getTrain());
+//				fc.buildClassifier(getTrain());
+//				eval.crossValidateModel(fc, getTrain(), 10, new Random(0));
+//				System.out.println("nrf "+indices+" "+eval.pctCorrect());
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		
-		//build the non-random forest
+		
+//		//build the non-random forest
 		Vote voter = new Vote();
-		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
 		String[] options = new String[2];
 		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
 		try {
@@ -519,8 +533,7 @@ public class Weka {
 		}
 		voter.setClassifiers(classifiers);
 		voter.setDebug(true);
-		//TODO set this properly voter.setCombinationRule();
-		// train and evaluate on the test set
+		// train and evaluate 
 		Evaluation eval = null;
 		try {
 			voter.buildClassifier(getTrain());
@@ -531,17 +544,19 @@ public class Weka {
 				Random keep_same = new Random();
 				keep_same.setSeed(0);
 				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-			}else if(eval_method.equals("test_set")){
-				eval.evaluateModel(voter, test);
-			}else {
-				eval.evaluateModel(voter, getTrain());
 			}
+//			else if(eval_method.equals("test_set")){
+//				eval.evaluateModel(voter, test);
+//			}else {
+//				eval.evaluateModel(voter, getTrain());
+//			}
 			//System.out.println(eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return new metaExecution(voter,eval);
+
 	}
 
 

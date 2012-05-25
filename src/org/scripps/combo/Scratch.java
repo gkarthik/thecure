@@ -127,18 +127,16 @@ public class Scratch {
  * @throws IOException
  */
 	public static void testAllGOForest() throws IOException{
-		GoWeka s = new GoWeka();
+		GoWeka baseweka = new GoWeka();
 		//	System.out.println(s.pruneAndExecute("1,2,"));
 		int ngo = 0; 
 		Set<String> missing_geneids = new HashSet<String>();
 		Set<String> found_geneids = new HashSet<String>();
-		Set<String> keepers = new HashSet<String>();
-		J48 wekamodel = new J48();
-		wekamodel.setUnpruned(false); 
+
 		float best_score = 0;
-		List<String> keys = new ArrayList<String>(s.acc2name.keySet());
+		List<String> keys = new ArrayList<String>(baseweka.acc2name.keySet());
 		//only use go that map to at least one gene in the filtered dataset
-		keys = s.getGoAccsWithMapInFilteredData(keys);
+		keys = baseweka.getGoAccsWithMapInFilteredData(keys);
 		int p = keys.size();
 		//		int p = s.go2genes.keySet().size();
 		System.out.println(p+" usable go terms to test");
@@ -147,7 +145,7 @@ public class Scratch {
 		Set<String> indices = new HashSet<String>();
 		for(String go : keys){
 			p--;
-			Set<String> genes = s.go2genes.get(go);
+			Set<String> genes = baseweka.go2genes.get(go);
 			String atts = "";
 			//	System.out.println(genes.length+" genes in set");
 			int found = 0; int n_atts = 0;
@@ -155,7 +153,7 @@ public class Scratch {
 			String geness = "";
 			for(String gene : genes){
 				String id = gene;
-				List<Weka.card> cards = s.geneid_cards.get(id);
+				List<Weka.card> cards = baseweka.geneid_cards.get(id);
 				if(cards!=null){
 					found_geneids.add(gene);
 					found++;
@@ -170,17 +168,24 @@ public class Scratch {
 				}
 			} 
 			
-			if(found>0&&found<100){
-				Weka.execution e = s.pruneAndExecute(atts, wekamodel);
-				if(e.eval.pctCorrect()>69){
+			if(found>1&&found<100){
+				J48 wekamodel = new J48();
+				wekamodel.setUnpruned(false); 
+				Weka.execution e = baseweka.pruneAndExecute(atts, wekamodel);
+				double correct = e.eval.pctCorrect();
+				if(correct>69){
+					GoWeka s = new GoWeka();
 					ngo++;
-					System.out.println(ngo+"\n"+e.toString());
+					//System.out.println(ngo+"\n"+e.toString());
 					indices.add(atts);
 					//run the forest
-					wekamodel = new J48();
-					wekamodel.setUnpruned(true); 
-					metaExecution em = s.executeNonRandomForest(indices, wekamodel);
-					System.out.println("\n forest \n"+em.toString());
+					metaExecution em = s.executeNonRandomForest(indices);
+					if(em!=null){
+						System.out.println(ngo+"\ttree:\t"+e.toString()+"\tforest\t"+em.toString());
+					}else{
+						System.out.println(ngo);
+					}
+					s = null;
 				}
 				
 			}
