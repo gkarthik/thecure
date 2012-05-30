@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.Instances;
+import weka.core.Range;
 import weka.core.SelectedTag;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -63,11 +65,11 @@ public class Weka {
 			if (getTrain().classIndex() == -1){
 				getTrain().setClassIndex(getTrain().numAttributes() - 1);
 			}
-			//						source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
-			//						test = source.getDataSet();
-			//						if (test.classIndex() == -1){
-			//							test.setClassIndex(test.numAttributes() - 1);
-			//						}
+			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+			test = source.getDataSet();
+			if (test.classIndex() == -1){
+				test.setClassIndex(test.numAttributes() - 1);
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -78,7 +80,8 @@ public class Weka {
 		//		filterForNonZeroInfoGain();
 		//only use genes with metadata
 		filterForGeneIdMapping();
-//		System.out.println("launching with "+getTrain().numAttributes()+" attributes.");
+		System.out.println("launching with "+getTrain().numAttributes()+" train attributes.");
+		System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
 		//add the right indexes
@@ -86,6 +89,30 @@ public class Weka {
 		//export file
 		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
 		//get the random set up
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+	}
+
+	public Weka(){
+		//get the data 
+		DataSource source;
+		try {
+			source = new DataSource("/usr/local/data/vantveer/breastCancer-train.arff");
+
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
+			}
+			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+			test = source.getDataSet();
+			if (test.classIndex() == -1){
+				test.setClassIndex(test.numAttributes() - 1);
+			} 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
@@ -105,6 +132,61 @@ public class Weka {
 			e.printStackTrace();
 		}
 
+	}
+
+
+	public void filterTrainAndTestSetForNonZeroInfoGainAttsInTrain(){
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		InfoGainAttributeEval infogain = new InfoGainAttributeEval();
+		Ranker ranker = new Ranker();
+		String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(infogain);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(getTrain());
+			ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(getTrain(), as); 					
+			Instances filteredtest = new Instances(getTest());
+			Remove remove = new Remove();
+			Enumeration<Attribute> atts = filtered.enumerateAttributes();
+			List<Integer> keepers = new ArrayList<Integer>();
+			while(atts.hasMoreElements()){
+				Attribute f = atts.nextElement();
+				Attribute keep = filteredtest.attribute(f.name());
+				keepers.add(keep.index());
+			}
+			//keep the class index
+			keepers.add(getTest().classIndex());
+			setTrain(filtered);
+			remove.setInvertSelection(true);
+			int[] karray = new int[keepers.size()];
+			int c = 0;
+			for(Integer i : keepers){
+				karray[c] = i;
+				c++;
+			}
+			remove.setAttributeIndicesArray(karray);
+			try {
+				remove.setInputFormat(filteredtest);
+				setTest(Filter.useFilter(filteredtest, remove));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			//			System.out.println("launching with F "+getTrain().numAttributes()+" train attributes.");
+			//			System.out.println("launching with F "+getTest().numAttributes()+" test attributes.");
+			//			//test 
+			//			J48 j = new J48();
+			//			Evaluation eval = new Evaluation(getTrain());
+			//			j.buildClassifier(filtered);
+			//			eval.evaluateModel(j, filteredtest);
+			//			System.out.println(eval.toSummaryString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void filterForNonZeroInfoGain(){
@@ -159,6 +241,9 @@ public class Weka {
 		try {
 			remove.setInputFormat(getTrain());
 			setTrain(Filter.useFilter(getTrain(), remove));
+			if(getTest()!=null){
+				setTest(Filter.useFilter(getTest(), remove));
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -171,9 +256,9 @@ public class Weka {
 		while(input.hasMoreElements()){
 			Attribute a = input.nextElement();
 			card c = att_meta.get(a.name());
-			if(c.getUnique_id().equals("1999")){
-				System.out.println("ELF3333 "+c.getName()+" "+c.getAtt_name());
-			}
+			//			if(c.getUnique_id().equals("1999")){
+			//				System.out.println("ELF3333 "+c.getName()+" "+c.getAtt_name());
+			//			}
 			if(c!=null){
 				//also sets index properly for the first time..
 				c.setAtt_index(a.index());
@@ -190,6 +275,9 @@ public class Weka {
 				String symbol = c.getName();
 				if(symbol!=null){
 					getTrain().renameAttribute(a, symbol);
+					if(getTest()!=null){
+						getTest().renameAttribute(a, symbol);
+					}
 				}
 			}
 		}
@@ -370,12 +458,16 @@ public class Weka {
 			this.model = model;
 			this.eval = eval;
 		}
+		public metaExecution(Evaluation eval) {
+
+			this.eval = eval;
+		}
 		public String toString(){
 			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
-	
-	
+
+
 	/**
 	 * Trains a j48 decision tree using just the attributes specified in indices
 	 * @param indices for the attributes to use to train the model
@@ -466,9 +558,9 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	//	String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
-	//	double correct = eval.pctCorrect();
-	//	System.out.println("pae "+indices+" "+correct);
+		//	String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
+		//	double correct = eval.pctCorrect();
+		//	System.out.println("pae "+indices+" "+correct);
 		return new execution(fc,eval);
 	}
 
@@ -490,7 +582,7 @@ public class Weka {
 			}
 			indices_set.add(indices);
 		}
-		
+
 		//create an array of classifiers that differ from each other based on the features that they use
 		Classifier[] classifiers = new Classifier[indices_set.size()];
 		int i = 0;
@@ -498,7 +590,7 @@ public class Weka {
 			// set a specific set of attributes to use to train the model
 			Remove rm = new Remove();
 			//don't remove the class attribute
-		//128,224,91,21,
+			//128,224,91,21,
 			rm.setAttributeIndices(indices+"last");
 			rm.setInvertSelection(true);
 			// build a classifier using only these attributes
@@ -507,22 +599,12 @@ public class Weka {
 			fc.setClassifier(new J48());
 			classifiers[i] = fc;
 			i++;
-//			Evaluation eval;
-//			try {
-//				eval = new Evaluation(getTrain());
-//				fc.buildClassifier(getTrain());
-//				eval.crossValidateModel(fc, getTrain(), 10, new Random(0));
-//				System.out.println("nrf "+indices+" "+eval.pctCorrect());
-//			} catch (Exception e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 		}
-		
-		
-//		//build the non-random forest
+
+
+		//		//build the non-random forest
 		Vote voter = new Vote();
-//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
 		String[] options = new String[2];
 		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
 		try {
@@ -545,12 +627,12 @@ public class Weka {
 				keep_same.setSeed(0);
 				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
 			}
-//			else if(eval_method.equals("test_set")){
-//				eval.evaluateModel(voter, test);
-//			}else {
-//				eval.evaluateModel(voter, getTrain());
-//			}
-			//System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+			else if(eval_method.equals("test_set")){
+				eval.evaluateModel(voter, test);
+			}else {
+				eval.evaluateModel(voter, getTrain());
+			}
+			//	System.out.println(eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -559,7 +641,161 @@ public class Weka {
 
 	}
 
+	/***
+	 * Choose which of the input attribute sets to include in the meta classifier using an evaluation step
+	 * included within the cross-validation
+	 * @param indicesoff1
+	 * @return
+	 * @throws Exception 
+	 */
+	public metaExecution executeNonRandomForestWithInternalCVparamselection(Set<String> indicesoff1) throws Exception{
+		Set<String> indices_set = new HashSet<String>();
+		//remap indexes
+		for(String indices_ : indicesoff1){
+			String indices = "";
+			for(String a : indices_.split(",")){
+				if(!a.equals("")){
+					int i = 1+Integer.parseInt(a);
+					indices += i+",";
+				}
+			}
+			indices_set.add(indices);
+		}
 
+		//start outer cross-validation loop
+		int numFolds = 10;
+		// Make a copy of the data we can reorder
+		Instances data = new Instances(getTrain());
+		Evaluation eval = new Evaluation(data);
+		data.randomize(getRand());
+		if (data.classAttribute().isNominal()) {
+			data.stratify(numFolds);
+		}
+
+		// Do the folds
+		for (int i = 0; i < numFolds; i++) {
+			Instances thistrain = data.trainCV(numFolds, i, getRand());
+			eval.setPriors(thistrain);
+			//execute attribute selection filter here
+			Classifier voter = getCVSelectedVoterBest(thistrain, indices_set);
+			Classifier copiedClassifier = Classifier.makeCopy(voter);
+			copiedClassifier.buildClassifier(thistrain);
+			Instances thistest = data.testCV(numFolds, i);
+			eval.evaluateModel(copiedClassifier, thistest);
+		}
+
+		return new metaExecution(eval);
+
+
+	}
+
+
+	/**
+	 * Given a particular training set (e.g. the training set for one fold of a cross-validation run)
+	 * generate a voter classifier using only the subclassifiers that perform better than min_pctCorrect
+	 * in 10-f cross-validation within this dataset.
+	 * 
+	 * If no subclassifiers meet the threshold, return the single best tree
+	 * @param thistrain
+	 * @param classifiers
+	 * @return
+	 */
+	public Classifier getCVSelectedVoterThresholded(Instances thistrain, Classifier[] classifiers) {
+		int min = 69;
+		//first select only the finest component trees 
+		List<Classifier> selected = new ArrayList<Classifier>();
+		int best_index = 0; double best = 0;
+		for(int i=0; i<classifiers.length; i++){
+			Evaluation e;
+			try {
+				e = new Evaluation(thistrain);
+				e.crossValidateModel(classifiers[i], thistrain, 10, getRand());
+				if(e.pctCorrect()>min){
+					selected.add(classifiers[i]);
+				}
+				if(e.pctCorrect()>best){
+					best = e.pctCorrect();
+					best_index = i;
+				}
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		if(selected.size()<1){
+			return classifiers[best_index];
+		}
+		//now build the non-random forest
+		Vote voter = new Vote();
+		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+		String[] options = new String[2];
+		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+		try {
+			voter.setOptions(options);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		voter.setClassifiers(selected.toArray(new Classifier[selected.size()]));	
+		return voter;
+	}
+
+	public Classifier getCVSelectedVoterBest(Instances thistrain, Set<String> indices_set) {
+		//create an array of classifiers that differ from each other based on the features that they use
+		Classifier[] classifiers = new Classifier[indices_set.size()];
+		int ii = 0;
+		for(String indices : indices_set){
+			// set a specific set of attributes to use to train the model
+			Remove rm = new Remove();
+			//don't remove the class attribute
+			//128,224,91,21,
+			rm.setAttributeIndices(indices+"last");
+			rm.setInvertSelection(true);
+			// build a classifier using only these attributes
+			FilteredClassifier fc = new FilteredClassifier();
+			fc.setFilter(rm);
+			fc.setClassifier(new J48());
+			classifiers[ii] = fc;
+			ii++;
+		}
+
+		int n_trees = 7;
+		if(classifiers.length<n_trees){
+			n_trees = classifiers.length;
+		}
+		//first select only the finest component trees 
+		Map<Integer, Double> selected = new HashMap<Integer, Double>();
+		for(int i=0; i<classifiers.length; i++){
+			Evaluation e;
+			try {
+				e = new Evaluation(thistrain);
+				e.crossValidateModel(classifiers[i], thistrain, 10, getRand());
+				selected.put(i, e.pctCorrect());
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		//now build the non-random forest
+		Vote voter = new Vote();
+		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+		String[] options = new String[2];
+		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+		try {
+			voter.setOptions(options);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		List<Integer> sorted_indexes = MapFun.sortMapByValue(selected);
+		Collections.reverse(sorted_indexes);
+		List<Classifier> keepers = new ArrayList<Classifier>();
+		for(int i=0; i<n_trees; i++){
+			keepers.add(classifiers[(int)sorted_indexes.get(i)]);
+		}
+		voter.setClassifiers(keepers.toArray(new Classifier[keepers.size()]));	
+		return voter;
+	}
 
 	/***
 	 * convenience method for running learning algorithms on a set of 'cards'

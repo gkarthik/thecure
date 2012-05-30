@@ -34,7 +34,7 @@ public class GoWeka extends Weka {
 	 * 
 	 */
 	public GoWeka() {
-		super(true);//false to load unfiltered data (filter seems to screw things up somewhere here)		
+		super(false);//false to load unfiltered data (filter seems to screw things up somewhere here)		
 		String annotations = "/usr/local/data/go2gene_3_51.txt";		
 		try {
 			go2genes = Annotations.readCachedGoAcc2Genes(annotations);
