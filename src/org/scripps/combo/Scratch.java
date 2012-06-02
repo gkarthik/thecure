@@ -20,13 +20,18 @@ import org.scripps.combo.weka.Weka.metaExecution;
 import org.scripps.ontologies.go.Annotations;
 import org.scripps.ontologies.go.GOowl;
 import org.scripps.ontologies.go.GOterm;
+import org.scripps.util.Gene;
+import org.scripps.util.MapFun;
+import org.scripps.util.MyGeneInfo;
 
 import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.ChiSquaredAttributeEval;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
+import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.meta.AttributeSelectedClassifier;
 import weka.classifiers.rules.JRip;
@@ -49,10 +54,11 @@ public class Scratch {
 	public static void main(String[] args) throws IOException  {
 
 		//buildrankedListofGenesForEnrichmentTesting();
-		//String out = "/Users/bgood/genegames/go_group_trees_filtered_with_pairs_with_test.txt";
-		//testAllGoClassesAsFeatureSets(out);
+		//		String out = "/Users/bgood/genegames/go_group_trees_unfiltered_10_10cv.txt";
+		//		testAllGoClassesAsFeatureSets(out);
 		//testAllGOForest();
-		make70geneClassifier();
+		//makeAndTest70geneClassifier();
+		crossvalidateTest();
 	}
 
 	public static void buildrankedListofGenesForEnrichmentTesting() {
@@ -154,11 +160,23 @@ public class Scratch {
 		int p = keys.size();
 		//		int p = s.go2genes.keySet().size();
 		System.out.println(p+" usable go terms to test");
-		System.out.println("ngo\tgo\tterm\tgo_pctCorrect()_cv\tgo_pctCorrect()_test\tforest_pctCorrect()_cv\tforest_pctCorrect()_test");
+		//		System.out.println(ngo+"\t"+go+"\t"+got.getTerm()+"\t"+e.eval.pctCorrect()+"\t"+e.avg_percent_correct+"\t"+etestset.eval.pctCorrect()+"\t"+em.eval.pctCorrect()+"\t"+emtestset.avg_percent_correct+"\t"+emtestset.eval.pctCorrect());
+
+		System.out.println("ngo\tgo\tterm\tgo_pctCorrect()_cv\tavg_cv_pct_correct_10_10\tgo_pctCorrect()_test\tforest_pctCorrect()_cv\tforest_10-10dv\tforest_pctCorrect()_test");
 
 		//track the sets of features for the forest
 		Set<String> indices = new HashSet<String>();
 		Set<String> used_go = new HashSet<String>();
+
+		keys = new ArrayList<String>();
+		keys.add("GO:0016796");
+		keys.add("GO:0005753");
+		keys.add("GO:0043297");
+		keys.add("GO:0048702");
+		keys.add("GO:0022601");
+		keys.add("GO:0071942");
+		keys.add("GO:0070830");
+
 		for(String go : keys){
 			p--;
 			Set<String> genes = baseweka.go2genes.get(go);
@@ -201,47 +219,125 @@ public class Scratch {
 					metaExecution emtestset = baseweka.executeNonRandomForest(indices);
 					Weka.execution etestset = baseweka.pruneAndExecute(atts, wekamodel);
 					GOterm got = gowl.makeGOterm(go);
-					System.out.println(ngo+"\t"+go+"\t"+got.getTerm()+"\t"+e.eval.pctCorrect()+"\t"+etestset.eval.pctCorrect()+"\t"+em.eval.pctCorrect()+"\t"+emtestset.eval.pctCorrect());
+					//					System.out.println(ngo+"\t"+go+"\t"+got.getTerm()+"\t"+e.eval.pctCorrect()+"\t"+e.avg_percent_correct+"\t"+etestset.eval.pctCorrect()+"\t"+em.eval.pctCorrect()+"\t"+emtestset.eval.pctCorrect());
+					System.out.println(ngo+"\t"+go+"\t"+got.getTerm()+"\t"+e.eval.pctCorrect()+"\t"+e.avg_percent_correct+"\t"+etestset.eval.pctCorrect()+"\t"+em.eval.pctCorrect()+"\t"+em.avg_percent_correct+"\t"+emtestset.eval.pctCorrect());
+
 				}			
 			}
 			//runs the forest using only internal cross-validation for GO-based attribute selection
 			//(no cheating by peaking ahead...)
-			//			if(found>1&&found<25){
-			//				ngo++;
-			//				indices.add(atts);
-			//				used_go.add(go);
-			//				//run the forest
-			//				//metaExecution em = baseweka.executeNonRandomForest(indices);
-			//				if(ngo%100==0){
-			//					metaExecution em;
-			//					try {
-			//						em = baseweka.executeNonRandomForestWithInternalCVparamselection(indices);
-			//						if(em!=null){
-			//							System.out.println(ngo+"\t"+go+"\t"+em.eval.pctCorrect());
-			//						}else{
-			//							System.out.println(ngo);
-			//						}
-			//					} catch (Exception e1) {
-			//						// TODO Auto-generated catch block
-			//						e1.printStackTrace();
-			//					}
-			//				}
-			//			}			
+			//						if(found>1&&found<25){
+			//							ngo++;
+			//							indices.add(atts);
+			//							used_go.add(go);
+			//							//run the forest
+			//							//metaExecution em = baseweka.executeNonRandomForest(indices);
+			//							if(ngo%10==0){
+			//								metaExecution cross_validated;
+			//								try {
+			//									cross_validated = baseweka.executeNonRandomForestWithInternalCVparamselection(indices);
+			//									if(cross_validated!=null){
+			//										//train and test on test set
+			//										int n_trees = 7;
+			//										Classifier voter = baseweka.getCVSelectedVoterBest(baseweka.getTrain(), indices, n_trees);
+			//										voter.buildClassifier(baseweka.getTrain());
+			//										Evaluation test_set = new Evaluation(baseweka.getTrain());
+			//										test_set.evaluateModel(voter, baseweka.getTest());
+			//										Evaluation training_set = new Evaluation(baseweka.getTrain());
+			//										training_set.evaluateModel(voter, baseweka.getTrain());
+			//										System.out.println(ngo+"\t"+go+"\t"+cross_validated.eval.pctCorrect()+"\t"+test_set.pctCorrect()+"\t"+training_set.pctCorrect());
+			//									}else{
+			//										System.out.println(ngo+"\tno model");
+			//									}
+			//								} catch (Exception e1) {
+			//									// TODO Auto-generated catch block
+			//									e1.printStackTrace();
+			//								}
+			//							}
+			//						}			
 		}
 
 
 	}
 
+	/** 
+	 * estimate value of cross-validation on Golub dataset
+	 */
+	public static void crossvalidateTest(){
+		//load weka with full training and testing set
+		String train_file = "/Users/bgood/programs/Weka-3-6/data/leukemia_train_38x7129.arff"; String test_file = "/Users/bgood/programs/Weka-3-6/data/leukemia_test_34x7129.arff";
+		Weka weka = new Weka(train_file, test_file);
+		Instances realtrain = new Instances(weka.getTrain());
+		Instances realtest = new Instances(weka.getTest());
+		System.out.println("eval_train.pctCorrect()\teval_cv.pctCorrect()\teval_test.pctCorrect()");
+		for(int r=0;r<1000;r++){
+			weka.setTrain(new Instances(realtrain));
+			weka.setTest(new Instances(realtest));
+			List<Integer> keepers = new ArrayList<Integer>();
+			for(int g=0; g<100; g++){
+				int randomNum = weka.getRand().nextInt(weka.getTrain().numAttributes()-1);
+				keepers.add(randomNum);
+			}
+			//keep the class index
+			keepers.add(weka.getTrain().classIndex());
+			//remove the rest
+			Remove remove = new Remove();
+			remove.setInvertSelection(true);
+			int[] karray = new int[keepers.size()];
+			int c = 0;
+			for(Integer i : keepers){
+				karray[c] = i;
+				c++;
+			}
+			remove.setAttributeIndicesArray(karray);
+			try {
+				remove.setInputFormat(weka.getTrain());
+				weka.setTrain(Filter.useFilter(weka.getTrain(), remove));
+				remove.setInputFormat(weka.getTest());
+				weka.setTest(Filter.useFilter(weka.getTest(), remove));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			Classifier classifier = new NaiveBayes();
+
+			//now evaluate it in cv and test set
+			try {
+				//cross-validation
+				Evaluation eval_cv = new Evaluation(weka.getTrain());
+				eval_cv.crossValidateModel(classifier, weka.getTrain(), 10, weka.getRand());
+				//System.out.println("10f cross-validation\n"+eval_cv.toSummaryString());
+				//test set
+				Evaluation eval_test = new Evaluation(weka.getTrain());
+				classifier.buildClassifier(weka.getTrain());
+				eval_test.evaluateModel(classifier, weka.getTest());
+				//System.out.println("\nTest Set\n"+eval_test.toSummaryString());
+				//training set 
+				Evaluation eval_train = new Evaluation(weka.getTrain());
+				classifier.buildClassifier(weka.getTrain());
+				eval_train.evaluateModel(classifier, weka.getTrain());
+				//System.out.println("\nTraining set\n"+eval_train.toSummaryString());
+				System.out.println(eval_train.pctCorrect()+"\t"+eval_cv.pctCorrect()+"\t"+eval_test.pctCorrect());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}	
+
 	/** try to reproduce the result
 	 *  from the 2002 VantVeer paper
 	 */
-	public static void make70geneClassifier(){
+	public static void makeAndTest70geneClassifier(){
 		//load weka with full training and testing set
 		Weka weka = new Weka();
 		//reduce to about 5,000 genes by eliminating genes not significantly regulated in at least three samples
 		System.out.println("Train start n atts = "+weka.getTrain().numAttributes());
 		Enumeration<Attribute> atts = weka.getTrain().enumerateAttributes();
 		List<Integer> keepers = new ArrayList<Integer>();
+		int with_gene = 0;
 		while(atts.hasMoreElements()){
 			Attribute att = atts.nextElement();
 			//check if we want to keep it
@@ -264,11 +360,19 @@ public class Scratch {
 			}
 			if(keep){
 				keepers.add(att.index());
+				//check for gene, go annotations
+				card card = weka.att_meta.get(att.name());
+				if(card!=null){
+					if(card.getUnique_id()!=null){
+						with_gene++;	
+					}
+				}
 			}
 		}
 		//keep the class index
 		keepers.add(weka.getTrain().classIndex());
-		System.out.println("First filter reduces atts to: "+keepers.size());
+		System.out.println("First filter reduces atts to: "+keepers.size()+" with gene "+with_gene);
+		with_gene = 0;
 		//remove the baddies
 		Remove remove = new Remove();
 		remove.setInvertSelection(true);
@@ -289,21 +393,21 @@ public class Scratch {
 			e.printStackTrace();
 		}
 		System.out.println("Train/test filtered n atts = "+weka.getTrain().numAttributes()+"/"+weka.getTest().numAttributes());
-		
-	//lump the following into one attribute selected classifier
+
+		//lump the following into one attribute selected classifier
 		//calculate the correlation coefficient between each gene and disease outcome 
 		//find 231 genes with correlation <-0.3 or >0.3
 		//sort the 231 genes by amount of correlation
 		//test top 70 genes (they used the correlations of the expression profile of the 'leave-one-out' sample with the mean expression levels of the remaining samples from the good and the poor prognosis patients, respectively)
-		
+
 		AttributeSelectedClassifier classifier = new AttributeSelectedClassifier();
 		ChiSquaredAttributeEval evaluator = new ChiSquaredAttributeEval();
 		Ranker search = new Ranker();
 		search.setNumToSelect(70);
 		classifier.setEvaluator(evaluator);
 		classifier.setSearch(search);
-		classifier.setClassifier(new J48());
-		
+		classifier.setClassifier(new SMO());
+
 		//now evaluate it in cv and test set
 		try {
 			//cross-validation
@@ -320,12 +424,35 @@ public class Scratch {
 			classifier.buildClassifier(weka.getTrain());
 			eval_train.evaluateModel(classifier, weka.getTrain());
 			System.out.println("\nTraining set\n"+eval_train.toSummaryString());
+
+			//output selected attribute and metadata
+			Map<String, Set<String>> go2genes = Annotations.readCachedGoAcc2Genes("/usr/local/data/go2gene_3_51.txt");
+			Map<String, Set<String>> gene2gos = MapFun.flipMapStringSetStrings(go2genes);
+			AttributeSelection as = new AttributeSelection();
+			as.setEvaluator(evaluator);
+			as.setInputFormat(weka.getTrain());
+			as.setSearch(search);
+			Instances filtered = Filter.useFilter(weka.getTrain(), as); 					
+			Enumeration<Attribute> filtered_atts = filtered.enumerateAttributes();
+			while(filtered_atts.hasMoreElements()){
+				Attribute f = filtered_atts.nextElement();
+				card card = weka.att_meta.get(f.name());
+				if(card!=null){
+					if(card.getUnique_id()!=null){
+						with_gene++;	
+						System.out.println(card.att_name+"\t"+card.name+"\t"+card.unique_id+"\t"+gene2gos.get(card.getUnique_id()));
+					}
+				}else{
+					System.out.println(f.name());
+				}
+			}
+			System.out.println("NUm of 70 with gene id: "+with_gene);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+
+
 	}
 
 	public static void testAllGoClassesAsFeatureSets(String out) throws IOException{
@@ -349,7 +476,7 @@ public class Scratch {
 		//		int p = s.go2genes.keySet().size();
 		System.out.println(p+" usable go terms to test");
 		FileWriter f = new FileWriter(out);
-		f.write("go	pctcorrect_cv	pctcorrect_test	genes	att name	att id");
+		f.write("go	pctcorrect_cv_10-10	pctcorrect_cv_1_10	pctcorrect_test	genes	att name	att id");
 		//		for(String go : s.go2genes.keySet()){
 		for(String go : keys){
 			p--;
@@ -383,13 +510,13 @@ public class Scratch {
 				Weka.execution e = s.pruneAndExecute(atts, wekamodel);
 				s.setEval_method("test_set");
 				Weka.execution e_test = s.pruneAndExecute(atts, wekamodel);
-				f.write(go+"\t"+e.eval.pctCorrect()+"\t"+e_test.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts+"\n");
-				if(e.eval.pctCorrect()>70){
+				f.write(go+"\t"+e.avg_percent_correct+"\t"+e.eval.pctCorrect()+"\t"+e_test.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts+"\n");
+				if(e.avg_percent_correct>70){
 					keepers.add(go);
 				}
-				if(e.eval.pctCorrect()> best_score){
-					best_score = (float)e.eval.pctCorrect();
-					System.out.println(go+"\t"+e.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts);
+				if(e.avg_percent_correct> best_score){
+					best_score = (float)e.avg_percent_correct;
+					System.out.println(go+"\t"+e.avg_percent_correct+"\t"+e.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts);
 				}
 			}
 			if(p%100==0){
@@ -397,62 +524,62 @@ public class Scratch {
 			}
 		}
 		//check combos
-		p = keepers.size()*keepers.size();
-		System.out.println(p+" usable combo go terms to test");
-		Set<String> done = new HashSet<String>();
-		for(String go1 : keepers){
-			for(String go2 : new HashSet<String>(keepers)){
-				p--;
-				String go2go = go1+go2; String go2go2 = go2+go1;
-				if(done.contains(go2go)||done.contains(go2go2)){
-					continue;
-				}
-				done.add(go2go); done.add(go2go2);
-				Set<String> genes = s.go2genes.get(go1);
-				genes.addAll(s.go2genes.get(go2));
-
-				String atts = "";
-				//	System.out.println(genes.length+" genes in set");
-				int found = 0; int n_atts = 0;
-				String names = "";
-				String geness = "";
-				for(String gene : genes){
-					String id = gene;
-					List<Weka.card> cards = s.geneid_cards.get(id);
-					if(cards!=null){
-						found_geneids.add(gene);
-						found++;
-						for(Weka.card card : cards){
-							atts+=card.getAtt_index()+",";
-							n_atts++;
-							geness+=gene+",";
-							names+=card.getAtt_name()+",";
-						}
-					}else{
-						missing_geneids.add(gene);
-					}
-				} 
-				if(found>0&&found<21){
-					ngo++;
-					//System.out.println(ngo+" go "+go+" had "+genes.length+" found "+found+" atts: "+atts+" genes: "+geness);
-					//run the tree on the set and score it
-					s.setEval_method("cross_validation");
-					Weka.execution e = s.pruneAndExecute(atts, wekamodel);
-					s.setEval_method("test_set");
-					Weka.execution e_test = s.pruneAndExecute(atts, wekamodel);								
-					f.write(go2go+"\t"+e.eval.pctCorrect()+"\t"+e_test.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts+"\n");
-					if(e.eval.pctCorrect()> best_score){
-						best_score = (float)e.eval.pctCorrect();
-						System.out.println(go2go+"\t"+e.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts);
-					}
-				}
-				if(p%100==0){
-					System.out.println(1-((float)p/(float)(keepers.size()*keepers.size()))+" percent done of"+p);
-				}
-			}
-		}
+		//		p = keepers.size()*keepers.size();
+		//		System.out.println(p+" usable combo go terms to test");
+		//		Set<String> done = new HashSet<String>();
+		//		for(String go1 : keepers){
+		//			for(String go2 : new HashSet<String>(keepers)){
+		//				p--;
+		//				String go2go = go1+go2; String go2go2 = go2+go1;
+		//				if(done.contains(go2go)||done.contains(go2go2)){
+		//					continue;
+		//				}
+		//				done.add(go2go); done.add(go2go2);
+		//				Set<String> genes = s.go2genes.get(go1);
+		//				genes.addAll(s.go2genes.get(go2));
+		//
+		//				String atts = "";
+		//				//	System.out.println(genes.length+" genes in set");
+		//				int found = 0; int n_atts = 0;
+		//				String names = "";
+		//				String geness = "";
+		//				for(String gene : genes){
+		//					String id = gene;
+		//					List<Weka.card> cards = s.geneid_cards.get(id);
+		//					if(cards!=null){
+		//						found_geneids.add(gene);
+		//						found++;
+		//						for(Weka.card card : cards){
+		//							atts+=card.getAtt_index()+",";
+		//							n_atts++;
+		//							geness+=gene+",";
+		//							names+=card.getAtt_name()+",";
+		//						}
+		//					}else{
+		//						missing_geneids.add(gene);
+		//					}
+		//				} 
+		//				if(found>0&&found<21){
+		//					ngo++;
+		//					//System.out.println(ngo+" go "+go+" had "+genes.length+" found "+found+" atts: "+atts+" genes: "+geness);
+		//					//run the tree on the set and score it
+		//					s.setEval_method("cross_validation");
+		//					Weka.execution e = s.pruneAndExecute(atts, wekamodel);
+		//					s.setEval_method("test_set");
+		//					Weka.execution e_test = s.pruneAndExecute(atts, wekamodel);								
+		//					f.write(go2go+"\t"+e.eval.pctCorrect()+"\t"+e_test.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts+"\n");
+		//					if(e.eval.pctCorrect()> best_score){
+		//						best_score = (float)e.eval.pctCorrect();
+		//						System.out.println(go2go+"\t"+e.eval.pctCorrect()+"\t"+n_atts+"\t"+geness+"\t"+names+"\t"+atts);
+		//					}
+		//				}
+		//				if(p%100==0){
+		//					System.out.println(1-((float)p/(float)(keepers.size()*keepers.size()))+" percent done of"+p);
+		//				}
+		//			}
+		//		}
 		f.close();
-		System.out.println("missing genes\t"+missing_geneids.size()+"\tfound ids\t"+found_geneids.size());
+		//		System.out.println("missing genes\t"+missing_geneids.size()+"\tfound ids\t"+found_geneids.size());
 
 	}
 

@@ -19,6 +19,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/OnTools"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/weka-src"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

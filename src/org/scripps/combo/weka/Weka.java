@@ -113,12 +113,35 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
 	}
 
+	public Weka(String train_file, String test_file){
+		//get the data 
+		DataSource source;
+		try {
+			source = new DataSource(train_file);
 
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
+			}
+			source = new DataSource(test_file);
+			test = source.getDataSet();
+			if (test.classIndex() == -1){
+				test.setClassIndex(test.numAttributes() - 1);
+			} 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+	}
 
 	public void exportArff(Instances dataset, String outfile){
 		ArffSaver saver = new ArffSaver();
@@ -440,23 +463,27 @@ public class Weka {
 	public class execution{
 		public FilteredClassifier model;
 		public Evaluation eval;
-		public execution(FilteredClassifier model, Evaluation eval) {
+		public double avg_percent_correct;
+		public execution(FilteredClassifier model, Evaluation eval, double avg_percent_correct) {
 			super();
 			this.model = model;
 			this.eval = eval;
+			this.avg_percent_correct = avg_percent_correct;
 		}//model.getClassifier().toString()+
 		public String toString(){
-			return "Tree Accuracy on test set:"+eval.pctCorrect();
+			return "Tree Accuracy on test set:"+avg_percent_correct;
 		}
 	}
 
 	public class metaExecution{
 		public Classifier model;
 		public Evaluation eval;
-		public metaExecution(Classifier model, Evaluation eval) {
+		public double avg_percent_correct;
+		public metaExecution(Classifier model, Evaluation eval, double avg_percent_correct) {
 			super();
 			this.model = model;
 			this.eval = eval;
+			this.avg_percent_correct = avg_percent_correct;			
 		}
 		public metaExecution(Evaluation eval) {
 
@@ -497,15 +524,19 @@ public class Weka {
 		fc.setClassifier(j48);
 		// train and evaluate on the test set
 		Evaluation eval = null;
+		double avg_pct_correct = 0;
 		try {
 			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
-				Random keep_same = new Random();
-				keep_same.setSeed(0);
-				//	System.out.println("seed "+keep_same.nextInt());
-				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+				for(int r=0; r<10; r++){
+					Random keep_same = new Random();
+					keep_same.setSeed(r);
+					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
@@ -517,7 +548,7 @@ public class Weka {
 			e.printStackTrace();
 		}
 
-		return new execution(fc,eval);
+		return new execution(fc,eval, avg_pct_correct);
 	}
 
 	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel){
@@ -539,15 +570,20 @@ public class Weka {
 		fc.setClassifier(wekamodel);
 		// train and evaluate on the test set
 		Evaluation eval = null;
+		double avg_pct_correct = 0;
 		try {
 			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
-				Random keep_same = new Random();
-				keep_same.setSeed(0);
-				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+				for(int r=0; r<10; r++){
+					Random keep_same = new Random();
+					keep_same.setSeed(r);
+					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
@@ -561,7 +597,7 @@ public class Weka {
 		//	String tree = fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false);
 		//	double correct = eval.pctCorrect();
 		//	System.out.println("pae "+indices+" "+correct);
-		return new execution(fc,eval);
+		return new execution(fc,eval, avg_pct_correct);
 	}
 
 	/***
@@ -617,15 +653,23 @@ public class Weka {
 		voter.setDebug(true);
 		// train and evaluate 
 		Evaluation eval = null;
+		double avg_pct_correct = 0;
 		try {
 			voter.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
-				//this makes the game more stable in terms of scores
-				Random keep_same = new Random();
-				keep_same.setSeed(0);
-				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+				for(int r=0; r<10; r++){
+					Random keep_same = new Random();
+					keep_same.setSeed(r);
+					eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/10;
+//				//this makes the game more stable in terms of scores
+//				Random keep_same = new Random();
+//				keep_same.setSeed(0);
+//				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
 			}
 			else if(eval_method.equals("test_set")){
 				eval.evaluateModel(voter, test);
@@ -637,7 +681,7 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return new metaExecution(voter,eval);
+		return new metaExecution(voter,eval,avg_pct_correct);
 
 	}
 
@@ -677,7 +721,8 @@ public class Weka {
 			Instances thistrain = data.trainCV(numFolds, i, getRand());
 			eval.setPriors(thistrain);
 			//execute attribute selection filter here
-			Classifier voter = getCVSelectedVoterBest(thistrain, indices_set);
+			int n_trees = 7;
+			Classifier voter = getCVSelectedVoterBest(thistrain, indices_set, n_trees);
 			Classifier copiedClassifier = Classifier.makeCopy(voter);
 			copiedClassifier.buildClassifier(thistrain);
 			Instances thistest = data.testCV(numFolds, i);
@@ -700,7 +745,7 @@ public class Weka {
 	 * @param classifiers
 	 * @return
 	 */
-	public Classifier getCVSelectedVoterThresholded(Instances thistrain, Classifier[] classifiers) {
+	public Classifier getCVSelectedVoterThresholded___(Instances thistrain, Classifier[] classifiers) {
 		int min = 69;
 		//first select only the finest component trees 
 		List<Classifier> selected = new ArrayList<Classifier>();
@@ -739,8 +784,16 @@ public class Weka {
 		voter.setClassifiers(selected.toArray(new Classifier[selected.size()]));	
 		return voter;
 	}
-
-	public Classifier getCVSelectedVoterBest(Instances thistrain, Set<String> indices_set) {
+	/**
+	 * Given a particular training set (e.g. the training set for one fold of a cross-validation run)
+	 * generate a voter classifier using only the best n_trees subclassifiers as determined by 10-f 
+	 * cross-validation within this dataset.
+	 * 
+	 * @param thistrain
+	 * @param classifiers
+	 * @return
+	 */
+	public Classifier getCVSelectedVoterBest(Instances thistrain, Set<String> indices_set, int n_trees) {
 		//create an array of classifiers that differ from each other based on the features that they use
 		Classifier[] classifiers = new Classifier[indices_set.size()];
 		int ii = 0;
@@ -759,7 +812,6 @@ public class Weka {
 			ii++;
 		}
 
-		int n_trees = 7;
 		if(classifiers.length<n_trees){
 			n_trees = classifiers.length;
 		}
