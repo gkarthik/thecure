@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.scripps.combo.weka.GoWeka;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.card;
@@ -27,6 +29,7 @@ import org.scripps.util.MyGeneInfo;
 import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.ChiSquaredAttributeEval;
 import weka.attributeSelection.InfoGainAttributeEval;
+import weka.attributeSelection.OneRAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
@@ -261,71 +264,107 @@ public class Scratch {
 	}
 
 	/** 
-	 * estimate value of cross-validation on Golub dataset
+	 * estimate value of cross-validation on selected dataset
 	 */
 	public static void crossvalidateTest(){
 		//load weka with full training and testing set
-		String train_file = "/Users/bgood/programs/Weka-3-6/data/leukemia_train_38x7129.arff"; String test_file = "/Users/bgood/programs/Weka-3-6/data/leukemia_test_34x7129.arff";
-		Weka weka = new Weka(train_file, test_file);
-		Instances realtrain = new Instances(weka.getTrain());
-		Instances realtest = new Instances(weka.getTest());
-		System.out.println("eval_train.pctCorrect()\teval_cv.pctCorrect()\teval_test.pctCorrect()");
-		for(int r=0;r<1000;r++){
-			weka.setTrain(new Instances(realtrain));
-			weka.setTest(new Instances(realtest));
-			List<Integer> keepers = new ArrayList<Integer>();
-			for(int g=0; g<100; g++){
-				int randomNum = weka.getRand().nextInt(weka.getTrain().numAttributes()-1);
-				keepers.add(randomNum);
-			}
-			//keep the class index
-			keepers.add(weka.getTrain().classIndex());
-			//remove the rest
-			Remove remove = new Remove();
-			remove.setInvertSelection(true);
-			int[] karray = new int[keepers.size()];
-			int c = 0;
-			for(Integer i : keepers){
-				karray[c] = i;
-				c++;
-			}
-			remove.setAttributeIndicesArray(karray);
-			try {
-				remove.setInputFormat(weka.getTrain());
-				weka.setTrain(Filter.useFilter(weka.getTrain(), remove));
-				remove.setInputFormat(weka.getTest());
-				weka.setTest(Filter.useFilter(weka.getTest(), remove));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		//		String train_file = "/Users/bgood/data/arrays/Golub/leukemia_train_38x7129.arff"; String test_file = "/Users/bgood/data/arrays/Golub/leukemia_test_34x7129.arff";
+		String train_file = "/usr/local/data/vantveer/breastCancer-train.arff";
+		String test_file = "/usr/local/data/vantveer/breastCancer-test.arff";
+		System.out.println("Method\tloop\tweka.getTrain().numAttributes()\trsquare_cv\trsquare_train");
+		float min_expression_change = (float)0.3;
+		int ngenes = 0;
+		for(int outer=0; outer<20; outer++){
+			Weka weka = new Weka(train_file, test_file);
+			//run a basic rule-based attribute filter
+			//min_expression_change+=0.1;
+			int n_samples_over_min = outer; int outlier_threshold = 10; boolean remove_atts_with_outliers = true;
+			weka.executeManualAttFiltersTrainTest(min_expression_change, n_samples_over_min, outlier_threshold, remove_atts_with_outliers);
 
-			Classifier classifier = new NaiveBayes();
+			Instances realtrain = new Instances(weka.getTrain());
+			Instances realtest = new Instances(weka.getTest());
 
-			//now evaluate it in cv and test set
-			try {
-				//cross-validation
-				Evaluation eval_cv = new Evaluation(weka.getTrain());
-				eval_cv.crossValidateModel(classifier, weka.getTrain(), 10, weka.getRand());
-				//System.out.println("10f cross-validation\n"+eval_cv.toSummaryString());
-				//test set
-				Evaluation eval_test = new Evaluation(weka.getTrain());
-				classifier.buildClassifier(weka.getTrain());
-				eval_test.evaluateModel(classifier, weka.getTest());
-				//System.out.println("\nTest Set\n"+eval_test.toSummaryString());
-				//training set 
-				Evaluation eval_train = new Evaluation(weka.getTrain());
-				classifier.buildClassifier(weka.getTrain());
-				eval_train.evaluateModel(classifier, weka.getTrain());
-				//System.out.println("\nTraining set\n"+eval_train.toSummaryString());
-				System.out.println(eval_train.pctCorrect()+"\t"+eval_cv.pctCorrect()+"\t"+eval_test.pctCorrect());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	//		weka.setCardPower(new OneRAttributeEval());
+	//		System.out.println("eval_test.pctCorrect()\teval_train.pctCorrect()\teval_cv.pctCorrect()\tmean_info_gain\tmax_info_gain\tsum_info_gain");
+			double[][] train_test = new double[200][2];
+			double[][] cv_test = new double[200][2];
+			ngenes+=1;
+			DescriptiveStatistics test_set_scores = new DescriptiveStatistics();
+			for(int r=0;r<200;r++){
+				weka.setTrain(new Instances(realtrain));
+				weka.setTest(new Instances(realtest));
+				DescriptiveStatistics gene_power = new DescriptiveStatistics();
+				List<Integer> keepers = new ArrayList<Integer>();
+				for(int g=0; g<ngenes; g++){
+					int randomNum = weka.getRand().nextInt(weka.getTrain().numAttributes()-1);
+					keepers.add(randomNum);
+	//				gene_power.addValue((double)weka.getAtt_meta().get(weka.getTrain().attribute(randomNum).name()).power);
+				}
+				//keep the class index
+				keepers.add(weka.getTrain().classIndex());
+				//remove the rest
+				Remove remove = new Remove();
+				remove.setInvertSelection(true);
+				int[] karray = new int[keepers.size()];
+				int c = 0;
+
+				for(Integer i : keepers){
+					karray[c] = i;
+					c++;
+				}
+				remove.setAttributeIndicesArray(karray);
+				try {
+					remove.setInputFormat(weka.getTrain());
+					weka.setTrain(Filter.useFilter(weka.getTrain(), remove));
+					remove.setInputFormat(weka.getTest());
+					weka.setTest(Filter.useFilter(weka.getTest(), remove));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				Classifier classifier = new J48();
+
+				//now evaluate it in cv and test set
+				try {
+					//cross-validation
+					Evaluation eval_cv = new Evaluation(weka.getTrain());
+					eval_cv.crossValidateModel(classifier, weka.getTrain(), 10, weka.getRand());
+					//System.out.println("10f cross-validation\n"+eval_cv.toSummaryString());
+					//test set
+					Evaluation eval_test = new Evaluation(weka.getTrain());
+					classifier.buildClassifier(weka.getTrain());
+					eval_test.evaluateModel(classifier, weka.getTest());
+					test_set_scores.addValue(eval_test.pctCorrect());
+					//System.out.println("\nTest Set\n"+eval_test.toSummaryString());
+					//training set 
+					Evaluation eval_train = new Evaluation(weka.getTrain());
+					classifier.buildClassifier(weka.getTrain());
+					eval_train.evaluateModel(classifier, weka.getTrain());
+					//System.out.println("\nTraining set\n"+eval_train.toSummaryString());
+	//				System.out.println(+eval_test.pctCorrect()+"\t"+eval_train.pctCorrect()+"\t"+eval_cv.pctCorrect()+"\t"+gene_power.getMean()+"\t"+gene_power.getMax()+"\t"+gene_power.getSum());
+					train_test[r][0] = eval_train.pctCorrect();
+					train_test[r][1] = eval_test.pctCorrect();
+					cv_test[r][0] = eval_cv.pctCorrect();
+					cv_test[r][1] = eval_test.pctCorrect();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+			SimpleRegression cv_regression = new SimpleRegression();
+			cv_regression.addData(cv_test);
+			double rsquare_cv = cv_regression.getRSquare();
+
+			SimpleRegression train_regression = new SimpleRegression();
+			train_regression.addData(train_test);
+			double rsquare_train = train_regression.getRSquare();
+			System.out.println("SMO\t"+outer+"\t"+ngenes+"\t"+rsquare_cv+"\t"+rsquare_train+"\t"+test_set_scores.getMax()+"\t"+test_set_scores.getMean());
 		}
-
 	}	
+
+
+
 
 	/** try to reproduce the result
 	 *  from the 2002 VantVeer paper
