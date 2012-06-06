@@ -19,6 +19,8 @@ import org.scripps.ontologies.go.Annotations;
 import org.scripps.ontologies.go.GOterm;
 import org.scripps.util.Gene;
 
+import weka.attributeSelection.ASEvaluation;
+import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
@@ -27,6 +29,7 @@ import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Range;
 import weka.core.SelectedTag;
@@ -245,6 +248,43 @@ public class Weka {
 		}
 	}
 
+	public void setCardPower(ASEvaluation eval_method){
+		if(att_meta==null){
+			att_meta = new HashMap<String, card>();
+		}
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		Ranker ranker = new Ranker();
+		//keep all
+		//	String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(eval_method);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(getTrain());
+			//ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(getTrain(), as); 			
+			double[][] ranked = ranker.rankedAttributes();
+			//add the scores to the gene cards
+			for(int att=0; att<ranked.length; att++){
+				int att_id = (int)ranked[att][0];
+				float att_value = (float)ranked[att][1];
+				Attribute tmp = getTrain().attribute(att_id);
+				card c = att_meta.get(tmp.name());
+				if(c==null){
+					c = new card(tmp.index(), tmp.name(), tmp.name(), "_");
+				}
+				c.setPower(att_value);
+				att_meta.put(tmp.name(), c);
+			}
+			setTrain(filtered);
+		//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 	public void filterForGeneIdMapping(){
 		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
 		String nodata = "";
@@ -530,12 +570,13 @@ public class Weka {
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
-				for(int r=0; r<10; r++){
+			//	for(int r=0; r<10; r++){
+					int r = 0;
 					Random keep_same = new Random();
 					keep_same.setSeed(r);
 					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
 					avg_pct_correct += eval.pctCorrect();
-				}
+			//	}
 				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
@@ -577,12 +618,13 @@ public class Weka {
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
-				for(int r=0; r<10; r++){
+		//		for(int r=0; r<10; r++){
+					int r = 0;
 					Random keep_same = new Random();
 					keep_same.setSeed(r);
 					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
 					avg_pct_correct += eval.pctCorrect();
-				}
+		//		}
 				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
@@ -863,6 +905,71 @@ public class Weka {
 	}
 
 
+	/**
+	 * Simple, manual attribute filtering.  Follows basic pattern of Vant'Veer 2002 and other early array processing approaches
+	 * Remove attributes that don't have at least n_samples_over_min with min_expression_change.
+	 * If outlier_deletion, remove any attributes that contain values over the outlier_threshold.
+	 * @param min_expression_change
+	 * @param n_samples_over_min
+	 * @param outlier_threshold
+	 * @param remove_atts_with_outliers
+	 */
+	
+	public void executeManualAttFiltersTrainTest(float min_expression_change, int n_samples_over_min, int outlier_threshold, boolean remove_atts_with_outliers){
+		//reduce N genes by eliminating genes not significantly regulated in at least three samples
+	//	System.out.println("Train start n atts = "+getTrain().numAttributes());
+		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
+		List<Integer> keepers = new ArrayList<Integer>();
+		while(atts.hasMoreElements()){
+			Attribute att = atts.nextElement();
+			//check if we want to keep it
+			boolean keep = false;
+			Enumeration<Instance> instances = getTrain().enumerateInstances();
+			int n_sig_var = 0;
+			while(instances.hasMoreElements()){
+				Instance instance = instances.nextElement();
+				double value = instance.value(att);
+				if(value>min_expression_change||value<(-1*min_expression_change)){
+					n_sig_var++;
+				}
+				if(n_sig_var>2){
+					keep = true;
+				}
+				if(value > outlier_threshold||value<(1*-outlier_threshold)){
+					keep=false;
+					break;
+				}
+			}
+			if(keep){
+				keepers.add(att.index());				
+			}
+		}
+		//keep the class index
+		keepers.add(getTrain().classIndex());
+//		System.out.println("Manual filter reduces atts to: "+keepers.size());
+		//remove the baddies
+		Remove remove = new Remove();
+		remove.setInvertSelection(true);
+		int[] karray = new int[keepers.size()];
+		int c = 0;
+		for(Integer i : keepers){
+			karray[c] = i;
+			c++;
+		}
+		remove.setAttributeIndicesArray(karray);
+		try {
+			remove.setInputFormat(getTrain());
+			setTrain(Filter.useFilter(getTrain(), remove));
+			remove.setInputFormat(getTest());
+			setTest(Filter.useFilter(getTest(), remove));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return;
+	}
+	
+	
 
 	public void setTrain(Instances train) {
 		this.train = train;
