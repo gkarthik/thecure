@@ -132,11 +132,13 @@ public class Weka {
 			if (getTrain().classIndex() == -1){
 				getTrain().setClassIndex(getTrain().numAttributes() - 1);
 			}
-			source = new DataSource(test_file);
-			test = source.getDataSet();
-			if (test.classIndex() == -1){
-				test.setClassIndex(test.numAttributes() - 1);
-			} 
+			if(test_file!=null){
+				source = new DataSource(test_file);
+				test = source.getDataSet();
+				if (test.classIndex() == -1){
+					test.setClassIndex(test.numAttributes() - 1);
+				} 
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -277,14 +279,14 @@ public class Weka {
 				att_meta.put(tmp.name(), c);
 			}
 			setTrain(filtered);
-		//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
+			//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+
 	public void filterForGeneIdMapping(){
 		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
 		String nodata = "";
@@ -570,13 +572,13 @@ public class Weka {
 			// evaluate classifier and print some statistics
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
-			//	for(int r=0; r<10; r++){
-					int r = 0;
-					Random keep_same = new Random();
-					keep_same.setSeed(r);
-					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
-					avg_pct_correct += eval.pctCorrect();
-			//	}
+				//	for(int r=0; r<10; r++){
+				int r = 0;
+				Random keep_same = new Random();
+				keep_same.setSeed(r);
+				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+				avg_pct_correct += eval.pctCorrect();
+				//	}
 				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
@@ -618,13 +620,13 @@ public class Weka {
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
-		//		for(int r=0; r<10; r++){
-					int r = 0;
-					Random keep_same = new Random();
-					keep_same.setSeed(r);
-					eval.crossValidateModel(fc, getTrain(), 10, keep_same);
-					avg_pct_correct += eval.pctCorrect();
-		//		}
+				//		for(int r=0; r<10; r++){
+				int r = 0;
+				Random keep_same = new Random();
+				keep_same.setSeed(r);
+				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+				avg_pct_correct += eval.pctCorrect();
+				//		}
 				avg_pct_correct = avg_pct_correct/10;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
@@ -708,10 +710,10 @@ public class Weka {
 					avg_pct_correct += eval.pctCorrect();
 				}
 				avg_pct_correct = avg_pct_correct/10;
-//				//this makes the game more stable in terms of scores
-//				Random keep_same = new Random();
-//				keep_same.setSeed(0);
-//				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+				//				//this makes the game more stable in terms of scores
+				//				Random keep_same = new Random();
+				//				keep_same.setSeed(0);
+				//				eval.crossValidateModel(voter, getTrain(), 10, keep_same);
 			}
 			else if(eval_method.equals("test_set")){
 				eval.evaluateModel(voter, test);
@@ -914,10 +916,10 @@ public class Weka {
 	 * @param outlier_threshold
 	 * @param remove_atts_with_outliers
 	 */
-	
+
 	public void executeManualAttFiltersTrainTest(float min_expression_change, int n_samples_over_min, int outlier_threshold, boolean remove_atts_with_outliers){
 		//reduce N genes by eliminating genes not significantly regulated in at least three samples
-	//	System.out.println("Train start n atts = "+getTrain().numAttributes());
+		//	System.out.println("Train start n atts = "+getTrain().numAttributes());
 		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
 		List<Integer> keepers = new ArrayList<Integer>();
 		while(atts.hasMoreElements()){
@@ -946,7 +948,7 @@ public class Weka {
 		}
 		//keep the class index
 		keepers.add(getTrain().classIndex());
-//		System.out.println("Manual filter reduces atts to: "+keepers.size());
+		//		System.out.println("Manual filter reduces atts to: "+keepers.size());
 		//remove the baddies
 		Remove remove = new Remove();
 		remove.setInvertSelection(true);
@@ -960,16 +962,18 @@ public class Weka {
 		try {
 			remove.setInputFormat(getTrain());
 			setTrain(Filter.useFilter(getTrain(), remove));
-			remove.setInputFormat(getTest());
-			setTest(Filter.useFilter(getTest(), remove));
+			if(getTest()!=null){
+				remove.setInputFormat(getTest());
+				setTest(Filter.useFilter(getTest(), remove));
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return;
 	}
-	
-	
+
+
 
 	public void setTrain(Instances train) {
 		this.train = train;

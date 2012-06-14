@@ -61,7 +61,8 @@ public class Scratch {
 		//		testAllGoClassesAsFeatureSets(out);
 		//testAllGOForest();
 		//makeAndTest70geneClassifier();
-		crossvalidateTest();
+		//crossvalidateTest();
+		geneSetSearch();
 	}
 
 	public static void buildrankedListofGenesForEnrichmentTesting() {
@@ -284,8 +285,8 @@ public class Scratch {
 			Instances realtrain = new Instances(weka.getTrain());
 			Instances realtest = new Instances(weka.getTest());
 
-	//		weka.setCardPower(new OneRAttributeEval());
-	//		System.out.println("eval_test.pctCorrect()\teval_train.pctCorrect()\teval_cv.pctCorrect()\tmean_info_gain\tmax_info_gain\tsum_info_gain");
+			//		weka.setCardPower(new OneRAttributeEval());
+			//		System.out.println("eval_test.pctCorrect()\teval_train.pctCorrect()\teval_cv.pctCorrect()\tmean_info_gain\tmax_info_gain\tsum_info_gain");
 			double[][] train_test = new double[200][2];
 			double[][] cv_test = new double[200][2];
 			ngenes+=1;
@@ -298,7 +299,7 @@ public class Scratch {
 				for(int g=0; g<ngenes; g++){
 					int randomNum = weka.getRand().nextInt(weka.getTrain().numAttributes()-1);
 					keepers.add(randomNum);
-	//				gene_power.addValue((double)weka.getAtt_meta().get(weka.getTrain().attribute(randomNum).name()).power);
+					//				gene_power.addValue((double)weka.getAtt_meta().get(weka.getTrain().attribute(randomNum).name()).power);
 				}
 				//keep the class index
 				keepers.add(weka.getTrain().classIndex());
@@ -342,7 +343,7 @@ public class Scratch {
 					classifier.buildClassifier(weka.getTrain());
 					eval_train.evaluateModel(classifier, weka.getTrain());
 					//System.out.println("\nTraining set\n"+eval_train.toSummaryString());
-	//				System.out.println(+eval_test.pctCorrect()+"\t"+eval_train.pctCorrect()+"\t"+eval_cv.pctCorrect()+"\t"+gene_power.getMean()+"\t"+gene_power.getMax()+"\t"+gene_power.getSum());
+					//				System.out.println(+eval_test.pctCorrect()+"\t"+eval_train.pctCorrect()+"\t"+eval_cv.pctCorrect()+"\t"+gene_power.getMean()+"\t"+gene_power.getMax()+"\t"+gene_power.getSum());
 					train_test[r][0] = eval_train.pctCorrect();
 					train_test[r][1] = eval_test.pctCorrect();
 					cv_test[r][0] = eval_cv.pctCorrect();
@@ -363,6 +364,99 @@ public class Scratch {
 		}
 	}	
 
+	/** 
+	 * Search through the dataset for gene sets that result in trees that score well on the training set.
+	 */
+	public static void geneSetSearch(){
+		int n_genes_in_set = 5;
+		int population_size = 300000;
+		String outfile = "/Users/bgood/data/arrays/breastcancer/ngf_processed_vandevijver_5trees.txt";
+		//load weka with full training and testing set
+		//		String train_file = "/Users/bgood/data/arrays/Golub/leukemia_train_38x7129.arff"; String test_file = "/Users/bgood/data/arrays/Golub/leukemia_test_34x7129.arff";
+	//	String train_file = "/usr/local/data/vantveer/breastCancer-train.arff";
+		String train_file = "/Users/bgood/data/arrays/breastcancer/ngf_processed_vandevijver.arff";
+		System.out.println("Step\tN_kept\tAttributes\tAtt_indexes\ttraining_set_score\tauc\ttree_size\tleaves");
+		FileWriter f = null;
+		try {
+			f = new FileWriter(outfile);
+			f.write("Step\tN_kept\tAttributes\tAtt_indexes\ttraining_set_score\ttree_size\tleave\n");
+			f.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		float min_expression_change = (float)0.3;		
+		Weka weka = new Weka(train_file, null);
+		//run a basic rule-based attribute filter
+	//	int n_samples_over_min = 3; int outlier_threshold = 10; boolean remove_atts_with_outliers = true;
+	//	weka.executeManualAttFiltersTrainTest(min_expression_change, n_samples_over_min, outlier_threshold, remove_atts_with_outliers);
+
+		Instances realtrain = new Instances(weka.getTrain());
+		long t = System.currentTimeMillis();
+		int n_kept = 0;
+		for(int r=0;r<population_size;r++){
+			weka.setTrain(new Instances(realtrain));
+			List<Integer> keepers = new ArrayList<Integer>();
+			String names = ""; String ids = "";
+			for(int g=0; g<n_genes_in_set; g++){
+				int randomNum = weka.getRand().nextInt(weka.getTrain().numAttributes()-1);
+				keepers.add(randomNum);
+				names+=realtrain.attribute(randomNum).name()+",";
+				ids+=(randomNum+1)+","; // for easy weka inspecting
+			}
+			//keep the class index
+			keepers.add(weka.getTrain().classIndex());
+			//remove the rest
+			Remove remove = new Remove();
+			remove.setInvertSelection(true);
+			int[] karray = new int[keepers.size()];
+			int c = 0;
+
+			for(Integer i : keepers){
+				karray[c] = i;
+				c++;
+			}
+			remove.setAttributeIndicesArray(karray);
+			try {
+				remove.setInputFormat(weka.getTrain());
+				weka.setTrain(Filter.useFilter(weka.getTrain(), remove));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			J48 classifier = new J48();
+
+			//now evaluate it on the training set
+			try {
+				//cross-validation
+//				Evaluation eval_cross = new Evaluation(weka.getTrain());
+//				eval_cross.crossValidateModel(classifier, realtrain, 5, weka.getRand());
+				//training set 
+				Evaluation eval_train = new Evaluation(weka.getTrain());
+				classifier.buildClassifier(weka.getTrain());
+				double leaves = classifier.measureNumLeaves();
+				double tree_size = classifier.measureTreeSize();
+				if(tree_size>1){
+					eval_train.evaluateModel(classifier, weka.getTrain());
+					if(eval_train.pctCorrect()>75){
+						n_kept++;
+						if(r%1==0){
+							System.out.println(r+"\t"+n_kept+"\t"+names+"\t"+ids+"\t"+eval_train.pctCorrect()+"\t"+eval_train.areaUnderROC(0)+"\t"+tree_size+"\t"+leaves);
+						}
+						f = new FileWriter(outfile, true);					
+						f.write(r+"\t"+n_kept+"\t"+names+"\t"+ids+"\t"+eval_train.pctCorrect()+"\t"+tree_size+"\t"+leaves+"\n");
+						f.close();
+					}
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+
+	}
 
 
 
