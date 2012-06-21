@@ -6,7 +6,7 @@
 	Player player = (Player)session.getAttribute("player");
 if (player == null) {
 	response.sendRedirect("/combo/login.jsp");   
-}
+}else{
 	String username = player.getName();
 	GameLog log = new GameLog();
 	GameLog.high_score sb = log.getScoreBoard();
@@ -51,6 +51,11 @@ if (player == null) {
     <div class="span7" id="games">
 		<h2>Choose your game</h2>
 		<br>
+		<div> <br><br></div>	
+		<a href="zoocard1.jsp" class="btn btn-large btn-primary"><img width="100" src="http://upload.wikimedia.org/wikipedia/commons/6/6b/Elephant_Shrew.jpg"> <strong> Mammal Challenge </strong> </a>
+		<div> <br><br></div>	
+		<a href="zoocard2.jsp" class="btn btn-large btn-primary"><img width="100" src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Cacatua_galerita_-Australia_Zoo%2C_Queensland_-with_zoo_keeper-8a.jpg/274px-Cacatua_galerita_-Australia_Zoo%2C_Queensland_-with_zoo_keeper-8a.jpg"> <strong> Zookeeper </strong> </a>
+	
 		<div id="breastcancergame">
 		<img src ="images/100px-DrawingIntellectGirl.png">	
 		<a href="genecard1.jsp" class="btn btn-large btn-primary"><img src="images/Pink_ribbon.png"><strong>Breast Cancer 1<br>(Random Walk)</strong></a>
@@ -93,6 +98,7 @@ if (player == null) {
 					</tr>
 					<% 
 					}
+}
 					%>
 				</tbody>
 			</table>

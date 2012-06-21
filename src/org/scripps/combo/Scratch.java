@@ -391,6 +391,9 @@ public class Scratch {
 	//	int n_samples_over_min = 3; int outlier_threshold = 10; boolean remove_atts_with_outliers = true;
 	//	weka.executeManualAttFiltersTrainTest(min_expression_change, n_samples_over_min, outlier_threshold, remove_atts_with_outliers);
 
+		//run a binarize filter
+		
+		
 		Instances realtrain = new Instances(weka.getTrain());
 		long t = System.currentTimeMillis();
 		int n_kept = 0;

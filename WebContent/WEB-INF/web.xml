@@ -29,4 +29,27 @@
     <servlet-name>GoWekaServer</servlet-name>
     <url-pattern>/GoWekaServer</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <description></description>
+    <display-name>ZooServer</display-name>
+    <servlet-name>ZooServer</servlet-name>
+    <servlet-class>org.scripps.combo.weka.ZooServer</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ZooServer</servlet-name>
+    <url-pattern>/ZooServer</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <description></description>
+    <display-name>ZooServer2</display-name>
+    <servlet-name>ZooServer2</servlet-name>
+    <servlet-class>org.scripps.combo.weka.ZooServer2</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ZooServer2</servlet-name>
+    <url-pattern>/ZooServer2</url-pattern>
+  </servlet-mapping>
+  
 </web-app>
