@@ -13,6 +13,7 @@ if (player == null) {
 	//refresh.. ack ugly..
 	player = Player.lookupPlayer(username);
 }
+if(player != null) {
 	GameLog log = new GameLog();
 	GameLog.high_score sb = log.getScoreBoard();
 %>
@@ -118,3 +119,4 @@ if (player == null) {
 
 </body>
 </html>
+			<%} %>

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -68,7 +69,7 @@ public class Weka {
 			if (getTrain().classIndex() == -1){
 				getTrain().setClassIndex(getTrain().numAttributes() - 1);
 			}
-			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
+			source = new DataSource("/usr/local/data/vantveer/breastCancer-test.arff");
 			test = source.getDataSet();
 			if (test.classIndex() == -1){
 				test.setClassIndex(test.numAttributes() - 1);
@@ -84,7 +85,7 @@ public class Weka {
 		//only use genes with metadata
 		filterForGeneIdMapping();
 		System.out.println("launching with "+getTrain().numAttributes()+" train attributes.");
-		System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
+		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
 		//map the names so the trees look right..
 		remapAttNames();
 		//add the right indexes
@@ -134,6 +135,32 @@ public class Weka {
 			}
 			if(test_file!=null){
 				source = new DataSource(test_file);
+				test = source.getDataSet();
+				if (test.classIndex() == -1){
+					test.setClassIndex(test.numAttributes() - 1);
+				} 
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+	}
+
+	public Weka(InputStream train_stream, InputStream test_stream){
+		//get the data 
+		DataSource source;
+		try {
+			source = new DataSource(train_stream);
+
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
+			}
+			if(test_stream!=null){
+				source = new DataSource(test_stream);
 				test = source.getDataSet();
 				if (test.classIndex() == -1){
 					test.setClassIndex(test.numAttributes() - 1);
@@ -473,6 +500,24 @@ public class Weka {
 	 * @return
 	 */
 	public List<card> getRandomCards(int n, int ranseed){
+		if(n>train.numAttributes()){
+			List<card> cards = new ArrayList<card>();
+			for(int i=0;i<train.numAttributes()-1;i++){
+				Attribute a = getTrain().attribute(i);
+				card c = new card(a.index(),a.name(),"","");
+				if(att_meta!=null){
+					if(att_meta.get(a.name())!=null){
+						card tmp = att_meta.get(a.name());
+						c.name = tmp.name;
+						c.unique_id = tmp.unique_id;
+						c.setPower(tmp.getPower());
+					}
+				}
+				cards.add(c);
+			}
+			return cards;
+		}
+
 		rand.setSeed((long)ranseed);
 		Set<String> u = new HashSet<String>();
 		List<card> cards = new ArrayList<card>();
@@ -484,11 +529,13 @@ public class Weka {
 				i--;
 			}else{
 				card c = new card(a.index(),a.name(),"","");
-				if(att_meta.get(a.name())!=null){
-					card tmp = att_meta.get(a.name());
-					c.name = tmp.name;
-					c.unique_id = tmp.unique_id;
-					c.setPower(tmp.getPower());
+				if(att_meta!=null){
+					if(att_meta.get(a.name())!=null){
+						card tmp = att_meta.get(a.name());
+						c.name = tmp.name;
+						c.unique_id = tmp.unique_id;
+						c.setPower(tmp.getPower());
+					}
 				}
 				cards.add(c);
 				u.add(randomNum+"");
@@ -973,7 +1020,12 @@ public class Weka {
 		return;
 	}
 
+	/**
+	 * Convert all continuous variables into binary, nominal attributes (yes or no..)
+	 */
+	public void binarize(){
 
+	}
 
 	public void setTrain(Instances train) {
 		this.train = train;
