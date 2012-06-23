@@ -62,6 +62,7 @@ $(document).ready(function() {
 	<div class="offset1">
 	<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/CAT-D10N-pic001.jpg/640px-CAT-D10N-pic001.jpg">
 	</div>
+	
 	</div>
 </div>
 </div>

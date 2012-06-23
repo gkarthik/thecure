@@ -71,6 +71,8 @@
     learning algorithms that are informed by the hands played in the game.  
     </p>
     <strong><center><a href="login.jsp">Play COMBO</a> and share in discovery!</center></strong>
+    <br>
+    <p><a href="./assets/MosaicMockup.mov">Watch a silent movie about Combo2.0 (aka 'Mosaic'')..</a><p>
     </div>
     </div>
     </div>
