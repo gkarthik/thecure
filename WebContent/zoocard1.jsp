@@ -74,7 +74,7 @@ var barney_init = 0;
 
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
-	document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
+	//document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
 }
 
 function evaluateHand(cardsinhand, player){
@@ -323,7 +323,7 @@ function saveHand(){
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
-			window.location.reload(); //replace("barney.jsp");
+			window.location.replace("mammal_mosaic.jsp");
 		});
 }
 
@@ -370,11 +370,11 @@ function addCardToBarney(){
 	var handcell = generateHandCell(card_index);
 	
 	window.setTimeout(function() {  
-		$("#player2_hand").fadeTo(1000, 1, function (){
+		$("#player2_hand").fadeTo(500, 1, function (){
 			$("#player2_hand").append(handcell);
 			setupShowInfoHandler();
 		});
-	}, 1000); 
+	}, 500); 
 	
 	p2_hand.push(cards[card_index]);
 		
@@ -396,7 +396,7 @@ function addCardToBarney(){
 			}
 			$("#endgame").show();
 		}
-	}, 2000); 
+	}, 3000); 
 }
 
 function setupHandAddRemove(){
@@ -621,7 +621,7 @@ $(document).ready(function() {
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
-		<img src="images/barney.png">Level <%=ran %>
+		<img src="images/barney.png"> <!--  Level <%=ran %> -->
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>

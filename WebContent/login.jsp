@@ -64,7 +64,7 @@ $(document).ready(function() {
 				<input	type="submit" value="Play as anonymous_hero" />
 			</form>
 			or
-			 <div id="newuserlink"><a href="">New user? click here.</a></div>
+			 <div id="newuserlink"><a href="">New player? click here.</a></div>
 			</div>
 			 <div id="newuser">
 			 <strong>Enter new account details</strong> 

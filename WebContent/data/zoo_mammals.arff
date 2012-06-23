@@ -1,6 +1,6 @@
 @relation zoo_mammals
 
-@attribute animal {pitviper,seasnake,slowworm,tortoise,tuatara,aardvark,antelope,bear,boar,buffalo,calf,cavy,cheetah,deer,dolphin,elephant,fruitbat,giraffe,girl,goat,gorilla,hamster,hare,leopard,lion,lynx,mink,mole,mongoose,opossum,oryx,platypus,polecat,pony,porpoise,puma,pussycat,raccoon,reindeer,seal,sealion,squirrel,vampire,vole,wallaby,wolf,clam,crab,crayfish,lobster,octopus,scorpion,seawasp,slug,starfish,worm,flea,gnat,honeybee,housefly,ladybird,moth,termite,wasp,bass,carp,catfish,chub,dogfish,haddock,herring,pike,piranha,seahorse,sole,stingray,tuna,chicken,crow,dove,duck,flamingo,gull,hawk,kiwi,lark,ostrich,parakeet,penguin,pheasant,rhea,skimmer,skua,sparrow,swan,vulture,wren,frog,newt,toad}
+@attribute edibility {pitviper,seasnake,slowworm,tortoise,tuatara,aardvark,antelope,bear,boar,buffalo,calf,cavy,cheetah,deer,dolphin,elephant,fruitbat,giraffe,girl,goat,gorilla,hamster,hare,leopard,lion,lynx,mink,mole,mongoose,opossum,oryx,platypus,polecat,pony,porpoise,puma,pussycat,raccoon,reindeer,seal,sealion,squirrel,vampire,vole,wallaby,wolf,clam,crab,crayfish,lobster,octopus,scorpion,seawasp,slug,starfish,worm,flea,gnat,honeybee,housefly,ladybird,moth,termite,wasp,bass,carp,catfish,chub,dogfish,haddock,herring,pike,piranha,seahorse,sole,stingray,tuna,chicken,crow,dove,duck,flamingo,gull,hawk,kiwi,lark,ostrich,parakeet,penguin,pheasant,rhea,skimmer,skua,sparrow,swan,vulture,wren,frog,newt,toad}
 @attribute hair {FALSE,TRUE}
 @attribute feathers {FALSE,TRUE}
 @attribute eggs {TRUE,FALSE}
