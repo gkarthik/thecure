@@ -1,17 +1,24 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.weka.Weka"%>
-<%@ page import="org.scripps.combo.GameLog"%>
+<%@ page import="org.scripps.combo.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 
-<% 
-String username = (String)session.getAttribute("username");
-if(username==null){
-	username = "anonymous_hero";
-	//touch to check if bitbucket migration worked
+<%
+String level = request.getParameter("level");
+String username = "";
+	Player player = (Player)session.getAttribute("player");
+if (player == null) {
+	response.sendRedirect("/combo/login.jsp");   
+}else{
+	username = player.getName();
+	//refresh.. ack ugly..
+	player = Player.lookupPlayer(username);
 }
+if(player != null) {
 %>
+
 
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html">
@@ -59,6 +66,7 @@ var opponent_sort = new Array();
 var nrows = 2;
 var ncols = 2;
 var seed = <%=ran%>;
+var level = <%=level%>;
 var max_hand = 2;
 var p1_score = 0;
 var p2_score = 0;
@@ -319,7 +327,7 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-		var saveurl = 'ZooServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney_zoo&win="+win;
+		var saveurl = 'ZooServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+level+"&game=barney_zoo&win="+win;
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
@@ -374,20 +382,21 @@ function addCardToBarney(){
 			$("#player2_hand").append(handcell);
 			setupShowInfoHandler();
 		});
-	}, 500); 
+	}, 700); 
 	
 	p2_hand.push(cards[card_index]);
 		
 	//hide button from board
 	card_index = "#card_index_"+card_index;
 	
-	$(card_index).parent().fadeTo(1000, 0.75, function (){
+	$(card_index).parent().fadeTo(500, 0.75, function (){
 		$(card_index).parent().css('background-color', '#FBBBB9');
 		$(card_index).parent().html("");
 	});
 
-	window.setTimeout(function() {  
-		evaluateHand(p2_hand, "2");
+
+	evaluateHand(p2_hand, "2");
+	window.setTimeout(function() {  	
 		if(p2_hand.length==max_hand){
 			if(p1_score<p2_score){
 				$("#winner").text("Sorry, you lost this hand. ");
@@ -418,15 +427,15 @@ function setupHandAddRemove(){
 				setupShowInfoHandler();
 			});
 			p1_hand.push(cards[cell_id]);
-			window.setTimeout(function() { 
+//			window.setTimeout(function() { 
 				evaluateHand(p1_hand, 1);
-			}, 2000); 
+//			}, 2000); 
 			//hide button from board
 		//	$(this).parent().fadeOut(1000);
-			$(this).parent().fadeTo(500, 0.75, function (){
+//			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
 				$(this).html("");
-			});
+//			});
 					
 		}else{
 			alert("Sorry, you can only have "+max_hand+" cards in your hand in this game. "); 
@@ -692,5 +701,5 @@ $(document).ready(function() {
 	<div id="sound"></div>
 </body>
 </html>
-
+	<%} %>
 

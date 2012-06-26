@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -134,23 +136,29 @@ public class ZooServer extends HttpServlet {
 			hand.save();
 			//update player info
 			String game = request.getParameter("game");
-			if(game!=null&&game.equals("barney")){
+			if(game!=null&&game.equals("barney_zoo")){
 				//update stars
-				Player player = Player.lookupPlayer(player_name);
+				//Player player = Player.lookupPlayer(player_name);
+				HttpSession s = request.getSession();
+				Player player = (Player)s.getAttribute("player");
 				//check if they passed the level
 				String win = request.getParameter("win");
 				if(win!=null&&win.equals("1")){
-					//if(score>0){
-					int stars = 1;
-					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
-						stars += player.getBarney_levels().get(board_id);
-						player.getBarney_levels().set(board_id, stars);
-					}else{
-						player.getBarney_levels().add(stars);
+					//update session
+					List<Integer> mammal_scores = player.getLevel_tilescores().get("mammals");
+					if(mammal_scores==null){
+						mammal_scores = new ArrayList<Integer>(20);
+						mammal_scores.add(0);
 					}
-					player.updateBarneyLevelsInDatabase();
+					if(board_id>=mammal_scores.size()){
+						for(int m=mammal_scores.size()-1; m<=board_id; m++){
+							mammal_scores.add(0);
+						}
+					}
+					mammal_scores.set(board_id, cv_accuracy);
+					player.getLevel_tilescores().put("mammals", mammal_scores);
+					s.setAttribute("player", player);
 				}
-
 			}
 
 			System.out.println("saved a hand "+player_name+" "+score);

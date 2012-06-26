@@ -58,7 +58,7 @@ public class Weka {
 	 */
 	public Weka(boolean filtered) {
 		//get the data 
-		DataSource source = null;
+		DataSource source = null;   
 		try {
 			if(filtered){
 				source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");

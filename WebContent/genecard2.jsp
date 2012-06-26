@@ -606,11 +606,11 @@ $(document).ready(function() {
 				<table border='1'>
 					<tr id="player1_hand_masked" align='center'
 						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
 					</tr>
 				</table>
 			</div>
@@ -653,11 +653,11 @@ $(document).ready(function() {
 				<table border='1'>
 					<tr id="player2_hand_masked" align='center'
 						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
+						<td style="width: 75px;"></td>
 					</tr>
 				</table>
 			</div>
