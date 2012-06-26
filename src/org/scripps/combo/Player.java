@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.scripps.util.JdbcConnection;
 
@@ -24,10 +26,19 @@ public class Player {
 	int top_score;
 	int games_played;
 	String email;
-	//levels unlocked
-	//position in the list corresponds to the level index
-	//0 unlocked, 1 = 1 star, 2 = 2 stars...
-	List<Integer> barney_levels;
+
+	//Each game (the string key) contains multiple levels (the indexes of list of integers)
+	//position in the list corresponds to the level 
+	//The value for the integer corresponds to score for that level
+	//(originally mapped to starts 0 unlocked, 1 = 1 star, 2 = 2 stars)
+	Map<String, List<Integer>> level_tilescores;
+	List<Integer> barney_levels;	
+	
+	
+	public Player() {
+		level_tilescores = new HashMap<String, List<Integer>>();
+	}
+
 
 	public static boolean isNumeric(String str)
 	{
@@ -210,6 +221,18 @@ public class Player {
 	public void setBarney_levels(List<Integer> barney_levels) {
 		this.barney_levels = barney_levels;
 	}
+
+
+	public Map<String, List<Integer>> getLevel_tilescores() {
+		return level_tilescores;
+	}
+
+
+	public void setLevel_tilescores(Map<String, List<Integer>> level_tilescores) {
+		this.level_tilescores = level_tilescores;
+	}
+
+
 	
 	
 }
