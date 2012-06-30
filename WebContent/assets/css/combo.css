@@ -92,4 +92,33 @@ padding-left: 13px;
 padding-right: 13px;
 padding-top: 8px;
 	}
+	
+.big_level_button{
+	color: 
+white;
+cursor: pointer;
+display: block;
+font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+font-size: 50px;
+font-weight: bold;
+height: 60px;
+letter-spacing: normal;
+line-height: 60px;
+margin-bottom: 0px;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: 0px;
+max-width: none;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+padding-top: 0px;
+text-align: center;
+text-decoration: none;
+text-rendering: optimizelegibility;
+text-shadow: 
+rgba(0, 0, 0, 0.246094) 0px 0px 0px;
+vertical-align: baseline;
+width: 65px;
+	}	
 
