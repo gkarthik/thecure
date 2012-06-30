@@ -63,11 +63,13 @@ body {
 <script>	
 var cards = new Array();
 var opponent_sort = new Array();
-var nrows = 2;
-var ncols = 2;
 var seed = <%=ran%>;
 var level = <%=level%>;
-var max_hand = 2;
+var nrows = 1;
+var ncols = 2;
+
+var max_hand = 1;
+<%int hand_size = 1;%>
 var p1_score = 0;
 var p2_score = 0;
 var par_score = 0;
@@ -431,11 +433,11 @@ function setupHandAddRemove(){
 				evaluateHand(p1_hand, 1);
 //			}, 2000); 
 			//hide button from board
-		//	$(this).parent().fadeOut(1000);
-//			$(this).parent().fadeTo(500, 0.75, function (){
+			//$(this).parent().fadeOut(1);
+			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
 				$(this).html("");
-//			});
+			});
 					
 		}else{
 			alert("Sorry, you can only have "+max_hand+" cards in your hand in this game. "); 
@@ -524,8 +526,12 @@ $(document).ready(function() {
 	// $("#cv_results").accordion({ collapsible: true });
 	//hide the end button
 	$("#endgame").hide();
-	//set up the baord
-	url = "ZooServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+	//set up the board
+	if(level==0){
+		url = "ZooServer?command=getspecificboard&x="+ncols+"&y="+nrows+"&board=zoo1_l0";
+	}else{
+		url = "ZooServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+	}
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
 		cards = data;
@@ -577,10 +583,9 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div>
-		<div id="board"
-			style="height: 200px; left: 190px; position: absolute; top: 300px; width: 200px;">
-
+	<div id="board_container" style="height: 200px; left: 190px; position: absolute; top: 300px; width: 200px;"">
+		<h2>Pick a feature </h2>
+		<div id="board">
 		</div>
 	</div>
 
@@ -617,10 +622,10 @@ $(document).ready(function() {
 			<div id="player_box_masked_1"
 				style="position: relative; top: 15px; width: 400px;">
 				<table border='1'>
-					<tr id="player1_hand_masked" align='center'
-						style='height: 75px; background-color: #82CAFA'>
+					<tr id="player1_hand_masked" align='center' style='height: 75px; background-color: #82CAFA'>
+						<%for(int i=0; i<hand_size; i++){ %>
 						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
+						<%} %>
 					</tr>
 				</table>
 			</div>
@@ -663,9 +668,9 @@ $(document).ready(function() {
 				<table border='1'>
 					<tr id="player2_hand_masked" align='center'
 						style='height: 75px; background-color: #FBBBB9'>
+						<%for(int i=0; i<hand_size; i++){ %>
 						<td style="width: 75px;">?</td>
-						<td style="width: 75px;">?</td>
-
+						<%} %>
 					</tr>
 				</table>
 			</div>
@@ -673,8 +678,8 @@ $(document).ready(function() {
 	</div>
 
 	<div id="endgame"
-		style="height: 420px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
-		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
+		style="height: 390px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK" /> </h1>
 		<div class="row">
 		<div id="cv_results_1" 
 		style="left: 5px; position: absolute; top: 50px; width: 400px;">

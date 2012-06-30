@@ -11,10 +11,9 @@
 		response.sendRedirect("/combo/login.jsp");
 	} else {
 		username = player.getName();
-		//refresh.. ack ugly..
-		//player = Player.lookupPlayer(username);
 	}
 	if (player != null) {
+		int levels_passed = 0;
 		List<Integer> mammal_scores = player.getLevel_tilescores().get(
 				"mammals");
 		if (mammal_scores == null) {
@@ -23,6 +22,13 @@
 				mammal_scores.add(0);
 			}
 			player.getLevel_tilescores().put("mammals", mammal_scores);
+		}else{
+			for(int i=0; i<mammal_scores.size(); i++){
+				if(mammal_scores.get(i)>0){
+					levels_passed = i;
+				}
+			}
+			levels_passed++;
 		}
 %>
 
@@ -77,19 +83,18 @@
 						different groups. Our favorite is the mammals of course. But what
 						makes a mammal different from a bird, reptile, or any other of the
 						major classes?</p>
-					<p>Click on the tiles below to play rounds of card games based on different anatomical
-						and behavioral features associated with mammalhood. Defeat your opponent Barney <img width="25" src="images/barney.png"> to turn the tile over!
+					<p>Click on the numbered tiles below to play. Defeat your opponent Barney <img width="25" src="images/barney.png"> to turn the tile over!
 						To win, find the best combination of features to use to decide if an unknown creature is a mammal or not.</p>
 					<br>
 			</div>
 			<div class="row">		
-					<div id="mosaic" class="span4">
+					<div id="shrew" class="span3">
 						<table>
 							<%
 								int level = -1;
-									int num_tile_rows = 2;
-									int num_tile_cols = 2;
-									for (int i = 0; i < num_tile_rows; i++) {
+								int num_tile_rows = 2;
+								int num_tile_cols = 2;
+								for (int i = 0; i < num_tile_rows; i++) {
 							%>
 							<tr>
 								<%
@@ -100,21 +105,15 @@
 													score = mammal_scores.get(level);
 												}
 								%>
-								<td><div id="level_<%=level%>">
-										<%
-											String img_loc = "images/Elephant_Shrew_" + level
-																+ ".jpg";
-														if (score == 0) {
-															img_loc = "images/lock-6-64.png";
-														}
-										%>
-										<a href="zoocard1.jsp?level=<%=level%>"
-											class="btn btn-large "> <img width="100"
-											src="<%=img_loc%>"> </a> <br>
-										<div class="stars">
-											<%=score%>
-										</div>
-									</div></td>
+								<td><div id="level_<%=level %>">
+					<% if(levels_passed == level){ %>
+						<a href="zoocard1.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<%}else if(levels_passed > level){ %>
+						<a href="zoocard1.jsp?level=<%=level %>" class=""><img width="100" src="images/Elephant_Shrew_<%=level%>.jpg"></a>
+						<%}else{%>
+						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
+						<% }%>				
+					</div></td>								
 								<%
 									}
 								%>
@@ -123,14 +122,43 @@
 								}
 							%>
 						</table>
-
+						<p>Level 1: Elephant Shrew</p>
 					</div>
-				<div id="mystery_animal">
-					<img src="images/Notoryctes_typhlops.jpg">
-				</div>
-
-				
-
+					
+					<div id="opossum" class="span3">
+						<table>
+							<%
+								for (int i = 0; i < num_tile_rows; i++) {
+							%>
+							<tr>
+								<%
+									for (int j = 0; j < num_tile_cols; j++) {
+												level++;
+												int score = 0;
+												if (mammal_scores.size() > level) {
+													score = mammal_scores.get(level);
+												}
+								%>
+								<td><div id="level_<%=level %>">
+					<% if(levels_passed == level){ %>
+						<a href="zoocard1.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<%}else if(levels_passed > level){ %>
+						<a href="zoocard1.jsp?level=<%=level %>" class=""><img width="100" src="images/possum_<%=level-4%>.jpg"></a>
+						<%}else{%>
+						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
+						<% }%>				
+					</div></td>								
+								<%
+									}
+								%>
+							</tr>
+							<%
+								}
+							%>
+						</table>
+						<p>Level 2: Opossum</p>
+					</div>
+					
 			</div>
 		</div>
 	</div>

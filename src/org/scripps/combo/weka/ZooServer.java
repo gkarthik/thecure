@@ -48,6 +48,7 @@ public class ZooServer extends HttpServlet {
 		ServletContext context = config.getServletContext();
 		InputStream train_loc = context.getResourceAsStream("/data/zoo_mammals.arff");
 		weka = new Weka(train_loc, null);
+		weka.setEval_method("training_set");
 
 	}
 
@@ -107,7 +108,25 @@ public class ZooServer extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			out.write(r.toString());
 			out.close();
-		}else if(command.equals("savehand")){
+		}else if(command.equals("getspecificboard")){
+			String board = request.getParameter("board");
+			List<Weka.card> cards = new ArrayList<Weka.card>();
+			if(board!=null){
+				if(board.equals("zoo1_l0")){
+					cards = weka.getCardsByIndices("1,10");
+				}
+			}else{
+				int nrows = Integer.parseInt(request.getParameter("y"));
+				int ncols = Integer.parseInt(request.getParameter("x"));
+				cards = weka.getRandomCards(nrows * ncols, 0);
+			}
+			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
+			response.setContentType("text/json");
+			PrintWriter out = response.getWriter();
+			out.write(r.toString());
+			out.close();
+		}
+		else if(command.equals("savehand")){
 			String player_name = request.getParameter("player_name");
 			String ip = request.getRemoteAddr();
 			String features = request.getParameter("features");

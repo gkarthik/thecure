@@ -15,9 +15,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.scripps.MapFun;
-import org.scripps.ontologies.go.Annotations;
-import org.scripps.ontologies.go.GOterm;
+
 import org.scripps.util.Gene;
 
 import weka.attributeSelection.ASEvaluation;
@@ -930,7 +928,7 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		List<Integer> sorted_indexes = MapFun.sortMapByValue(selected);
+		List<Integer> sorted_indexes = org.scripps.util.MapFun.sortMapByValue(selected);
 		Collections.reverse(sorted_indexes);
 		List<Classifier> keepers = new ArrayList<Classifier>();
 		for(int i=0; i<n_trees; i++){

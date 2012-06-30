@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -41,20 +42,25 @@ import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
+import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.gui.graphvisualizer.BIFParser;
+import weka.gui.graphvisualizer.DotParser;
+import weka.gui.graphvisualizer.GraphEdge;
+import weka.gui.graphvisualizer.GraphNode;
 
 
 
 public class Scratch {
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws IOException  {
+	public static void main(String[] args) throws Exception  {
 
 		//buildrankedListofGenesForEnrichmentTesting();
 		//		String out = "/Users/bgood/genegames/go_group_trees_unfiltered_10_10cv.txt";
@@ -62,7 +68,29 @@ public class Scratch {
 		//testAllGOForest();
 		//makeAndTest70geneClassifier();
 		//crossvalidateTest();
-		geneSetSearch();
+		//geneSetSearch();
+		
+		String train_file = "/Users/bgood/data/zoo_mammals.arff";
+		Weka weka = new Weka(train_file, null);
+		J48 classifier = new J48();
+		classifier.setUnpruned(false); 
+		Evaluation eval_train = new Evaluation(weka.getTrain());
+		classifier.buildClassifier(weka.getTrain());
+		eval_train.evaluateModel(classifier, weka.getTrain());
+		System.out.println(classifier.graph());
+		FastVector nodes = new FastVector(); FastVector edges = new FastVector();
+		DotParser dot = new DotParser(new StringReader(classifier.graph()), nodes, edges);
+		dot.parse();
+		Enumeration nn = nodes.elements();
+		while(nn.hasMoreElements()){
+			GraphNode g = (GraphNode) nn.nextElement();
+			System.out.println(g.getID()+" "+g.getLbl());
+		}
+		Enumeration ee = edges.elements();
+		while(ee.hasMoreElements()){
+			GraphEdge e = (GraphEdge) nn.nextElement();
+			System.out.println(e.getSrcLbl()+" "+e.getDestLbl());
+		}
 	}
 
 	public static void buildrankedListofGenesForEnrichmentTesting() {
