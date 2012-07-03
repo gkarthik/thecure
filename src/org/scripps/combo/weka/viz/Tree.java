@@ -86,16 +86,59 @@ public class Tree {
 		Node top = builder.create(new StringReader(classifier.graph()));
 		//top = builder.create(new StringReader("digraph atree { top [label=\"the top\"] a [label=\"the first node\"] b [label=\"the second nodes\"] c [label=\"comes off of first\"] top->a top->b b->c }"));
 		//outputTree(top);	   
-
+		
 		Tree t = new Tree();
 		t.json_root.put("name", top.getLabel());
-		t.outputJsonTree(top, t.json_root);
+		t.outputJsonTreeNode(top, t.json_root);
 		String json = t.mapper.writeValueAsString(t.json_root);
 		System.out.println(json);
 
 		//		ObjectNode json_root = mapper.createObjectNode();
 	}
 
+
+/**
+ * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+ * @param root
+ * @param jroot
+ * @throws JsonGenerationException
+ * @throws JsonMappingException
+ * @throws IOException
+ */
+	public void outputJsonTreeNode(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
+		Edge edge;
+	//	jroot.put("name", root.getLabel());
+		//build the edge children
+		ArrayNode edge_children = mapper.createArrayNode();
+		for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
+			ObjectNode edgenode = mapper.createObjectNode();
+			edgenode.put("name", edge.getLabel());
+			outputJsonTreeEdge(edge, edgenode);	
+			edge_children.add(edgenode);
+		}
+		if(edge_children.size()>0){
+			jroot.put("children", edge_children);
+		}
+	}
+
+	/**
+	 * Works with outputJsonTreeNode to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+	 * @param root
+	 * @param jroot
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */	
+	public void outputJsonTreeEdge(Edge root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {		
+		ArrayNode node_children = mapper.createArrayNode();
+		Node target = root.getTarget();
+		ObjectNode targetnode = mapper.createObjectNode();
+		targetnode.put("name", target.getLabel());
+		outputJsonTreeNode(target, targetnode);	
+		node_children.add(targetnode);
+		jroot.put("children", node_children);
+	}
+	
 	/**
 	 * Given the root node from a decision tree, recursively convert it into a jackson ObjectNode model that can be exported and used with the D3 javascript library
 	 * @param root
@@ -103,12 +146,9 @@ public class Tree {
 	 * @throws JsonGenerationException
 	 * @throws JsonMappingException
 	 * @throws IOException
-	 */
-	public void outputJsonTree(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
+	 */	
+	public void outputJsonTree1(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
 		Edge e;
-		Node child;
-		//jroot.put("name", root.getLabel());
-		//json_root.put("id", root.getRefer());
 		//build the edge children
 		ArrayNode children = mapper.createArrayNode();
 		for (int noa = 0;(e = root.getChild(noa)) != null;noa++) {
@@ -122,21 +162,25 @@ public class Tree {
 			}
 			jnode.put("name", e.getLabel()+tlabel);
 			children.add(jnode);
-			outputJsonTree(e.getTarget(), jnode);				
+			outputJsonTree1(e.getTarget(), jnode);				
 		}
 		if(children.size()>0){
 			jroot.put("children", children);
 		}
 	}
 	
-	public static void outputTree(Node root) {
+	/**
+	 * Pits out all of the nodes in a decision tree
+	 * @param root
+	 */
+	public static void outputTextTree(Node root) {
 		Edge e;
 		Node child;
 		System.out.println("Node "+root.getLabel()+" "+root.getRefer());
 		for (int noa = 0;(e = root.getChild(noa)) != null;noa++) {
 			System.out.println("edge "+e.getLabel());
 			child = e.getTarget();
-			outputTree(child);
+			outputTextTree(child);
 		}	
 	}
 
