@@ -7,7 +7,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -28,28 +31,119 @@ import org.scripps.combo.weka.Weka.execution;
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.J48;
+import weka.core.converters.ConverterUtils.DataSource;
 
 /**
  * Servlet implementation class WekaServer
  */
-public class ZooServer extends HttpServlet {
+public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	Weka weka;
+	Map<String, Weka> name_dataset;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public ZooServer() {
+	public MetaServer() {
 		super();
-		// TODO Auto-generated constructor stub
+		name_dataset = new HashMap<String, Weka>();
 	}
 
 	public void init(ServletConfig config){
+		//load all active datasets
 		ServletContext context = config.getServletContext();
-		InputStream train_loc = context.getResourceAsStream("/WEB-INF/zoo_mammals.arff");
-		weka = new Weka(train_loc, null);
-		weka.setEval_method("training_set");
 
+		//training game data 
+		InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
+		Weka mammal_weka = new Weka(train_loc, null);
+		mammal_weka.setEval_method("training_set");
+		name_dataset.put("mammal", mammal_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
+		Weka zoo_weka = new Weka(train_loc, null);
+		zoo_weka.setEval_method("training_set");
+		name_dataset.put("zoo", zoo_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//Cunningham data
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
+		Weka cranio_case_weka = new Weka(train_loc, null);
+		cranio_case_weka.setEval_method("training_set");
+		name_dataset.put("cranio_case_control", cranio_case_weka);	
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
+		Weka coronal_control_weka = new Weka(train_loc, null);
+		coronal_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", coronal_control_weka);	
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
+		Weka metopic_control_weka = new Weka(train_loc, null);
+		metopic_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", metopic_control_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+/*		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
+		Weka sagittal_control_weka = new Weka(train_loc, null);
+		metopic_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", sagittal_control_weka);	
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//vantveer data
+		train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+		Weka vantveer_weka = new Weka(train_loc, null);
+		vantveer_weka.setEval_method("training_set");
+		name_dataset.put("vantveer", vantveer_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//load the gene name mapping file
+		InputStream metadata = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
+		vantveer_weka.loadAttributeMetadata(metadata);
+		//filter zero information attributes
+		//		filterForNonZeroInfoGain();
+		//only use genes with metadata
+		vantveer_weka.filterForGeneIdMapping();
+		System.out.println("launching with "+vantveer_weka.getTrain().numAttributes()+" train attributes.");
+		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
+		//map the names so the trees look right..
+		vantveer_weka.remapAttNames();
+		//add the right indexes
+*/
 	}
 
 	/**
@@ -69,12 +163,25 @@ public class ZooServer extends HttpServlet {
 			handleBadRequest(request, response, "no command");
 			return;
 		}
+		String dataset_name = request.getParameter("dataset");
+		if(dataset_name==null){
+			handleBadRequest(request, response, "no dataset");
+			return;
+		}
+		Weka weka = name_dataset.get(dataset_name);
+		if(weka==null){
+			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
+			return;
+		}
+		
 		// handle request to score feature set
 		if(command.equals("getscore")){
 			String features=request.getParameter("features");
 			if(features==null){
 				handleBadRequest(request, response, "no features");
 			}else{
+
+				
 				String model = request.getParameter("wekamodel");
 				Classifier wekamodel = null;
 				if(model!=null&&model.equals("jrip")){

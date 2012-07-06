@@ -496,7 +496,7 @@ public class Scratch {
 	 */
 	public static void makeAndTest70geneClassifier(){
 		//load weka with full training and testing set
-		Weka weka = new Weka();
+		Weka weka = new Weka("/usr/local/data/vantveer/breastCancer-train.arff","/usr/local/data/vantveer/breastCancer-test.arff");
 		//reduce to about 5,000 genes by eliminating genes not significantly regulated in at least three samples
 		System.out.println("Train start n atts = "+weka.getTrain().numAttributes());
 		Enumeration<Attribute> atts = weka.getTrain().enumerateAttributes();

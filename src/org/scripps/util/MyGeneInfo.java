@@ -39,7 +39,7 @@ public class MyGeneInfo {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static void main(String[] args) throws UnsupportedEncodingException {
-		Set<String> id = mapGeneSymbol2NCBIGene("USH2A");
+		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
 		id.iterator().next();
 		Gene g = getGeneInfoByGeneid("2989", true);
 		System.out.println(g);
@@ -168,7 +168,10 @@ public class MyGeneInfo {
 				}
 				for(int i=0; i<rows.length(); i++){
 					JSONObject job = (JSONObject) rows.get(i);
-					mapped.add(job.getString("id"));
+					String id = job.getString("id");
+					if(id!=null&&!id.startsWith("E")){
+						mapped.add(id);
+					}
 				}
 			}
 		} catch (JSONException e) {
