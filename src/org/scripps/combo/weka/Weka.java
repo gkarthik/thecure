@@ -1,6 +1,7 @@
 package org.scripps.combo.weka;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 
 import org.scripps.util.Gene;
@@ -49,53 +53,26 @@ public class Weka {
 	public Map<String, Weka.card> att_meta;
 	public Map<String, List<Weka.card>> geneid_cards; //could be multiple cards per gene if multiple reporters
 
-
-
 	public Weka(){
 	}
 
-	public Weka(String train_file, String test_file){
-		//get the data 
-		DataSource source;
-		try {
-			source = new DataSource(train_file);
-
-			setTrain(source.getDataSet());
-			if (getTrain().classIndex() == -1){
-				getTrain().setClassIndex(getTrain().numAttributes() - 1);
-			}
-			if(test_file!=null){
-				source = new DataSource(test_file);
-				test = source.getDataSet();
-				if (test.classIndex() == -1){
-					test.setClassIndex(test.numAttributes() - 1);
-				} 
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		rand = new Random(1);
-		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "cross_validation";//"training_set";
+	public Weka(String train_file) throws FileNotFoundException{
+		InputStream train_stream = new FileInputStream(train_file);
+		buildWeka(train_stream);
 	}
 
-	public Weka(InputStream train_stream, InputStream test_stream){
+	public Weka(InputStream train_stream) throws FileNotFoundException{
+		buildWeka(train_stream);
+	}
+
+	public void buildWeka(InputStream train_stream){
 		//get the data 
 		DataSource source;
 		try {
 			source = new DataSource(train_stream);
-
 			setTrain(source.getDataSet());
 			if (getTrain().classIndex() == -1){
 				getTrain().setClassIndex(getTrain().numAttributes() - 1);
-			}
-			if(test_stream!=null){
-				source = new DataSource(test_stream);
-				test = source.getDataSet();
-				if (test.classIndex() == -1){
-					test.setClassIndex(test.numAttributes() - 1);
-				} 
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -105,6 +82,55 @@ public class Weka {
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
 	}
+
+	public Weka(String train_file, String test_file, String meta_file) throws Exception{
+		InputStream train_stream = new FileInputStream(train_file);
+		InputStream test_stream = new FileInputStream(test_file);
+		InputStream meta_stream = new FileInputStream(meta_file);
+		buildWeka(train_stream, test_stream, meta_stream);
+	}
+
+	public void buildWeka(InputStream train_stream, InputStream test_stream, InputStream meta_stream) throws Exception{
+		//get the data 
+		DataSource source = new DataSource(train_stream);
+		setTrain(source.getDataSet());
+		if (getTrain().classIndex() == -1){
+			getTrain().setClassIndex(getTrain().numAttributes() - 1);
+		}
+		train_stream.close();
+		if(test_stream!=null){
+			source = new DataSource(test_stream);
+			test = source.getDataSet();
+			if (test.classIndex() == -1){
+				test.setClassIndex(test.numAttributes() - 1);
+			} 
+			test_stream.close();
+		}
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+		if(meta_stream!=null){
+			loadMetadata(meta_stream);
+			meta_stream.close();
+		}
+	}
+
+	/**
+	 * This reads a three column file that maps probeset or other dataset ids to entrez gene ids and gene symbols
+	 * @param config
+	 * @param weka
+	 * @param metadatafile
+	 * @return
+	 */
+	public void loadMetadata(InputStream metadata){
+		loadAttributeMetadata(metadata);
+		//only use genes with metadata
+		filterForGeneIdMapping();
+		//map the names so the trees look right..
+		remapAttNames();
+		return;
+	}
+
 
 	public void exportArff(Instances dataset, String outfile){
 		ArffSaver saver = new ArffSaver();
@@ -374,7 +400,7 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	/**

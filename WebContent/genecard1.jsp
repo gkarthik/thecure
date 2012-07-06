@@ -78,7 +78,7 @@ function playSound(url) {
 }
 
 function evaluateHand(cardsinhand){
-	var url = 'WekaServer?command=getscore&features=';
+	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
 	features = "";
 	$.each(cardsinhand, function(index, value) {
 	    features+=value.att_index+",";
@@ -193,7 +193,7 @@ function generateBoard(){
 	$("#board").append(boardhtml);
 	
 	//set the par - use all the features on the board
-	var url = 'WekaServer?command=getscore&features=';
+	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
 	var features = "";
 	$.each(cards, function(index, value) {
 	    features+=value.att_index+",";
@@ -277,7 +277,7 @@ function setupShowInfoHandler(){
 function setupHoldem(){
 	//add the save handler
 	 $("#holdem_button").on("click", function () {				
-			var saveurl = 'WekaServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+score+'&board_id='+seed;
+			var saveurl = 'MetaServer?dataset=vantveer&command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+score+'&board_id='+seed;
 			//player_name , score, cv_accuracy, board_id
 			console.log("saved "+saveurl);
 			$.getJSON(saveurl, function(data) {
@@ -345,7 +345,7 @@ $(document).ready(function() {
 	//set up accordian for result viewer
 	 $("#cv_results").accordion({ collapsible: true });
 	//set up the baord
-	url = "WekaServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+	url = "MetaServer?dataset=vantveer&command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
 		cards = data;

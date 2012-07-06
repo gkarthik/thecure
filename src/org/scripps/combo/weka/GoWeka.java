@@ -3,10 +3,15 @@
  */
 package org.scripps.combo.weka;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,70 +38,80 @@ public class GoWeka extends Weka {
 	public Map<String, Set<String>> go2genes;
 	public Map<String, String> acc2name;
 	/**
+	 * @throws Exception 
 	 * 
 	 */
-	public GoWeka() {
-		//super(false);//false to load unfiltered data (filter seems to screw things up somewhere here)		
+	public GoWeka(String train_file, String test_file, String metadata_file, String go2gene_file) throws Exception {
+		super(train_file, test_file, metadata_file); 
+		initGoWeka(go2gene_file);
+	}
 
-		DataSource source = null;   
-		boolean filtered = true;
-		try {
-			if(filtered){
-				source = new DataSource("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
-			}else{
-				source = new DataSource("/WEB-INF/data/vantveer/breastCancer-train.arff");
-			}
-			setTrain(source.getDataSet());
-			if (getTrain().classIndex() == -1){
-				getTrain().setClassIndex(getTrain().numAttributes() - 1);
-			}
-			source = new DataSource("/WEB-INF/data/vantveer/breastCancer-test.arff");
-			test = source.getDataSet();
-			if (test.classIndex() == -1){
-				test.setClassIndex(test.numAttributes() - 1);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//load the gene name mapping file
-		loadAttributeMetadata("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
-		//filter zero information attributes
-		//		filterForNonZeroInfoGain();
-		//only use genes with metadata
-		filterForGeneIdMapping();
-		System.out.println("launching with "+getTrain().numAttributes()+" train attributes.");
-		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
-		//map the names so the trees look right..
-		remapAttNames();
-		//add the right indexes
+	public GoWeka(String train_file, String go2gene_file) throws FileNotFoundException {
+		super(train_file); 
+		initGoWeka(go2gene_file);
+	}
+	
+	public GoWeka(InputStream train_loc, InputStream test_loc, InputStream meta_loc, InputStream anno_loc) throws Exception {
+		super();
+		buildWeka(train_loc, test_loc, meta_loc);
+		initGoWeka(anno_loc);
+	}
 
-		//export file
-		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
-		//get the random set up
-		rand = new Random(1);
-		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "cross_validation";//"training_set";
-		
-		
-		String annotations = "/usr/local/data/go2gene_3_51.txt";		
+	public void initGoWeka(InputStream go2gene_stream){
 		try {
-			go2genes = Annotations.readCachedGoAcc2Genes(annotations);
-			acc2name = Annotations.readCachedGoName(annotations);
+			readCachedGoAnnotations(go2gene_stream);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println(go2genes.get("GO:0070830"));
-		eval_method = "cross_validation";//"test_set";//"training_set";
+	}
+	
+	public void initGoWeka(String go2gene_file){
+		try {
+			go2genes = Annotations.readCachedGoAcc2Genes(go2gene_file);
+			acc2name = Annotations.readCachedGoName(go2gene_file);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void readCachedGoAnnotations(InputStream filestream) throws IOException{
+		acc2name = new HashMap<String,String>();
+		go2genes = new HashMap<String, Set<String>>();
+		//output ranks, counts
+		BufferedReader f = new BufferedReader(new InputStreamReader(filestream));
+		String line = f.readLine().trim();
+		while(line!=null){
+			if(!line.startsWith("#")){
+				String[] item = line.split("\t");
+				if(item!=null&&item.length>1){
+					String acc = item[0];
+					String name = item[1]+"\t"+item[2];
+					acc2name.put(acc, name);
+					
+					String geness = item[3].substring(1,item[3].length()-1); //trim off the []
+					String[] genes = geness.split(",");
+					Set<String> geneset = new HashSet<String>();
+					for(String gene : genes){
+						geneset.add(gene.trim());
+					}
+					go2genes.put(acc, geneset);
+				}
+			}
+			line = f.readLine();
+		}
+		f.close();
 	}
 
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 //		GoWeka w = new GoWeka();
-
+// /usr/local/data/go2gene_3_51.txt
 //		List<card> gocars = w.getRandomGoCards(5,1);
 //		for(card c : gocars){
 //			System.out.println(c.acc+" "+c.geneids);
@@ -184,7 +199,6 @@ public class GoWeka extends Weka {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 				card c = new card(acc, name, gene_symbols);
 				cards.add(c);
 				u.add(randomNum+"");

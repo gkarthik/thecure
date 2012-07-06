@@ -1,6 +1,7 @@
 package org.scripps.combo.weka;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +37,17 @@ public class GoWekaServer extends HttpServlet{
 	}
 
 	public void init(ServletConfig config){
-		goweka = new GoWeka();
+		ServletContext context = config.getServletContext();
+		InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+		InputStream test_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-test.arff");
+		InputStream meta_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
+		InputStream anno_loc = context.getResourceAsStream("/WEB-INF/data/go2gene_3_51.txt");
+		try {
+			goweka = new GoWeka(train_loc, test_loc, meta_loc, anno_loc);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
