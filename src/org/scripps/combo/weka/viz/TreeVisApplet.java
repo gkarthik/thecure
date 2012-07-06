@@ -1,4 +1,4 @@
-package org.scripps.combo.weka;
+package org.scripps.combo.weka.viz;
 
 import weka.classifiers.trees.J48;
 import weka.core.Instances;

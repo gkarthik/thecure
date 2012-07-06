@@ -1,5 +1,6 @@
 package org.scripps.combo.weka;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -53,97 +54,90 @@ public class MetaServer extends HttpServlet {
 		ServletContext context = config.getServletContext();
 
 		//training game data 
-		InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
-		Weka mammal_weka = new Weka(train_loc, null);
-		mammal_weka.setEval_method("training_set");
-		name_dataset.put("mammal", mammal_weka);
-		try {
+		try { 
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
+			Weka mammal_weka = new Weka(train_loc);
+			mammal_weka.setEval_method("training_set");
+			name_dataset.put("mammal", mammal_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
-		Weka zoo_weka = new Weka(train_loc, null);
-		zoo_weka.setEval_method("training_set");
-		name_dataset.put("zoo", zoo_weka);
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
+			Weka zoo_weka = new Weka(train_loc);
+			zoo_weka.setEval_method("training_set");
+			name_dataset.put("zoo", zoo_weka);
+
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//Cunningham data
-		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
-		Weka cranio_case_weka = new Weka(train_loc, null);
-		cranio_case_weka.setEval_method("training_set");
-		name_dataset.put("cranio_case_control", cranio_case_weka);	
+
+		//Cunningham data		
+
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
+			Weka cranio_case_weka = new Weka(train_loc);
+			cranio_case_weka.setEval_method("training_set");
+			cranio_case_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
+			name_dataset.put("cranio_case_control", cranio_case_weka);	
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
-		Weka coronal_control_weka = new Weka(train_loc, null);
-		coronal_control_weka.setEval_method("training_set");
-		name_dataset.put("coronal_case_control", coronal_control_weka);	
+
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
+			Weka coronal_control_weka = new Weka(train_loc);
+			coronal_control_weka.setEval_method("training_set");
+			coronal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
+			name_dataset.put("coronal_case_control", coronal_control_weka);	
+
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
-		Weka metopic_control_weka = new Weka(train_loc, null);
-		metopic_control_weka.setEval_method("training_set");
-		name_dataset.put("coronal_case_control", metopic_control_weka);
+
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
+			Weka metopic_control_weka = new Weka(train_loc);
+			metopic_control_weka.setEval_method("training_set");
+			metopic_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
+			name_dataset.put("coronal_case_control", metopic_control_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-/*		
-		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
-		Weka sagittal_control_weka = new Weka(train_loc, null);
-		metopic_control_weka.setEval_method("training_set");
-		name_dataset.put("coronal_case_control", sagittal_control_weka);	
+
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
+			Weka sagittal_control_weka = new Weka(train_loc);
+			sagittal_control_weka.setEval_method("training_set");
+			sagittal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
+			name_dataset.put("coronal_case_control", sagittal_control_weka);	
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//vantveer data
-		train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
-		Weka vantveer_weka = new Weka(train_loc, null);
-		vantveer_weka.setEval_method("training_set");
-		name_dataset.put("vantveer", vantveer_weka);
 		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+			Weka vantveer_weka = new Weka(train_loc);
+			vantveer_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt"));
+			name_dataset.put("vantveer", vantveer_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//load the gene name mapping file
-		InputStream metadata = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
-		vantveer_weka.loadAttributeMetadata(metadata);
-		//filter zero information attributes
-		//		filterForNonZeroInfoGain();
-		//only use genes with metadata
-		vantveer_weka.filterForGeneIdMapping();
-		System.out.println("launching with "+vantveer_weka.getTrain().numAttributes()+" train attributes.");
-		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
-		//map the names so the trees look right..
-		vantveer_weka.remapAttNames();
-		//add the right indexes
-*/
+
 	}
 
 	/**
@@ -173,7 +167,7 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
 			return;
 		}
-		
+
 		// handle request to score feature set
 		if(command.equals("getscore")){
 			String features=request.getParameter("features");
@@ -181,7 +175,7 @@ public class MetaServer extends HttpServlet {
 				handleBadRequest(request, response, "no features");
 			}else{
 
-				
+
 				String model = request.getParameter("wekamodel");
 				Classifier wekamodel = null;
 				if(model!=null&&model.equals("jrip")){
@@ -285,6 +279,23 @@ public class MetaServer extends HttpServlet {
 					player.getLevel_tilescores().put("mammals", mammal_scores);
 					s.setAttribute("player", player);
 				}
+			}else if(game!=null&&game.equals("barney")){
+				//update stars
+				Player player = Player.lookupPlayer(player_name);
+				//check if they passed the level
+				String win = request.getParameter("win");
+				if(win!=null&&win.equals("1")){
+					//if(score>0){
+					int stars = 1;
+					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
+						stars += player.getBarney_levels().get(board_id);
+						player.getBarney_levels().set(board_id, stars);
+					}else{
+						player.getBarney_levels().add(stars);
+					}
+					player.updateBarneyLevelsInDatabase();
+				}
+
 			}
 
 			System.out.println("saved a hand "+player_name+" "+score);

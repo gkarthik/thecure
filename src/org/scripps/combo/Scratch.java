@@ -71,7 +71,7 @@ public class Scratch {
 		//geneSetSearch();
 		
 		String train_file = "/Users/bgood/data/zoo_mammals.arff";
-		Weka weka = new Weka(train_file, null);
+		Weka weka = new Weka(train_file);
 		J48 classifier = new J48();
 		classifier.setUnpruned(false); 
 		Evaluation eval_train = new Evaluation(weka.getTrain());
@@ -93,8 +93,12 @@ public class Scratch {
 		}
 	}
 
-	public static void buildrankedListofGenesForEnrichmentTesting() {
-		GoWeka gow = new GoWeka();
+	public static void buildrankedListofGenesForEnrichmentTesting() throws Exception {
+		String train_data = "/usr/local/data/vantveer/breastCancer-train-filtered.arff";
+		String test_data = "/usr/local/data/vantveer/breastCancer-test.arff";
+		String meta = "/usr/local/data/vantveer/breastCancer-train_meta.txt";
+		String annotations = "/usr/local/data/go2gene_3_51.txt";
+		GoWeka gow = new GoWeka(train_data, test_data, meta, annotations);
 		//weka.filters.Filter.
 		AttributeSelection as = new AttributeSelection();
 		//	InfoGainAttributeEval infogain = new InfoGainAttributeEval();
@@ -173,8 +177,12 @@ public class Scratch {
 	 * @param out
 	 * @throws IOException
 	 */
-	public static void testAllGOForest() throws IOException{
-		GoWeka baseweka = new GoWeka();
+	public static void testAllGOForest() throws Exception{
+		String train_data = "/usr/local/data/vantveer/breastCancer-train-filtered.arff";
+		String test_data = "/usr/local/data/vantveer/breastCancer-test.arff";
+		String meta = "/usr/local/data/vantveer/breastCancer-train_meta.txt";
+		String annotations = "/usr/local/data/go2gene_3_51.txt";
+		GoWeka baseweka = new GoWeka(train_data, test_data, meta, annotations);
 		GOowl gowl = new GOowl();
 		String goowlfile = "file:/users/bgood/data/ontologies/5-12-2012/go_daily-termdb.owl";
 		gowl.init(goowlfile, false);
@@ -294,17 +302,20 @@ public class Scratch {
 
 	/** 
 	 * estimate value of cross-validation on selected dataset
+	 * @throws FileNotFoundException 
 	 */
-	public static void crossvalidateTest(){
+	public static void crossvalidateTest() throws Exception{
 		//load weka with full training and testing set
 		//		String train_file = "/Users/bgood/data/arrays/Golub/leukemia_train_38x7129.arff"; String test_file = "/Users/bgood/data/arrays/Golub/leukemia_test_34x7129.arff";
 		String train_file = "/usr/local/data/vantveer/breastCancer-train.arff";
 		String test_file = "/usr/local/data/vantveer/breastCancer-test.arff";
+		String meta = "/usr/local/data/vantveer/breastCancer-train_meta.txt";
+		String annotations = "/usr/local/data/go2gene_3_51.txt";
 		System.out.println("Method\tloop\tweka.getTrain().numAttributes()\trsquare_cv\trsquare_train");
 		float min_expression_change = (float)0.3;
 		int ngenes = 0;
 		for(int outer=0; outer<20; outer++){
-			Weka weka = new Weka(train_file, test_file);
+			Weka weka = new Weka(train_file, test_file, meta);
 			//run a basic rule-based attribute filter
 			//min_expression_change+=0.1;
 			int n_samples_over_min = outer; int outlier_threshold = 10; boolean remove_atts_with_outliers = true;
@@ -394,8 +405,9 @@ public class Scratch {
 
 	/** 
 	 * Search through the dataset for gene sets that result in trees that score well on the training set.
+	 * @throws FileNotFoundException 
 	 */
-	public static void geneSetSearch(){
+	public static void geneSetSearch() throws FileNotFoundException{
 		int n_genes_in_set = 5;
 		int population_size = 300000;
 		String outfile = "/Users/bgood/data/arrays/breastcancer/ngf_processed_vandevijver_5trees.txt";
@@ -414,7 +426,7 @@ public class Scratch {
 			e1.printStackTrace();
 		}
 		float min_expression_change = (float)0.3;		
-		Weka weka = new Weka(train_file, null);
+		Weka weka = new Weka(train_file);
 		//run a basic rule-based attribute filter
 	//	int n_samples_over_min = 3; int outlier_threshold = 10; boolean remove_atts_with_outliers = true;
 	//	weka.executeManualAttFiltersTrainTest(min_expression_change, n_samples_over_min, outlier_threshold, remove_atts_with_outliers);
@@ -493,10 +505,13 @@ public class Scratch {
 
 	/** try to reproduce the result
 	 *  from the 2002 VantVeer paper
+	 * @throws FileNotFoundException 
 	 */
-	public static void makeAndTest70geneClassifier(){
+	public static void makeAndTest70geneClassifier() throws Exception{
 		//load weka with full training and testing set
-		Weka weka = new Weka("/usr/local/data/vantveer/breastCancer-train.arff","/usr/local/data/vantveer/breastCancer-test.arff");
+		String meta = "/usr/local/data/vantveer/breastCancer-train_meta.txt";
+
+		Weka weka = new Weka("/usr/local/data/vantveer/breastCancer-train.arff","/usr/local/data/vantveer/breastCancer-test.arff", meta);
 		//reduce to about 5,000 genes by eliminating genes not significantly regulated in at least three samples
 		System.out.println("Train start n atts = "+weka.getTrain().numAttributes());
 		Enumeration<Attribute> atts = weka.getTrain().enumerateAttributes();
@@ -619,8 +634,12 @@ public class Scratch {
 
 	}
 
-	public static void testAllGoClassesAsFeatureSets(String out) throws IOException{
-		GoWeka s = new GoWeka();
+	public static void testAllGoClassesAsFeatureSets(String out) throws Exception{
+		String train_data = "/usr/local/data/vantveer/breastCancer-train-filtered.arff";
+		String test_data = "/usr/local/data/vantveer/breastCancer-test.arff";
+		String meta = "/usr/local/data/vantveer/breastCancer-train_meta.txt";
+		String annotations = "/usr/local/data/go2gene_3_51.txt";
+		GoWeka s = new GoWeka(train_data, test_data, meta, annotations);
 		//filters the training and test sets based on the good parts of the training data
 		//will over-estimate performance of subsequent cross-validation.
 		//s.filterTrainAndTestSetForNonZeroInfoGainAttsInTrain();

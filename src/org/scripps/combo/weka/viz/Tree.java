@@ -73,7 +73,7 @@ public class Tree {
 		 */
 
 		String train_file = "/Users/bgood/data/zoo.arff";
-		Weka weka = new Weka(train_file, null);
+		Weka weka = new Weka(train_file);
 		J48 classifier = new J48();
 		classifier.setUnpruned(false); 
 		Evaluation eval_train = new Evaluation(weka.getTrain());
