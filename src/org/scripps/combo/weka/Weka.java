@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -48,77 +49,9 @@ public class Weka {
 	public Map<String, Weka.card> att_meta;
 	public Map<String, List<Weka.card>> geneid_cards; //could be multiple cards per gene if multiple reporters
 
-	/**
-	 * This class controls the processes of:
-	 *  loading training and testing data, 
-	 *  parameterizing and executing classifiers, 
-	 *  backing interactions with dataset attributes (choosing random ones, name maps etc.)
-	 */
-	public Weka(boolean filtered) {
-		//get the data 
-		DataSource source = null;   
-		try {
-			if(filtered){
-				source = new DataSource("/usr/local/data/vantveer/breastCancer-train-filtered.arff");
-			}else{
-				source = new DataSource("/usr/local/data/vantveer/breastCancer-train.arff");
-			}
-			setTrain(source.getDataSet());
-			if (getTrain().classIndex() == -1){
-				getTrain().setClassIndex(getTrain().numAttributes() - 1);
-			}
-			source = new DataSource("/usr/local/data/vantveer/breastCancer-test.arff");
-			test = source.getDataSet();
-			if (test.classIndex() == -1){
-				test.setClassIndex(test.numAttributes() - 1);
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//load the gene name mapping file
-		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
-		//filter zero information attributes
-		//		filterForNonZeroInfoGain();
-		//only use genes with metadata
-		filterForGeneIdMapping();
-		System.out.println("launching with "+getTrain().numAttributes()+" train attributes.");
-		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
-		//map the names so the trees look right..
-		remapAttNames();
-		//add the right indexes
 
-		//export file
-		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
-		//get the random set up
-		rand = new Random(1);
-		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "cross_validation";//"training_set";
-	}
 
 	public Weka(){
-		//get the data 
-		DataSource source;
-		try {
-			source = new DataSource("/usr/local/data/vantveer/breastCancer-train.arff");
-
-			setTrain(source.getDataSet());
-			if (getTrain().classIndex() == -1){
-				getTrain().setClassIndex(getTrain().numAttributes() - 1);
-			}
-			source = new DataSource("/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-test.arff");
-			test = source.getDataSet();
-			if (test.classIndex() == -1){
-				test.setClassIndex(test.numAttributes() - 1);
-			} 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		loadAttributeMetadata("/usr/local/data/vantveer/breastCancer-train_meta.txt");
-		rand = new Random(1);
-		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "cross_validation";//"training_set";
 	}
 
 	public Weka(String train_file, String test_file){
@@ -411,6 +344,38 @@ public class Weka {
 		}
 	}
 
+	public void loadAttributeMetadata(InputStream metadatastream) {
+		//int count = 0;
+		att_meta = new HashMap<String, card>();	
+		BufferedReader f;
+		try {
+			f = new BufferedReader(new InputStreamReader(metadatastream));
+			String line = f.readLine();
+			line = f.readLine(); //skip header
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String name = item[1];
+				String id = item[2];
+				if(item!=null&&item.length>1){
+					card genecard = new card(0, attribute, name, id);
+					att_meta.put(attribute, genecard);
+					if(name!=null){
+						att_meta.put(name,genecard);
+					}
+				}
+				line = f.readLine();
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 
 	/**
 	 * a card represents an attribute in a training set such as a gene in an array experiment
@@ -1094,5 +1059,7 @@ public class Weka {
 	public void setGeneid_cards(Map<String, List<Weka.card>> geneid_cards) {
 		this.geneid_cards = geneid_cards;
 	}
+
+
 
 }

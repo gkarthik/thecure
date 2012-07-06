@@ -39,52 +39,18 @@ public class MyGeneInfo {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static void main(String[] args) throws UnsupportedEncodingException {
-//		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
-//		id.iterator().next();
-//		Gene g = getGeneInfoByGeneid("2989", true);
-//		Gene g = getGeneInfoByGeneid("730415", true);
-//		System.out.println(g.toString());
-		
-		List<String> ids = new ArrayList<String>();
-		ids.add("2989"); ids.add("1017");
-		Map<String, Gene> id_gene = getBatchGeneInfo(ids, true);
-		for(String id : id_gene.keySet()){
-			Gene g = id_gene.get(id);
-			System.out.println(g.toString());
-		}
-		
+		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
+		id.iterator().next();
+		Gene g = getGeneInfoByGeneid("2989", true);
+		System.out.println(g);
 
 	}
 
-	public static String getCurrentGeneid(String geneid){
-		String g = "";
-		String jsonr = "";
-		try {
-			jsonr = getGeneInfo(geneid, true, "entrezgene");
-		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		if(jsonr==null||jsonr.length()==0||jsonr.startsWith("<html><title>404")){
-			return null;
-		}
-		//System.out.println(jsonr);
-		try {
-			JSONObject r = new JSONObject(jsonr);
-			g = (String) ""+r.get("entrezgene");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			System.err.println("unparseable jsonr for "+geneid+"\n"+jsonr);
-			e.printStackTrace();
-		}
-		return g;
-	}
-	
 
 	public static Gene getGeneInfoByGeneid(String id, boolean external) throws UnsupportedEncodingException{
 		Gene g = null;
 		String symbol = "";
-		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot,entrezgene,summary");
+		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot");
 		if(jsonr==null||jsonr.length()==0||jsonr.startsWith("<html><title>404")){
 			return null;
 		}
@@ -93,14 +59,12 @@ public class MyGeneInfo {
 			JSONObject r = new JSONObject(jsonr);
 
 			g = new Gene();
-			g.setGeneID(""+r.getInt("entrezgene"));
+			g.setGeneID(id);
 			if(r.has("symbol")){
 				symbol = r.getString("symbol");
 				g.setGeneSymbol(symbol);
 			}
-			if(r.has("summary")){
-				g.setGeneDescription(r.getString("summary"));
-			}
+			g.setGeneDescription(r.getString("name"));
 			g.setUniprot("none");
 			if(r.has("uniprot")){
 				JSONObject u = new JSONObject(r.getString("uniprot"));
@@ -279,14 +243,14 @@ public class MyGeneInfo {
 				batch = batch.substring(0, batch.length()-1);
 			}
 			//prepare the request for this set
-			String u = "http://cwudev/query";
+			String u = "http://cwudev/gene";
 			if(external){
-				u = "http://mygene.info/query";
+				u = "http://mygene.info/gene";
 			}
 			PostMethod post = new PostMethod(u);
-			post.addParameter("q", batch);
-			post.addParameter("scope","entrezgene");
-			post.addParameter("filter","name,id,symbol,summary");
+			post.addParameter("ids", batch);
+			post.addParameter("filter","name,id,symbol,type_of_gene");
+
 			// Get HTTP client
 			HttpClient httpclient = new HttpClient();
 			// Execute request
@@ -295,24 +259,25 @@ public class MyGeneInfo {
 				int result = httpclient.executeMethod(post);				
 				out = post.getResponseBodyAsString();
 				if(result==200&&out!=null&&(!out.startsWith("<html"))){
-					
-					JSONObject obj = new JSONObject(out);
-					JSONArray r = obj.getJSONArray("rows");
+					JSONArray r = new JSONArray(out);
 
 					for(int j=0; j<r.length(); j++){
 						JSONObject o = r.getJSONObject(j);
-						Gene gene = new Gene();
-						//String name = o.getString("name");
-						String entrezgene = o.getString("id");
+						String name = o.getString("name");
+						String entrezgene = o.getString("_id");
 						String symbol = o.getString("symbol");
-						String summary = "";
-						if(o.has("summary")){
-							summary = o.getString("summary");
-							gene.setGeneDescription(summary);
-						}
+						String t = o.getString("type_of_gene");
+						Gene gene = new Gene();
 						gene.setGeneID(entrezgene);
 						gene.setGeneSymbol(symbol);
-
+						gene.setGeneDescription(name);
+						gene.setGenetype(t);
+						if(t!=null){
+							if(t.equals("pseudo")){
+								gene.setPseudo(true);
+							}
+							gene.setGenetype(t);
+						}
 						genes.put(entrezgene, gene);
 						response_set.add(entrezgene);
 					}

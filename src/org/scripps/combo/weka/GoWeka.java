@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.scripps.combo.weka.Weka.card;
@@ -20,6 +21,7 @@ import org.scripps.util.MyGeneInfo;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
+import weka.core.converters.ConverterUtils.DataSource;
 
 
 
@@ -34,7 +36,49 @@ public class GoWeka extends Weka {
 	 * 
 	 */
 	public GoWeka() {
-		super(false);//false to load unfiltered data (filter seems to screw things up somewhere here)		
+		//super(false);//false to load unfiltered data (filter seems to screw things up somewhere here)		
+
+		DataSource source = null;   
+		boolean filtered = true;
+		try {
+			if(filtered){
+				source = new DataSource("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+			}else{
+				source = new DataSource("/WEB-INF/data/vantveer/breastCancer-train.arff");
+			}
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
+			}
+			source = new DataSource("/WEB-INF/data/vantveer/breastCancer-test.arff");
+			test = source.getDataSet();
+			if (test.classIndex() == -1){
+				test.setClassIndex(test.numAttributes() - 1);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//load the gene name mapping file
+		loadAttributeMetadata("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
+		//filter zero information attributes
+		//		filterForNonZeroInfoGain();
+		//only use genes with metadata
+		filterForGeneIdMapping();
+		System.out.println("launching with "+getTrain().numAttributes()+" train attributes.");
+		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
+		//map the names so the trees look right..
+		remapAttNames();
+		//add the right indexes
+
+		//export file
+		//exportArff(train, "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train-filtered.arff");
+		//get the random set up
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+		
+		
 		String annotations = "/usr/local/data/go2gene_3_51.txt";		
 		try {
 			go2genes = Annotations.readCachedGoAcc2Genes(annotations);

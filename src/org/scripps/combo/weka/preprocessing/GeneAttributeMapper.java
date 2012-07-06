@@ -1,0 +1,342 @@
+/**
+ * 
+ */
+package org.scripps.combo.weka.preprocessing;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.scripps.combo.weka.Weka;
+import org.scripps.combo.weka.Weka.card;
+import org.scripps.util.MyGeneInfo;
+
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.ConverterUtils.DataSource;
+
+/**
+ * Generate an attribute metadata file that can be used for display purposes in games
+ * 
+ * This will probably be a bunch of one-offs to deal with each dataset
+ * @author bgood
+ *
+ */
+public class GeneAttributeMapper {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		//		String input = "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train.arff";
+		//		String input_meta = "/Users/bgood/programs/Weka-3-6/data/VantVeer/genes.csv";
+		//		String output = "/Users/bgood/programs/Weka-3-6/data/VantVeer/breastCancer-train_meta.txt";
+		//		convertVantVeer(input, input_meta, output);
+
+		//	String input = "/Users/bgood/genegames/craniosynostosis_1.txt";
+		//	String meta_out = "/Users/bgood/genegames/craniosynostosis_1_meta.txt";
+		//prepareCraniosynostosisMetadata(input, meta_out);
+
+//		String input = "/Users/bgood/genegames/cranio/craniosynostosis_1.txt";
+//		String out = "/Users/bgood/genegames/cranio/craniosynostosis_transposed_lambdoid_control.txt";
+//		prepareCraniosynostosisData(input, out);
+	}
+
+	/**
+	 * Transpose the file for weka, strip out unneeded info.
+	 * @param input_tab
+	 * @param output_tab
+	 */
+	public static void prepareCraniosynostosisData(String input_tab, String output_tab){
+		Weka weka = new Weka();
+		weka.loadAttributeMetadata("/Users/bgood/genegames/cranio/craniosynostosis_1_meta.txt");
+		BufferedReader f;
+		List<String[]> readrows = new ArrayList<String[]>();
+		try {			
+			f = new BufferedReader(new FileReader(input_tab));
+			String line = f.readLine();
+			line = f.readLine(); //skip column header and ids (we may need those someday, but not now)
+
+			int nr = 1; int skipped = 0;
+			while(line!=null){
+				String[] items = line.split("\t");
+				boolean keep = true;
+				if(nr>2){//remove probes with no gene id
+					if(weka.att_meta.get(items[0])==null){
+						keep=false;
+						skipped++;
+					}
+				}
+				if(keep){
+					readrows.add(items);
+				}
+				line = f.readLine();
+				nr++;
+			}
+			f.close();
+			System.out.println("No mapping for "+skipped);
+			int new_row_count = readrows.get(0).length;
+			FileWriter writer = new FileWriter(output_tab);
+			//new_row_count
+			for(int r=0;r<new_row_count; r++){
+				String new_row = "";
+				String class_att = readrows.get(0)[r];
+				if(r==0){
+					class_att = "Phenotype";
+				}
+				// all phenotypes				
+				//				if(class_att.equalsIgnoreCase("M")){
+				//					class_att = "Metopic";
+				//				}else if(class_att.equalsIgnoreCase("C")){
+				//					class_att = "Coronal";
+				//				}else if(class_att.equalsIgnoreCase("S")){
+				//					class_att = "Sagittal";
+				//				}else if(class_att.equalsIgnoreCase("L")){
+				//					class_att = "Lambdoid";
+				//				}else if(class_att.equalsIgnoreCase("X")){
+				//					class_att = "Control";
+				//				}
+
+				//case control				
+				if(class_att.equalsIgnoreCase("X")){
+					class_att = "Normal";
+				}else{
+					class_att = "Craniosynostosis";
+				}
+
+				boolean keep = true;				
+				//metopic
+//				if(class_att.equalsIgnoreCase("X")){
+//					class_att = "Normal";
+//				}	
+//				else if(class_att.equalsIgnoreCase("M")){
+//					class_att = "Metopic";
+//				}else{
+//					keep = false;
+//				}
+
+				//coronal
+//								if(class_att.equalsIgnoreCase("X")){
+//									class_att = "Normal";
+//								}	
+//								else if(class_att.equalsIgnoreCase("C")){
+//									class_att = "Coronal";
+//								}else{
+//									keep = false;
+//								}
+				//sagital
+//				if(class_att.equalsIgnoreCase("X")){
+//					class_att = "Normal";
+//				}	
+//				else if(class_att.equalsIgnoreCase("S")){
+//					class_att = "Sagittal";
+//				}else{
+//					keep = false;
+//				}
+
+				//lambdoid
+//				if(class_att.equalsIgnoreCase("X")){
+//					class_att = "Normal";
+//				}	
+//				else if(class_att.equalsIgnoreCase("L")){
+//					class_att = "Lamddoid";
+//				}else{
+//					keep = false;
+//				}
+				
+				
+				if(r!=1){
+					if(r==0||keep){
+						for(int c=1; c<readrows.size(); c++){
+							new_row+=readrows.get(c)[r]+"\t";
+						}
+						writer.write(new_row+class_att+"\n");
+					}
+				}
+			}
+			writer.close();
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Input is tab-delimited file with preprocessed Affy Human Gene 1.0 array data and annotation data tacked on.
+	 * Generate a meta-data table with gene ids.
+	 * @param input_tab
+	 * @param data_out
+	 * @param meta_out
+	 */
+	public static void prepareCraniosynostosisMetadata(String input_tab, String meta_out){
+		BufferedReader f;
+		int nmissing_geneids = 0; int nfound = 0; int i = 0;
+		try {
+			FileWriter writer = new FileWriter(meta_out);
+			writer.write("attribute\tsymbol\tgeneid\n");
+
+			f = new BufferedReader(new FileReader(input_tab));
+			String line = f.readLine();
+			line = f.readLine(); //skip column header
+			line = f.readLine(); // skip classes
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String gene_symbol = item[item.length-1].trim();
+				String geneid = null;
+				if(gene_symbol!=null){
+					if(gene_symbol.contains("/")){
+						gene_symbol = gene_symbol.split("/")[0]; //only look at the first one. (usually its just a repeat)
+					}
+					Set<String> ids = MyGeneInfo.mapGeneSymbol2NCBIGene(gene_symbol);
+					if(ids!=null&&ids.size()>0){
+						geneid = ids.iterator().next();
+					}
+					if(geneid!=null){
+						writer.write(attribute+"\t"+gene_symbol+"\t"+geneid+"\n");
+						nfound++;
+					}else{
+						nmissing_geneids++;
+					}
+				}
+				if(i%100==0){
+					System.out.println(i+"\t"+nfound+"\t"+nmissing_geneids);
+				}
+				i++;
+				line = f.readLine();
+			}
+			writer.close();
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * map symbols to gene ids
+	 * @param input_tab
+	 * @param meta_out
+	 */
+	public static void mapMetadata(String input_tab, String meta_out){
+		BufferedReader f;
+		int nmissing_geneids = 0; int nfound = 0; int i = 0;
+		try {
+			FileWriter writer = new FileWriter(meta_out);
+			writer.write("attribute\tsymbol\tgeneid\n");
+
+			f = new BufferedReader(new FileReader(input_tab));
+			String line = f.readLine();
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String gene_symbol = item[item.length-1].trim();
+				String geneid = null;
+				if(gene_symbol!=null){
+					if(gene_symbol.contains("/")){
+						gene_symbol = gene_symbol.split("/")[0]; //only look at the first one. (usually its just a repeat)
+					}
+					Set<String> ids = MyGeneInfo.mapGeneSymbol2NCBIGene(gene_symbol);
+					if(ids!=null&&ids.size()>0){
+						geneid = ids.iterator().next();
+					}
+					if(geneid!=null){
+						writer.write(attribute+"\t"+gene_symbol+"\t"+geneid+"\n");
+						nfound++;
+					}else{
+						nmissing_geneids++;
+					}
+				}
+				if(i%100==0){
+					System.out.println(i+"\t"+nfound+"\t"+nmissing_geneids);
+				}
+				i++;
+				line = f.readLine();
+			}
+			writer.close();
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * We have a mapping file that connects the attribute ids (e.g. contig.. to gene symbols)
+	 * Use this to get the symbols and then use mygene.info to get the geneids for the symbols
+	 * Could cache more data at this stage if useful..
+	 * @param input_arff
+	 * @param output_meta
+	 */
+	public static void convertVantVeer(String input_arff, String input_meta, String output_meta){
+		//get the data 
+		DataSource source = null;
+		try {
+			source = new DataSource(input_arff);
+			Instances output = source.getDataSet();
+			if (output.classIndex() == -1){
+				output.setClassIndex(output.numAttributes() - 1);
+			}
+			//
+			BufferedReader f;
+			try {
+				FileWriter writer = new FileWriter(output_meta);
+				writer.write("attribute\tsymbol\tgeneid\n");
+				f = new BufferedReader(new FileReader(input_meta));
+				String line = f.readLine();
+				line = f.readLine(); //skip header
+				int c = 0;
+				while(line!=null){
+					c++;
+					String[] item = line.split(",");
+					if(item!=null&&item.length>1){
+
+						String attribute = item[0];
+						String symbol = "_";
+						String geneid = "_";
+						if(item[1]!=null){
+							symbol = item[1];
+							Set<String> ids = MyGeneInfo.mapGeneSymbol2NCBIGene(symbol);
+							if(ids!=null&&ids.size()>0){
+								geneid = ids.iterator().next();
+							}						
+						}
+						writer.write(attribute+"\t"+symbol+"\t"+geneid+"\n");
+					}
+					line = f.readLine();
+					System.out.println(c+" "+line);
+				}
+				writer.close();
+				f.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}

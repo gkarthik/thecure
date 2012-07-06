@@ -46,7 +46,7 @@ public class ZooServer extends HttpServlet {
 
 	public void init(ServletConfig config){
 		ServletContext context = config.getServletContext();
-		InputStream train_loc = context.getResourceAsStream("/data/zoo_mammals.arff");
+		InputStream train_loc = context.getResourceAsStream("/WEB-INF/zoo_mammals.arff");
 		weka = new Weka(train_loc, null);
 		weka.setEval_method("training_set");
 

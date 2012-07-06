@@ -1,32 +1,16 @@
 package org.scripps.combo.weka;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -39,47 +23,15 @@ import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.scripps.combo.evaluation.ClassifierEvaluation;
-import org.scripps.combo.model.Board;
-import org.scripps.combo.model.Card;
-import org.scripps.combo.model.CustomClassifier;
-import org.scripps.combo.model.CustomFeature;
-import org.scripps.combo.model.Feature;
-import org.scripps.combo.model.Game;
-import org.scripps.combo.model.Pathway;
-import org.scripps.combo.model.Player;
-import org.scripps.combo.model.Tree;
-import org.scripps.combo.model.Badge;
+import org.scripps.combo.Hand;
+import org.scripps.combo.Player;
+import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
-import org.scripps.combo.weka.Weka.metaExecution;
-import org.scripps.combo.weka.viz.JsonTree;
-import org.scripps.util.GenerateCSV;
-import org.scripps.util.JdbcConnection;
-import org.scripps.util.Mail;
-import org.scripps.util.MapFun;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import weka.attributeSelection.ASEvaluation;
-import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.rules.JRip;
-import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
-import weka.classifiers.trees.ManualTree;
-import weka.core.Instance;
-import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
-import weka.core.converters.DatabaseSaver;
 
 /**
  * Servlet implementation class WekaServer
@@ -87,8 +39,6 @@ import weka.core.converters.DatabaseSaver;
 public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
-	ObjectMapper mapper;
-	LinkedHashMap<String,Classifier> custom_classifiers = new LinkedHashMap<String, Classifier>();
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -96,874 +46,253 @@ public class MetaServer extends HttpServlet {
 	public MetaServer() {
 		super();
 		name_dataset = new HashMap<String, Weka>();
-		mapper = new ObjectMapper();
-	}	
-	
-	/*
-	public void main(String[] args) throws Exception{
-		ManualTree t = new ManualTree();
-		t.getNewFeatureData(name_dataset.get("metabric_with_clinical").getTrain());
 	}
-	*/
 
-	/**
-	 * Initialize the service.  This only runs the first time a request is made to this servlet.  It reads local 
-	 * configuration files and loads up all the data needed to run the game including all of the annotation information
-	 * that is stored in the database.  This information is held in a Weka object associated with each live dataset.
-	 * This takes a long time to run when there is a lot of data to load - but once its finished, things go pretty quickly...
-	 */
-	public void init(ServletConfig config){		
+	public void init(ServletConfig config){
 		//load all active datasets
 		ServletContext context = config.getServletContext();
-		//configure this deployment
-		String training_level_1_data = "";
-		String training_level_1_name = "";
-		String active_data = "";
-		String active_data_name = "";
-		String testing_data = "";
-		String testing_data_name = "";
-		//db 
-		String serverLocation = "";
-		String db = "";
-		String user = "";
-		String password = "";
-		DatabaseSaver save = null;
-		try{
-	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties");	        
-	        Properties props = new Properties();
-	        props.load(in);
-	        training_level_1_data = props.getProperty("training_level_1_data");
-	        training_level_1_name = props.getProperty("training_level_1_name");
-	        active_data = props.getProperty("active_data");
-	        active_data_name = props.getProperty("active_data_name");
-	        testing_data = props.getProperty("testing_data");
-	        testing_data_name = props.getProperty("testing_data_name");
-	       } 
-	    catch(Exception e){
-	        System.out.println("error" + e);
-	       }	 
-		
+
 		//training game data 
-		try { 
-			InputStream train_loc = context.getResourceAsStream(training_level_1_data);
-			Weka mammal_weka = new Weka();
-			String dataset = training_level_1_name;
-			mammal_weka.buildWeka(train_loc, null, dataset);
-			mammal_weka.setEval_method("training_set");
-			name_dataset.put(dataset, mammal_weka);
+		InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
+		Weka mammal_weka = new Weka(train_loc, null);
+		mammal_weka.setEval_method("training_set");
+		name_dataset.put("mammal", mammal_weka);
+		try {
 			train_loc.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//live game data
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
+		Weka zoo_weka = new Weka(train_loc, null);
+		zoo_weka.setEval_method("training_set");
+		name_dataset.put("zoo", zoo_weka);
 		try {
-			String dataset = active_data_name;
-			InputStream train_loc = context.getResourceAsStream(active_data);
-			InputStream test_loc = context.getResourceAsStream(testing_data);
-			Weka weka = new Weka();
-			weka.buildWeka(train_loc, test_loc, dataset);	
-			weka.setEval_method("test_set");
-			CustomFeature c = new CustomFeature();
-			c.addInstances(weka);
-			//Store all custom classifiers in global object
-			CustomClassifier _c = new CustomClassifier();
-			custom_classifiers = _c.getClassifiersfromDb(weka, dataset);
-			name_dataset.put(dataset, weka);	
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-		//Griffith Dataset
+		}
+		
+		//Cunningham data
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
+		Weka cranio_case_weka = new Weka(train_loc, null);
+		cranio_case_weka.setEval_method("training_set");
+		name_dataset.put("cranio_case_control", cranio_case_weka);	
 		try {
-			Weka wekaGriffith = new Weka();
-			InputStream live_loc = context.getResourceAsStream("/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff");
-			String dataset_name = "griffith_breast_cancer_1";
-			wekaGriffith.buildWeka(live_loc, null, dataset_name);
-			name_dataset.put(dataset_name, wekaGriffith);
-			live_loc.close();
+			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (Exception e) {
+		}
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
+		Weka coronal_control_weka = new Weka(train_loc, null);
+		coronal_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", coronal_control_weka);	
+		try {
+			train_loc.close();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
+		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
+		Weka metopic_control_weka = new Weka(train_loc, null);
+		metopic_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", metopic_control_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+/*		
+		train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
+		Weka sagittal_control_weka = new Weka(train_loc, null);
+		metopic_control_weka.setEval_method("training_set");
+		name_dataset.put("coronal_case_control", sagittal_control_weka);	
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//vantveer data
+		train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+		Weka vantveer_weka = new Weka(train_loc, null);
+		vantveer_weka.setEval_method("training_set");
+		name_dataset.put("vantveer", vantveer_weka);
+		try {
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//load the gene name mapping file
+		InputStream metadata = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt");
+		vantveer_weka.loadAttributeMetadata(metadata);
+		//filter zero information attributes
+		//		filterForNonZeroInfoGain();
+		//only use genes with metadata
+		vantveer_weka.filterForGeneIdMapping();
+		System.out.println("launching with "+vantveer_weka.getTrain().numAttributes()+" train attributes.");
+		//	System.out.println("launching with "+getTest().numAttributes()+" test attributes.");
+		//map the names so the trees look right..
+		vantveer_weka.remapAttNames();
+		//add the right indexes
+*/
 	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		//		Enumeration e = request.getParameterNames();
-		//		while(e.hasMoreElements()){
-		//			System.out.println(e.nextElement());
-		//		}		
-		String command = request.getParameter("command");
-		if(command!=null){
-			routeGet(command, request, response);
-		}else{
-			handleBadRequest(request, response, "no command sent as GET"); 
-		}
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doPost(request,response);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String t = request.getContentType();
-		//System.out.println("content type "+t);
-		if(t!=null&&t.startsWith("application/json")){
-			String json = extractJson(request);
-			if(json!=null){
-				//System.out.println(json);
-				LinkedHashMap postData = mapper.readValue(json, LinkedHashMap.class);	
-				String command = null;
-				if(postData!=null){
-					Object command_ = postData.get("command");
-					if(command_!=null){
-						command = (String)command_;
-						//route to appropriate functions
-						if(command.equals("getscore")){
-							getScore(postData, request, response);
-						}else if(command.equals("savehand")){
-							saveHand(postData, request, response);
-						}else if(command.equals("saveplayedcard")){
-							savePlayedCard(postData, request, response);
-						}else if(command.equals("scoretree")||(command.equals("savetree"))){
-							//TODO clean this up so we aren't parsing the json twice.. 
-							JsonNode treedata = mapper.readTree(json);	
-							try{
-								scoreSaveManualTree(treedata, request, response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to get score for manual tree: "+json);
-							}
-						}else if(command.equals("get_clinical_features")){   // //get_clinical_features //get_trees_all, get_trees_ip, get_trees_user_id
-							//TODO clean this up so we aren't parsing the json twice.. 
-							JsonNode data = mapper.readTree(json);	
-							try{
-								getClinicalFeatures(data, request, response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to get clinical features: "+json);
-							}						
-						}else if(command.equals("get_rank")){  
-							getRankofTree((int)postData.get("tree_id"), request, response);
-						}else if(command.startsWith("get_tree")){  //get_trees_all, get_trees_ip, get_trees_user_id
-							//TODO clean this up so we aren't parsing the json twice.. 
-							JsonNode data = mapper.readTree(json);	
-							try{
-								getTreeList(data, request, response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to get trees: "+json);
-							}
-							
-						}else if(command.contains("badge")){  //get_trees_all, get_trees_ip, get_trees_user_id
-							//TODO clean this up so we aren't parsing the json twice.. 
-							JsonNode data = mapper.readTree(json);	
-							try{
-								if(command.equals("add_badge")){
-									addBadge(data, request, response);
-								} else if(command.equals("get_badges")){
-									getBadges(data, request, response);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed: "+json);
-							}	
-						} else if(command.contains("pathway")){  //get_trees_all, get_trees_ip, get_trees_user_id
-							//TODO clean this up so we aren't parsing the json twice.. 
-							JsonNode data = mapper.readTree(json);	
-							try{
-								if(command.equals("search_pathways")){
-									searchPathways(data, request, response);
-								} else if(command.equals("get_genes_of_pathway")){
-									getGenesOfPathway(data, request, response);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed: "+json);
-							}	
-						} else if(command.contains("custom_feature")){
-							JsonNode data = mapper.readTree(json);	
-							try{
-								if(command.equals("custom_feature_search")){
-									getCustomFeatures(data, request, response);
-								} else if(command.equals("custom_feature_create")){
-									createCustomFeature(data,request,response);
-								} else if(command.equals("custom_feature_testcase")){
-									getTestCaseforCustomFeature(data,request,response);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed: "+json);
-							}	
-						} else if(command.contains("custom_classifier")){
-							JsonNode data = mapper.readTree(json);	
-							System.out.println("executed");
-							try{
-								if(command.equals("custom_classifier_create")){
-									getOrCreateCustomClassifier(data, custom_classifiers, request, response);
-								} else if(command.equals("custom_classifier_search")){
-									getCustomClassifiers(data, request, response);
-								} else if(command.equals("custom_classifier_getById")){
-									getCustomClassifierById(data,request,response);
-								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed: "+json);
-							}	
-						}
-						/*
-						 * API end points to get evaluation of random forest.
-						 * 
-						 	else if(command.contains("evaluate")){
-							if(command.contains("evaluate_randomforest")){ 
-								JsonNode data = mapper.readTree(json);	
-								try{
-									evaluateForest(data, request, response);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									handleBadRequest(request, response, "Failed to evaluate: "+json);
-								}	
-							} else if(command.contains("evaluate_TreeorSMO")){ 
-								JsonNode data = mapper.readTree(json);	
-								try{
-									evaluateTreeorSMO(data, request, response);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-									handleBadRequest(request, response, "Failed to evaluate: "+json);
-								}	
-							}
-						}
-						*/
-					}else{
-						handleBadRequest(request, response, "No command found in json request");
-					}
-				}else{
-					handleBadRequest(request, response, "Posted data could not be parsed to a LinkedHashMap");
-				}
-			}else{
-				handleBadRequest(request, response, "Posted data null or could not be parsed");
-			}
-		}else{
-			handleBadRequest(request, response, "no json data received");
-		}
-	}
-
-
-
-
-	private void routeGet(String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		//route to appropriate functions
-		if(command.equals("getboard")){
-			//works
-			getBoard(request, response);
-		}
-
-	}
-
-	private String extractJson(HttpServletRequest request) throws UnsupportedEncodingException{
-		StringBuffer jb = new StringBuffer();
-		String line = null;
-		try {
-			BufferedReader reader = request.getReader();
-			while ((line = reader.readLine()) != null)
-				jb.append(line);
-		} catch (Exception e) { /*report an error*/ }
-		String json = jb.toString();
-		return json;
-	}
-
-	/**
-	 * Get a board for the game from the database
-	 * Send it a valid board_id
-	 * @param request
-	 * @param response
-	 * @param weka
-	 * @throws IOException 
-	 */
-	private void getBoard(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String board_id = request.getParameter("board_id");
-		boolean getmeta = true;
-		Board board = Board.getBoardById(board_id, getmeta);
-		boolean shuffle = true;
-		String json = board.toJSON(shuffle);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json);
-		out.close();
-	}
-
-	/**
-	 * Score a collection of features, a full or partial hand in a game
-	 * Send it a comma delimited list of unique ids that match up with the unique ids of features in the database
-	 * @param request
-	 * @param response
-	 * @param weka
-	 * @throws IOException 
-	 */
-	private void getScore(LinkedHashMap data, HttpServletRequest request_, HttpServletResponse response) throws IOException {
-
-		String board_id = (String)data.get("board_id");
-		boolean getmeta = false;
-		Board board = Board.getBoardById(board_id, getmeta);		
-		Weka weka = name_dataset.get(board.getDataset());
-		if(weka==null){
-			handleBadRequest(request_, response, "no dataset loaded for name: "+board.getDataset());
+		//System.out.println("hello wekaserver");
+		String command = request.getParameter("command");
+		if(command==null){
+			handleBadRequest(request, response, "no command");
 			return;
-		}		
-		List<String> unique_ids = new ArrayList<String>();
-		unique_ids = (List<String>)data.get("unique_ids");
+		}
+		String dataset_name = request.getParameter("dataset");
+		if(dataset_name==null){
+			handleBadRequest(request, response, "no dataset");
+			return;
+		}
+		Weka weka = name_dataset.get(dataset_name);
+		if(weka==null){
+			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
+			return;
+		}
+		
+		// handle request to score feature set
+		if(command.equals("getscore")){
+			String features=request.getParameter("features");
+			if(features==null){
+				handleBadRequest(request, response, "no features");
+			}else{
 
-		Classifier model = null;
-		J48 j48 = new J48();
-		int nruns_cv = 10;
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, j48, board.getDataset(), nruns_cv);
-		
-		if(j48.measureNumRules()==1){
-//			System.out.println("Did not return a tree");
-			DecisionStump stump = new DecisionStump();
-			result = weka.pruneAndExecuteWithUniqueIds(unique_ids, stump, board.getDataset(), nruns_cv);
-			model = stump;
-		}else{
-			model = j48;
-		}
-		JsonTree jtree = new JsonTree();
-		String tree_json = "";
-		try {		
-			if(model.getClass().equals(J48.class)){
-				tree_json = jtree.getJsonJ48AllInfo((J48) model, weka); 
-			}else if(model.getClass().equals(DecisionStump.class)){
-				tree_json = jtree.getJsonStumpAllInfo((DecisionStump) model, weka); 
+				
+				String model = request.getParameter("wekamodel");
+				Classifier wekamodel = null;
+				if(model!=null&&model.equals("jrip")){
+					wekamodel = new JRip();
+				}else{
+					wekamodel = new J48();
+				}
+				Weka.execution result = weka.pruneAndExecute(features, wekamodel);
+				ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+				//serialize and return the result
+				JSONObject r = new JSONObject(short_result);
+				response.setContentType("text/json");
+				PrintWriter out = response.getWriter();
+				out.write(r.toString());
+				out.close();
 			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println("Died trying to get tree");
-		}
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-		JSONObject r = new JSONObject(short_result);
-		String eval_json = r.toString();
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		eval_json = r.toString();
-		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
-		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
-		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
-		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
-		"\"tree\":"+tree_json+"}";
-		//System.out.println(treeoutput);
-		out.write(treeoutput);
-		out.close();
-	}
-	
-	/**
-	 * Given a manually created tree, represented as a json object, respond with the score information for the tree and each of its nodes.
-	 * @param data
-	 * @param request_
-	 * @param response
-	 * @throws Exception 
-	 */
-	private void scoreSaveManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		String command = data.get("command").asText(); //scoretree or savetree
-		int prev_tree_id = -1;
-		String dataset = data.get("dataset").asText();
-		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
-		
-		//To avoid penalizing user for genes added to his/her own tree.
-		HttpSession session = request_.getSession();
-		Player player = (Player) session.getAttribute("player");
-		if(player!=null || command.equals("scoretree")){
-			int PlayerId = -1;
-			if(player!=null){
-				PlayerId = player.getId();
+			// initialize a random gene 'board' - a list of attributes from the training set of specified size
+		}else if(command.equals("getboard")){
+			String raninput = request.getParameter("ran");
+			int ran = 1;
+			if(raninput!=null&&!raninput.equals("0")){
+				ran = Integer.parseInt(raninput);
+			}else{			
+				ran = (int)Math.rint(Math.random()*1000);
 			}
-			Weka weka = name_dataset.get(dataset);	
-			if(weka==null){
-				handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
-				return;
-			}		
-			//create the weka tree structure
-			JsonTree t = new JsonTree();
-			ManualTree readtree = new ManualTree();
-			readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset, custom_classifiers);
-			List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
-			int numnodes = readtree.numNodes();
-			Evaluation eval = new Evaluation(weka.getTest());
-			eval.evaluateModel(readtree, weka.getTest());
-			HashMap distributionData = readtree.getDistributionData();
-			ObjectNode result = mapper.createObjectNode();
-			result.put("pct_correct", eval.pctCorrect());
-			result.put("size", numnodes);
-			double nov = Tree.getUniqueIdNovelty(entrez_ids, PlayerId);
-			result.put("novelty", nov);//
-			result.put("text_tree", readtree.toString());
-			//serialize and return the result		
-			JsonNode treenode = readtree.getJsontree();
-			result.put("treestruct", treenode);
+			int nrows = Integer.parseInt(request.getParameter("y"));
+			int ncols = Integer.parseInt(request.getParameter("x"));
+			List<Weka.card> cards = weka.getRandomCards(nrows * ncols, ran);
+			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
 			response.setContentType("text/json");
 			PrintWriter out = response.getWriter();
-			String result_json = mapper.writeValueAsString(result);
-
-			//now store it in the database
-			String comment = "";
-			int user_saved = 0;
-			int privateflag = 0;
-			comment = data.get("comment").asText();
-			String ip = request_.getRemoteAddr();
-			List<Feature> features = new ArrayList<Feature>();
-			for(String entrez_id : entrez_ids){
-				Feature f = weka.features.get(entrez_id);
-				features.add(f);
-			}
-			if(command.equals("savetree")){
-				user_saved = 1;
-				prev_tree_id = data.get("previous_tree_id").asInt();
-				privateflag = data.get("privateflag").asInt();
-			}
-			Tree tree = new Tree(0, PlayerId, ip, features, result_json,comment, user_saved, privateflag);
-			int tid = tree.insert(prev_tree_id, privateflag);
-			float score = 0; 
-			score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
-			tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
-			ArrayList json_badges = new ArrayList();
-			if(command.equals("savetree")){
-				Badge _badge = new Badge();
-				json_badges = _badge.getEarnedBadges(tid, PlayerId);
-			}
-			result.put("badges", mapper.valueToTree(json_badges));	
-			result.put("tree_id", tid);
-			//System.out.println(distributionData);
-			result.put("distribution_data", mapper.valueToTree(distributionData));
-			result_json = mapper.writeValueAsString(result);
-			out.write(result_json);
+			out.write(r.toString());
 			out.close();
-		} else {
+		}else if(command.equals("getspecificboard")){
+			String board = request.getParameter("board");
+			List<Weka.card> cards = new ArrayList<Weka.card>();
+			if(board!=null){
+				if(board.equals("zoo1_l0")){
+					cards = weka.getCardsByIndices("1,10");
+				}
+			}else{
+				int nrows = Integer.parseInt(request.getParameter("y"));
+				int ncols = Integer.parseInt(request.getParameter("x"));
+				cards = weka.getRandomCards(nrows * ncols, 0);
+			}
+			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
+			response.setContentType("text/json");
 			PrintWriter out = response.getWriter();
-			String result_json = "{message: 'Please login to save a tree.'}";
-			out.write(result_json);
+			out.write(r.toString());
 			out.close();
 		}
-		
-	}
+		else if(command.equals("savehand")){
+			String player_name = request.getParameter("player_name");
+			String ip = request.getRemoteAddr();
+			String features = request.getParameter("features");
+			String score_s = request.getParameter("score");
+			int score = -1000;
+			if(score_s!=null){
+				score = Integer.parseInt(score_s);
+			}
+			String cv_accuracy_s = request.getParameter("cv_accuracy");
+			int cv_accuracy = -1000;
+			if(cv_accuracy_s!=null){
+				cv_accuracy = Integer.parseInt(cv_accuracy_s);
+			}
+			String board_id_s = request.getParameter("board_id");
+			int board_id = -1000;
+			if(board_id_s!=null){
+				board_id = Integer.parseInt(board_id_s);
+			}
+			Hand hand = new Hand();
+			hand.setBoard_id(board_id);
+			hand.setCv_accuracy(cv_accuracy);
+			hand.setFeatures(features);
+			hand.setIp(ip);
+			hand.setPlayer_name(player_name);
+			hand.setScore(score);
+			hand.save();
+			//update player info
+			String game = request.getParameter("game");
+			if(game!=null&&game.equals("barney_zoo")){
+				//update stars
+				//Player player = Player.lookupPlayer(player_name);
+				HttpSession s = request.getSession();
+				Player player = (Player)s.getAttribute("player");
+				//check if they passed the level
+				String win = request.getParameter("win");
+				if(win!=null&&win.equals("1")){
+					//update session
+					List<Integer> mammal_scores = player.getLevel_tilescores().get("mammals");
+					if(mammal_scores==null){
+						mammal_scores = new ArrayList<Integer>(20);
+						mammal_scores.add(0);
+					}
+					if(board_id>=mammal_scores.size()){
+						for(int m=mammal_scores.size()-1; m<=board_id; m++){
+							mammal_scores.add(0);
+						}
+					}
+					mammal_scores.set(board_id, cv_accuracy);
+					player.getLevel_tilescores().put("mammals", mammal_scores);
+					s.setAttribute("player", player);
+				}
+			}
 
-	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			
-		String dataset = data.get("dataset").asText();
-		Weka weka = name_dataset.get(dataset);
-		if(weka==null){
-			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
-			return;
-		}
-		JdbcConnection conn = new JdbcConnection();
-		String outerQuery = "select json_tree from tree where user_saved=1";
-		ResultSet outerRslt = conn.executeQuery(outerQuery);
-		int size = 0;
-		try{
-			outerRslt.last();
-			size = outerRslt.getRow();
-			outerRslt.beforeFirst();
-		} catch(SQLException e){
-			e.printStackTrace();
-		}
-		Classifier[] classifiers = new Classifier[size];
-		int i = 0;
-		try {
-			while(outerRslt.next()){
-				JsonTree t = new JsonTree();
-				ManualTree classifier = t.parseJsonTree(weka, outerRslt.getString("json_tree"), dataset, custom_classifiers);
-				classifiers[i] = classifier;
-				i++;
-			}
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		metaExecution meta = weka.executeRandomForest(classifiers);
-		String summary = "{\"Summary\":"+meta.toString()+"}";
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(summary);
-		out.close();
-	}
-	
-	private void evaluateTreeorSMO(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			
-		String dataset = data.get("dataset").asText();
-		String type = data.get("classifier").asText();
-		Weka weka = name_dataset.get(dataset);
-		if(weka==null){
-			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
-			return;
-		}
-		JdbcConnection conn = new JdbcConnection();
-		String outerQuery = "select DISTINCT feature.unique_id from tree_feature,tree,feature where tree.id = tree_feature.tree_id and tree_feature.feature_id = feature.id";
-		ResultSet outerRslt = conn.executeQuery(outerQuery);
-		Set<String> geneIds = new HashSet<String>();
-		try {
-			while(outerRslt.next()){
-				geneIds.add(outerRslt.getString("unique_id"));
-			}
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		weka.setEval_method("test_set");
-		execution exec = weka.executeSMOorTree(geneIds, type, 10); 
-		String summary = "{\"Summary\":"+exec.toString()+"}";
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(summary);
-		out.close();
-	}
-
-//	
-	private void getCustomFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		//String command = data.get("command").asText(); //get_clinical_features 
-		ArrayList results = new ArrayList();
-		CustomFeature _cfeature = new CustomFeature();
-		results = _cfeature.searchCustomFeatures(data.get("query").asText());
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(results);
-		out.write(json);
-		out.close();
-	}
-	
-	private void getTestCaseforCustomFeature(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		//String command = data.get("command").asText(); //get_clinical_features 
-		HashMap results = new HashMap();
-		CustomFeature _cfeature = new CustomFeature();
-		results = _cfeature.getTestCase(data.get("id").asText(), name_dataset.get(data.get("dataset").asText()));
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(results);
-		out.write(json);
-		out.close();
-	}
-	
-	private void createCustomFeature(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		//String command = data.get("command").asText(); //get_clinical_features 
-		HashMap mp = new HashMap();
-		CustomFeature _cfeature = new CustomFeature();
-		String dataset = data.get("dataset").asText();
-		String feature_name = data.get("name").asText();
-		String exp = data.get("expression").asText();
-		String description = data.get("description").asText();
-		int user_id = data.get("user_id").asInt();
-		try{
-			mp = _cfeature.findOrCreateCustomFeature(feature_name, exp, description, user_id, name_dataset.get(dataset), dataset);
-		} catch (Exception e) {
-			e.printStackTrace();
-			mp.put("error", "The expression could not be parsed.");
-		}
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(mp);
-		out.write(json);
-		out.close();
-	}
-	
-	private void getOrCreateCustomClassifier(JsonNode data, HashMap<String,Classifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
-		HashMap mp = new HashMap();
-		CustomClassifier _cclassifier = new CustomClassifier();
-		List entrezIds = new ArrayList();
-		for(JsonNode el : data.path("unique_ids")){
-			entrezIds.add(el.asText());
-		}
-		String name = data.get("name").asText();
-		String description = data.get("description").asText();
-		int player_id = data.get("user_id").asInt();
-		int classifierType = data.get("type").asInt();
-		String dataset = data.get("dataset").asText();
-		Weka weka = name_dataset.get(dataset);
-		try{
-			mp = _cclassifier.getOrCreateClassifierId(entrezIds, classifierType, name, description, player_id, weka, dataset, custom_classifiers);
-		} catch (Exception e) {
-			e.printStackTrace();
-			mp.put("error", "The expression could not be parsed.");
-		}
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(mp);
-		out.write(json);
-		out.close();
-	}
-	
-	private void getCustomClassifiers(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		ArrayList results = new ArrayList();
-		CustomClassifier _fc = new CustomClassifier();
-		results = _fc.searchCustomClassifiers(data.get("query").asText());
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(results);
-		out.write(json);
-		out.close();
-	}
-	
-	private void getCustomClassifierById(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		HashMap results = new HashMap();
-		CustomClassifier _fc = new CustomClassifier();
-		results = _fc.getClassifierDetailsByDbId(data.get("id").asInt(), data.get("dataset").asText(), custom_classifiers);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String json = mapper.writeValueAsString(results);
-		out.write(json);
-		out.close();
-	}
-	
-	private void getClinicalFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		//String command = data.get("command").asText(); //get_clinical_features 
-		String dataset = data.get("dataset").asText();
-		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
-		ObjectNode features = null;
-		if(dataset.equals("metabric_with_clinical")){
-			features = Feature.getMetaBricClinicalFeatures(mapper);
-			features.put("dataset", dataset);
-		}
-		String json_features = mapper.writeValueAsString(features);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json_features);
-		out.close();
-	}
-	
-	private void getTreeList(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		String command = data.get("command").asText(); //get_trees_all, get_trees_ip, get_trees_user_id
-		String ip = request_.getRemoteAddr();
-		Tree tree_ = new Tree();
-		List<Tree> trees = null;
-		if(command.equals("get_trees_all")){
-			trees = tree_.getAll(); 
-		} else if(command.equals("get_trees_ip")){
-			trees = tree_.getByIP(ip);
-		} else if(command.equals("get_trees_user_id")){
-			HttpSession session = request_.getSession();
-			Player player = (Player) session.getAttribute("player");
-			int user_id = data.get("user_id").asInt();
-			boolean getPrivate = false;
-			if(player.getId()==user_id){
-				getPrivate = true;
-			}
-			tree_.setPlayer_id(user_id);
-			trees = tree_.getForPlayer(user_id, getPrivate);
-		} else if(command.equals("get_trees_with_range")) {
-			String lowerLimit = data.get("lowerLimit").asText();
-			String upperLimit = data.get("upperLimit").asText();
-			String orderby = data.get("orderby").asText();
-			trees = tree_.getWithLimit(lowerLimit,upperLimit, orderby);
-		} else if(command.equals("get_tree_by_id")) {
-			String tree_id = data.get("treeid").asText();
-			trees = tree_.getById(tree_id);
-		} else if(command.equals("get_trees_by_search")){
-			String query = data.get("query").asText();
-			trees = tree_.getBySearch(query);
-		}
-		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
-		String json_trees = mapper.writeValueAsString(treelist);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json_trees);
-		out.close();
-		
-	}
-	
-	private void getRankofTree(int tree_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
-		Tree _tree = new Tree();
-		int rank = _tree.get_rank(tree_id);
-		String rank_json = "{\"rank\":"+rank+"}";
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(rank_json);
-		out.close();
-	}
-
-	private void saveHand(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
-		Game game = new Game();
-		game.setWin((Integer)data.get("win"));
-		LinkedHashMap gdata = (LinkedHashMap)data.get("game");
-		game.setP1_score((Integer)gdata.get("p1_score"));
-		game.setP2_score((Integer)gdata.get("p2_score"));
-		LinkedHashMap gmetadata = (LinkedHashMap)gdata.get("metadata");
-		game.setGame_started(new Timestamp((Long)gmetadata.get("game_started")));
-		game.setGame_finished(new Timestamp((Long)gmetadata.get("game_finished")));
-		game.setSearch_term((String)gmetadata.get("search_term"));
-		game.setBoard_id(Integer.parseInt((String)gmetadata.get("board_id")));
-		game.setPlayer1_id(Integer.parseInt((String)gmetadata.get("player1_id")));
-		game.setPlayer2_id(Integer.parseInt((String)gmetadata.get("player2_id")));
-		game.setIp(request.getRemoteAddr());
-		List<String> p1_features = new ArrayList<String>();
-		List<LinkedHashMap> p1_hand = (List<LinkedHashMap>)gdata.get("p1_hand");
-		for(LinkedHashMap obj : p1_hand){
-			p1_features.add((String)obj.get("unique_id"));
-		}
-		List<String> p2_features = new ArrayList<String>();
-		game.setPlayer1_features(p1_features);
-		List<LinkedHashMap> p2_hand = (List<LinkedHashMap>)gdata.get("p2_hand");
-		for(LinkedHashMap obj : p2_hand){
-			p2_features.add((String)obj.get("unique_id"));
-		}
-		game.setPlayer2_features(p2_features);
-		List<LinkedHashMap> cards = (List<LinkedHashMap>)gdata.get("cards");
-		List<Game.ux> ux_list = new ArrayList<Game.ux>();
-		for(LinkedHashMap card : cards){
-			String uid = (String) card.get("unique_id");
-			LinkedHashMap ux_meta = (LinkedHashMap)card.get("metadata");
-			List<LinkedHashMap> uxes = (List<LinkedHashMap>)ux_meta.get("ux");
-			for(LinkedHashMap uxe : uxes){
-				long t = (Long) uxe.get("timestamp");
-				String panel = (String) uxe.get("panel");
-				boolean hover_board = (Boolean) uxe.get("board_hover");
-				Game.ux ux = game.makeUx(uid, t, panel, hover_board);
-				ux_list.add(ux);
-			}
-		}
-		game.setFeature_ux(ux_list);
-		//mouse
-		List<LinkedHashMap> mice = (List<LinkedHashMap>)gmetadata.get("mouse_action");
-		List<Game.mouse> mouses = new ArrayList<Game.mouse>();
-		for(LinkedHashMap mouse : mice){
-			long t = (Long)mouse.get("timestamp");
-			int x = (Integer)mouse.get("x");
-			int y = (Integer)mouse.get("y");
-			Game.mouse m = game.makeMouse(t,x,y);
-			mouses.add(m);
-		}
-		game.setMouse_actions(mouses);
-		try {
-			game.insert();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("saved a hand "+player_name+" "+score);
 		}
 	}
 
-	/**
-	 * Every time a player clicks on a card to add it to their hand, record.
-	 * @param data
-	 * @param request
-	 * @param response
-	 */
-	private void savePlayedCard(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
-		String player_id = (String)data.get("player_id");
-		Long timestamp = (Long)data.get("timestamp");
-		long t = 0;
-		if(timestamp!=null){
-			t = timestamp;
-		}
-		String board_id =  (String)data.get("board_id");
-		String unique_id = (String)data.get("unique_id");
-		Integer display_loc_ = (Integer)data.get("display_loc");
-		int display_loc = -1;
-		if(display_loc_!=null){
-			display_loc = display_loc_;
-		}
-		if(unique_id!=null){			
-			Card tosave = new Card(player_id, board_id, unique_id, display_loc);
-			if(t!=0){
-				tosave.setTimestamp(new Timestamp(t));
-			}
-			tosave.insert();
-		}
-	}
-	
-	private void addBadge(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
-		Badge _badge = new Badge();
-		Map<String,String> map = new HashMap<String,String>();
-		ObjectMapper mapper = new ObjectMapper();
-		int levelid = data.get("level_id").asInt();
-		String json = data.get("constraints").toString();
-		String desc = data.get("description").toString();
-		System.out.println(json);
-		try {
-			map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>() {});
-			_badge.insert(map, levelid, desc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void getBadges(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
-		Badge _badge = new Badge();
-		int userid = data.get("user_id").asInt();
-		int recBadgesFlag = data.get("reccomendbadges").asInt();
-		String json_badges = "";
-		try{
-			json_badges = _badge.getBadgesofUser(userid, recBadgesFlag);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json_badges);
-		out.close();
-	}
-	
-	private void searchPathways(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
-		Pathway _pathway = new Pathway();
-		String searchString = data.get("query").asText();
-		ArrayList json_pathways = new ArrayList();
-		try{
-			json_pathways = _pathway.searchPathways(searchString);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		String json = mapper.writeValueAsString(json_pathways);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json);
-		out.close();
-	}
-	
-	private void getGenesOfPathway(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
-		Pathway _pathway = new Pathway();
-		String searchString = data.get("pathway_name").asText();
-		ArrayList json_pathways = new ArrayList();
-		try{
-			json_pathways = _pathway.getGenesOfPathway(searchString);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		String json = mapper.writeValueAsString(json_pathways);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(json);
-		out.close();
-	}
-	
-	/**
-	 * Respond with an error message if something went wrong
-	 * @param request
-	 * @param response
-	 * @param problem
-	 * @throws IOException
-	 */
-	private void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem) throws IOException{
-		String msg = "{\"error\":\""+problem+"\"}";
-		System.out.println("Bad request:\n"+msg);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		out.write(msg);
-		out.close();
+	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
+		System.out.println("Bad request: "+problem);
 	}
 
 }

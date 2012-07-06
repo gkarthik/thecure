@@ -88,7 +88,7 @@ function playSound(url) {
 }
 
 function evaluateHand(cardsinhand, player){
-	var url = 'ZooServer?command=getscore&features=';
+	var url = 'MetaServer?dataset=mammal&command=getscore&features=';
 	features = "";
 	var chand = "cardsinhand_"+player;
 
@@ -242,7 +242,7 @@ function generateBoard(){
 	$("#board").append(boardhtml);
 	
 	//set the par - use all the features on the board
-	var url = 'ZooServer?command=getscore&features=';
+	var url = 'MetaServer?dataset=mammal&command=getscore&features=';
 	var features = "";
 	$.each(cards, function(index, value) {
 	    features+=value.att_index+",";
@@ -329,7 +329,7 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-		var saveurl = 'ZooServer?command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+level+"&game=barney_zoo&win="+win;
+		var saveurl = 'MetaServer?dataset=mammal&command=savehand&features='+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+level+"&game=barney_zoo&win="+win;
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
@@ -528,9 +528,9 @@ $(document).ready(function() {
 	$("#endgame").hide();
 	//set up the board
 	if(level==0){
-		url = "ZooServer?command=getspecificboard&x="+ncols+"&y="+nrows+"&board=zoo1_l0";
+		url = "MetaServer?dataset=mammal&command=getspecificboard&x="+ncols+"&y="+nrows+"&board=zoo1_l0";
 	}else{
-		url = "ZooServer?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
+		url = "MetaServer?dataset=mammal&command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
 	}
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
