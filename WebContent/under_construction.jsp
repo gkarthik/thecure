@@ -49,19 +49,18 @@ $(document).ready(function() {
     <div class="hero-unit">
     <div class="row">
     <div class="span10">
-		<div id="welcome" style="text-align:center;">
-			<h1 class="offset1">Welcome to COMBO!</h1>
-			<p>Come on in and <a href="login.jsp">play as yourself</a>. Or play <a href="checkuser.jsp?username=anonymous_hero&password=123">anonymously</a></p> 
 
-			<p> 
-			Read <a href="about.jsp" target="_blank">about</a> the COMBO concept, or sign up for our <a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">mailing list</a>.
-			</p>
+		<div id="welcome">
+			<h1 class="offset1">Under Construction!</h1>
+			<p>Feel free to come on in and <a href="login.jsp">play</a> during construction, but watch out for those
+			bulldozers!  Even better, read <a href="about.jsp" target="_blank">about</a> the COMBO concept and sign up for our <a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">mailing list</a> so you can be notified when 
+			COMBO is <i>really</i> ready, meet other players, and let us know what you think.</p>
 		</div>
 	</div>
 	</div>
 	<div class ="row">
 	<div class="offset1">
-	<!--  <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/CAT-D10N-pic001.jpg/640px-CAT-D10N-pic001.jpg"> -->
+	<img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/CAT-D10N-pic001.jpg/640px-CAT-D10N-pic001.jpg">
 	</div>
 	
 	</div>
