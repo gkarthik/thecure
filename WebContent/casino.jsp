@@ -19,8 +19,8 @@
 <title>Welcome to COMBO, games of prediction and discovery</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css"
 	type="text/css" media="screen">
-<link rel="stylesheet" href="assets/css/combo.css"
-	type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css"
+	media="screen">
 <link
 	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
 	rel="stylesheet" type="text/css" />
@@ -28,23 +28,15 @@
 	type="text/javascript"></script>
 <script
 	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-	
+
 <script>
 $(document).ready(function() {
 	  var agent =  navigator.userAgent;
 	  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
 	  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
-	  }
-//	$("#breastcancergames").hide();
-	//set up the baord
-//	url = "ZooServer2?command=getboard&x="+ncols+"&y="+nrows+"&ran="+seed;
-	//data will contain player info
-/* 	$.getJSON(url, function(data) {
-		cards = data;		
-	});	 */		
-
+	  }	
 });
-</script> 
+</script>
 </head>
 <body>
 	<div class="navbar navbar-fixed-top">
@@ -56,20 +48,13 @@ $(document).ready(function() {
 					class="brand" href="/combo/">COMBO</a>
 				<div class="nav-collapse">
 					<ul class="nav">
-						<li><a href="about.jsp" target="_blank">About</a>
-						</li>
+						<li><a href="about.jsp" target="_blank">About</a></li>
 						<li><a
 							href="https://groups.google.com/forum/#!forum/genegames"
-							target="_blank">Contact</a>
-						</li>
-						<li><a href="http://www.genegames.org" target="_blank">Other
-								bio games</a>
-						</li>
+							target="_blank">Contact</a></li>
 						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
-						</a>
-						</li>
-						<li><a href="index.jsp">logout</a>
-						</li>
+						</a></li>
+						<li><a href="index.jsp">logout</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -83,49 +68,54 @@ $(document).ready(function() {
 				<div class="span11" id="games">
 					<h2>Introductory games</h2>
 					<br>
-					<p>Level 1 <a href="mammal_mosaic.jsp" class="btn btn-large btn-primary"><img
-						width="100"
-						src="images/Elephant_Shrew.jpg">
-						<strong> Mammal Mosaic</strong></a>
-						What separates mammals from all other animals?
+					<p>
+						Intro level 1 <a href="mammal_mosaic.jsp"
+							class="btn btn-large btn-primary"><strong> Mammal Mosaic</strong>
+						</a> What separates mammals from all other animals?
 					</p>
-					<p>Level 2 <a href="zoocard2.jsp" class="btn btn-large btn-primary"><img
-						width="100"
-						src="http://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Cacatua_galerita_-Australia_Zoo%2C_Queensland_-with_zoo_keeper-8a.jpg/274px-Cacatua_galerita_-Australia_Zoo%2C_Queensland_-with_zoo_keeper-8a.jpg">
-						<strong> Zookeeper </strong> </a>
-						Divide the animal kingdom into 5 classes.
-					</p>	
+					<p>
+						Intro level 2 <a href="zoocard2.jsp" class="btn btn-large btn-primary">
+							<strong> Zookeeper </strong> </a> Divide the animal kingdom into 5
+						classes.
+					</p>
 				</div>
 				<hr>
 			</div>
 			<div class="row">
+				<div class="span7" id="craniogames" class="rounded_gradient_box" style="background-image: -webkit-linear-gradient(top, white, #33CCFF);">
+					<h2>Craniosynostosis (<a href="http://www.ncbi.nlm.nih.gov/pubmedhealth/PMH0002557/" target = "blank">more about</a>)</h2>
+					<div>
+					<a href="craniocard1.jsp?dataset_name=cranio_case_control" class="btn btn-large btn-primary"><strong>Craniosynostosis</strong> </a>
+					</div>
+					<div><br/></div>
+					<div >
+					<a href="craniocard1.jsp?dataset_name=coronal_case_control" class="btn btn-large btn-primary"><strong>Coronal Craniosynostosis</strong> </a>
+					</div>
+				</div>			
+			</div>
+								<div><br/></div>
+			<div class="row">
 				<div class="span7" id="breastcancergames">
-				<h2>Breast Cancer Predictor Game Prototypes</h2>
 					<div class="rounded_gradient_box">
-						<img src="images/100px-DrawingIntellectGirl.png"> <a
-							href="genecard1.jsp" class="btn btn-large btn-primary"><img
+					<h2>Breast Cancer Metastasis</h2>
+					 <a href="genecard1.jsp" class="btn btn-large btn-primary"><img
 							src="images/Pink_ribbon.png"><strong>Breast Cancer
-								1<br>(Random Walk)</strong>
-						</a>
+								1<br>(Random Walk)</strong> </a>
 						<div>
-							<br>
-							<br>
+							<br> <br>
 						</div>
 						<a href="barney.jsp" class="btn btn-large btn-primary"><img
 							src="images/Pink_ribbon.png"><strong>Breast Cancer
-								2<br>(Defeat Barney!)</strong>
-						</a>
+								2<br>(Defeat Barney!)</strong> </a>
 						<div>
-							<br>
-							<br>
+							<br> <br>
 						</div>
 						<a href="gocard1.jsp" class="btn btn-large btn-primary"><img
 							src="images/Pink_ribbon.png"><strong>Breast Cancer
-								3<br>(GO)</strong>
-						</a>
+								3<br>(GO)</strong> </a>
 
 					</div>
-<%-- 					<div class="span2">
+					<%-- 					<div class="span2">
 						<div id="scoreboard">
 							<table>
 								<caption>

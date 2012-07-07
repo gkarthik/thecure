@@ -62,7 +62,7 @@
 }
 
 .rounded_gradient_box{
-	background-image: -webkit-linear-gradient(top, #FFCCCC, #FF0066
+	background-image: -webkit-linear-gradient(top, white, #FF0066
 );
 background-repeat: repeat-x;
 border-bottom-left-radius: 4px;

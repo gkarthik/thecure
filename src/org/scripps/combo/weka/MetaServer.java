@@ -108,7 +108,7 @@ public class MetaServer extends HttpServlet {
 			Weka metopic_control_weka = new Weka(train_loc);
 			metopic_control_weka.setEval_method("training_set");
 			metopic_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("coronal_case_control", metopic_control_weka);
+			name_dataset.put("metopic_case_control", metopic_control_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -120,7 +120,7 @@ public class MetaServer extends HttpServlet {
 			Weka sagittal_control_weka = new Weka(train_loc);
 			sagittal_control_weka.setEval_method("training_set");
 			sagittal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("coronal_case_control", sagittal_control_weka);	
+			name_dataset.put("sagittal_case_control", sagittal_control_weka);	
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -213,8 +213,22 @@ public class MetaServer extends HttpServlet {
 			String board = request.getParameter("board");
 			List<Weka.card> cards = new ArrayList<Weka.card>();
 			if(board!=null){
-				if(board.equals("zoo1_l0")){
+				if(board.equals("mammal_0")){
 					cards = weka.getCardsByIndices("1,10");
+				}else if(board.equals("mammal_1")){
+					cards = weka.getCardsByIndices("3,9");
+				}else if(board.equals("mammal_2")){
+					cards = weka.getCardsByIndices("13,12");
+				}else if(board.equals("mammal_3")){
+					cards = weka.getCardsByIndices("8,11");
+				}else if(board.equals("mammal_4")){
+					cards = weka.getCardsByIndices("2,16,1,12");
+				}else if(board.equals("mammal_5")){
+					cards = weka.getCardsByIndices("9,7,6,14");
+				}else if(board.equals("mammal_6")){
+					cards = weka.getCardsByIndices("6,11,2,15");
+				}else if(board.equals("mammal_7")){
+					cards = weka.getCardsByIndices("4,3,1,13");
 				}
 			}else{
 				int nrows = Integer.parseInt(request.getParameter("y"));
