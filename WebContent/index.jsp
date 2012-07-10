@@ -37,8 +37,8 @@ $(document).ready(function() {
             <ul class="nav">
               <li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
-              <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
-              <li><a href="login.jsp">Play!</a></li>
+              <li><a href="http://www.genegames.org" target="_blank">Other gene games</a></li>
+              <li><a href="login.jsp">Login and play</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

@@ -5,6 +5,7 @@ package org.scripps.combo;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import org.scripps.util.JdbcConnection;
 
@@ -19,7 +20,11 @@ public class Hand {
 	String features; 
 	int score;
 	int cv_accuracy;
+	int training_accuracy;
+	String feature_names;
 	int board_id;
+	String phenotype;
+	String game_type;
 	
 	public int getId() {
 		return id;
@@ -69,7 +74,7 @@ public class Hand {
 	public void save(){
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?)");
+			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?,?)");
 			pst.clearParameters();
 			pst.setString(1,getPlayer_name());
 			pst.setString(2,getIp());
@@ -77,6 +82,11 @@ public class Hand {
 			pst.setInt(4, getCv_accuracy());
 			pst.setString(5, getFeatures());
 			pst.setInt(6, getBoard_id());
+			pst.setString(7,getPhenotype());
+			pst.setString(8, getFeature_names());
+			pst.setInt(9, getTraining_accuracy());
+			pst.setString(10, getGame_type());
+			pst.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -84,6 +94,30 @@ public class Hand {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public int getTraining_accuracy() {
+		return training_accuracy;
+	}
+	public void setTraining_accuracy(int training_accuracy) {
+		this.training_accuracy = training_accuracy;
+	}
+	public String getFeature_names() {
+		return feature_names;
+	}
+	public void setFeature_names(String feature_names) {
+		this.feature_names = feature_names;
+	}
+	public String getPhenotype() {
+		return phenotype;
+	}
+	public void setPhenotype(String phenotype) {
+		this.phenotype = phenotype;
+	}
+	public String getGame_type() {
+		return game_type;
+	}
+	public void setGame_type(String game_type) {
+		this.game_type = game_type;
 	}
 
 
