@@ -6,6 +6,7 @@ package org.scripps.combo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,13 +126,15 @@ public class Player {
 		}
 		//if no player exists make a new one
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into player values(null,?,?,?,0,0,?)";
+		String insert = "insert into player values(null,?,?,?,0,0,?,'',?,?)";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, name);
 			p.setString(2,ip);
 			p.setString(3,password);
 			p.setString(4,email);
+			p.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+			p.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
 			p.executeUpdate();
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -145,11 +148,12 @@ public class Player {
 	public void updateBarneyLevelsInDatabase(){
 		//if no player exists make a new one
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "update player set barney_levels = ? where name = ?";
+		String insert = "update player set barney_levels = ?, updated = ? where name = ?";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, barneyLevels2string());
 			p.setString(2, name);
+			p.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 			p.executeUpdate();
 			conn.connection.close();
 		} catch (SQLException e) {

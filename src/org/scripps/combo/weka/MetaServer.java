@@ -167,7 +167,7 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
 			return;
 		}
-
+		String game = request.getParameter("game");
 		// handle request to score feature set
 		if(command.equals("getscore")){
 			String features=request.getParameter("features");
@@ -245,15 +245,22 @@ public class MetaServer extends HttpServlet {
 			String player_name = request.getParameter("player_name");
 			String ip = request.getRemoteAddr();
 			String features = request.getParameter("features");
+			String feature_names = request.getParameter("feature_names");
+			String phenotype = dataset_name;
 			String score_s = request.getParameter("score");
-			int score = -1000;
+			int score = -1;
 			if(score_s!=null){
 				score = Integer.parseInt(score_s);
 			}
 			String cv_accuracy_s = request.getParameter("cv_accuracy");
+			String training_accuracy_s = request.getParameter("training_accuracy");
+			int training_accuracy = -1;
 			int cv_accuracy = -1000;
 			if(cv_accuracy_s!=null){
 				cv_accuracy = Integer.parseInt(cv_accuracy_s);
+			}
+			if(training_accuracy_s != null){
+				training_accuracy = Integer.parseInt(training_accuracy_s);
 			}
 			String board_id_s = request.getParameter("board_id");
 			int board_id = -1000;
@@ -267,10 +274,14 @@ public class MetaServer extends HttpServlet {
 			hand.setIp(ip);
 			hand.setPlayer_name(player_name);
 			hand.setScore(score);
+			hand.setPhenotype(phenotype);
+			hand.setFeature_names(feature_names);
+			hand.setTraining_accuracy(training_accuracy);
+			hand.setGame_type(game);
 			hand.save();
 			//update player info
-			String game = request.getParameter("game");
-			if(game!=null&&game.equals("barney_zoo")){
+	
+			if(game!=null&&game.equals("training_verse_barney")){
 				//update stars
 				//Player player = Player.lookupPlayer(player_name);
 				HttpSession s = request.getSession();

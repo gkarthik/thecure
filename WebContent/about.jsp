@@ -20,8 +20,7 @@
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="https://groups.google.com/forum/#!forum/genegames">Contact</a></li>
-              <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
-              <li><a href="login.jsp">Play!</a></li>
+              <li><a href="casino.jsp">Play!</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -50,6 +49,7 @@
     consistent patterns.  If a particular gene is much more active then normal in all the samples that eventually spread,
     this might be a good signal to look for in future patients.  
     </p>
+      <h2>Challenge</h2>
     <p>
     In seeking these patterns we are faced with two key problems, reproducibility and a combinatorial explosion.  First, it often happens
     that patterns observed in one dataset do not appear with the same strength in new datasets.  This is partly caused by natural

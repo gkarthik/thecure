@@ -54,7 +54,7 @@ body {
 
 
 
-<title>Welcome to COMBO: game Zoo</title>
+<title>COMBO: Mammal Mosaic</title>
 
 <%
 	String ran = request.getParameter("level");
@@ -90,6 +90,7 @@ var p2_hand = new Array();
 var p2_indexes = new Array();
 var player_name = "<%=username%>";
 	var features = "";
+	var feature_names = "";
 	var barney_init = 0;
 
 	//playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
@@ -99,11 +100,13 @@ var player_name = "<%=username%>";
 
 	function evaluateHand(cardsinhand, player) {
 		var url = 'MetaServer?dataset=mammal&command=getscore&features=';
-		features = "";
+		features = ""; 
+		feature_names = "";
 		var chand = "cardsinhand_" + player;
 
 		$.each(cardsinhand, function(index, value) {
 			features += value.att_index + ",";
+			feature_names += value.att_name + ":"+value.name+"|";
 		});
 		url += features;
 
@@ -359,8 +362,8 @@ var player_name = "<%=username%>";
 		}
 		var saveurl = 'MetaServer?dataset=mammal&command=savehand&features='
 				+ features + '&player_name=' + player_name + '&score='
-				+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-				+ "&game=barney_zoo&win=" + win;
+				+ par_score + '&training_accuracy=' + p1_score + '&board_id=' + level
+				+ "&win=" + win+'&game=training_verse_barney&feature_names=' + feature_names;
 		//player_name , score, cv_accuracy, board_id
 		console.log("saved " + saveurl);
 		$.getJSON(saveurl, function(data) {

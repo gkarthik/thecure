@@ -3,9 +3,12 @@
  */
 package org.scripps.combo.weka.viz;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -17,6 +20,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntProperty;
+import com.hp.hpl.jena.ontology.OntResource;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFWriter;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
@@ -34,12 +46,24 @@ import weka.gui.treevisualizer.TreeBuild;
 public class Tree {
 	ObjectMapper mapper;
 	ObjectNode json_root;
-	
-	
-	
+	Model tree_model;
+	Property treebranch;
+	Property is_top;
+	Property predicted_class;
+	Property n_samples_at_node;
+	Property n_incorrect_at_node;
+	public static String base_uri = "http://genegames.org/tree/";
+
+
 	public Tree() {
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
+		tree_model = ModelFactory.createDefaultModel();
+		treebranch = tree_model.createProperty(base_uri+"branch");
+		is_top = tree_model.createProperty(base_uri+"is_top");
+		predicted_class = tree_model.createProperty(base_uri+"predicted_class");
+		n_samples_at_node = tree_model.createProperty(base_uri+"n_samples_at_node");
+		n_incorrect_at_node = tree_model.createProperty(base_uri+"n_incorrect_at_node");
 	}
 
 	/**
@@ -72,7 +96,7 @@ public class Tree {
 
 		 */
 
-		String train_file = "/Users/bgood/data/zoo.arff";
+		String train_file = "/Users/bgood/data/zoo_mammals.arff";
 		Weka weka = new Weka(train_file);
 		J48 classifier = new J48();
 		classifier.setUnpruned(false); 
@@ -84,30 +108,118 @@ public class Tree {
 
 		TreeBuild builder = new TreeBuild();
 		Node top = builder.create(new StringReader(classifier.graph()));
-		//top = builder.create(new StringReader("digraph atree { top [label=\"the top\"] a [label=\"the first node\"] b [label=\"the second nodes\"] c [label=\"comes off of first\"] top->a top->b b->c }"));
-		//outputTree(top);	   
-		
+		//		//top = builder.create(new StringReader("digraph atree { top [label=\"the top\"] a [label=\"the first node\"] b [label=\"the second nodes\"] c [label=\"comes off of first\"] top->a top->b b->c }"));
+		//		//outputTree(top);	   
+		//		
 		Tree t = new Tree();
-		t.json_root.put("name", top.getLabel());
-		t.outputJsonTreeNode(top, t.json_root);
-		String json = t.mapper.writeValueAsString(t.json_root);
-		System.out.println(json);
+		//		t.json_root.put("name", top.getLabel());
+		//		t.outputJsonTreeNode(top, t.json_root);
+		//		String json = t.mapper.writeValueAsString(t.json_root);
+		//		System.out.println(json);
+		//
+		//		//		ObjectNode json_root = mapper.createObjectNode();
 
-		//		ObjectNode json_root = mapper.createObjectNode();
+		t.generateTreeRDF(top);
+		RDFWriter writer = new JSONJenaWriter();	
+		OutputStream sout = new ByteArrayOutputStream();
+		writer.write(t.tree_model, sout, null);
+		String out = sout.toString();
+		System.out.println(out);
 	}
 
+/**
+ * Starts off the process completed by 
+ * outputRdfTreeNode
+ * Indicates where the top of the tree is
+ * @param top
+ */
+	public void generateTreeRDF(Node top) {
+		//add top node
+		Resource treeroot = tree_model.createResource();
+		treeroot.addLiteral(RDFS.label, top.getLabel());
+		treeroot.addLiteral(is_top, true);
+		outputRdfTreeNode(top, treeroot);
+		return;
+	}
 
 /**
- * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+ * Recursively step through a decision tree and generate an RDF structure that represents it
  * @param root
- * @param jroot
- * @throws JsonGenerationException
- * @throws JsonMappingException
- * @throws IOException
+ * @param curr_root
  */
+	public void outputRdfTreeNode(Node root, Resource curr_root)  {
+		//check if leaf
+		if(root.getChild(0)==null){
+			//System.out.println(root.getLabel());
+			String leaf = root.getLabel();
+			String label = leaf.substring(0,leaf.indexOf("(")).trim();
+			String count = leaf.substring(leaf.indexOf("("));
+			float bin_size = 0; float errors = 0;
+			if(count.contains("/")){
+				String e = count.split("/")[1];
+				e = e.substring(0,e.length()-1);
+				errors = Float.parseFloat(e);
+				String b = count.substring(1,count.indexOf("/"));
+				bin_size = Float.parseFloat(b);
+			}else{
+				String b = count.substring(1,count.indexOf(")"));
+				bin_size = Float.parseFloat(b);
+			}
+			//System.out.println(label+"__"+bin_size+"--"+errors);
+			curr_root.addLiteral(n_samples_at_node, bin_size);
+			curr_root.addLiteral(n_incorrect_at_node, errors);
+			curr_root.addLiteral(RDFS.label, label);
+		}else{
+			Edge edge;
+			//find the edge children
+			for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {				
+				Resource edgenode = tree_model.createResource();
+				edgenode.addLiteral(RDFS.label, edge.getLabel());
+				curr_root.addProperty(treebranch, edgenode);
+				
+				Resource targetnode = tree_model.createResource();				
+				edgenode.addProperty(treebranch, targetnode);
+				//is it a leaf?
+				if(edge.getTarget().getChild(0)!=null){
+					targetnode.addLiteral(RDFS.label, edge.getTarget().getLabel());
+				}
+				outputRdfTreeNode(edge.getTarget(), targetnode);	
+			}
+		}
+	}
+
+	/**
+	 * Works with outputJsonTreeNode to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+	 * @param root
+	 * @param jroot
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+
+		public void outputRdfTreeEdge(Edge root, Resource jroot) throws JsonGenerationException, JsonMappingException, IOException {		
+			ArrayNode node_children = mapper.createArrayNode();
+			Node target = root.getTarget();
+			ObjectNode targetnode = mapper.createObjectNode();
+			targetnode.put("name", target.getLabel());
+			outputJsonTreeNode(target, targetnode);	
+			node_children.add(targetnode);
+			jroot.put("children", node_children);
+		}
+
+	 */	
+
+
+	/**
+	 * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+	 * @param root
+	 * @param jroot
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
 	public void outputJsonTreeNode(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
 		Edge edge;
-	//	jroot.put("name", root.getLabel());
+		//	jroot.put("name", root.getLabel());
 		//build the edge children
 		ArrayNode edge_children = mapper.createArrayNode();
 		for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
@@ -138,7 +250,7 @@ public class Tree {
 		node_children.add(targetnode);
 		jroot.put("children", node_children);
 	}
-	
+
 	/**
 	 * Given the root node from a decision tree, recursively convert it into a jackson ObjectNode model that can be exported and used with the D3 javascript library
 	 * @param root
@@ -168,7 +280,7 @@ public class Tree {
 			jroot.put("children", children);
 		}
 	}
-	
+
 	/**
 	 * Pits out all of the nodes in a decision tree
 	 * @param root
