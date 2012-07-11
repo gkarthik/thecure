@@ -19,8 +19,8 @@
           <a class="brand" href="/combo/">COMBO</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="https://groups.google.com/forum/#!forum/genegames">Contact</a></li>
-              <li><a href="casino.jsp">Play!</a></li>
+              <li><a href="contact.jsp">Contact</a></li>
+              <li><a href="games.jsp">Play!</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

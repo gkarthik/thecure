@@ -48,14 +48,13 @@
 		<p>After your turn, your opponent Barney will select a card just like you did and then it will be your turn again.</p>
 		<p>After you both have 5 cards, the round is over and the player with the highest score wins the round.</p>
 		<p>Click on the <img src="images/info-icon.png"> buttons to reveal information about a gene.</p>
-		<h2>The biomedical point</h2>
-		<p>
-		The goal of this particular game is to use gene expression levels to predict a short interval to distant metastases ('poor prognosis' signature) 
-		in breast patients without tumour cells in local lymph nodes at diagnosis (lymph node negative). <strong>Hint</strong>, genes regulating cell cycle, 
-		invasion, metastasis and angiogenesis may be important.</p>
 		<h2>Scoring</h2>
 		<p>Your score is determined by using the genes that you select to train machine learning algorithms to classify real biological samples. 
-		The better the genes reflect the phenotype, the better you will score in the game.  This all happens under the hood in real time!
+		The better the genes reflect the phenotype, the better you will score in the game.  This all happens under the hood in real time!  
+		</p>
+		<p>
+		For the geeks,
+		we are using Quinlan's C4.5 decision tree learning algorithm and performing a 10 fold cross-validation to produce the score.
 		</p>
 
 			
