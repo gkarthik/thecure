@@ -57,7 +57,7 @@ body {
 <title>COMBO: Zookeeper</title>
 
 <%
-	String ran = request.getParameter("level");
+	String ran = level;
 		if (ran == null) {
 			ran = "" + (int) Math.rint(Math.random() * 1000);
 		}
@@ -433,10 +433,12 @@ var player_name = "<%=username%>";
 		evaluateHand(p2_hand, "2");
 		window.setTimeout(function() {
 			if (p2_hand.length == max_hand) {
-				if (p1_score < p2_score) {
+				if(p1_score<p2_score){
 					$("#winner").text("Sorry, you lost this hand. ");
-				} else {
+				}else if (p1_score>p2_score){
 					$("#winner").text("You beat Barney! ");
+				}else if (p1_score==p2_score){
+					$("#winner").text("You tied Barney! ");
 				}
 				$("#endgame").show();
 			}
@@ -647,7 +649,7 @@ var player_name = "<%=username%>";
 	</div>
 
 	<div id="board_container"
-		style="height: 200px; left: 190px; position: absolute; top: 300px; width: 200px;"">
+		style="height: 300px; left: 170px; position: absolute; top: 260px; width: 300px;"">
 		<h2>Pick a feature</h2>
 		<div id="board"></div>
 	</div>

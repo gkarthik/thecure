@@ -49,9 +49,7 @@ $(document).ready(function() {
 				<div class="nav-collapse">
 					<ul class="nav">
 						<li><a href="about.jsp" target="_blank">About</a></li>
-						<li><a
-							href="https://groups.google.com/forum/#!forum/genegames"
-							target="_blank">Contact</a></li>
+              <li><a href="contact.jsp">Contact</a></li>
 						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
 						</a></li>
 						<li><a href="index.jsp">logout</a></li>
@@ -65,8 +63,8 @@ $(document).ready(function() {
 	<div class="container">
 		<div class="hero-unit">
 			<div class="row">
-				<div class="span11" id="games">
-					<h2>Introductory games</h2>
+				<div class="span9" id="games">
+					<h2>Intro (start here)</h2>
 					<br>
 					<p>
 						Intro level 1 <a href="mammal_mosaic.jsp"
@@ -77,6 +75,31 @@ $(document).ready(function() {
 						Intro level 2 <a href="zoo_mosaic.jsp" class="btn btn-large btn-primary">
 							<strong> Zookeeper </strong> </a> Divide the animal kingdom into 5
 						classes.
+					</p>
+					<h2>Cancer</h2>
+					<br>
+					<p>
+						<a href="bcmeta_mosaic.jsp"
+							class="btn btn-large btn-primary"><strong>Breast Cancer Metastasis</strong>
+						</a> Identify gene expression signatures in tumors that indicate distance to metastasis.
+					</p>
+		<!--  			<p>
+						<a href="mammal_mosaic.jsp"
+							class="btn btn-large btn-primary"><strong>Breast Cancer 10 year Survival</strong>
+						</a> Find genes in tumor samples whose expression patterns predict survival.
+					</p>
+		-->			
+					<h2>Developmental disorders</h2>
+					<br>
+					<p>
+						<a href="cranio_coronal_mosaic.jsp"
+							class="btn btn-large btn-primary"><strong>Craniosynostosis </strong>
+						</a> Identify genes disregulated in the developing calvaria of people with skull malformations.
+					</p>
+					<h2>Your dataset here!</h2>
+					<br>
+					<p>
+						We are looking for good datasets to explore, please <a href="contact.jsp">Contact Us</a> if you are interested in seeing your data here or if you have any other ideas or suggestions.
 					</p>
 				</div>
 				<hr>

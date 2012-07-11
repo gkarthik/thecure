@@ -76,13 +76,33 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//vantveer data
+		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
+			Weka vantveer_weka = new Weka(train_loc);
+			vantveer_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt"));
+			name_dataset.put("vantveer", vantveer_weka);
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//Cunningham data	
+		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
+			Weka coronal_control_weka = new Weka(train_loc);
+			coronal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
+			name_dataset.put("coronal_case_control", coronal_control_weka);	
 
-		//Cunningham data		
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 /*
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
 			Weka cranio_case_weka = new Weka(train_loc);
-			cranio_case_weka.setEval_method("training_set");
 			cranio_case_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
 			name_dataset.put("cranio_case_control", cranio_case_weka);	
 			train_loc.close();
@@ -92,22 +112,8 @@ public class MetaServer extends HttpServlet {
 		}
 
 		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
-			Weka coronal_control_weka = new Weka(train_loc);
-			coronal_control_weka.setEval_method("training_set");
-			coronal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("coronal_case_control", coronal_control_weka);	
-
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
 			Weka metopic_control_weka = new Weka(train_loc);
-			metopic_control_weka.setEval_method("training_set");
 			metopic_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
 			name_dataset.put("metopic_case_control", metopic_control_weka);
 			train_loc.close();
@@ -119,20 +125,8 @@ public class MetaServer extends HttpServlet {
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
 			Weka sagittal_control_weka = new Weka(train_loc);
-			sagittal_control_weka.setEval_method("training_set");
 			sagittal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
 			name_dataset.put("sagittal_case_control", sagittal_control_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//vantveer data
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
-			Weka vantveer_weka = new Weka(train_loc);
-			vantveer_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt"));
-			name_dataset.put("vantveer", vantveer_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -175,9 +169,7 @@ public class MetaServer extends HttpServlet {
 			if(features==null){
 				handleBadRequest(request, response, "no features");
 			}else{
-
-
-				String model = request.getParameter("wekamodel");
+				//String model = request.getParameter("wekamodel");
 				J48 wekamodel = new J48();
 				Weka.execution result = weka.pruneAndExecute(features, wekamodel);
 				ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
@@ -202,7 +194,7 @@ public class MetaServer extends HttpServlet {
 		}else if(command.equals("getboard")){
 			String raninput = request.getParameter("ran");
 			int ran = 1;
-			if(raninput!=null&&!raninput.equals("0")){
+			if(raninput!=null){
 				ran = Integer.parseInt(raninput);
 			}else{			
 				ran = (int)Math.rint(Math.random()*1000);
@@ -311,7 +303,7 @@ public class MetaServer extends HttpServlet {
 			hand.save();
 			//update player info
 	
-			if(game!=null&&game.equals("training_verse_barney")){
+			if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
 				//update stars
 				//Player player = Player.lookupPlayer(player_name);
 				HttpSession s = request.getSession();
@@ -329,7 +321,11 @@ public class MetaServer extends HttpServlet {
 							scores.add(0);
 						}
 					}
-					scores.set(board_id, training_accuracy);
+					if(game.equals("verse_barney")){
+						scores.set(board_id, cv_accuracy);
+					}else{
+						scores.set(board_id, training_accuracy);
+					}
 					player.getLevel_tilescores().put(dataset_name, scores);
 					s.setAttribute("player", player);
 				}

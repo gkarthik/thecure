@@ -43,7 +43,7 @@ if(player != null) {
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="about.jsp" target="_blank">About</a></li>
-              <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
+              <li><a href="contact.jsp">Contact</a></li>
               <li><a href="http://www.genegames.org" target="_blank">Other bio games</a></li>
               <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li>
               <li><a href="index.jsp">logout</a></li>

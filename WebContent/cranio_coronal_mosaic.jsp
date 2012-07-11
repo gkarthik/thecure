@@ -14,20 +14,24 @@
 	}
 	if (player != null) {
 		int levels_passed = 0;
-		List<Integer> zoo_scores = player.getLevel_tilescores().get("zoo");
+		List<Integer> zoo_scores = player.getLevel_tilescores().get("coronal_case_control");
 		if (zoo_scores == null) {
 			zoo_scores = new ArrayList<Integer>(4);
 			for (int i = 0; i < 4; i++) {
 				zoo_scores.add(0);
 			}
-			player.getLevel_tilescores().put("zoo", zoo_scores);
+			player.getLevel_tilescores().put("coronal_case_control", zoo_scores);
 		}else{
+			boolean passed_one = false;
 			for(int i=0; i<zoo_scores.size(); i++){
 				if(zoo_scores.get(i)>0){
 					levels_passed = i;
+					passed_one = true;
 				}
 			}
-			levels_passed++;
+			if(passed_one){
+				levels_passed++;
+			}
 		}
 %>
 
@@ -35,7 +39,7 @@
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Zookeeper</title>
+<title>Craniosynostosis (coronal verse control)</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css"
 	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo.css" type="text/css"
@@ -57,7 +61,7 @@
 				<a class="btn btn-navbar" data-toggle="collapse"
 					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
 					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
-					class="brand">Zookeeper</a>
+					class="brand">Craniosynostosis</a>
 				<div class="nav-collapse">
 					<ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>
@@ -74,10 +78,11 @@
 	<div class="container">
 		<div class="hero-unit">
 			<div class="row">
-					<h2>Zookeeper Summary</h2>
-					<p>Now that you have mastered the mammals, its time to take on the amphibians, birds, reptiles, and invertebrates!</p>
-					<p>Click on the numbered tiles below to play. As always, you must defeat your nemesis Barney <img width="25" src="images/barney.png"> to turn the tile over!
-						To win, find the best combination of features to use to classify an unknown creature.</p>
+					<h2>Craniosynostosis</h2>
+					<p>Use gene expression levels in the skull to divide samples between controls and those with coronal craniosynostosis.  Craniosynostosis 
+					is the pathologic fusion of calvarial (skull) bones that is associated with abnormal skull growth an increased intracranial pressure.
+					<p>As always, you must defeat your nemesis Barney <img width="25" src="images/barney.png"> to turn a tile over.
+						To win each round, find the best combination of genes to use to classify a new sample.</p>
 					<br>
 			</div>
 			<div class="row">		
@@ -85,8 +90,8 @@
 						<table>
 							<%
 								int level = -1;
-								int num_tile_rows = 3;
-								int num_tile_cols = 3;
+								int num_tile_rows = 4;
+								int num_tile_cols = 4;
 								for (int i = 0; i < num_tile_rows; i++) {
 							%>
 							<tr>
@@ -100,9 +105,9 @@
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
-						<a href="zoocard2.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="cranio_coronal.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<a href="zoocard2.jsp?level=<%=level %>" class=""><img width="100" src="images/zoo_keeper_<%=level%>.png"></a>
+						<a href="cranio_coronal.jsp?level=<%=level %>" class=""><img width="100" src="images/skull/skull_<%=level%>.png"></a>
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -115,7 +120,6 @@
 								}
 							%>
 						</table>
-						<p>ZooKeeper multiclass challenge!</p>
 					</div>
 					
 			
