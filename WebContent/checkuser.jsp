@@ -39,7 +39,7 @@ if(player==null){
 if (success) {
     session.setAttribute("username", username);
     session.setAttribute("player", player);
- 	response.sendRedirect("./casino.jsp");   
+ 	response.sendRedirect("./games.jsp");   
 }else{ //something went wrong 
 	response.sendRedirect("./login.jsp");    
 }

@@ -112,13 +112,14 @@ var player_name = "<%=username%>";
 
 		//goes to server, runs the default evaluation with a decision tree
 		$.getJSON(url, function(data) {
+			console.log(data);
 			if (player == "1") {
 				//var prev_score = p1_score;
 				$("#player1_j48_score").html(
-						'<strong> score </strong><span>"' + data.accuracy
-								+ '</span><p><pre>' + data.modelrep
+						'<strong> score </strong><span>"' + data.evaluation.accuracy
+								+ '</span><p><pre>' + data.evaluation.modelrep
 								+ '</pre></p>');
-				p1_score = data.accuracy;
+				p1_score = data.evaluation.accuracy;
 				if (p1_score >= p2_score) {
 					playSound("sounds/human/MMMMM1.WAV");
 				} else {
@@ -128,10 +129,10 @@ var player_name = "<%=username%>";
 			} else if (player == "2") {
 				//var prev_score = p2_score;
 				$("#player2_j48_score").html(
-						'<strong> score </strong><span>"' + data.accuracy
-								+ '</span><p><pre>' + data.modelrep
+						'<strong> score </strong><span>"' + data.evaluation.accuracy
+								+ '</span><p><pre>' + data.evaluation.modelrep
 								+ '</pre></p>');
-				p2_score = data.accuracy;
+				p2_score = data.evaluation.accuracy;
 				if (p2_score < p1_score) {
 					playSound("sounds/human/MMMMM1.WAV");
 				} else {
@@ -272,7 +273,7 @@ var player_name = "<%=username%>";
 		url += features;
 
 		$.getJSON(url, function(data) {
-			par = data.accuracy;
+			par = data.evaluation.accuracy;
 			$("#par_score").html("<strong>" + par + "</strong>");
 		});
 	}
