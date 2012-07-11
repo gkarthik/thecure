@@ -109,8 +109,11 @@ public class Player {
 					}
 				}
 				player.setBarney_levels(barney_levels);
+				//right now only tied to mammal game
+				player.setLevelTileScoresWithDb();
 			}
 			conn.connection.close();
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -171,6 +174,47 @@ public class Player {
 			levels = levels.substring(0,levels.lastIndexOf(","));
 		}
 		return levels;
+	}
+	
+	public void setLevelTileScoresWithDb(){
+		//anonymous players don't get to track their scores..
+		if(name.equals("anonymous_hero")){
+			return;
+		}
+		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where player_name = ?";
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(gethands);
+			p.setString(1, name);
+			ResultSet hands = p.executeQuery();
+			while(hands.next()){
+				String phenotype = hands.getString("phenotype");
+				String game_type = hands.getString("game_type");
+				int board_id = hands.getInt("board_id");
+				int score = hands.getInt("score");
+				int training = hands.getInt("training_accuracy");
+				int cv = hands.getInt("cv_accuracy");
+				int win = hands.getInt("win");
+				
+				if(win>0){
+					List<Integer> tile_scores = level_tilescores.get(phenotype);
+					if(tile_scores==null){
+						tile_scores = new ArrayList<Integer>();
+					}
+					if(board_id+1>tile_scores.size()){
+						for(int i=tile_scores.size(); i<=board_id; i++){
+							tile_scores.add(-1);
+						}
+					}
+					tile_scores.set(board_id, training);
+					level_tilescores.put(phenotype, tile_scores);
+				}
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public int getId() {

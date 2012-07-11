@@ -25,6 +25,7 @@ public class Hand {
 	int board_id;
 	String phenotype;
 	String game_type;
+	int win;
 	
 	public int getId() {
 		return id;
@@ -74,7 +75,7 @@ public class Hand {
 	public void save(){
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?,?,?)");
 			pst.clearParameters();
 			pst.setString(1,getPlayer_name());
 			pst.setString(2,getIp());
@@ -87,6 +88,7 @@ public class Hand {
 			pst.setInt(9, getTraining_accuracy());
 			pst.setString(10, getGame_type());
 			pst.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+			pst.setInt(12, getWin());
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -118,6 +120,12 @@ public class Hand {
 	}
 	public void setGame_type(String game_type) {
 		this.game_type = game_type;
+	}
+	public int getWin() {
+		return win;
+	}
+	public void setWin(int win) {
+		this.win = win;
 	}
 
 

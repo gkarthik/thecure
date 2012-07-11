@@ -28,6 +28,7 @@ import org.scripps.combo.Hand;
 import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
+import org.scripps.combo.weka.viz.JsonTree;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.JRip;
@@ -77,7 +78,7 @@ public class MetaServer extends HttpServlet {
 		}
 
 		//Cunningham data		
-
+/*
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
 			Weka cranio_case_weka = new Weka(train_loc);
@@ -137,7 +138,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+*/
 	}
 
 	/**
@@ -177,19 +178,24 @@ public class MetaServer extends HttpServlet {
 
 
 				String model = request.getParameter("wekamodel");
-				Classifier wekamodel = null;
-				if(model!=null&&model.equals("jrip")){
-					wekamodel = new JRip();
-				}else{
-					wekamodel = new J48();
-				}
+				J48 wekamodel = new J48();
 				Weka.execution result = weka.pruneAndExecute(features, wekamodel);
 				ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 				//serialize and return the result
 				JSONObject r = new JSONObject(short_result);
 				response.setContentType("text/json");
 				PrintWriter out = response.getWriter();
-				out.write(r.toString());
+				String eval_json = r.toString();
+				String tree_json = "";
+				JsonTree jtree = new JsonTree();
+				try {
+					tree_json = jtree.getJsonTreeString(wekamodel);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				String treeoutput = "{\"evaluation\" : "+eval_json+", \"tree\":"+tree_json+"}";
+				out.write(treeoutput);
 				out.close();
 			}
 			// initialize a random gene 'board' - a list of attributes from the training set of specified size
@@ -229,6 +235,24 @@ public class MetaServer extends HttpServlet {
 					cards = weka.getCardsByIndices("6,11,2,15");
 				}else if(board.equals("mammal_7")){
 					cards = weka.getCardsByIndices("4,3,1,13");
+				}else if(board.equals("zoo_0")){
+					cards = weka.getCardsByIndices("4,3,1,13,6,11,2,15,9");
+				}else if(board.equals("zoo_1")){
+					cards = weka.getCardsByIndices("5,4,2,14,7,12,3,16,10");
+				}else if(board.equals("zoo_2")){
+					cards = weka.getCardsByIndices("3,2,16,12,5,10,1,14,8");
+				}else if(board.equals("zoo_3")){
+					cards = weka.getCardsByIndices("2,1,15,11,4,9,16,14,7");
+				}else if(board.equals("zoo_4")){
+					cards = weka.getCardsByIndices("1,16,14,10,3,8,15,13,6");
+				}else if(board.equals("zoo_5")){
+					cards = weka.getCardsByIndices("15,1,12,9,2,7,14,11,8");
+				}else if(board.equals("zoo_6")){
+					cards = weka.getCardsByIndices("14,16,11,8,1,6,13,10,7");
+				}else if(board.equals("zoo_7")){
+					cards = weka.getCardsByIndices("13,15,10,7,16,5,12,9,6");
+				}else if(board.equals("zoo_8")){
+					cards = weka.getCardsByIndices("12,16,9,6,15,4,11,8,5e of");
 				}
 			}else{
 				int nrows = Integer.parseInt(request.getParameter("y"));
@@ -267,6 +291,11 @@ public class MetaServer extends HttpServlet {
 			if(board_id_s!=null){
 				board_id = Integer.parseInt(board_id_s);
 			}
+			String win = request.getParameter("win");
+			int win_ = 0;
+			if(win!=null&&win.equals("1")){
+				win_ = 1;
+			}
 			Hand hand = new Hand();
 			hand.setBoard_id(board_id);
 			hand.setCv_accuracy(cv_accuracy);
@@ -278,6 +307,7 @@ public class MetaServer extends HttpServlet {
 			hand.setFeature_names(feature_names);
 			hand.setTraining_accuracy(training_accuracy);
 			hand.setGame_type(game);
+			hand.setWin(win_);
 			hand.save();
 			//update player info
 	
@@ -287,28 +317,26 @@ public class MetaServer extends HttpServlet {
 				HttpSession s = request.getSession();
 				Player player = (Player)s.getAttribute("player");
 				//check if they passed the level
-				String win = request.getParameter("win");
 				if(win!=null&&win.equals("1")){
 					//update session
-					List<Integer> mammal_scores = player.getLevel_tilescores().get("mammals");
-					if(mammal_scores==null){
-						mammal_scores = new ArrayList<Integer>(20);
-						mammal_scores.add(0);
+					List<Integer> scores = player.getLevel_tilescores().get(dataset_name);
+					if(scores==null){
+						scores = new ArrayList<Integer>(20);
+						scores.add(0);
 					}
-					if(board_id>=mammal_scores.size()){
-						for(int m=mammal_scores.size()-1; m<=board_id; m++){
-							mammal_scores.add(0);
+					if(board_id>=scores.size()){
+						for(int m=scores.size()-1; m<=board_id; m++){
+							scores.add(0);
 						}
 					}
-					mammal_scores.set(board_id, cv_accuracy);
-					player.getLevel_tilescores().put("mammals", mammal_scores);
+					scores.set(board_id, training_accuracy);
+					player.getLevel_tilescores().put(dataset_name, scores);
 					s.setAttribute("player", player);
 				}
 			}else if(game!=null&&game.equals("barney")){
 				//update stars
 				Player player = Player.lookupPlayer(player_name);
 				//check if they passed the level
-				String win = request.getParameter("win");
 				if(win!=null&&win.equals("1")){
 					//if(score>0){
 					int stars = 1;

@@ -31,7 +31,7 @@ GameLog.high_score sb = log.getScoreBoard();
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
-              <li><a href="casino.jsp">Play</a></li>
+              <li><a href="games.jsp">Play</a></li>
               <li><a href="index.jsp">logout</a></li>
             </ul>
           </div><!--/.nav-collapse -->

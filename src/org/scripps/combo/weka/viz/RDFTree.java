@@ -43,7 +43,7 @@ import weka.gui.treevisualizer.TreeBuild;
  * @author bgood
  *
  */
-public class Tree {
+public class RDFTree {
 	ObjectMapper mapper;
 	ObjectNode json_root;
 	Model tree_model;
@@ -55,7 +55,7 @@ public class Tree {
 	public static String base_uri = "http://genegames.org/tree/";
 
 
-	public Tree() {
+	public RDFTree() {
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
 		tree_model = ModelFactory.createDefaultModel();
@@ -111,7 +111,7 @@ public class Tree {
 		//		//top = builder.create(new StringReader("digraph atree { top [label=\"the top\"] a [label=\"the first node\"] b [label=\"the second nodes\"] c [label=\"comes off of first\"] top->a top->b b->c }"));
 		//		//outputTree(top);	   
 		//		
-		Tree t = new Tree();
+		RDFTree t = new RDFTree();
 		//		t.json_root.put("name", top.getLabel());
 		//		t.outputJsonTreeNode(top, t.json_root);
 		//		String json = t.mapper.writeValueAsString(t.json_root);
