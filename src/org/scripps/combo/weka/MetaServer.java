@@ -186,7 +186,11 @@ public class MetaServer extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				String treeoutput = "{\"evaluation\" : "+eval_json+", \"tree\":"+tree_json+"}";
+				String treeoutput = "{\"evaluation\" : "+eval_json+", " +
+				"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
+				"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
+				"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
+				"\"tree\":"+tree_json+"}";
 				out.write(treeoutput);
 				out.close();
 			}

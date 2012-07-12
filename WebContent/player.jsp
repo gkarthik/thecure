@@ -50,20 +50,18 @@ GameLog.high_score sb = log.getScoreBoard();
 <div id="scoreboard">
 			<div class="span5">
 			<table>
-			<caption><b><u>Breast Cancer Challenge score board</u></b></caption>
+			<caption><b><u>Combo leaders</u></b></caption>
 				<thead>
 					<tr>
 						<th>Rank</th>
 						<th>Player</th>
-						<th>Rating</th>
-						<th>Games Played</th>
-						<th>Personal Best</th>
+						<th>Points</th>
 					</tr>
 				</thead>
 				<tbody>
 					<%
 					int r = 0;
-					for(String name : sb.getPlayer_avg().keySet()){
+					for(String name : sb.getPlayer_global_points().keySet()){
 						r++;
 						String rowhighlight = "";
 						if(name.equals(username)){
@@ -73,9 +71,7 @@ GameLog.high_score sb = log.getScoreBoard();
 						<tr align="center" <%=rowhighlight %>>
 						<td><%=r%></td>
 						<td><%=name %></td>
-						<td><%=sb.getPlayer_avg().get(name) %></td>
-						<td><%=sb.getPlayer_games().get(name) %></td>
-						<td><%= sb.getPlayer_max().get(name)%></td>
+						<td><%=sb.getPlayer_global_points().get(name)%></td> 
 					</tr>
 					<% 
 					}

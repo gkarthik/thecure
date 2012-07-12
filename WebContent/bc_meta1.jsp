@@ -9,6 +9,7 @@
 String username = (String)session.getAttribute("username");
 String level = request.getParameter("level");
 int ilevel = Integer.parseInt(level);
+int display_level = ilevel+1;
 if(username==null){
 	username = "anonymous_hero";
 }
@@ -102,12 +103,12 @@ function evaluateHand(cardsinhand, player){
  				playSound("sounds/human/SNORTAHH.WAV");
  			}
  			if(p1_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player1_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
  			//var prev_score = p2_score;
- 			$("#player2_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 			$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			p2_score = data.evaluation.accuracy;
  			if(p2_score < p1_score){
  				playSound("sounds/human/MMMMM1.WAV");
@@ -115,7 +116,7 @@ function evaluateHand(cardsinhand, player){
  				playSound("sounds/human/SNORTAHH.WAV");
  			}
  			if(p2_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			}
  			$("#game_score_2").text(p2_score);
  		}
@@ -638,7 +639,7 @@ $(document).ready(function() {
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
-		<img src="images/barney.png">Level <%=ran %>
+		<img src="images/barney.png">Level <%=display_level %>
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>

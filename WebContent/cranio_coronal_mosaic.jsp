@@ -80,7 +80,7 @@
 			<div class="row">
 					<h2>Craniosynostosis</h2>
 					<p>Use gene expression levels in the skull to divide samples between controls and those with coronal craniosynostosis.  Craniosynostosis 
-					is the pathologic fusion of calvarial (skull) bones that is associated with abnormal skull growth an increased intracranial pressure.
+					is the pathologic fusion of calvarial (skull) bones that is associated with abnormal skull growth and increased intracranial pressure.
 					<p>As always, you must defeat your nemesis Barney <img width="25" src="images/barney.png"> to turn a tile over.
 						To win each round, find the best combination of genes to use to classify a new sample.</p>
 					<br>

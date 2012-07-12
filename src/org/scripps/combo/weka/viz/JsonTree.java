@@ -46,12 +46,17 @@ import weka.gui.treevisualizer.TreeBuild;
 public class JsonTree {
 	ObjectMapper mapper;
 	ObjectNode json_root;
-	
+	int max_depth;
+	int num_leaves;
+	int tree_size;
 
 
 	public JsonTree() {
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
+		max_depth = 0;
+		num_leaves = 0;
+		tree_size = 0;
 	}
 
 	/**
@@ -84,26 +89,34 @@ public class JsonTree {
 
 		 */
 
-		String train_file = "/Users/bgood/data/zoo_mammals.arff";
+		String train_file = "/Users/bgood/data/zoo.arff"; //_mammals
 		Weka weka = new Weka(train_file);
 		J48 classifier = new J48();
 		classifier.setUnpruned(false); 
 		Evaluation eval_train = new Evaluation(weka.getTrain());
 		classifier.buildClassifier(weka.getTrain());
 		eval_train.evaluateModel(classifier, weka.getTrain());
+
+		System.out.println(classifier.measureNumLeaves());
+		System.out.println(classifier.measureTreeSize());
+
 		//System.out.println(classifier.graph());
-	//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
+		//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
 		JsonTree t = new JsonTree();
 		String json = t.getJsonTreeString(classifier);
 		System.out.println(json);
+		System.out.println(t.max_depth);
 
 	}
-	
+
 	public String getJsonTreeString(J48 classifier) throws Exception{
+		num_leaves = (int) classifier.measureNumLeaves();
+		tree_size = (int) classifier.measureTreeSize();
 		TreeBuild builder = new TreeBuild();
 		Node top = builder.create(new StringReader(classifier.graph()));   	
 		json_root.put("name", top.getLabel());
-		outputJsonTreeNode(top, json_root);
+		json_root.put("kind", "split_node");
+		outputJsonTreeNode(top, json_root, 1);
 		String json = mapper.writeValueAsString(json_root);
 		return json;
 	}
@@ -117,19 +130,47 @@ public class JsonTree {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	public void outputJsonTreeNode(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
+	public void outputJsonTreeNode(Node root, ObjectNode jroot, int depth) throws JsonGenerationException, JsonMappingException, IOException {
 		Edge edge;
-		//	jroot.put("name", root.getLabel());
-		//build the edge children
-		ArrayNode edge_children = mapper.createArrayNode();
-		for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
-			ObjectNode edgenode = mapper.createObjectNode();
-			edgenode.put("name", edge.getLabel());
-			outputJsonTreeEdge(edge, edgenode);	
-			edge_children.add(edgenode);
-		}
-		if(edge_children.size()>0){
-			jroot.put("children", edge_children);
+		//handle the leaves
+		if(root.getChild(0)==null){
+			String leaf = root.getLabel();
+			String label = leaf.substring(0,leaf.indexOf("(")).trim();
+			jroot.put("name", label);
+			jroot.put("kind", "leaf_node");
+			String count = leaf.substring(leaf.indexOf("("));
+			float bin_size = 0; float errors = 0;
+			if(count.contains("/")){
+				String e = count.split("/")[1];
+				e = e.substring(0,e.length()-1);
+				errors = Float.parseFloat(e);
+				String b = count.substring(1,count.indexOf("/"));
+				bin_size = Float.parseFloat(b);
+			}else{
+				String b = count.substring(1,count.indexOf(")"));
+				bin_size = Float.parseFloat(b);
+			}
+			jroot.put("bin_size",bin_size);
+			jroot.put("errors", errors);
+			if(depth>max_depth){
+				max_depth = depth;
+			}
+		}else{
+			depth++;
+			jroot.put("name", root.getLabel());
+			jroot.put("kind", "split_node");
+			//build the edge children
+			ArrayNode edge_children = mapper.createArrayNode();
+			for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
+				ObjectNode edgenode = mapper.createObjectNode();
+				edgenode.put("name", edge.getLabel());
+				edgenode.put("kind", "split_value");
+				outputJsonTreeEdge(edge, edgenode, depth);	
+				edge_children.add(edgenode);
+			}
+			if(edge_children.size()>0){
+				jroot.put("children", edge_children);
+			}
 		}
 	}
 
@@ -141,12 +182,12 @@ public class JsonTree {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */	
-	public void outputJsonTreeEdge(Edge root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {		
+	public void outputJsonTreeEdge(Edge root, ObjectNode jroot, int depth) throws JsonGenerationException, JsonMappingException, IOException {		
 		ArrayNode node_children = mapper.createArrayNode();
 		Node target = root.getTarget();
 		ObjectNode targetnode = mapper.createObjectNode();
-		targetnode.put("name", target.getLabel());
-		outputJsonTreeNode(target, targetnode);	
+		depth++;
+		outputJsonTreeNode(target, targetnode, depth);	
 		node_children.add(targetnode);
 		jroot.put("children", node_children);
 	}
@@ -194,6 +235,46 @@ public class JsonTree {
 			child = e.getTarget();
 			outputTextTree(child);
 		}	
+	}
+
+	public ObjectMapper getMapper() {
+		return mapper;
+	}
+
+	public void setMapper(ObjectMapper mapper) {
+		this.mapper = mapper;
+	}
+
+	public ObjectNode getJson_root() {
+		return json_root;
+	}
+
+	public void setJson_root(ObjectNode json_root) {
+		this.json_root = json_root;
+	}
+
+	public int getMax_depth() {
+		return max_depth;
+	}
+
+	public void setMax_depth(int max_depth) {
+		this.max_depth = max_depth;
+	}
+
+	public int getNum_leaves() {
+		return num_leaves;
+	}
+
+	public void setNum_leaves(int num_leaves) {
+		this.num_leaves = num_leaves;
+	}
+
+	public int getTree_size() {
+		return tree_size;
+	}
+
+	public void setTree_size(int tree_size) {
+		this.tree_size = tree_size;
 	}
 
 }

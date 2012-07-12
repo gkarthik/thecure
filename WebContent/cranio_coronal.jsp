@@ -102,12 +102,12 @@ function evaluateHand(cardsinhand, player){
  				playSound("sounds/human/SNORTAHH.WAV");
  			}
  			if(p1_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player1_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
  			//var prev_score = p2_score;
- 			$("#player2_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 			$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			p2_score = data.evaluation.accuracy;
  			if(p2_score < p1_score){
  				playSound("sounds/human/MMMMM1.WAV");
@@ -115,7 +115,7 @@ function evaluateHand(cardsinhand, player){
  				playSound("sounds/human/SNORTAHH.WAV");
  			}
  			if(p2_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score </strong><span>"'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			}
  			$("#game_score_2").text(p2_score);
  		}
@@ -621,10 +621,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_1"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
+				<table border='0'>
 					<tr id="player1_hand_masked" align='center'
 						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 75px;"></td>
+						<td style="width: 100px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
@@ -668,10 +668,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_2"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
+				<table border='0'>
 					<tr id="player2_hand_masked" align='center'
 						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 75px;"></td>
+						<td style="width: 100px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
