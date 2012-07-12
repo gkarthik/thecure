@@ -29,20 +29,22 @@ public class GameLog {
 		GameLog log = new GameLog();
 		GameLog.high_score sb = log.getScoreBoard();
 		for(String name : sb.getPlayer_max().keySet()){
-			System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
+			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
+			System.out.println(name+" "+sb.getPlayer_global_points().get(name));
 		}
-		for(Integer board : sb.getBoard_max().keySet()){
-			System.out.println(board+" "+sb.getBoard_max().get(board)+" "+sb.getBoard_avg().get(board));
-		}
+//		for(String board : sb.getBoard_max().keySet()){
+//			System.out.println(board+" "+sb.getBoard_max().get(board)+" "+sb.getBoard_avg().get(board));
+//		}
 
 	}
 
 	public class high_score{
+		Map<String, Integer> player_global_points;
 		Map<String, Integer> player_games;
 		Map<String, Integer> player_max;
 		Map<String, Float> player_avg;
-		Map<Integer, Integer> board_max;
-		Map<Integer, Float> board_avg;
+		Map<String, Integer> board_max;
+		Map<String, Float> board_avg;
 		public Map<String, Integer> getPlayer_max() {
 			return player_max;
 		}
@@ -55,46 +57,77 @@ public class GameLog {
 		public void setPlayer_avg(Map<String, Float> player_avg) {
 			this.player_avg = player_avg;
 		}
-		public Map<Integer, Integer> getBoard_max() {
-			return board_max;
-		}
-		public void setBoard_max(Map<Integer, Integer> board_max) {
-			this.board_max = board_max;
-		}
-		public Map<Integer, Float> getBoard_avg() {
-			return board_avg;
-		}
-		public void setBoard_avg(Map<Integer, Float> board_avg) {
-			this.board_avg = board_avg;
-		}
+		
 		public Map<String, Integer> getPlayer_games() {
 			return player_games;
 		}
 		public void setPlayer_games(Map<String, Integer> player_games) {
 			this.player_games = player_games;
 		}
+		public Map<String, Integer> getPlayer_global_points() {
+			return player_global_points;
+		}
+		public void setPlayer_global_points(Map<String, Integer> player_global_points) {
+			this.player_global_points = player_global_points;
+		}
+		public Map<String, Integer> getBoard_max() {
+			return board_max;
+		}
+		public void setBoard_max(Map<String, Integer> board_max) {
+			this.board_max = board_max;
+		}
+		public Map<String, Float> getBoard_avg() {
+			return board_avg;
+		}
+		public void setBoard_avg(Map<String, Float> board_avg) {
+			this.board_avg = board_avg;
+		}
 		
 	}
 	
 	public high_score getScoreBoard(){
 		high_score scores = new high_score();
-		List<Hand> hands = getAllHands();
+		List<Hand> hands = getAllWinningHands();
+		Map<String, Integer> player_global_points = new HashMap<String, Integer>();
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
-		Map<Integer, Integer> board_max = new HashMap<Integer, Integer>();
-		Map<Integer, List<Integer>> board_games = new HashMap<Integer, List<Integer>>();
+		Map<String, Integer> board_max = new HashMap<String, Integer>();
+		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();
 		
 		for(Hand hand : hands){
 			String player = hand.getPlayer_name();
-			if(player.equals("anonymous_hero")){
-				String ip = hand.getIp();
-				ip = ip.replaceAll("\\.", "");
-				ip = ip.replaceAll("1", "a");
-				ip = ip.replaceAll("2", "b");ip = ip.replaceAll("3", "c");ip = ip.replaceAll("4", "d");
-				ip = ip.replaceAll("5", "e");ip = ip.replaceAll("6", "f");ip = ip.replaceAll("7", "g");ip = ip.replaceAll("8", "h");
-				ip = ip.replaceAll("9", "i");ip = ip.replaceAll("0", "j");
-				player="a-"+ip;
+			if(hand.getPhenotype()==null){
+				continue;
 			}
+			//points for hand
+			int points = 0;
+			int multiplier = 1; int board_performance = 1;
+			if(hand.getPhenotype().equals("mammal")){
+				multiplier = 5;
+				board_performance = hand.getTraining_accuracy();
+			}else if(hand.getPhenotype().equals("zoo")){
+				multiplier = 7;
+				board_performance = hand.getTraining_accuracy();
+			}else if(hand.getPhenotype().equals("vantveer")){
+				multiplier = 10;
+				board_performance = hand.getCv_accuracy();
+			}else if(hand.getPhenotype().equals("coronal_case_control")){
+				multiplier = 15;
+				board_performance = hand.getCv_accuracy();
+			}
+			
+			if(board_performance < 1){
+				continue;
+			}
+			
+			points = multiplier*board_performance;
+			Integer gpoints = player_global_points.get(player);
+			if(gpoints==null){
+				gpoints = new Integer(0);
+			}
+			gpoints+=points;
+			player_global_points.put(player, gpoints);
+			
 			//player max
 			int score = hand.getScore();
 			Integer max = player_max.get(player);
@@ -105,7 +138,7 @@ public class GameLog {
 			}
 			player_max.put(player, max);
 			//board max
-			Integer board = hand.getBoard_id();
+			String board = hand.getPhenotype()+"_"+hand.getBoard_id();
 			max = board_max.get(board);
 			if(max ==null){
 				max = score;
@@ -132,7 +165,7 @@ public class GameLog {
 		
 		//set averages
 		Map<String, Float> player_avg = new TreeMap<String, Float>();
-		Map<Integer, Float> board_avg = new TreeMap<Integer, Float>();
+		Map<String, Float> board_avg = new TreeMap<String, Float>();
 		Map<String, Integer> player_games_out = new HashMap<String, Integer>();
 		for(String player : player_max.keySet()){
 			float avg = 0; int count = 0;
@@ -144,7 +177,7 @@ public class GameLog {
 			player_avg.put(player, avg);
 			player_games_out.put(player, count);
 		}
-		for(Integer board : board_max.keySet()){
+		for(String board : board_max.keySet()){
 			float avg = 0; int count = 0;
 			for(Integer s : board_games.get(board)){
 				count++;
@@ -164,15 +197,21 @@ public class GameLog {
 		for(String key : keys){
 			player_avg_out.put(key, player_avg.get(key));
 		}	
-		List<Integer> ks = MapFun.sortMapByValue(board_max);
-		Map<Integer, Integer> board_max_out = new LinkedHashMap<Integer, Integer>();
-		for(Integer key : ks){
+		List<String> ks = MapFun.sortMapByValue(board_max);
+		Map<String, Integer> board_max_out = new LinkedHashMap<String, Integer>();
+		for(String key : ks){
 			board_max_out.put(key, board_max.get(key));
 		}
 		ks = MapFun.sortMapByValue(board_avg);
-		Map<Integer, Float> board_avg_out = new LinkedHashMap<Integer, Float>();
-		for(Integer key : ks){
+		Map<String, Float> board_avg_out = new LinkedHashMap<String, Float>();
+		for(String key : ks){
 			board_avg_out.put(key, board_avg.get(key));
+		}
+		
+		ks = MapFun.sortMapByValue(player_global_points);
+		Map<String, Integer> player_global_out = new LinkedHashMap<String, Integer>();
+		for(String key : ks){
+			player_global_out.put(key, player_global_points.get(key));
 		}
 		
 		//save scoreboard object
@@ -181,13 +220,14 @@ public class GameLog {
 		scores.setBoard_max(board_max_out);
 		scores.setPlayer_avg(player_avg_out);
 		scores.setPlayer_max(player_max_out);
+		scores.setPlayer_global_points(player_global_out);
 		return scores;
 	}
 	
-	public List<Hand> getAllHands(){
+	public List<Hand> getAllWinningHands(){
 		List<Hand> hands = new ArrayList<Hand>();
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand");
+		ResultSet rslt = conn.executeQuery("select * from hand where win > 0 and player_name != 'anonymous_hero'");
 		try {
 			while(rslt.next()){
 				Hand hand = new Hand();
@@ -198,6 +238,11 @@ public class GameLog {
 				hand.setIp(rslt.getString("ip"));
 				hand.setPlayer_name(rslt.getString("player_name"));
 				hand.setScore(rslt.getInt("score"));
+				hand.setFeature_names(rslt.getString("feature_names"));
+				hand.setGame_type(rslt.getString("game_type"));
+				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
+				hand.setWin(rslt.getInt("win"));
 				hands.add(hand);
 			}
 		} catch (SQLException e) {

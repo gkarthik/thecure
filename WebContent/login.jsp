@@ -53,7 +53,7 @@ $(document).ready(function() {
 			 <strong>Enter your credentials here</strong> 
 			<form action="./checkuser.jsp">
 				Username: <input id="usernameinput" type="text" name="username" /><br>
-				Password: <input id="passwordinput" type="text" name="password" /><br>
+				Password: <input id="passwordinput" type="password" name="password" /><br>
 				<input	type="submit" value="Submit" /> 
 				
 			</form>			
@@ -70,8 +70,8 @@ $(document).ready(function() {
 			 <strong>Enter new account details</strong> 
 			 <form id="newuser" action="./checkuser.jsp">
 				Username: <input id="usernameinput" type="text" name="username" /><br>
-				Password: <input id="passwordinput" type="text" name="password" /><br>
-				Email address: <input id="emailinput" type="text" name="email" /> (optional but encouraged)<br>
+				Password: <input id="passwordinput" type="password" name="password" /><br>
+				Email address: <input id="emailinput" type="text" name="email" /><br>
 				<input type="hidden" name="newuser" value="1"/>
 				<input	type="submit" value="Submit" />
 			</form>
