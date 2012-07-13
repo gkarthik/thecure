@@ -1,52 +1,43 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.GameLog"%>
-<%@ page import="org.scripps.combo.model.Player"%>
-<%@ page import="org.scripps.combo.model.Game"%>
-<%@ page import="java.util.List"%>
-<%
-  GameLog log = new GameLog();
-  String dataset = "griffith_breast_cancer_1";//"dream_breast_cancer_2"; //use dream_breast_cancer for round 1 data 
-  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, dataset, true, "edu1", true);
-  GameLog.high_score sb = log.getScoreBoard(whs, dataset);
-  Player player = (Player) session.getAttribute("player");
-  boolean show_player = false;
-  if(player!=null&&(!player.getName().equals("anonymous_hero"))){
-    show_player = true;
-  }
+<%@ page import="org.scripps.combo.Player"%>
+<% 
+GameLog log = new GameLog();
+GameLog.high_score sb = log.getScoreBoard();
+Player player = (Player) session.getAttribute("player");
+boolean show_player = false;
+if(player!=null&&(!player.getName().equals("anonymous_hero"))){
+	show_player = true;
+}
 %>
 
-  <div id="leaderboard">
-    <h2>Active Round Leader Board</h3>
-    <h3>
-      <span class="rank">Rank</span>
-      <span class="player">Player</span>
-      <span class="points">Points</span>
-    </h3>
-    <ol>
-    <%
-      int max = 10;
-      int r = 0;
-      for(String name : sb.getPlayer_global_points().keySet()){
-        r++;
-        String displayName = name;
-        if(name == null || name.length() == 0) {
-          displayName = "anon";
-        }
-        if(name.length() > 14) {
-          displayName = name.substring(0, 13);
-        }
-        if(r<=max||player.getName().equals(name)){
-          if(show_player&&player.getName().equals(name)){
-        %>
-            <li class="currentPlayer">
-        <% } else { %>
-            <li>
-        <% } %>
-          <span class="rank"> <%=r%> </span>
-          <span class="player"> <%=displayName%> </span>
-          <span class="points"> <%=sb.getPlayer_global_points().get(name)%> </span>
-        </li>
-      <% }} %>
-    </ol>
-  </div>
+			<table>
+			<caption><b><u>Combo leaders</u></b></caption>
+				<thead>
+					<tr>
+						<th>Rank</th>
+						<th>Player</th>
+						<th>Points</th>
+					</tr>
+				</thead>
+				<tbody>
+					<%
+					int r = 0;
+					for(String name : sb.getPlayer_global_points().keySet()){
+						r++;
+						String rowhighlight = "";
+						if(show_player&&player.getName().equals(name)){
+							rowhighlight = "style=\"background-color:#F5CC6C\";";
+						}
+						%>
+						<tr align="center" <%=rowhighlight %>>
+						<td><%=r%></td>
+						<td><%=name %></td>
+						<td><%=sb.getPlayer_global_points().get(name)%></td> 
+					</tr>
+					<% 
+					}
+					%>
+				</tbody>
+			</table>

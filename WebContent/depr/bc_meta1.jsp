@@ -9,6 +9,7 @@
 String username = (String)session.getAttribute("username");
 String level = request.getParameter("level");
 int ilevel = Integer.parseInt(level);
+int display_level = ilevel+1;
 if(username==null){
 	username = "anonymous_hero";
 }
@@ -80,7 +81,7 @@ function playSound(url) {
 }
 
 function evaluateHand(cardsinhand, player){
-	var url = 'MetaServer?dataset=coronal_case_control&command=getscore&features=';
+	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
 	features = "";
 	feature_names = "";
 	var chand = "cardsinhand_"+player;
@@ -90,7 +91,7 @@ function evaluateHand(cardsinhand, player){
 		feature_names += value.att_name + ":"+value.name+"|";
 	  });
 	url +=features;
-
+console.log(url);
 	//goes to server, runs the default evaluation with a decision tree
  	$.getJSON(url, function(data) {
  		if(player=="1"){
@@ -250,7 +251,7 @@ function generateBoard(){
 	$("#board").append(boardhtml);
 	
 	//set the par - use all the features on the board
-	var url = 'MetaServer?dataset=coronal_case_control&command=getscore&features=';
+	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
 	var features = "";
 	$.each(cards, function(index, value) {
 	    features+=value.att_index+",";
@@ -337,9 +338,9 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-//		var saveurl = 'MetaServer?dataset=coronal_case_control&command=savehand&features='
+//		var saveurl = 'MetaServer?dataset=vantveer&command=savehand&features='
 //				+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
-		var saveurl = 'MetaServer?dataset=coronal_case_control&command=savehand&features='
+		var saveurl = 'MetaServer?dataset=vantveer&command=savehand&features='
 			+ features + '&player_name=' + player_name + '&score='
 			+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
 			+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
@@ -347,7 +348,7 @@ function saveHand(){
 		//player_name , score, cv_accuracy, board_id
 		//console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
-			window.location.replace("cranio_coronal_mosaic.jsp");
+			window.location.replace("bcmeta_mosaic.jsp");
 		});
 }
 
@@ -530,7 +531,7 @@ $(document).ready(function() {
 	//hide the end button
 	$("#endgame").hide();
 	//set up the baord
-	url = "MetaServer?dataset=coronal_case_control&command=getboard&x="+ncols+"&y="+nrows+"&ran="+level;
+	url = "MetaServer?dataset=vantveer&command=getboard&x="+ncols+"&y="+nrows+"&ran="+level;
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
 		cards = data;
@@ -621,10 +622,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_1"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='0'>
+				<table border='1'>
 					<tr id="player1_hand_masked" align='center'
 						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 100px;"></td>
+						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
@@ -638,7 +639,7 @@ $(document).ready(function() {
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
-		<img src="images/barney.png">Level <%=ran %>
+		<img src="images/barney.png">Level <%=display_level %>
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>
@@ -668,10 +669,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_2"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='0'>
+				<table border='1'>
 					<tr id="player2_hand_masked" align='center'
 						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 100px;"></td>
+						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>

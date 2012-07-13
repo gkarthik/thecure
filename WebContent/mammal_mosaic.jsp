@@ -4,32 +4,45 @@
 <%@ page import="org.scripps.combo.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
+
 <%
-	String username = "";
-	Player player = (Player) session.getAttribute("player");
-	if (player == null) {
-		response.sendRedirect("/combo/login.jsp");
-	} else {
-		username = player.getName();
-	}
-	if (player != null) {
-		int levels_passed = 0;
-		List<Integer> mammal_scores = player.getLevel_tilescores().get("mammal");
-		if (mammal_scores == null) {
-			mammal_scores = new ArrayList<Integer>(4);
-			for (int i = 0; i < 4; i++) {
-				mammal_scores.add(0);
+String game_params = "&mosaic_url=mammal_mosaic.jsp&dataset=mammal&title=Mammal Challenge&geneinfo=0";
+
+String username = "";
+Player player = (Player) session.getAttribute("player");
+if (player == null) {
+	response.sendRedirect("/combo/login.jsp");
+} else {
+	username = player.getName();
+}
+if (player != null) {
+	int levels_passed = 0;
+	List<Integer> zoo_scores = player.getLevel_tilescores().get("mammal");
+	if (zoo_scores == null) {
+		zoo_scores = new ArrayList<Integer>(4);
+		for (int i = 0; i < 4; i++) {
+			zoo_scores.add(0);
+		}
+		player.getLevel_tilescores().put("mammal", zoo_scores);
+	}else{
+		boolean passed_one = false;
+		for(int i=0; i<zoo_scores.size(); i++){
+			if(zoo_scores.get(i)>0){
+				levels_passed = i;
+				passed_one = true;
 			}
-			player.getLevel_tilescores().put("mammal", mammal_scores);
-		}else{
-			for(int i=0; i<mammal_scores.size(); i++){
-				if(mammal_scores.get(i)>0){
-					levels_passed = i;
-				}
-			}
+		}
+		if(passed_one){
 			levels_passed++;
 		}
+	}
+String board_size = "&nrows=1&ncols=2&max_hand=1";
+if(levels_passed>3){
+	board_size = "&nrows=2&ncols=2&max_hand=2";
+}
+game_params+=board_size;
 %>
+
 
 <!DOCTYPE html>
 <html>
@@ -63,9 +76,10 @@
 						<li><a
 							href="https://groups.google.com/forum/#!forum/genegames"
 							target="_blank">Contact</a></li>
-						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
-						</a></li>
 						<li><a href="games.jsp">other games</a></li>
+						<!--  <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li> -->						
+						<li><a href="logout.jsp">logout</a></li>
+
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -100,15 +114,15 @@
 									for (int j = 0; j < num_tile_cols; j++) {
 												level++;
 												int score = 0;
-												if (mammal_scores.size() > level) {
-													score = mammal_scores.get(level);
+												if (zoo_scores.size() > level) {
+													score = zoo_scores.get(level);
 												}
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
-						<a href="zoocard1.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<a href="zoocard1.jsp?level=<%=level %>" class=""><img width="100" src="images/Elephant_Shrew_<%=level%>.jpg"></a>
+						<img width="100" src="images/Elephant_Shrew_<%=level%>.jpg">
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -134,15 +148,15 @@
 									for (int j = 0; j < num_tile_cols; j++) {
 												level++;
 												int score = 0;
-												if (mammal_scores.size() > level) {
-													score = mammal_scores.get(level);
+												if (zoo_scores.size() > level) {
+													score = zoo_scores.get(level);
 												}
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
-						<a href="zoocard1.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<a href="zoocard1.jsp?level=<%=level %>" class=""><img width="100" src="images/possum_<%=level-4%>.jpg"></a>
+						<img width="100" src="images/possum_<%=level-4%>.jpg">
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -159,6 +173,7 @@
 					</div>
 					<div id="back" class="span3">
 						<p><a href="games.jsp">Back to game selector</a></p>
+						<jsp:include page="scoreboard_table.jsp" />
 					</div>
 					
 			</div>

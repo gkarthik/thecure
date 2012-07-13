@@ -98,49 +98,87 @@ var player_name = "<%=username%>";
 		//document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
 	}
 
-	function evaluateHand(cardsinhand, player) {
+// 	function evaluateHand(cardsinhand, player) {
+// 		var url = 'MetaServer?dataset=mammal&command=getscore&features=';
+// 		features = ""; 
+// 		feature_names = "";
+// 		var chand = "cardsinhand_" + player;
+
+// 		$.each(cardsinhand, function(index, value) {
+// 			features += value.att_index + ",";
+// 			feature_names += value.att_name + ":"+value.name+"|";
+// 		});
+// 		url += features;
+//		goes to server, runs the default evaluation with a decision tree
+// 		$.getJSON(url, function(data) {
+// 			console.log(data);
+// 			if (player == "1") {
+// 				$("#player1_j48_score").html(
+// 						'<strong> score </strong><span>' + data.evaluation.accuracy
+// 								+ '</span><p><pre>' + data.evaluation.modelrep
+// 								+ '</pre></p>');
+				
+// 				p1_score = data.evaluation.accuracy;				
+// 				$("#game_score_1").text(p1_score);
+				
+// 			} else if (player == "2") {
+// 				$("#player2_j48_score").html(
+// 						'<strong> score </strong><span>' + data.evaluation.accuracy
+// 								+ '</span><p><pre>' + data.evaluation.modelrep
+// 								+ '</pre></p>');
+// 				p2_score = data.evaluation.accuracy;			
+// 				$("#game_score_2").text(p2_score);
+// 			}
+// 		});
+// 	}
+
+	function evaluateHand(cardsinhand, player){
 		var url = 'MetaServer?dataset=mammal&command=getscore&features=';
-		features = ""; 
+		features = "";
 		feature_names = "";
-		var chand = "cardsinhand_" + player;
+		var chand = "cardsinhand_"+player;
 
 		$.each(cardsinhand, function(index, value) {
-			features += value.att_index + ",";
+		    features+=value.att_index+",";
 			feature_names += value.att_name + ":"+value.name+"|";
-		});
-		url += features;
+		  });
+		url +=features;
 
 		//goes to server, runs the default evaluation with a decision tree
-		$.getJSON(url, function(data) {
-			console.log(data);
-			if (player == "1") {
-				//var prev_score = p1_score;
-				$("#player1_j48_score").html(
-						'<strong> score </strong><span>"' + data.evaluation.accuracy
-								+ '</span><p><pre>' + data.evaluation.modelrep
-								+ '</pre></p>');
-				p1_score = data.evaluation.accuracy;
-				if (p1_score >= p2_score) {
-					playSound("sounds/human/MMMMM1.WAV");
-				} else {
-					playSound("sounds/human/SNORTAHH.WAV");
-				}
+	 	$.getJSON(url, function(data) {
+	 		if(player=="1"){
+	 			//var prev_score = p1_score;
+	 			p1_score = data.evaluation.accuracy;
+	 			if(p1_hand.length==max_hand){
+	 				$("#player1_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+	 				drawTree(data, 400, 200, "#cv_results_1");
+	 			}
 				$("#game_score_1").text(p1_score);
-			} else if (player == "2") {
-				//var prev_score = p2_score;
-				$("#player2_j48_score").html(
-						'<strong> score </strong><span>"' + data.evaluation.accuracy
-								+ '</span><p><pre>' + data.evaluation.modelrep
-								+ '</pre></p>');
-				p2_score = data.evaluation.accuracy;
-				if (p2_score < p1_score) {
-					playSound("sounds/human/MMMMM1.WAV");
-				} else {
-					playSound("sounds/human/SNORTAHH.WAV");
-				}
-				$("#game_score_2").text(p2_score);
-			}
-		});
+	 		}else if(player=="2"){
+	 			//var prev_score = p2_score;
+	 			$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+	 			p2_score = data.evaluation.accuracy;
+	 			if(p2_hand.length==max_hand){
+	 				$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span>');
+	 				drawTree(data, 400, 200, "#cv_results_2");
+	 			}
+	 			$("#game_score_2").text(p2_score);
+	 		}
+	 		//if its the last hand, show the results
+	 		if(p2_hand.length==max_hand){ 
+	 			window.setTimeout(function() {
+	 				if(p1_score<p2_score){
+	 					$("#winner").text("Sorry, you lost this hand. ");
+	 				}else if (p1_score>p2_score){
+	 					$("#winner").text("You beat Barney! ");
+	 				}else if (p1_score==p2_score){
+	 					$("#winner").text("You tied Barney! ");
+	 				}
+					
+	 				$("#endgame").show();
+	 			}, 3000); 
+	 		}
+		}); 
 	}
 
 	function getStyleByScore(power) {
@@ -763,9 +801,10 @@ var player_name = "<%=username%>";
 				<h3>
 					<a href="#">Your Predictor</a>
 				</h3>
-				<div id="player1_j48_score">
+				<!--  <div id="player1_j48_score">
 					<p style='height: 270px'></p>
-				</div>
+				</div> -->
+				<div id="chart"></div>
 			</div>
 			<div id="cv_results_2"
 				style="left: 455px; position: absolute; top: 50px; width: 400px;">
@@ -781,6 +820,10 @@ var player_name = "<%=username%>";
 	</div>
 
 	<div id="sound"></div>
+	<script src="libs/d3.v2.min.js"></script>
+<script src="libs/underscore-min.js"></script>
+<!--  <script src="libs/jquery-1.7.2.min.js"></script> -->
+<script src="trees/combo_script.js"></script>
 </body>
 </html>
 <%} %>

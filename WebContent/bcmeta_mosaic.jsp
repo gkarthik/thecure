@@ -5,6 +5,9 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 <%
+//params for game board
+String game_params = "&mosaic_url=bcmeta_mosaic.jsp&dataset=vantveer&title=Breast Cancer Metastasis&nrows=5&ncols=5&max_hand=5";
+
 	String username = "";
 	Player player = (Player) session.getAttribute("player");
 	if (player == null) {
@@ -22,12 +25,16 @@
 			}
 			player.getLevel_tilescores().put("vantveer", zoo_scores);
 		}else{
+			boolean passed_one = false;
 			for(int i=0; i<zoo_scores.size(); i++){
 				if(zoo_scores.get(i)>0){
 					levels_passed = i;
+					passed_one = true;
 				}
 			}
-			levels_passed++;
+			if(passed_one){
+				levels_passed++;
+			}
 		}
 %>
 
@@ -61,9 +68,8 @@
 				<div class="nav-collapse">
 					<ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>
-						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
-						</a></li>
 						<li><a href="games.jsp">other games</a></li>
+						<li><a href="logout.jsp">logout</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -102,9 +108,9 @@
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
-						<a href="bc_meta1.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<a href="bc_meta1.jsp?level=<%=level %>" class=""><img width="100" src="images/soccer_women/soccer_women_<%=level%>.png"></a>
+						<img width="100" src="images/soccer_women/soccer_women_<%=level%>.png">
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -122,7 +128,9 @@
 			
 					<div id="back" class="span3">
 						<p><a href="games.jsp">Back to game selector</a></p>
+						<jsp:include page="scoreboard_table.jsp" />
 					</div>
+
 					
 			</div>
 		</div>
