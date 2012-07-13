@@ -5,6 +5,8 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 <%
+String game_params = "&mosaic_url=zoo_mosaic.jsp&dataset=zoo&title=Zookeeper Challenge&geneinfo=0";
+
 	String username = "";
 	Player player = (Player) session.getAttribute("player");
 	if (player == null) {
@@ -22,13 +24,19 @@
 			}
 			player.getLevel_tilescores().put("zoo", zoo_scores);
 		}else{
+			boolean passed_one = false;
 			for(int i=0; i<zoo_scores.size(); i++){
 				if(zoo_scores.get(i)>0){
 					levels_passed = i;
+					passed_one = true;
 				}
 			}
-			levels_passed++;
+			if(passed_one){
+				levels_passed++;
+			}
 		}
+		String board_size = "&nrows=3&ncols=3&max_hand=3";
+		game_params+=board_size;
 %>
 
 <!DOCTYPE html>
@@ -61,9 +69,9 @@
 				<div class="nav-collapse">
 					<ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>
-						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
-						</a></li>
 						<li><a href="games.jsp">other games</a></li>
+<!--  <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li> -->						
+						<li><a href="logout.jsp">logout</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -100,9 +108,9 @@
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
-						<a href="zoocard2.jsp?level=<%=level %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<a href="zoocard2.jsp?level=<%=level %>" class=""><img width="100" src="images/zoo_keeper_<%=level%>.png"></a>
+						<img width="100" src="images/zoo_keeper_<%=level%>.png">
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -121,6 +129,7 @@
 			
 					<div id="back" class="span3">
 						<p><a href="games.jsp">Back to game selector</a></p>
+						<jsp:include page="scoreboard_table.jsp" />
 					</div>
 					
 			</div>

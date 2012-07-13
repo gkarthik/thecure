@@ -6,9 +6,23 @@
 <%@ page import="java.util.ArrayList"%>
 
 <% 
+String mosaic_url = request.getParameter("mosaic_url"); //"cranio_coronal_mosaic.jsp";
+String dataset = request.getParameter("dataset"); // "coronal_case_control";
+String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
+String nrows = request.getParameter("nrows"); // "5";
+String ncols = request.getParameter("ncols"); // "5";
+String max_hand = request.getParameter("max_hand"); // "5";
+String showgeneinfo = "1";
+if(request.getParameter("geneinfo")!=null){
+	showgeneinfo = request.getParameter("geneinfo");
+}
+
 String username = (String)session.getAttribute("username");
 String level = request.getParameter("level");
-int ilevel = Integer.parseInt(level);
+int ilevel = 0;
+if(level!=null){
+	Integer.parseInt(level);
+}
 int display_level = ilevel+1;
 if(username==null){
 	username = "anonymous_hero";
@@ -39,7 +53,7 @@ body {
 
 
 
-<title>Welcome to COMBO: Breast Cancer Metastasis prediction</title>
+<title>COMBO: <%=title %></title>
 
 <%
 	String ran = request.getParameter("level");
@@ -58,10 +72,12 @@ body {
 <script>	
 var cards = new Array();
 var opponent_sort = new Array();
-var nrows = 5;
-var ncols = 5;
+var nrows = <%=nrows%>;
+var ncols = <%=ncols%>;
 var level = <%=level%>;
-var max_hand = 5;
+var showgeneinfo = <%=showgeneinfo%>;
+var max_hand = <%=max_hand%>;
+var dataset = "<%=dataset%>";
 var p1_score = 0;
 var p2_score = 0;
 var par_score = 0;
@@ -81,7 +97,7 @@ function playSound(url) {
 }
 
 function evaluateHand(cardsinhand, player){
-	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
+	var url = 'MetaServer?dataset=<%=dataset%>&command=getscore&features=';
 	features = "";
 	feature_names = "";
 	var chand = "cardsinhand_"+player;
@@ -102,6 +118,7 @@ function evaluateHand(cardsinhand, player){
  			}else{
  				playSound("sounds/human/SNORTAHH.WAV");
  			}
+
  			if(p1_hand.length==max_hand){
  				$("#player1_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
  			}
@@ -121,7 +138,7 @@ function evaluateHand(cardsinhand, player){
  			$("#game_score_2").text(p2_score);
  		}
  		//if its the last hand, show the results
- 		if(p2_hand.length==5){ 
+ 		if(p2_hand.length==max_hand){ 
  			window.setTimeout(function() {
  				if(p1_score<p2_score){
  					$("#winner").text("Sorry, you lost this hand. ");
@@ -178,7 +195,10 @@ function generateBoardCell(cardindex){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<td style=\""+cellstyle+"\">";
+	if(showgeneinfo=="1"){
+		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	}
 	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 	
 	return boardhtml;
@@ -196,7 +216,10 @@ function generateHandCell(cardindex, player){
 		displayname = cards[cardindex].att_name;
 	}
 	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\"><div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	boardhtml+="<td style=\""+cellstyle+"\">";
+	if(showgeneinfo=="1"){
+		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	}
 	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
 	
 	return boardhtml;
@@ -251,7 +274,7 @@ function generateBoard(){
 	$("#board").append(boardhtml);
 	
 	//set the par - use all the features on the board
-	var url = 'MetaServer?dataset=vantveer&command=getscore&features=';
+	var url = 'MetaServer?dataset=<%=dataset%>&command=getscore&features=';
 	var features = "";
 	$.each(cards, function(index, value) {
 	    features+=value.att_index+",";
@@ -338,9 +361,7 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-//		var saveurl = 'MetaServer?dataset=vantveer&command=savehand&features='
-//				+features+'&player_name='+player_name+'&score='+par_score+'&cv_accuracy='+p1_score+'&board_id='+seed+"&game=barney&win="+win;
-		var saveurl = 'MetaServer?dataset=vantveer&command=savehand&features='
+		var saveurl = 'MetaServer?dataset=<%=dataset%>&command=savehand&features='
 			+ features + '&player_name=' + player_name + '&score='
 			+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
 			+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
@@ -348,7 +369,7 @@ function saveHand(){
 		//player_name , score, cv_accuracy, board_id
 		//console.log("saved "+saveurl);
 		$.getJSON(saveurl, function(data) {
-			window.location.replace("bcmeta_mosaic.jsp");
+			window.location.replace("<%=mosaic_url%>");
 		});
 }
 
@@ -366,7 +387,7 @@ function randomXToY(minVal,maxVal,floatVal)
   return typeof floatVal=='undefined'?Math.round(randVal):randVal.toFixed(floatVal);
 }
 
-function getBarneysNextCard(){
+function getBarneysNextCardGettingHarder(){
 	var lower = level;
 	if((lower+10)>=cards.length){
 		lower = cards.length - 11;
@@ -374,6 +395,29 @@ function getBarneysNextCard(){
 	var upper = lower+10;
 	
 	sorted_index = randomXToY(lower,upper);
+	//console.log("sorted index "+sorted_index);
+	card_index = opponent_sort[sorted_index].board_index+"";
+
+	if((($.inArray(card_index, p1_indexes)==-1)&&($.inArray(card_index, p2_indexes)==-1))){
+		//console.log(p1_indexes);
+		//console.log(p2_indexes);//
+		//console.log(" returned "+card_index);
+		return card_index;
+	}else{
+		//console.log(" iterated on "+card_index);
+		return getBarneysNextCard();
+	}
+}
+
+function getBarneysNextCard(){
+	/* var lower = level;
+	if((lower+10)>=cards.length){
+		lower = cards.length - 11;
+	}
+	var upper = lower+10; 
+	
+	sorted_index = randomXToY(lower,upper); */
+	sorted_index = randomXToY(0, cards.length - 1);
 	//console.log("sorted index "+sorted_index);
 	card_index = opponent_sort[sorted_index].board_index+"";
 
@@ -530,8 +574,17 @@ $(document).ready(function() {
 	// $("#cv_results").accordion({ collapsible: true });
 	//hide the end button
 	$("#endgame").hide();
-	//set up the baord
-	url = "MetaServer?dataset=vantveer&command=getboard&x="+ncols+"&y="+nrows+"&ran="+level;
+	//set up the board
+	if (level != null&&dataset=="mammal") {
+		url = "MetaServer?dataset=mammal&command=getspecificboard&x="
+									+ ncols
+									+ "&y="
+									+ nrows
+									+ "&board=mammal_"
+									+ level;
+	} else {
+	    url = "MetaServer?dataset=<%=dataset%>&command=getboard&x="+ncols+"&y="+nrows+"&ran="+level;
+	}
 	//data will contain the array of cards used to build the board for this game
 	$.getJSON(url, function(data) {
 		cards = data;
@@ -622,10 +675,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_1"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
+				<table border='0'>
 					<tr id="player1_hand_masked" align='center'
 						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 75px;"></td>
+						<td style="width: 100px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
@@ -669,10 +722,10 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_2"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
+				<table border='0'>
 					<tr id="player2_hand_masked" align='center'
 						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 75px;"></td>
+						<td style="width: 100px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
 						<td style="width: 75px;"></td>
@@ -683,13 +736,18 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="infobox"
+<%
+if(showgeneinfo=="1"){
+%>
+<div id="infobox"
 		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow: scroll;">
 		<strong>Click on a <img src="images/info-icon.png"> for
 				a clue
 		</strong>
 	</div>
-
+<%
+}
+%>
 	<div id="endgame"
 		style="height: 420px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
 		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>

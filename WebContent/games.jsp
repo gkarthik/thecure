@@ -16,7 +16,7 @@
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO, games of prediction and discovery</title>
+<title>Welcome to COMBO blabla , games of prediction and discovery</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css"
 	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo.css" type="text/css"
@@ -30,11 +30,36 @@
 	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
 <script>
+
+function hideAddressBar(){
+	  if(document.documentElement.scrollHeight<window.outerHeight/window.devicePixelRatio)
+	    document.documentElement.style.height=(window.outerHeight/window.devicePixelRatio)+'px';
+	  setTimeout(window.scrollTo(1,1),0);
+	  console.log("hide called");
+	}
+
 $(document).ready(function() {
+
+
+	// 	window.addEventListener("load",function(){hideAddressBar();});
+	// 	window.addEventListener("orientationchange",function(){hideAddressBar();});
+	
 	  var agent =  navigator.userAgent;
-	  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
-	  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
-	  }	
+	  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)&&(agent.indexOf("AppleWebKit") == -1)){
+		  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
+		  }
+	  
+	/* //  if (navigator.userAgent.match(/Mobile/i)) {
+		    window.scrollTo(0,0); // reset in case prev not scrolled  
+		    var nPageH = $(document).height();
+		    var nViewH = window.outerHeight;
+		    if (nViewH > nPageH) {
+		      nViewH -= 250;
+		      $('BODY').css('height',nViewH + 'px');
+		    }
+		    window.scrollTo(0,1); */
+	//	  }
+	  
 });
 </script>
 </head>
@@ -50,9 +75,8 @@ $(document).ready(function() {
 					<ul class="nav">
 						<li><a href="about.jsp" target="_blank">About</a></li>
               <li><a href="contact.jsp">Contact</a></li>
-						<li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong>
-						</a></li>
-						<li><a href="index.jsp">logout</a></li>
+						<!--  <li><a href="player.jsp?username=<%=username%>"><strong><%=username%></strong></a></li> -->						
+						<li><a href="logout.jsp">logout</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -63,7 +87,7 @@ $(document).ready(function() {
 	<div class="container">
 		<div class="hero-unit">
 			<div class="row">
-				<div class="span9" id="games">
+				<div class="span8" id="games">
 					<h2>Intro (start here)</h2>
 					<br>
 					<p>
@@ -102,7 +126,9 @@ $(document).ready(function() {
 						We are looking for good datasets to explore, please <a href="contact.jsp">Contact Us</a> if you are interested in seeing your data here or if you have any other ideas or suggestions.
 					</p>
 				</div>
-				<hr>
+				<div class="span1" id="scoreboard">
+				<jsp:include page="scoreboard_table.jsp" />
+				</div>
 			</div>
 			
 		</div>

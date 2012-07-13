@@ -1,12 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.GameLog"%>
-
+<% 
+GameLog log = new GameLog();
+GameLog.high_score sb = log.getScoreBoard();
+%>
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="blue" />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO, games of prediction and discovery</title>
+<title>Welcome to COMBO1, games of prediction and discovery</title>
+
+<link rel="apple-touch-startup-image" href="images/barney.png">
+
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -15,9 +24,12 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var agent =  navigator.userAgent;
-  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
+  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)&&(agent.indexOf("AppleWebKit") == -1)){
   	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
   }
+  setTimeout(function() { 
+	  window.scrollTo(0, 1); 
+	  }, 100);
 });
 
 </script>
@@ -58,6 +70,14 @@ $(document).ready(function() {
 			</p>
 		</div>
 	</div>
+	</div>
+	<div class="row">
+		<div class="offset3 span1">
+			<img align="middle" src="images/barney.png">
+		</div>
+	<div class="offset2 span1" style="text-align:center;">
+			<jsp:include page="scoreboard_table.jsp" />
+		</div>
 	</div>
 	<div class ="row">
 	<div class="offset1">

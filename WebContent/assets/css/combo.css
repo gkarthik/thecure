@@ -1,3 +1,17 @@
+.split_value circle {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.split_node rect {
+  fill: #EEE;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+.link {
+  fill: none;
+}
 
 .table-games {
   width: 100%;
