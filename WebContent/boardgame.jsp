@@ -113,27 +113,18 @@ function evaluateHand(cardsinhand, player){
  		if(player=="1"){
  			//var prev_score = p1_score;
  			p1_score = data.evaluation.accuracy;
- 			if(p1_score > p2_score){
- 				playSound("sounds/human/MMMMM1.WAV");
- 			}else{
- 				playSound("sounds/human/SNORTAHH.WAV");
- 			}
-
  			if(p1_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
+ 				drawTree(data, 400, 300, "#cv_results_1");
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
  			//var prev_score = p2_score;
- 			$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 			$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  			p2_score = data.evaluation.accuracy;
- 			if(p2_score < p1_score){
- 				playSound("sounds/human/MMMMM1.WAV");
- 			}else{
- 				playSound("sounds/human/SNORTAHH.WAV");
- 			}
  			if(p2_hand.length==max_hand){
- 				$("#player2_j48_score").html('<strong> score </strong><span>'+data.evaluation.accuracy+'</span><p><pre>'+data.evaluation.modelrep+'</pre></p>');
+ 				$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
+ 				drawTree(data, 400, 300, "#cv_results_2");
  			}
  			$("#game_score_2").text(p2_score);
  		}
@@ -689,26 +680,6 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-<!-- 	<div id="player1_masked" -->
-<!-- 		style="height: 500px; left: 30px; position: absolute; top: 535px; z-index: -1"> -->
-<!-- 		<div id="hand_info_box_masked_1" -->
-<!-- 			style="position: relative; top: 45px; width: 500px;"> -->
-<!-- 			<div id="player_box_masked_1" -->
-<!-- 				style="position: relative; top: 15px;  height: 75px; background-color: #82CAFA"> -->
-<!-- 				<table border='0'> -->
-<!-- 					<tr id="player1_hand_masked" align='center' -->
-<!-- 						style='height: 75px; background-color: #82CAFA'> -->
-<!-- 						<td style="width: 100px;"></td> -->
-<!-- 						<td style="width: 75px;"></td> -->
-<!-- 						<td style="width: 75px;"></td> -->
-<!-- 						<td style="width: 75px;"></td> -->
-<!-- 						<td style="width: 75px;"></td> -->
-<!-- 					</tr> -->
-<!-- 				</table> -->
-<!-- 			</div> -->
-<!-- 		</div> -->
-<!-- 	</div> -->
-
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 410px; position: absolute; top: 40px; width: 200px; z-index: 2;">
@@ -735,26 +706,6 @@ $(document).ready(function() {
 			</div>
 		</div>
 	</div>
-
-<!-- 	<div id="player2_masked"
-		style="left: 30px; position: absolute; top: 25px; z-index: -1">
-		<div id="hand_info_box_masked_2"
-			style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_2"
-				style="position: relative; top: 15px; width: 400px;">
-				<table border='0'>
-					<tr id="player2_hand_masked" align='center'
-						style='height: 75px; background-color: #FBBBB9'>
-						<td style="width: 100px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div> -->
 
 <%
 if(showgeneinfo=="1"){
@@ -795,6 +746,10 @@ if(showgeneinfo=="1"){
 	</div>
 	
 	<div id="sound"></div>
+		<script src="libs/d3.v2.min.js"></script>
+<script src="libs/underscore-min.js"></script>
+<script src="trees/libs/jquery.sparkline.min.js"></script>
+<script src="trees/combo_script.js"></script>
 </body>
 </html>
 
