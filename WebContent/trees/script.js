@@ -20,14 +20,14 @@ $(document).ready(function() {
   var green = "#1FA13A",
   orange = "#D44413",
   width = 400,
-  height = 600,
+  height = 200,
   depth = json.max_depth-1;
 
   var cluster = d3.layout.tree()
     .size([width-40, height-40]),
   diagonal = d3.svg.diagonal();
 
-  var vis = d3.select("#chart").append("svg")
+  var vis = d3.select("#chart11").append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
@@ -110,7 +110,7 @@ $(document).ready(function() {
     //Adding the bar graphs
   _.each(leaf_nodes, function(d) {
     console.log(d);
-    $("#chart").append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+10)+"px;left:"+(d.x +  $.trim(d.name).length*4.5   )+"px'></div>");
+    $("#chart11").append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+10)+"px;left:"+(d.x +  $.trim(d.name).length*4.5   )+"px'></div>");
     $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
       type: 'pie',
       width: '12',

@@ -13,6 +13,24 @@
   fill: none;
 }
 
+.split_node text {
+  font-family: Helvetica;
+  font-size: 12px;
+  font-weight: bold;
+  fill: #000;
+  text-anchor: middle;
+}
+
+.leaf_node text {
+  font-family: Helvetica;
+  font-size: 12px;
+  font-weight: bold;
+  fill: #000;
+  text-anchor: middle;
+}
+
+////
+
 .table-games {
   width: 100%;
   margin-bottom: 18px;

@@ -1,4 +1,8 @@
-//var json = {"evaluation" : {"modelrep":"J48 pruned tree\n------------------\n\nMASP1 <= 0.074\n|   E2F1 <= -0.299: non-relapse (6.0)\n|   E2F1 > -0.299: relapse (44.0/14.0)\nMASP1 > 0.074: non-relapse (28.0/4.0)\n\nNumber of Leaves  : \t3\n\nSize of the tree : \t5\n","accuracy":64}, "max_depth":"5","num_leaves":"3","tree_size":"5","tree":{"name":"MASP1","kind":"split_node","children":[{"name":"<= 0.074","kind":"split_value","children":[{"name":"E2F1","kind":"split_node","children":[{"name":"<= -0.299","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":6.0,"errors":0.0}]},{"name":"> -0.299","kind":"split_value","children":[{"name":"relapse","kind":"leaf_node","bin_size":44.0,"errors":14.0}]}]}]},{"name":"> 0.074","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":28.0,"errors":4.0}]}]}}
+var json33 = {"evaluation" : {"modelrep":"J48 pruned tree\n------------------\n\nMASP1 <= 0.074\n|   E2F1 <= -0.299: non-relapse (6.0)\n|   E2F1 > -0.299: relapse (44.0/14.0)\nMASP1 > 0.074: non-relapse (28.0/4.0)\n\nNumber of Leaves  : \t3\n\nSize of the tree : \t5\n","accuracy":64}, "max_depth":"5","num_leaves":"3","tree_size":"5","tree":{"name":"MASP1","kind":"split_node","children":[{"name":"<= 0.074","kind":"split_value","children":[{"name":"E2F1","kind":"split_node","children":[{"name":"<= -0.299","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":6.0,"errors":0.0}]},{"name":"> -0.299","kind":"split_value","children":[{"name":"relapse","kind":"leaf_node","bin_size":44.0,"errors":14.0}]}]}]},{"name":"> 0.074","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":28.0,"errors":4.0}]}]}}
+
+$(document).ready(function() {
+	drawTree(json33,400,300,'#chart33');
+});
 
 function kind(kind_text) {
   switch(kind_text)
@@ -18,13 +22,11 @@ function kind(kind_text) {
 //@Ben -- how will this get triggered?
 //$(document).ready(function() {
   
-function drawTreeWithPieChartsAtLeafs(json, width, height, selector_string){
-	console.log("drawing tree");
-	console.log(json);
+function drawTree(json, width, height, selector_string){
+//	console.log("drawing tree");
+//	console.log(json);
 	var green = "#1FA13A",
 	  orange = "#D44413",
-	  width = 400,
-	  height = 600,
 	  depth = json.max_depth-1;
 
 	  var cluster = d3.layout.tree()
@@ -101,7 +103,7 @@ function drawTreeWithPieChartsAtLeafs(json, width, height, selector_string){
 	    .transition().delay(100).duration(400)
 	    //move it down slightly
 	    .attr("dy", 4)
-	    .attr("dx", 32)
+	    .attr("dx", 22)
 	    .text(function(d) { return d.name.toUpperCase() });
 
 	  //Left node text
@@ -113,21 +115,19 @@ function drawTreeWithPieChartsAtLeafs(json, width, height, selector_string){
 
 	    //Adding the bar graphs
 	  _.each(leaf_nodes, function(d) {
-	    console.log(d);
-	    jselector = '"'+selector_string+'"';
-	    console.log(jselector);
-	    $("#cv_results_2").append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+10)+"px;left:"+(d.x +  $.trim(d.name).length*4.5   )+"px'></div>");
+	   // console.log(d);
+	    $(selector_string).append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+30)+"px;left:"+(d.x +  $.trim(d.name).length*1.5   )+"px'></div>");
 	    $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
 	      type: 'pie',
-	      width: '12',
-	      height: '12',
+	      width: '20',
+	      height: '20',
 	      sliceColors: ['#1FA13A','#D44413']
 	      }).fadeIn(1200);
 	    });
 }
 
 
-function drawTree(json, width, height, selector_string){
+function drawTreeNoLeaf(json, width, height, selector_string){
 	console.log("drawing tree");
 	console.log(json);
   var green = "#1FA13A",

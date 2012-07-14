@@ -110,12 +110,17 @@ function evaluateHand(cardsinhand, player){
 
 	//goes to server, runs the default evaluation with a decision tree
  	$.getJSON(url, function(data) {
+ 		var treeheight = 300;
+ 		console.log(data.max_depth +" depth");
+ 		if(data.max_depth>6){
+ 			treeheight = 500;
+ 		}
  		if(player=="1"){
  			//var prev_score = p1_score;
  			p1_score = data.evaluation.accuracy;
  			if(p1_hand.length==max_hand){
  				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 				drawTree(data, 400, 300, "#cv_results_1");
+ 				drawTree(data, 420, treeheight, "#cv_results_1");
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
@@ -124,7 +129,7 @@ function evaluateHand(cardsinhand, player){
  			p2_score = data.evaluation.accuracy;
  			if(p2_hand.length==max_hand){
  				$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 				drawTree(data, 400, 300, "#cv_results_2");
+ 				drawTree(data, 420, treeheight, "#cv_results_2");
  			}
  			$("#game_score_2").text(p2_score);
  		}
@@ -636,8 +641,16 @@ $(document).ready(function() {
 		</div>
 		<div id="board" style="height: 200px; left: 150px; position: absolute; top: 300px; width: 200px;">
 		</div>
-		
-		<%}else if(nrows.equals("3")){ 
+		<%}else if(nrows.equals("2")){ 
+		%>
+		<div style="height: 200px; left: 130px; position: absolute; top: 215px; width: 200px;">
+			<h2>Pick a feature</h2>
+		</div>
+			<div id="board"
+				style="height: 300px; left: 130px; position: absolute; top: 250px; width: 300px;">
+			</div>
+		<%} 
+		else if(nrows.equals("3")){ 
 		%>
 		<div style="height: 200px; left: 130px; position: absolute; top: 215px; width: 200px;">
 			<h2>Pick a feature</h2>
