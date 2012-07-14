@@ -637,31 +637,51 @@ $(document).ready(function() {
 	</div>
 
 	<div>
-		<div id="board"
-			style="height: 500px; left: 30px; position: absolute; top: 200px; width: 500px;">
-
+		<%
+		if(nrows.equals("1")){ 
+		%>
+		<div style="height: 200px; left: 150px; position: absolute; top: 265px; width: 200px;">
+			<h2>Pick a feature</h2>
 		</div>
+		<div id="board" style="height: 200px; left: 150px; position: absolute; top: 300px; width: 200px;">
+		</div>
+		
+		<%}else if(nrows.equals("3")){ 
+		%>
+		<div style="height: 200px; left: 130px; position: absolute; top: 215px; width: 200px;">
+			<h2>Pick a feature</h2>
+		</div>
+			<div id="board"
+				style="height: 300px; left: 100px; position: absolute; top: 250px; width: 300px;">
+			</div>
+		<%} else{ 
+		%>
+		<div id="board"
+			style="height: 500px; left: 30px; position: absolute; top: 180px; width: 500px;">
+		</div>
+		<%} %>
+		
 	</div>
 
 	<div id="game_score_box_1"
-		style="text-align: center; left: 410px; position: absolute; top: 630px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 410px; position: absolute; top: 600px; width: 200px; z-index: 2;">
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
 	</div>
 
 	<div id="player1_title_area"
-		style="left: 30px; position: absolute; top: 590px;">
+		style="left: 30px; position: absolute; top: 560px;">
 		<h3>Your hand</h3>
 	</div>
 
 	<div id="player1"
-		style="height: 500px; left: 30px; position: absolute; top: 565px;">
+		style="height: 500px; left: 30px; position: absolute; top: 535px;">
 		<div id="hand_info_box_1"
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_1"
 				style="position: relative; top: 15px; width: 400px;">
 				<table border='1'>
-					<tr id="player1_hand" align='center' style='height: 75px;'>
+					<tr id="player1_hand" align='center' style='height: 75px; background-color:#82CAFA;'>
 
 					</tr>
 				</table>
@@ -669,46 +689,46 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="player1_masked"
-		style="height: 500px; left: 30px; position: absolute; top: 565px; z-index: -1">
-		<div id="hand_info_box_masked_1"
-			style="position: relative; top: 45px; width: 500px;">
-			<div id="player_box_masked_1"
-				style="position: relative; top: 15px; width: 400px;">
-				<table border='0'>
-					<tr id="player1_hand_masked" align='center'
-						style='height: 75px; background-color: #82CAFA'>
-						<td style="width: 100px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-						<td style="width: 75px;"></td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
+<!-- 	<div id="player1_masked" -->
+<!-- 		style="height: 500px; left: 30px; position: absolute; top: 535px; z-index: -1"> -->
+<!-- 		<div id="hand_info_box_masked_1" -->
+<!-- 			style="position: relative; top: 45px; width: 500px;"> -->
+<!-- 			<div id="player_box_masked_1" -->
+<!-- 				style="position: relative; top: 15px;  height: 75px; background-color: #82CAFA"> -->
+<!-- 				<table border='0'> -->
+<!-- 					<tr id="player1_hand_masked" align='center' -->
+<!-- 						style='height: 75px; background-color: #82CAFA'> -->
+<!-- 						<td style="width: 100px;"></td> -->
+<!-- 						<td style="width: 75px;"></td> -->
+<!-- 						<td style="width: 75px;"></td> -->
+<!-- 						<td style="width: 75px;"></td> -->
+<!-- 						<td style="width: 75px;"></td> -->
+<!-- 					</tr> -->
+<!-- 				</table> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
 
 
 	<div id="game_score_box_2"
-		style="text-align: center; left: 410px; position: absolute; top: 60px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 410px; position: absolute; top: 40px; width: 200px; z-index: 2;">
 		<img src="images/barney.png">Level <%=display_level %>
 		<h4>Barney's score</h4>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>
 
 	<div id="player2_title_area"
-		style="left: 30px; position: absolute; top: 80px;">
+		style="left: 30px; position: absolute; top: 50px;">
 		<h3>Barney's hand</h3>
 	</div>
 
-	<div id="player2" style="left: 30px; position: absolute; top: 55px;">
+	<div id="player2" style="left: 30px; position: absolute; top: 25px;">
 		<div id="hand_info_box_2"
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_2"
 				style="position: relative; top: 15px; width: 400px;">
 				<table border='1'>
-					<tr id="player2_hand" align='center' style='height: 75px;'>
+					<tr id="player2_hand" align='center' style='height: 75px; background-color:#FBBBB9;'>
 
 					</tr>
 				</table>
@@ -716,8 +736,8 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-	<div id="player2_masked"
-		style="left: 30px; position: absolute; top: 55px; z-index: -1">
+<!-- 	<div id="player2_masked"
+		style="left: 30px; position: absolute; top: 25px; z-index: -1">
 		<div id="hand_info_box_masked_2"
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_masked_2"
@@ -734,7 +754,7 @@ $(document).ready(function() {
 				</table>
 			</div>
 		</div>
-	</div>
+	</div> -->
 
 <%
 if(showgeneinfo=="1"){
@@ -745,11 +765,11 @@ if(showgeneinfo=="1"){
 				a clue
 		</strong>
 	</div>
-<%
+<% 
 }
 %>
 	<div id="endgame"
-		style="height: 420px; left: 30px; position: absolute; top: 195px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
 		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
 		<div class="row">
 		<div id="cv_results_1" 
