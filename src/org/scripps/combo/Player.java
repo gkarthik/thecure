@@ -206,6 +206,9 @@ public class Player {
 							tile_scores.add(-1);
 						}
 					}
+					if(training<0){
+						training = cv;
+					}
 					tile_scores.set(board_id, training);
 					level_tilescores.put(phenotype, tile_scores);
 				}
