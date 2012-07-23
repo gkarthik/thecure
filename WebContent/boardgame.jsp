@@ -143,8 +143,8 @@ function evaluateHand(cardsinhand, player){
  				}else if (p1_score==p2_score){
  					$("#winner").text("You tied Barney! ");
  				}
- 				$("#endgame").show();
- 			}, 3000); 
+ 				$("#endgame").show(); 				
+ 			}, 2000); 
  		}
 	}); 
 }
