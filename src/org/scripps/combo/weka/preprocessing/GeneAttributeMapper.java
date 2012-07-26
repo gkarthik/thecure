@@ -10,8 +10,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.scripps.combo.weka.Weka;
@@ -44,9 +46,117 @@ public class GeneAttributeMapper {
 		//	String meta_out = "/Users/bgood/genegames/craniosynostosis_1_meta.txt";
 		//prepareCraniosynostosisMetadata(input, meta_out);
 
-//		String input = "/Users/bgood/genegames/cranio/craniosynostosis_1.txt";
-//		String out = "/Users/bgood/genegames/cranio/craniosynostosis_transposed_lambdoid_control.txt";
-//		prepareCraniosynostosisData(input, out);
+		//		String input = "/Users/bgood/genegames/cranio/craniosynostosis_1.txt";
+		//		String out = "/Users/bgood/genegames/cranio/craniosynostosis_transposed_lambdoid_control.txt";
+		//		prepareCraniosynostosisData(input, out);
+		String clinical_input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/filtered_combined_data_anno.final.test.2.txt";
+		String input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/processed_final2_test_survival_combined_gcrma.txt";
+		String output = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.txt";
+		prepareGriffithBreastCancerData(clinical_input, input, output);
+	}
+
+
+	/**
+	 * Transpose the file for weka, strip out unneeded info. Note prepended probe ids with local unique ids to ensure uniqueness
+	 * Same for manually constructed metadata file
+	 * @param input_tab
+	 * @param output_tab
+	 */
+	public static void prepareGriffithBreastCancerData(String clinical_input, String input_tab, String output_tab){
+		Weka weka = new Weka();
+		weka.loadAttributeMetadata("/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/griffith_meta.txt");
+
+		//read and map sample names to class values;
+		Map<String, String> sample_class = new HashMap<String, String>();
+		BufferedReader f;
+
+		try {			
+			f = new BufferedReader(new FileReader(clinical_input));
+			f.readLine(); //skip header
+			String line = f.readLine(); 
+			while(line!=null){
+				//need these to get the classes out of the other file
+				String[] items = line.split("\t");
+				String sample_id = items[3];
+				String survival = items[18]; //NA, O, 1
+				sample_class.put(sample_id, survival);
+				line = f.readLine(); 
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	 	List<String[]> readrows = new ArrayList<String[]>();
+		String[] sample_ids = null;
+		try {			
+			f = new BufferedReader(new FileReader(input_tab));
+			String line = f.readLine();
+			//need these to get the classes out of the other file
+			sample_ids = line.split("\t");
+			//first row of data
+			line = f.readLine(); 
+			int nr = 1; int skipped = 0;
+			while(line!=null){
+				String[] items = line.split("\t");
+				boolean keep = true;
+				if(nr>1){//remove probes with no related metadata
+					if(weka.att_meta.get(items[0])==null){
+						keep=false;
+						skipped++;
+					}
+				}
+				if(keep){
+					readrows.add(items);
+				}
+				line = f.readLine();
+				nr++;
+			}
+			f.close();
+			System.out.println("No metadata for "+skipped);
+			int new_row_count = readrows.get(0).length;
+			FileWriter writer = new FileWriter(output_tab);
+			//new_row_count
+			for(int r=0;r<new_row_count; r++){
+				String new_row = "";
+				//String class_att = readrows.get(0)[r];
+				String sample_id = sample_ids[r].replace(".CEL", "");
+				String class_att = sample_class.get(sample_id);
+				if(r==0){
+					class_att = "Phenotype";
+				}
+
+				boolean keep = true;				
+				if(class_att==null||class_att.equals("NA")){
+					keep = false;
+				}else if(class_att.equals("1")){
+					class_att = "relapse";
+				}else if(class_att.equals("0")){
+					class_att = "no relapse";
+				}
+				if(r==0||r>2){
+					if(r==0||keep){
+						for(int c=0; c<readrows.size(); c++){
+							new_row+=readrows.get(c)[r]+"\t";
+						}
+						writer.write(new_row+class_att+"\n");
+					}
+				}
+			}
+			writer.close();
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
 	}
 
 	/**
@@ -113,45 +223,45 @@ public class GeneAttributeMapper {
 
 				boolean keep = true;				
 				//metopic
-//				if(class_att.equalsIgnoreCase("X")){
-//					class_att = "Normal";
-//				}	
-//				else if(class_att.equalsIgnoreCase("M")){
-//					class_att = "Metopic";
-//				}else{
-//					keep = false;
-//				}
+				//				if(class_att.equalsIgnoreCase("X")){
+				//					class_att = "Normal";
+				//				}	
+				//				else if(class_att.equalsIgnoreCase("M")){
+				//					class_att = "Metopic";
+				//				}else{
+				//					keep = false;
+				//				}
 
 				//coronal
-//								if(class_att.equalsIgnoreCase("X")){
-//									class_att = "Normal";
-//								}	
-//								else if(class_att.equalsIgnoreCase("C")){
-//									class_att = "Coronal";
-//								}else{
-//									keep = false;
-//								}
+				//								if(class_att.equalsIgnoreCase("X")){
+				//									class_att = "Normal";
+				//								}	
+				//								else if(class_att.equalsIgnoreCase("C")){
+				//									class_att = "Coronal";
+				//								}else{
+				//									keep = false;
+				//								}
 				//sagital
-//				if(class_att.equalsIgnoreCase("X")){
-//					class_att = "Normal";
-//				}	
-//				else if(class_att.equalsIgnoreCase("S")){
-//					class_att = "Sagittal";
-//				}else{
-//					keep = false;
-//				}
+				//				if(class_att.equalsIgnoreCase("X")){
+				//					class_att = "Normal";
+				//				}	
+				//				else if(class_att.equalsIgnoreCase("S")){
+				//					class_att = "Sagittal";
+				//				}else{
+				//					keep = false;
+				//				}
 
 				//lambdoid
-//				if(class_att.equalsIgnoreCase("X")){
-//					class_att = "Normal";
-//				}	
-//				else if(class_att.equalsIgnoreCase("L")){
-//					class_att = "Lamddoid";
-//				}else{
-//					keep = false;
-//				}
-				
-				
+				//				if(class_att.equalsIgnoreCase("X")){
+				//					class_att = "Normal";
+				//				}	
+				//				else if(class_att.equalsIgnoreCase("L")){
+				//					class_att = "Lamddoid";
+				//				}else{
+				//					keep = false;
+				//				}
+
+
 				if(r!=1){
 					if(r==0||keep){
 						for(int c=1; c<readrows.size(); c++){
