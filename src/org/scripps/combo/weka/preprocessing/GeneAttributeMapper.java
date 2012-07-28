@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.scripps.combo.weka.Weka;
@@ -52,9 +53,60 @@ public class GeneAttributeMapper {
 		String clinical_input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/filtered_combined_data_anno.final.test.2.txt";
 		String input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/processed_final2_test_survival_combined_gcrma.txt";
 		String output = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.txt";
-		prepareGriffithBreastCancerData(clinical_input, input, output);
+		//prepareGriffithBreastCancerData(clinical_input, input, output);
+		filterGriffithDataUsingList("/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_gene_set_from_paper.txt",
+				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.arff",
+				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_test.arff");
 	}
 
+	public static void filterGriffithDataUsingList(String input_list, String arff_data, String output){
+		BufferedReader f;
+		Set<String> probes = new HashSet<String>();
+		try {			
+			f = new BufferedReader(new FileReader(input_list));
+			String line = f.readLine(); 
+			while(line!=null){
+				String[] items = line.split(" ");
+				String id = items[1].replace("(", ""); id = id.replace(")","");
+				probes.add(id);
+				line = f.readLine(); 
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//now filter
+		Weka weka;
+		try {
+			weka = new Weka(arff_data);
+			weka.loadAttributeMetadata("/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/griffith_meta.txt");
+			//remove the metadata if gene not in the filtered list
+			Map<String, Weka.card> att_meta = new HashMap<String, Weka.card>(weka.getAtt_meta());
+			for(Entry<String, card> att_meta_ : weka.getAtt_meta().entrySet()){
+				String attribute = att_meta_.getValue().getAtt_name();
+				attribute = attribute.substring(attribute.indexOf("_")+1);
+				String symbol = att_meta_.getValue().getName();
+				if(!probes.contains(attribute)){
+					att_meta.remove(att_meta_.getKey());
+				}else{
+					System.out.println("kept "+attribute+"/t"+symbol);
+				}
+			}
+			weka.setAtt_meta(att_meta);
+			//remove the genes not in the list
+			weka.filterForGeneIdMapping();
+			System.out.println("filtered n attributes = "+weka.getTrain().numAttributes());
+			weka.exportArff(weka.getTrain(), output);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+	}
+	
 
 	/**
 	 * Transpose the file for weka, strip out unneeded info. Note prepended probe ids with local unique ids to ensure uniqueness

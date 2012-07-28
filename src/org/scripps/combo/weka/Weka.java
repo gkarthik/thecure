@@ -279,7 +279,7 @@ public class Weka {
 			if(getTrain().classIndex()!=a.index()){
 				String n = a.name();
 				card meta = att_meta.get(n);
-				if(meta==null||meta.unique_id==null||meta.unique_id.equals("_")){
+				if(meta==null||meta.unique_id==null||meta.unique_id.equals("_")||meta.unique_id.equals("NA")){
 					nodata+=(1+a.index())+",";				
 				}
 			}

@@ -90,6 +90,7 @@ var player_name = "<%=username%>";
 var features = "";
 var feature_names = "";
 var barney_init = 0;
+var board_state_clickable = true;
 
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
@@ -111,7 +112,7 @@ function evaluateHand(cardsinhand, player){
 	//goes to server, runs the default evaluation with a decision tree
  	$.getJSON(url, function(data) {
  		var treeheight = 300;
- 		console.log(data.max_depth +" depth");
+ 		//console.log(data.max_depth +" depth");
  		if(data.max_depth>6){
  			treeheight = 500;
  		}
@@ -121,6 +122,9 @@ function evaluateHand(cardsinhand, player){
  			if(p1_hand.length==max_hand){
  				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  				drawTree(data, 420, treeheight, "#cv_results_1");
+ 				if(data.max_depth<2){
+ 					$("#cv_results_1").append("Could not build a tree with the selected features.., guessing the majority rule.");
+ 				}
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
@@ -130,8 +134,12 @@ function evaluateHand(cardsinhand, player){
  			if(p2_hand.length==max_hand){
  				$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  				drawTree(data, 420, treeheight, "#cv_results_2");
+ 				if(data.max_depth<2){
+ 					$("#cv_results_2").append("Could not build a tree with the selected features.., guessing the majority rule.");
+ 				}
  			}
  			$("#game_score_2").text(p2_score);
+ 			board_state_clickable = true;
  		}
  		//if its the last hand, show the results
  		if(p2_hand.length==max_hand){ 
@@ -452,10 +460,12 @@ function addCardToBarney(){
 	});
 	
 	evaluateHand(p2_hand, "2");
+	console.log(board_state_clickable);
 }
 
 function setupHandAddRemove(){
 	$(".select_card_button").on("click", function () {
+		if(board_state_clickable){
 		if(p1_hand){
 			hand_size = p1_hand.length;
 		}else{
@@ -465,6 +475,7 @@ function setupHandAddRemove(){
 			var cell_id = this.id.replace("card_index_", "");
 			p1_indexes.push(cell_id);
 		//temp add it to barney's hand		
+			board_state_clickable = false;
 			addCardToBarney();
 			
 			var handcell = generateHandCell(cell_id);
@@ -473,11 +484,8 @@ function setupHandAddRemove(){
 				setupShowInfoHandler();
 			});
 			p1_hand.push(cards[cell_id]);
-	//		window.setTimeout(function() { 
-				evaluateHand(p1_hand, 1);
-	//		}, 2000); 
+			evaluateHand(p1_hand, 1);
 			//hide button from board
-		//	$(this).parent().fadeOut(1000);
 			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
 				$(this).html("");
@@ -485,6 +493,9 @@ function setupHandAddRemove(){
 					
 		}else{
 			alert("Sorry, you can only have 5 cards in your hand in this game."); 
+		}
+		}else{
+			alert("Wait your turn!"); 
 		}
 	  });
 }
