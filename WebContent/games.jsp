@@ -16,7 +16,7 @@
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO blabla , games of prediction and discovery</title>
+<title>Welcome to COMBO, games of prediction and discovery</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css"
 	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo.css" type="text/css"
@@ -103,8 +103,13 @@ $(document).ready(function() {
 					<h2>Cancer</h2>
 					<br>
 					<p>
+						<a href="bc_gr_mosaic.jsp"
+							class="btn btn-large btn-primary"><strong>Breast Cancer Survival (Griffith, forthcoming)</strong>
+						</a> Identify gene expression signatures in tumors that predict 10 year survival.
+					</p>
+					<p>
 						<a href="bcmeta_mosaic.jsp"
-							class="btn btn-large btn-primary"><strong>Breast Cancer Metastasis</strong>
+							class="btn btn-large btn-primary"><strong>Breast Cancer Metastasis (Vant'Veer 2002)</strong>
 						</a> Identify gene expression signatures in tumors that indicate distance to metastasis.
 					</p>
 		<!--  			<p>

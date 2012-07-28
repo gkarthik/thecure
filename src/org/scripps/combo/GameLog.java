@@ -114,6 +114,9 @@ public class GameLog {
 			}else if(hand.getPhenotype().equals("coronal_case_control")){
 				multiplier = 15;
 				board_performance = hand.getCv_accuracy();
+			}else if(hand.getPhenotype().equals("griffith_full_filtered")){
+				multiplier = 20;
+				board_performance = hand.getCv_accuracy();
 			}
 			
 			if(board_performance < 1){

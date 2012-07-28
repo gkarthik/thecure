@@ -76,6 +76,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//breast cancer
 		//vantveer data
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
@@ -87,13 +88,23 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//griffith data
+		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/griffith/full_filtered_train.arff");
+			Weka griffith_weka = new Weka(train_loc);
+			griffith_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/griffith/griffith_meta.txt"));
+			name_dataset.put("griffith_full_filtered", griffith_weka);
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//Cunningham data	
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
 			Weka coronal_control_weka = new Weka(train_loc);
 			coronal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
 			name_dataset.put("coronal_case_control", coronal_control_weka);	
-
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
