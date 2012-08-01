@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link
+	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
+	type="text/javascript"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+<script>
+var geneid = "1017";
+
+$(document).ready(function() {
+	args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47',
+	        'db'     : 'gene',
+	        'id'   : 10486,
+	        'retmax' : 20,          // maximum number of results from Esearch
+	        'max'    : 10,          // maximum number of results passed to Esummary
+	        'start'  : 0};
+	$.getJSON('http://entrezajax.appspot.com/efetch?callback=?', args, function(data) {
+		console.log(data);
+		$.each(data.result, function(i, item) {
+			var generif_list = '';
+			var phenotypes = 'phenotypes<br/>';
+			for(var i = 0; i < item.Entrezgene_comments.length; i ++) {
+				if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 18){
+					if(i != 0) {
+						generif_list += '<br/> ';
+					}
+					var pmid_obj = item.Entrezgene_comments[i]["Gene-commentary_refs"];
+					var pmid;
+					if(pmid_obj){
+						pmid = pmid_obj[0].Pub_pmid.PubMedId;
+					}
+					generif_list += '<a href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '\'>' + item.Entrezgene_comments[i]["Gene-commentary_text"] + '</a>';
+				}else if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 254){
+					var pheno_obj = item.Entrezgene_comments[i]["Gene-commentary_comment"];
+					if(pheno_obj){
+						for(var p=0; p<pheno_obj.length; p++){
+							if(pheno_obj[p]["Gene-commentary_type"]==19){
+								console.log("kkkk ");
+								console.log(pheno_obj);
+								phenotypes += pheno_obj[p]["Gene-commentary_heading"]+"<br/>";
+							}
+						}
+					}
+				}
+			}
+			var html = '<p>'+phenotypes+'</p>'; //'<p>'+generif_list+'</p>'
+			$("<div/>").html(html).appendTo('#result');
+		});
+	});
+});
+</script>
+</head>
+<body>
+<h1>Result</h1>
+<div id="result"></div>
+
+</body>
+</html>

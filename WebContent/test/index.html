@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link
+	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
+	type="text/javascript"></script>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+<script>
+var search_term = "Venter JC[Auth]";
+
+$(document).ready(function() {
+	args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47',
+	        'db'     : 'pubmed',
+	        'term'   : search_term,
+	        'retmax' : 20,          // maximum number of results from Esearch
+	        'max'    : 10,          // maximum number of results passed to Esummary
+	        'start'  : 0};
+	$.getJSON('http://entrezajax.appspot.com/esearch+esummary?callback=?', args, function(data) {
+		$('#result').html(data.entrezajax.count + ' results found<br/>');
+		$.each(data.result, function(i, item) {
+			var author_list = '';
+			for(var i = 0; i < item.AuthorList.length; i ++) {
+				if(i != 0) {
+					author_list += ', ';
+				}
+				author_list += item.AuthorList[i];
+			}
+			var html = '<p><a href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + item.ArticleIds.pubmed + '\'>' + item.Title + '</a><br/>' + author_list + '<br/>' + item.FullJournalName + ' ' + item.PubDate + '</p>';
+			$("<div/>").html(html).appendTo('#result');
+		});
+	});
+});
+</script>
+</head>
+<body>
+<h1>Result</h1>
+<div id="result"></div>
+
+</body>
+</html>
