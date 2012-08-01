@@ -293,65 +293,110 @@ function generateBoard(){
 
 
 function showgene(geneid, name){
+	$("#infobox_header").empty();
     var gene_url = 'http://mygene.info/gene/'+geneid+'?filter=name,symbol,summary,go,genomic_pos&jsoncallback=?';
 //    show_loading("#infobox");
     if(geneid!="_"&&geneid!=""){
+    	//mygene info
     	$.getJSON(gene_url, mygene_info_get_gene_callback);
+    	//ncbi eutils 
+    	args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47',
+	        'db'     : 'gene',
+	        'id'   : geneid};
+		$.getJSON('http://entrezajax.appspot.com/efetch?callback=?', args, entrezajax_callback);
     }else{
     	$("#infobox").empty();
     	$("#infobox").append('<strong>'+name+'</strong><h1>Mystery Card!</h1><p>No data available</p>');
     }
 }
 
+function entrezajax_callback(data){
+	$("#rifs").empty(); 
+	$("#ncbi_phenos").empty();
+	$.each(data.result, function(i, item) {
+			var generif_list = '<ul>';
+			var phenotypes = '<ul>';
+			for(var i = 0; i < item.Entrezgene_comments.length; i ++) {
+				if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 18){
+					var pmid_obj = item.Entrezgene_comments[i]["Gene-commentary_refs"];
+					var pmid;
+					if(pmid_obj){
+						pmid = pmid_obj[0].Pub_pmid.PubMedId;
+					}
+					generif_list += '<li><a target=\"blank\" href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '\'>' + item.Entrezgene_comments[i]["Gene-commentary_text"] + '</a></li>';
+				}else if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 254){
+					var pheno_obj = item.Entrezgene_comments[i]["Gene-commentary_comment"];
+					if(pheno_obj){
+						for(var p=0; p<pheno_obj.length; p++){
+							if(pheno_obj[p]["Gene-commentary_type"]==19){
+								phenotypes += '<li>'+pheno_obj[p]["Gene-commentary_heading"]+"</li>";
+							}
+						}
+					}
+				}
+			}
+			generif_list += '</ul>'; phenotypes += '</ul>';
+			$("#rifs").append(generif_list);
+			$("#ncbi_phenos").append(phenotypes);
+			//var html = '<p>'+phenotypes+'</p>'; //'<p>'+generif_list+'</p>'
+			//$("<div/>").html(html).appendTo('#result');
+		});
+}
+
 function mygene_info_get_gene_callback(result){
-    $("#infobox").empty();    
+	//console.log(result._id);
+    $("#gene_description").empty();    
+    $("#ontology").empty();
     if (result && result.name && result.symbol){
     	var chromosome = "";
     	if(result.genomic_pos){
     		chromosome = result.genomic_pos.chr;
     	}
-    	$("#infobox").append('<strong>'+result.symbol+' : '+result.name+' (chr '+chromosome+ ')</strong><p>'+result.summary+'</p>');
+    	$("#gene_description").append('<a href=\"http://www.ncbi.nlm.nih.gov/gene/'+result._id+'\" target = "blank">'+result.symbol+' : '+result.name+' (chr '+chromosome+ ')</a><p>'+result.summary+'</p>');
     	
+    	if(result.go){
     	if(result.go.BP){
     		var ps_list = result.go.BP;
         	if (!$.isArray(ps_list)){
             	ps_list = [ps_list];
        		 }        
-        	$("#infobox").append("<p><strong>Biological Processes</strong><br>");
+        	$("#ontology").append("<p><strong>Biological Processes</strong><br>");
        		$.each(ps_list, function(i, ps){
-           		 $("#infobox").append(ps.term+', ');
+           		 $("#ontology").append(ps.term+', ');
         	});
-       		$("#infobox").append("</p>");   	
+       		$("#ontology").append("</p>");   	
     	}
     	if(result.go.CC){
     		var ps_list = result.go.CC;
         	if (!$.isArray(ps_list)){
             	ps_list = [ps_list];
        		 }        
-        	$("#infobox").append("<p><strong>Cellular Component</strong><br>");
+        	$("#ontology").append("<p><strong>Cellular Component</strong><br>");
        		$.each(ps_list, function(i, ps){
-           		 $("#infobox").append(ps.term+', ');
+           		 $("#ontology").append(ps.term+', ');
         	});
-       		$("#infobox").append("</p>");   	
+       		$("#ontology").append("</p>");   	
     	}
     	if(result.go.MF){
     		var ps_list = result.go.MF;
         	if (!$.isArray(ps_list)){
             	ps_list = [ps_list];
        		 }        
-        	$("#infobox").append("<p><strong>Molecular Functions</strong><br>");
+        	$("#ontology").append("<p><strong>Molecular Functions</strong><br>");
        		$.each(ps_list, function(i, ps){
-           		 $("#infobox").append(ps.term+', ');
+           		 $("#ontology").append(ps.term+', ');
         	});
-       		$("#infobox").append("</p>");   	
+       		$("#ontology").append("</p>");   	
+    	}
     	}
     }
     else {
-        $("#infobox").append('<p>No data available for this gene.</p>');
+        $("#gene_description").append('<p>No description available for this gene.</p>');
     }    
 }
 
 function setupShowInfoHandler(){
+	$( "#tabs" ).tabs();
 	$(".feature_name").on("click", function () {
 		var cell_id = this.id;
 		var name = this.innerText;
@@ -735,11 +780,36 @@ $(document).ready(function() {
 if(showgeneinfo=="1"){
 %>
 <div id="infobox"
-		style="height: 350px; left: 530px; position: absolute; top: 220px; width: 400px; overflow: scroll;">
-		<strong>Click on a <img src="images/info-icon.png"> for
-				a clue
-		</strong>
+		style="height: 375px; left: 450px; position: absolute; top: 170px; width: 400px; overflow: scroll; padding:10;">
+		<div id="infobox_header"><strong>Click on a <img src="images/info-icon.png"> for clues </strong></div>
+		<div id="tabs">
+	<ul>
+		<li><a href="#gene_description">Description</a></li>
+		<li><a href="#ontology">Ontology</a></li>
+		<li><a href="#rifs">Rifs</a></li>
+		<li><a href="#ncbi_phenos">Phenos</a></li>
+	</ul>
+	<div id="gene_description">
+		<p>Gene description</p>
 	</div>
+	<div id="ontology">
+		<p>Gene Ontology terms</p>
+	</div>
+	<div id="rifs">
+		<p>Gene References into Function</p>
+	</div>
+	<div id="ncbi_phenos">
+		<p>Phenotypes from NCBI</p>
+	</div>
+</div>	
+	</div>
+	
+
+	
+	
+	
+	
+	
 <% 
 }
 %>
