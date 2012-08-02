@@ -23,6 +23,10 @@ function kind(kind_text) {
 //$(document).ready(function() {
   
 function drawTree(json, width, height, selector_string){
+	if(json.max_depth<2){
+		$(selector_string).append("Could not build a useful tree with the selected features...");
+		return;
+	}
 //	console.log("drawing tree");
 //	console.log(json);
 	var green = "#1FA13A",
@@ -53,8 +57,8 @@ function drawTree(json, width, height, selector_string){
 	    } else if ( kind(node.kind) == 2 || kind(node.kind) == 3 ) {
 	      leaf_nodes.push(node);
 	    }
-	  })
-	  console.log(leaf_nodes);
+	  });
+	 // console.log(leaf_nodes);
 	  //Draw the links first so they're behind the nodes
 	  var link = vis.selectAll("path.link")
 	  .data(links)
@@ -114,16 +118,15 @@ function drawTree(json, width, height, selector_string){
 	    .text(function(d) { return d.name.toUpperCase() });
 
 	    //Adding the bar graphs
-	  _.each(leaf_nodes, function(d) {
-	   // console.log(d);
-	    $(selector_string).append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+30)+"px;left:"+(d.x +  $.trim(d.name).length*1.5   )+"px'></div>");
-	    $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
-	      type: 'pie',
-	      width: '20',
-	      height: '20',
-	      sliceColors: ['#1FA13A','#D44413']
-	      }).fadeIn(1200);
-	    });
+//	  _.each(leaf_nodes, function(d) {
+//	    $(selector_string).append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+30)+"px;left:"+(d.x +  $.trim(d.name).length*1.5   )+"px'></div>");
+//	    $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
+//	      type: 'pie',
+//	      width: '20',
+//	      height: '20',
+//	      sliceColors: ['#1FA13A','#D44413']
+//	      }).fadeIn(1200);
+//	    });
 }
 
 
@@ -161,7 +164,7 @@ function drawTreeNoLeaf(json, width, height, selector_string){
       leaf_nodes.push(node);
     }
   });
-  console.log(leaf_nodes);
+  //console.log(leaf_nodes);
   //Draw the links first so they're behind the nodes
   var link = vis.selectAll("path.link")
   .data(links)

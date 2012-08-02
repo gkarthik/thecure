@@ -136,8 +136,11 @@ public class JsonTree {
 		if(root.getChild(0)==null){
 			String leaf = root.getLabel();
 			String label = leaf.substring(0,leaf.indexOf("(")).trim();
-			jroot.put("name", label);
-			jroot.put("kind", "leaf_node");
+//			if(label.contains("non")){
+//				label = "NR";
+//			}else if(label.contains("relapse")){
+//				label = "R";
+//			}
 			String count = leaf.substring(leaf.indexOf("("));
 			float bin_size = 0; float errors = 0;
 			if(count.contains("/")){
@@ -150,6 +153,10 @@ public class JsonTree {
 				String b = count.substring(1,count.indexOf(")"));
 				bin_size = Float.parseFloat(b);
 			}
+//			label += " :"+(int)bin_size+"/"+(int)errors;
+			jroot.put("name", label);
+			jroot.put("kind", "leaf_node");
+			
 			jroot.put("bin_size",bin_size);
 			jroot.put("errors", errors);
 			if(depth>max_depth){
@@ -163,7 +170,13 @@ public class JsonTree {
 			ArrayNode edge_children = mapper.createArrayNode();
 			for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
 				ObjectNode edgenode = mapper.createObjectNode();
-				edgenode.put("name", edge.getLabel());
+				String edgename = edge.getLabel();
+				if(edgename.contains("<")){
+					edgename = "low";
+				}else if(edgename.contains(">")){
+					edgename = "high";
+				}
+				edgenode.put("name", edgename);
 				edgenode.put("kind", "split_value");
 				outputJsonTreeEdge(edge, edgenode, depth);	
 				edge_children.add(edgenode);
