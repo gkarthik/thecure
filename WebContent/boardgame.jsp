@@ -111,32 +111,31 @@ function evaluateHand(cardsinhand, player){
 
 	//goes to server, runs the default evaluation with a decision tree
  	$.getJSON(url, function(data) {
- 		var treeheight = 300;
+ 		var treeheight = 250;
+ 		var treewidth = 420;
  		//console.log(data.max_depth +" depth");
  		if(data.max_depth>6){
  			treeheight = 500;
  		}
  		if(player=="1"){
+ 			//draw the current tree
+ 			$("#p1_current_tree").empty();
+ 			drawTree(data, treewidth, treeheight, "#p1_current_tree");
  			//var prev_score = p1_score;
  			p1_score = data.evaluation.accuracy;
  			if(p1_hand.length==max_hand){
  				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 				drawTree(data, 420, treeheight, "#cv_results_1");
- 				if(data.max_depth<2){
- 					$("#cv_results_1").append("Could not build a tree with the selected features.., guessing the majority rule.");
- 				}
  			}
 			$("#game_score_1").text(p1_score);
  		}else if(player=="2"){
+ 			//draw the current tree
+ 			$("#p2_current_tree").empty();
+ 			drawTree(data, treewidth, treeheight, "#p2_current_tree");
  			//var prev_score = p2_score;
  			$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  			p2_score = data.evaluation.accuracy;
  			if(p2_hand.length==max_hand){
  				$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 				drawTree(data, 420, treeheight, "#cv_results_2");
- 				if(data.max_depth<2){
- 					$("#cv_results_2").append("Could not build a tree with the selected features.., guessing the majority rule.");
- 				}
  			}
  			$("#game_score_2").text(p2_score);
  			board_state_clickable = true;
@@ -144,13 +143,18 @@ function evaluateHand(cardsinhand, player){
  		//if its the last hand, show the results
  		if(p2_hand.length==max_hand){ 
  			window.setTimeout(function() {
+ 				var $tabs = $("#tabs").tabs();		
  				if(p1_score<p2_score){
  					$("#winner").text("Sorry, you lost this hand. ");
+ 	 				$tabs.tabs('select', 4); 
  				}else if (p1_score>p2_score){
  					$("#winner").text("You beat Barney! ");
+ 	 				$tabs.tabs('select', 3); 
  				}else if (p1_score==p2_score){
  					$("#winner").text("You tied Barney! ");
+ 	 				$tabs.tabs('select', 3); 
  				}
+ 				$("#board").hide();
  				$("#endgame").show(); 				
  			}, 2000); 
  		}
@@ -314,8 +318,9 @@ function entrezajax_callback(data){
 	$("#rifs").empty(); 
 	$("#ncbi_phenos").empty();
 	$.each(data.result, function(i, item) {
-			var generif_list = '<ul>';
+		var generif_list = '<ul>';
 			var phenotypes = '<ul>';
+			var haspheno = false;
 			for(var i = 0; i < item.Entrezgene_comments.length; i ++) {
 				if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 18){
 					var pmid_obj = item.Entrezgene_comments[i]["Gene-commentary_refs"];
@@ -323,13 +328,17 @@ function entrezajax_callback(data){
 					if(pmid_obj){
 						pmid = pmid_obj[0].Pub_pmid.PubMedId;
 					}
-					generif_list += '<li><a target=\"blank\" href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '\'>' + item.Entrezgene_comments[i]["Gene-commentary_text"] + '</a></li>';
+					var riftext = item.Entrezgene_comments[i]["Gene-commentary_text"];
+					if(riftext){
+						generif_list += '<li><a target=\"blank\" href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '\'>' + riftext + '</a></li>';
+					}
 				}else if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 254){
 					var pheno_obj = item.Entrezgene_comments[i]["Gene-commentary_comment"];
 					if(pheno_obj){
 						for(var p=0; p<pheno_obj.length; p++){
 							if(pheno_obj[p]["Gene-commentary_type"]==19){
 								phenotypes += '<li>'+pheno_obj[p]["Gene-commentary_heading"]+"</li>";
+								haspheno = true;
 							}
 						}
 					}
@@ -337,16 +346,16 @@ function entrezajax_callback(data){
 			}
 			generif_list += '</ul>'; phenotypes += '</ul>';
 			$("#rifs").append(generif_list);
-			$("#ncbi_phenos").append(phenotypes);
-			//var html = '<p>'+phenotypes+'</p>'; //'<p>'+generif_list+'</p>'
-			//$("<div/>").html(html).appendTo('#result');
+			if(haspheno){
+				$("#gene_description").append("<div id=\"ncbi_phenos\">Phenotypes<br>"+phenotypes+"</div>");
+			}
 		});
 }
 
 function mygene_info_get_gene_callback(result){
-	//console.log(result._id);
     $("#gene_description").empty();    
     $("#ontology").empty();
+	$("#ncbi_phenos").empty();
     if (result && result.name && result.symbol){
     	var chromosome = "";
     	if(result.genomic_pos){
@@ -396,11 +405,15 @@ function mygene_info_get_gene_callback(result){
 }
 
 function setupShowInfoHandler(){
-	$( "#tabs" ).tabs();
+	//console.log("setting showInfoHandlers");
+	var $tabs = $("#tabs").tabs();
+	//reset and rebind (#todo - this unbind hack is here because of the way cards are added to hands, should improve that so we don't hav to rebind very element on the baord..)
+	$(".feature_name").unbind("click");
 	$(".feature_name").on("click", function () {
 		var cell_id = this.id;
 		var name = this.innerText;
 		showgene(cell_id, name);
+		$tabs.tabs('select', 0); //it always goes back to the gene description on an info request
 	  });
 }
 
@@ -491,6 +504,18 @@ function addCardToBarney(){
 		$("#player2_hand").fadeTo(500, 1, function (){
 			$("#player2_hand").append(handcell);
 			setupShowInfoHandler();
+		//boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+
+			//here
+			/* var $tabs = $("#tabs").tabs();
+			$(".feature_name").on("click", function () {
+				var cell_id = this.id;
+				var name = this.innerText;
+				showgene(cell_id, name);
+				$tabs.tabs('select', 0); //it always goes back to the gene description on an info request
+	  		}); */
+			//
+			
 		});
 	}, 700); 
 	
@@ -505,7 +530,7 @@ function addCardToBarney(){
 	});
 	
 	evaluateHand(p2_hand, "2");
-	console.log(board_state_clickable);
+	//console.log(board_state_clickable);
 }
 
 function setupHandAddRemove(){
@@ -655,15 +680,8 @@ $(document).ready(function() {
 		    createTooltip(event);               
 		}).mouseout(function(){
 		    hideTooltip(); 
-		}); */
-
-		
+		}); */		
 	});			
-
-	
-	//show default empty results
-	//$("#cv_results").accordion( "activate" , 1 );
- 
 });
 </script>
 </head>
@@ -780,17 +798,19 @@ $(document).ready(function() {
 if(showgeneinfo=="1"){
 %>
 <div id="infobox"
-		style="height: 375px; left: 450px; position: absolute; top: 170px; width: 400px; overflow: scroll; padding:10;">
+		style="height: 375px; left: 450px; position: absolute; top: 170px; width: 500px; overflow: scroll; padding:10;">
 		<div id="infobox_header"><strong>Click on a <img src="images/info-icon.png"> for clues </strong></div>
 		<div id="tabs">
 	<ul>
-		<li><a href="#gene_description">Description</a></li>
+		<li><a href="#gene_description">Gene</a></li>
 		<li><a href="#ontology">Ontology</a></li>
 		<li><a href="#rifs">Rifs</a></li>
-		<li><a href="#ncbi_phenos">Phenos</a></li>
+		<li><a href="#p1_current_tree">Yours</a></li>
+		<li><a href="#p2_current_tree">Barney's</a></li>
 	</ul>
 	<div id="gene_description">
 		<p>Gene description</p>
+		
 	</div>
 	<div id="ontology">
 		<p>Gene Ontology terms</p>
@@ -798,8 +818,11 @@ if(showgeneinfo=="1"){
 	<div id="rifs">
 		<p>Gene References into Function</p>
 	</div>
-	<div id="ncbi_phenos">
-		<p>Phenotypes from NCBI</p>
+	<div id="p1_current_tree" style="left: 5px; position: absolute; top: 50px; width: 400px;">
+		<p>Your decision tree will be displayed here.</p>
+	</div>
+	<div id="p2_current_tree" style="left: 5px; position: absolute; top: 50px; width: 400px;">
+		<p>Barney's decision tree will be displayed here.</p>
 	</div>
 </div>	
 	</div>
@@ -814,9 +837,9 @@ if(showgeneinfo=="1"){
 }
 %>
 	<div id="endgame"
-		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 900px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
-		<h1>Round Over. <span id="winner">You won this hand! </span> <input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
-		<div class="row">
+		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 400px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		<h1>Round Over. <span id="winner">You won this hand! </span> <br><input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
+		<!-- <div class="row">
 		<div id="cv_results_1" 
 		style="left: 5px; position: absolute; top: 50px; width: 400px;">
 			<h3>
@@ -835,7 +858,7 @@ if(showgeneinfo=="1"){
 				<p style='height: 270px'> </p>
 			</div>
 		</div>
-		</div>
+		</div> -->
 	
 	</div>
 	
