@@ -21,7 +21,7 @@ String username = (String)session.getAttribute("username");
 String level = request.getParameter("level");
 int ilevel = 0;
 if(level!=null){
-	Integer.parseInt(level);
+	ilevel = Integer.parseInt(level);
 }
 int display_level = ilevel+1;
 if(username==null){
@@ -40,6 +40,8 @@ if(username==null){
 <meta name="description" content="A game">
 <meta name="author" content="Ben">
 
+<link rel="stylesheet" href="assets/css/barney.css"
+	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css"
 	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo.css" type="text/css"
@@ -92,6 +94,12 @@ var feature_names = "";
 var barney_init = 0;
 var board_state_clickable = true;
 
+/* Move Barney! */
+
+function moveBarney(moveChoice) {
+    $("#barney5").removeClass().hide().addClass(moveChoice).show();
+}
+
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
 	document.getElementById("sound").innerHTML = "<embed src='"+url+"' hidden=true autostart=true loop=false>";
@@ -139,17 +147,25 @@ function evaluateHand(cardsinhand, player){
  			}
  			$("#game_score_2").text(p2_score);
  			board_state_clickable = true;
+ 			
+ 			if(p1_score<p2_score&&p1_score>0){
+				moveBarney("correct"); //incorrect win lose
+			}else if (p1_score>p2_score){
+				moveBarney("incorrect"); //incorrect win lose
+			}
  		}
  		//if its the last hand, show the results
  		if(p2_hand.length==max_hand){ 
  			window.setTimeout(function() {
  				var $tabs = $("#tabs").tabs();		
- 				if(p1_score<p2_score){
+ 	 			if(p1_score<p2_score&&p1_score>0){
  					$("#winner").text("Sorry, you lost this hand. ");
  	 				$tabs.tabs('select', 4); 
+ 	 				moveBarney("win"); //incorrect win lose
  				}else if (p1_score>p2_score){
  					$("#winner").text("You beat Barney! ");
  	 				$tabs.tabs('select', 3); 
+ 	 				moveBarney("lose"); //incorrect win lose
  				}else if (p1_score==p2_score){
  					$("#winner").text("You tied Barney! ");
  	 				$tabs.tabs('select', 3); 
@@ -643,10 +659,10 @@ function hideTooltip(event){
 };
 
 $(document).ready(function() {
-	  var agent =  navigator.userAgent;
-	  if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)){
-	  	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
-	  }
+	moveBarney("correct"); //incorrect win lose
+	moveBarney("incorrect");
+	//moveBarney("correct");
+
 	//set up accordian for result viewer
 	// $("#cv_results").accordion({ collapsible: true });
 	//hide the end button
@@ -769,9 +785,10 @@ $(document).ready(function() {
 
 
 	<div id="game_score_box_2"
-		style="text-align: center; left: 410px; position: absolute; top: 40px; width: 200px; z-index: 2;">
-		<img src="images/barney.png">Level <%=display_level %>
-		<h4>Barney's score</h4>
+		style="text-align: center; left: 450px; position: absolute; top: 75px; width: 350px; z-index: 2;">
+		<img id="barney5" src="images/barney.png"/>
+		
+		<strong>Barney's score</strong>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
 	</div>
 

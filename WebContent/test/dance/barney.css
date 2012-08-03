@@ -1,0 +1,234 @@
+/* Barney is such an animated fellow! */
+
+/* Correct */
+@-moz-keyframes barneycorrect {
+    0% {left:0px;top:0px;}
+    20% {left:0px;top:-2px;}
+    40% {left:0px;top:-4px;}
+    60% {left:0px;top:-6px;}
+    80% {left:0px;top:-8px;}
+    100% {left:0px;top:-10px;}
+}
+@-webkit-keyframes barneycorrect {
+    0% {left:0px;top:0px;}
+    20% {left:0px;top:-2px;}
+    40% {left:0px;top:-4px;}
+    60% {left:0px;top:-6px;}
+    80% {left:0px;top:-8px;}
+    100% {left:0px;top:-10px;}
+}
+@keyframes barneycorrect {
+    0% {left:0px;top:0px;}
+    20% {left:0px;top:-1px;}
+    40% {left:0px;top:-2px;}
+    60% {left:0px;top:-3px;}
+    80% {left:0px;top:-4px;}
+    100% {left:0px;top:-5px;}
+}
+
+/* Incorrect */
+@-moz-keyframes barneyincorrect {
+    from {
+        -moz-transform: rotate(0deg);
+        -moz-transform-origin: 50% 50%;
+    }
+    to {
+        -moz-transform: rotate(90deg);
+        -moz-transform-origin: 50% 50%;
+    }
+}
+@-webkit-keyframes barneyincorrect {
+    from {
+        -webkit-transform: rotateY(0deg);
+    }
+    to {
+        -webkit-transform: rotateY(180deg);
+    }
+}
+@keyframes barneyincorrect {
+    from {
+        -transform: rotate(0deg);
+        -transform-origin: 50% 50%;
+    }
+    to {
+        -transform: rotate(90deg);
+        -transform-origin: 50% 50%;
+    }
+}
+
+/* Win */
+@-moz-keyframes barneywin {
+    0% {-moz-transform: translate(0px, 0px)}
+    10% {-moz-transform: translate(10px, -5px)}
+    20% {-moz-transform: translate(20px, 0px)}
+    30% {-moz-transform: translate(30px, -5px)}
+    40% {-moz-transform: translate(40px, 0px)}
+    50% {-moz-transform: translate(50px, -5px)}
+    60% {-moz-transform: translate(40px, 0px) rotateY(180deg)}
+    70% {-moz-transform: translate(30px, -5px) rotateY(180deg)}
+    80% {-moz-transform: translate(20px, 0px) rotateY(180deg)}
+    90% {-moz-transform: translate(10px, -5px) rotateY(180deg)}
+    100% {-moz-transform: translate(0px, 0px) rotateY(180deg)}
+}
+@-webkit-keyframes barneywin {
+    0% {-webkit-transform: translate(0px, 0px)}
+    10% {-webkit-transform: translate(10px, -5px)}
+    20% {-webkit-transform: translate(20px, 0px)}
+    30% {-webkit-transform: translate(30px, -5px)}
+    40% {-webkit-transform: translate(40px, 0px)}
+    50% {-webkit-transform: translate(50px, -5px)}
+    60% {-webkit-transform: translate(40px, 0px) rotateY(180deg)}
+    70% {-webkit-transform: translate(30px, -5px) rotateY(180deg)}
+    80% {-webkit-transform: translate(20px, 0px) rotateY(180deg)}
+    90% {-webkit-transform: translate(10px, -5px) rotateY(180deg)}
+    100% {-webkit-transform: translate(0px, 0px) rotateY(180deg)}
+}
+@keyframes barneywin {
+    0% {transform: translate(0px, 0px)}
+    10% {transform: translate(10px, -5px)}
+    20% {transform: translate(20px, 0px)}
+    30% {transform: translate(30px, -5px)}
+    40% {transform: translate(40px, 0px)}
+    50% {transform: translate(50px, -5px)}
+    60% {transform: translate(40px, 0px) rotateY(180deg)}
+    70% {transform: translate(30px, -5px) rotateY(180deg)}
+    80% {transform: translate(20px, 0px) rotateY(180deg)}
+    90% {transform: translate(10px, -5px) rotateY(180deg)}
+    100% {transform: translate(0px, 0px) rotateY(180deg)}
+}
+
+/* Lose */
+@-moz-keyframes barneylose {
+    0% {-moz-transform: translate(0px, 0px)}
+    10% {-moz-transform: translate(0px, -3px) rotate(-15deg)}
+    20% {-moz-transform: translate(0px, -6px) rotate(-45deg)}
+    30% {-moz-transform: translate(0px, -9px) rotate(-60deg)}
+    40% {-moz-transform: translate(0px, -12px) rotate(-90deg)}
+    50% {-moz-transform: translate(0px, -9px) rotate(-90deg)}
+    60% {-moz-transform: translate(0px, -6px) rotate(-90deg)}
+    70% {-moz-transform: translate(0px, -3px) rotate(-90deg)}
+    80% {-moz-transform: translate(0px, 0px) rotate(-90deg)}
+    90% {-moz-transform: translate(0px, 0px) rotate(-90deg)}
+    100% {-moz-transform: translate(0px, 0px) rotate(-90deg)}
+}
+@-webkit-keyframes barneylose {
+    0% {-webkit-transform: translate(0px, 0px)}
+    10% {-webkit-transform: translate(0px, -3px) rotate(-15deg)}
+    20% {-webkit-transform: translate(0px, -6px) rotate(-45deg)}
+    30% {-webkit-transform: translate(0px, -9px) rotate(-60deg)}
+    40% {-webkit-transform: translate(0px, -12px) rotate(-90deg)}
+    50% {-webkit-transform: translate(0px, -9px) rotate(-90deg)}
+    60% {-webkit-transform: translate(0px, -6px) rotate(-90deg)}
+    70% {-webkit-transform: translate(0px, -3px) rotate(-90deg)}
+    80% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+    90% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+    100% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+}
+@keyframes barneylose {
+    0% {transform: translate(0px, 0px)}
+    10% {transform: translate(0px, -3px) rotate(-15deg)}
+    20% {transform: translate(0px, -6px) rotate(-45deg)}
+    30% {transform: translate(0px, -9px) rotate(-60deg)}
+    40% {transform: translate(0px, -12px) rotate(-90deg)}
+    50% {transform: translate(0px, -9px) rotate(-90deg)}
+    60% {transform: translate(0px, -6px) rotate(-90deg)}
+    70% {transform: translate(0px, -3px) rotate(-90deg)}
+    80% {transform: translate(0px, 0px) rotate(-90deg)}
+    90% {transform: translate(0px, 0px) rotate(-90deg)}
+    100% {transform: translate(0px, 0px) rotate(-90deg)}
+}
+
+@-webkit-keyframes barneychoose {
+    0% {-webkit-transform: translate(0px, 0px)}
+    10% {-webkit-transform: translate(0px, -3px) rotate(-15deg)}
+    20% {-webkit-transform: translate(0px, -6px) rotate(-45deg)}
+    30% {-webkit-transform: translate(0px, -9px) rotate(-60deg)}
+    40% {-webkit-transform: translate(0px, -12px) rotate(-90deg)}
+    50% {-webkit-transform: translate(0px, -9px) rotate(-90deg)}
+    60% {-webkit-transform: translate(0px, -6px) rotate(-90deg)}
+    70% {-webkit-transform: translate(0px, -3px) rotate(-90deg)}
+    80% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+    90% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+    100% {-webkit-transform: translate(0px, 0px) rotate(-90deg)}
+}
+
+.correct{
+    -moz-animation-delay: 0s;
+    -moz-animation-direction: alternate;
+    -moz-animation-duration: 0.15s;
+    -moz-animation-iteration-count: 6;/*it*/
+    -moz-animation-name: barneycorrect;
+    -moz-animation-play-state: running;
+    -webkit-animation-delay: 0s;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-duration: 0.15s;
+    -webkit-animation-iteration-count: 6;/*it*/
+    -webkit-animation-name: barneycorrect;
+    -webkit-animation-play-state: running;
+    animation-delay: 0s;
+    animation-direction: alternate;
+    animation-duration: 0.15s;
+    animation-iteration-count: 6;/*it*/
+    animation-name: barneycorrect;
+    animation-play-state: running;
+}
+
+.incorrect{
+    -moz-animation-delay: 0s;
+    -moz-animation-direction: alternate;
+    -moz-animation-duration: 0.5s;
+    -moz-animation-iteration-count: 1;/*it*/
+    -moz-animation-name: barneyincorrect;
+    -moz-animation-play-state: running;
+    -webkit-animation-name: barneyincorrect;
+    -webkit-animation-delay: 0s;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count: 1;/*it*/
+    -webkit-animation-play-state: running;
+    animation-delay: 0s;
+    animation-duration: 0.5s;
+    animation-direction: alternate;
+    animation-iteration-count: 1;/*it*/
+    animation-name: barneyincorrect;
+    animation-play-state: running;
+}
+
+.win{
+    -moz-animation-delay: 0s;
+    -moz-animation-duration: 1s;
+    -moz-animation-iteration-count: 1;/*it*/
+    -moz-animation-name: barneywin;
+    -moz-animation-play-state: running;
+    -webkit-animation-delay: 0s;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: 1;/*it*/
+    -webkit-animation-name: barneywin;
+    -webkit-animation-play-state: running;
+    animation-delay: 0s;
+    animation-duration: 1s;
+    animation-iteration-count: 1;/*it*/
+    animation-name: barneywin;
+    animation-play-state: running;
+}
+
+.lose{
+    -moz-animation-delay: 0s;
+    -moz-animation-duration: 1s;
+    -moz-animation-iteration-count: 1;/*it*/
+    -moz-animation-name: barneylose;
+    -moz-animation-play-state: running;
+    -webkit-animation-delay: 0s;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: 1;/*it*/
+    -webkit-animation-name: barneylose;
+    -webkit-animation-play-state: running;
+    animation-delay: 0s;
+    animation-duration: 1s;
+    animation-iteration-count: 1;/*it*/
+    animation-name: barneylose;
+    animation-play-state: running;
+}
+
+#correcttainer,#incorrecttainer,#wintainer,#losetainer,#choosetainer{position:relative;}
+.correct,.incorrect,.win,.lose{left:0px; top:0px; position:absolute;}

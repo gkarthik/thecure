@@ -71,7 +71,11 @@
     learning algorithms that are informed by the hands played in the game.  
     </p>
     <strong><center><a href="login.jsp">Play COMBO</a> and share in discovery!</center></strong>
+    <h3>Barney<a href="http://commons.wikimedia.org/wiki/File:YHTBTR-character-noback.png"><img src="images/barney.png"/></a></h3>
+    <p>The opponent in combo came from a <a href="http://commons.wikimedia.org/wiki/File:YHTBTR-character-noback.png">Wikipedia Commons image</a> from the game "<a href="http://en.wikipedia.org/wiki/You_Have_To_Burn_The_Rope">You have to Burn the Rope</a>".  Thanks for sharing!
+    </p>
     <br>
+    <h4>Future prospects</h4>
     <p><a href="./assets/MosaicMockup.mov">Watch a silent movie about Combo2.0 (aka 'Mosaic'')..</a><p>
     </div>
     </div>
