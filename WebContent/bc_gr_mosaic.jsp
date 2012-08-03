@@ -8,8 +8,8 @@
 //params for game board
 String game_params = "&mosaic_url=bc_gr_mosaic.jsp&dataset=griffith_full_filtered&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
 int level = -1;
-int num_tile_rows = 4;
-int num_tile_cols = 4;
+int num_tile_rows = 10;
+int num_tile_cols = 10;
 
 boolean all_levels_open = true;
 	String username = "";
@@ -95,25 +95,27 @@ boolean all_levels_open = true;
 					<br>
 			</div>
 			<div class="row">		
-					<div id="keeper" class="span5">
+					<div id="keeper" class="span7">
 						<table>
 							<%
+							String tile_index = "";
 								for (int i = 0; i < num_tile_rows; i++) {
 							%>
 							<tr>
 								<%
 									for (int j = 0; j < num_tile_cols; j++) {
 												level++;
+												tile_index = i+"_"+j;
 												int score = 0;
 												if(zoo_scores.get(level)!=null&&zoo_scores.get(level)>0){
 													score = zoo_scores.get(level);
 												}
 								%>
-								<td><div id="level_<%=level %>">
+								<td width="50" ><div id="level_<%=level %>">
 					<% if(zoo_scores.get(level)==null||zoo_scores.get(level)<1){ %>
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary "><div class="small_level_button"><%=level+1 %></div></a>
 						<%}else { %>
-						<img width="100" src="images/soccer_women/soccer_women_<%=level%>.png">
+						<img src="images/cube/cube_bots_<%=tile_index%>.png">
 						<%}%>				
 					</div></td>								
 								<%
@@ -127,7 +129,7 @@ boolean all_levels_open = true;
 					</div>
 					
 			
-					<div id="back" class="offset1 span3">
+					<div id="back" class="span2">
 						<p><a href="games.jsp">Back to game selector</a></p>
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
