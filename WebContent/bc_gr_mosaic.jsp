@@ -113,7 +113,7 @@ boolean all_levels_open = true;
 								%>
 								<td width="50" ><div id="level_<%=level %>">
 					<% if(zoo_scores.get(level)==null||zoo_scores.get(level)<1){ %>
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary "><div class="small_level_button"><%=level+1 %></div></a>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary "><div class="small_level_button" style="height:20px; line-height:20px; font-weight:normal; width:30px;"><%=level %></div></a>
 						<%}else { %>
 						<img src="images/cube/cube_bots_<%=tile_index%>.png">
 						<%}%>				
@@ -129,7 +129,7 @@ boolean all_levels_open = true;
 					</div>
 					
 			
-					<div id="back" class="span2">
+					<div id="back" class="span3">
 						<p><a href="games.jsp">Back to game selector</a></p>
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
