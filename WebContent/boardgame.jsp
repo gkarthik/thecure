@@ -99,6 +99,9 @@ var board_state_clickable = true;
 function moveBarney(moveChoice) {
     $("#barney5").removeClass().hide().addClass(moveChoice).show();
 }
+function moveClayton(moveChoice) {
+    $("#clayton1").removeClass().hide().addClass(moveChoice).show();
+}
 
 //playSound("sounds/ray_gun-Mike_Koenig-1169060422.wav");
 function playSound(url) {
@@ -125,6 +128,7 @@ function evaluateHand(cardsinhand, player){
  		if(data.max_depth>6){
  			treeheight = 500;
  		}
+ 		console.log("s 1");
  		if(player=="1"){
  			//draw the current tree
  			$("#p1_current_tree").empty();
@@ -135,6 +139,7 @@ function evaluateHand(cardsinhand, player){
  				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  			}
 			$("#game_score_1").text(p1_score);
+			console.log("s 2");
  		}else if(player=="2"){
  			//draw the current tree
  			$("#p2_current_tree").empty();
@@ -147,16 +152,21 @@ function evaluateHand(cardsinhand, player){
  			}
  			$("#game_score_2").text(p2_score);
  			board_state_clickable = true;
- 			
- 			if(p1_score<p2_score&&p1_score>0){
-				moveBarney("correct"); //incorrect win lose
+ 			console.log(p2_hand.length+" "+max_hand+" "+p1_score+" "+p2_score);
+ 			if(p2_hand.length!=max_hand&&p1_score<p2_score&&p1_score>0){
+ 				console.log("s p2 s3");
+ 				moveBarney("correct"); //incorrect win lose
 			}else if (p1_score>p2_score){
-				moveBarney("incorrect"); //incorrect win lose
+				console.log("s p2 s4");
+				moveClayton("correct"); //incorrect win lose
 			}
+ 			
  		}
  		//if its the last hand, show the results
  		if(p2_hand.length==max_hand){ 
+ 			console.log("s 4");
  			window.setTimeout(function() {
+ 				console.log("s 5");
  				var $tabs = $("#tabs").tabs();		
  	 			if(p1_score<p2_score&&p1_score>0){
  					$("#winner").text("Sorry, you lost this hand. ");
@@ -166,13 +176,16 @@ function evaluateHand(cardsinhand, player){
  					$("#winner").text("You beat Barney! ");
  	 				$tabs.tabs('select', 3); 
  	 				moveBarney("lose"); //incorrect win lose
+ 	 				moveClayton("win");
  				}else if (p1_score==p2_score){
  					$("#winner").text("You tied Barney! ");
  	 				$tabs.tabs('select', 3); 
+ 	 				moveBarney("win"); //incorrect win lose
+ 	 				moveClayton("win");
  				}
  				$("#board").hide();
  				$("#endgame").show(); 				
- 			}, 2000); 
+ 			}, 1500); 
  		}
 	}); 
 }
@@ -559,11 +572,7 @@ function setupHandAddRemove(){
 		}
 		if(hand_size < max_hand){
 			var cell_id = this.id.replace("card_index_", "");
-			p1_indexes.push(cell_id);
-		//temp add it to barney's hand		
-			board_state_clickable = false;
-			addCardToBarney();
-			
+			p1_indexes.push(cell_id);			
 			var handcell = generateHandCell(cell_id);
 			$("#player1_hand").fadeTo(1000, 1, function (){
 				$("#player1_hand").append(handcell);
@@ -575,6 +584,9 @@ function setupHandAddRemove(){
 			$(this).parent().fadeTo(500, 0.75, function (){
 				$(this).css('background-color', '#82CAFA');
 				$(this).html("");
+				//add a card to barney's hand
+				board_state_clickable = false;
+				addCardToBarney();
 			});
 					
 		}else{
@@ -582,60 +594,6 @@ function setupHandAddRemove(){
 		}
 		}else{
 			alert("Wait your turn!"); 
-		}
-	  });
-}
-
-
-function setupHandAddRemoveFirstVersion(){
-	$(".select_card_button").on("click", function () {
-		if(p1_hand){
-			hand_size = p1_hand.length;
-		}else{
-			hand_size = 0;
-		}
-		if(hand_size < max_hand){
-			var cell_id = this.id.replace("card_index_", "");	
-			var handcell = generateHandCell(cell_id);
-		// does not work in firefox	
-		//	$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-			$("#player1_hand").append(handcell);
-			setupShowInfoHandler();
-			p1_hand.push(cards[cell_id]);
-			evaluateHand(p1_hand);
-			//hide button from board
-			$(this).hide();
-			//change background color
-			$(this).parent().css('background-color', '#98AFC7');
-		//add the take out of hand handler
-			$(".cardsinhand").on("click", function () {
-				var cell_id = this.id.replace("p1_c_", "");	
-				//put it back on the board
-				var table_cell_id = "#card_index_"+cell_id;
-				var cellcontents = generateUsedBoardCell(cell_id);
-				//$(handcell).hide().appendTo("#player1_hand").fadeIn(1000);
-							
-				$(table_cell_id).parent().html(cellcontents);
-				//take it out of our hand representation
-				var tmp = new Array();
-				var tmp_index = 0;
-				for (var r = 0; r < p1_hand.length; r++) {
-					if(p1_hand[r]!=cards[cell_id]){
-						tmp[tmp_index] = p1_hand[r];
-						tmp_index++;
-					}
-				}
-				p1_hand = tmp;
-				//re-evaluate
-				if(p1_hand!=null&&p1_hand.length>0){
-					evaluateHand(p1_hand);
-				}
-				//remove button from hand
-				$(this).parent().remove(); //fadeOut(1000);
-			  });
-		
-		}else{
-			alert("Sorry, you can only have 5 cards in your hand in this game.  Click a card to remove it from your hand."); 
 		}
 	  });
 }
@@ -659,8 +617,8 @@ function hideTooltip(event){
 };
 
 $(document).ready(function() {
-	moveBarney("correct"); //incorrect win lose
-	moveBarney("incorrect");
+	//moveBarney("correct"); //incorrect win lose
+	//moveBarney("incorrect");
 	//moveBarney("correct");
 
 	//set up accordian for result viewer
@@ -757,8 +715,10 @@ $(document).ready(function() {
 		
 	</div>
 
+
 	<div id="game_score_box_1"
-		style="text-align: center; left: 410px; position: absolute; top: 600px; width: 200px; z-index: 2;">
+		style="text-align: center; left: 450px; position: absolute; top: 600px; width: 350px; z-index: 2;">
+		<img style="left:0px; top:0px; position:absolute;" id="clayton1" width="100px" src="images/200px-Clayton.png"/>
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
 	</div>
@@ -786,7 +746,7 @@ $(document).ready(function() {
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 450px; position: absolute; top: 75px; width: 350px; z-index: 2;">
-		<img id="barney5" src="images/barney.png"/>
+		<img style="left:0px; top:0px; position:absolute;" id="barney5" src="images/barney.png"/>
 		
 		<strong>Barney's score</strong>
 		<h1 id="game_score_2" style="text-align: center;">0</h1>
