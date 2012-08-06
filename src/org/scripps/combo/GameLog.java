@@ -22,6 +22,8 @@ import org.scripps.util.MapFun;
  */
 public class GameLog {
 
+	Map<String, Integer> pheno_multiplier;
+	
 	/**
 	 * @param args
 	 */
@@ -37,6 +39,19 @@ public class GameLog {
 //		}
 
 	}
+
+		
+	public GameLog() {
+		super();
+		pheno_multiplier = new HashMap<String, Integer>();
+		pheno_multiplier.put("mammal", 5);
+		pheno_multiplier.put("zoo", 7);
+		pheno_multiplier.put("vantveer", 10);
+		pheno_multiplier.put("coronal_case_control", 15);
+		pheno_multiplier.put("griffith_full_filtered", 20);
+	}
+
+
 
 	public class high_score{
 		Map<String, Integer> player_global_points;
@@ -102,23 +117,12 @@ public class GameLog {
 			//points for hand
 			int points = 0;
 			int multiplier = 1; int board_performance = 1;
-			if(hand.getPhenotype().equals("mammal")){
-				multiplier = 5;
-				board_performance = hand.getTraining_accuracy();
-			}else if(hand.getPhenotype().equals("zoo")){
-				multiplier = 7;
-				board_performance = hand.getTraining_accuracy();
-			}else if(hand.getPhenotype().equals("vantveer")){
-				multiplier = 10;
-				board_performance = hand.getCv_accuracy();
-			}else if(hand.getPhenotype().equals("coronal_case_control")){
-				multiplier = 15;
-				board_performance = hand.getCv_accuracy();
-			}else if(hand.getPhenotype().equals("griffith_full_filtered")){
-				multiplier = 20;
-				board_performance = hand.getCv_accuracy();
-			}
-			
+			board_performance = hand.getCv_accuracy();
+			//training levels use training scoring to make trees easier to understand
+			//if(hand.getPhenotype().equals("mammal")||hand.getPhenotype().equals("zoo")){
+			//	board_performance = hand.getTraining_accuracy();
+			//}
+			multiplier = pheno_multiplier.get(hand.getPhenotype());
 			if(board_performance < 1){
 				continue;
 			}
@@ -253,6 +257,16 @@ public class GameLog {
 			e.printStackTrace();
 		}
 		return hands;
+	}
+
+
+	public Map<String, Integer> getPheno_multiplier() {
+		return pheno_multiplier;
+	}
+
+
+	public void setPheno_multiplier(Map<String, Integer> pheno_multiplier) {
+		this.pheno_multiplier = pheno_multiplier;
 	}
 	
 }

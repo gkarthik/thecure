@@ -5,6 +5,7 @@
 <% 
 GameLog log = new GameLog();
 GameLog.high_score sb = log.getScoreBoard();
+System.out.println("gettign score board");
 Player player = (Player) session.getAttribute("player");
 boolean show_player = false;
 if(player!=null&&(!player.getName().equals("anonymous_hero"))){

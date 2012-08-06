@@ -6,6 +6,7 @@
 <%@ page import="java.util.ArrayList"%>
 
 <% 
+String full_request = request.getRequestURI()+"?"+request.getQueryString();
 String mosaic_url = request.getParameter("mosaic_url"); //"cranio_coronal_mosaic.jsp";
 String dataset = request.getParameter("dataset"); // "coronal_case_control";
 String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
@@ -27,6 +28,9 @@ int display_level = ilevel+1;
 if(username==null){
 	username = "anonymous_hero";
 }
+GameLog glog = new GameLog();
+Integer multiplier = glog.getPheno_multiplier().get(dataset);
+
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -93,6 +97,8 @@ var features = "";
 var feature_names = "";
 var barney_init = 0;
 var board_state_clickable = true;
+var replay = "<%=full_request%>";
+var multiplier = "<%=multiplier%>";
 
 /* Move Barney! */
 
@@ -128,7 +134,6 @@ function evaluateHand(cardsinhand, player){
  		if(data.max_depth>6){
  			treeheight = 500;
  		}
- 		console.log("s 1");
  		if(player=="1"){
  			//draw the current tree
  			$("#p1_current_tree").empty();
@@ -139,7 +144,6 @@ function evaluateHand(cardsinhand, player){
  				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
  			}
 			$("#game_score_1").text(p1_score);
-			console.log("s 2");
  		}else if(player=="2"){
  			//draw the current tree
  			$("#p2_current_tree").empty();
@@ -152,28 +156,24 @@ function evaluateHand(cardsinhand, player){
  			}
  			$("#game_score_2").text(p2_score);
  			board_state_clickable = true;
- 			console.log(p2_hand.length+" "+max_hand+" "+p1_score+" "+p2_score);
  			if(p2_hand.length!=max_hand&&p1_score<p2_score&&p1_score>0){
- 				console.log("s p2 s3");
  				moveBarney("correct"); //incorrect win lose
 			}else if (p1_score>p2_score){
-				console.log("s p2 s4");
 				moveClayton("correct"); //incorrect win lose
 			}
  			
  		}
  		//if its the last hand, show the results
  		if(p2_hand.length==max_hand){ 
- 			console.log("s 4");
  			window.setTimeout(function() {
- 				console.log("s 5");
  				var $tabs = $("#tabs").tabs();		
  	 			if(p1_score<p2_score&&p1_score>0){
  					$("#winner").text("Sorry, you lost this hand. ");
  	 				$tabs.tabs('select', 4); 
  	 				moveBarney("win"); //incorrect win lose
+ 	 	 			$("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
  				}else if (p1_score>p2_score){
- 					$("#winner").text("You beat Barney! ");
+ 					$("#winner").html("<strong>You beat Barney!<br/>You earned "+p1_score+" * "+multiplier+"= </strong><span style=\"font-size:30px;\">"+(p1_score*multiplier)+"</span> points!");
  	 				$tabs.tabs('select', 3); 
  	 				moveBarney("lose"); //incorrect win lose
  	 				moveClayton("win");
@@ -182,6 +182,7 @@ function evaluateHand(cardsinhand, player){
  	 				$tabs.tabs('select', 3); 
  	 				moveBarney("win"); //incorrect win lose
  	 				moveClayton("win");
+ 	 	 			$("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
  				}
  				$("#board").hide();
  				$("#endgame").show(); 				
@@ -746,10 +747,16 @@ $(document).ready(function() {
 
 	<div id="game_score_box_2"
 		style="text-align: center; left: 450px; position: absolute; top: 75px; width: 350px; z-index: 2;">
-		<img style="left:0px; top:0px; position:absolute;" id="barney5" src="images/barney.png"/>
-		
-		<strong>Barney's score</strong>
-		<h1 id="game_score_2" style="text-align: center;">0</h1>
+		<img style="left:0px; top:0px; position:absolute;" id="barney5" src="images/barney.png"/>		
+		<div>
+		<strong style="text-align: center; font-size:20px;">Barney's score</strong><br/><br/>
+		<strong id="game_score_2" style="text-align: center; font-size:30px;">0</strong>
+		</div>
+	</div>
+
+	<div id="game_meta_info"
+		style="text-align: center; left: 750px; position: absolute; top: 55px; z-index: 2;">
+		<strong>Dataset: <%=dataset %></strong><br/><strong>Point Multiplier: <%=multiplier %></strong>
 	</div>
 
 	<div id="player2_title_area"
@@ -815,7 +822,9 @@ if(showgeneinfo=="1"){
 %>
 	<div id="endgame"
 		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 400px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
-		<h1>Round Over. <span id="winner">You won this hand! </span> <br><input id="holdem_button" type="submit" value="OK, more please!" /> </h1>
+		<h1>Round Over</h1>
+		<div id="winner"></div> 
+		<br><input id="holdem_button" type="submit" value="Try another board" />
 		<!-- <div class="row">
 		<div id="cv_results_1" 
 		style="left: 5px; position: absolute; top: 50px; width: 400px;">
