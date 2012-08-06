@@ -173,8 +173,9 @@ function evaluateHand(cardsinhand, player){
  	 				moveBarney("win"); //incorrect win lose
  	 	 			$("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
  				}else if (p1_score>p2_score){
- 					$("#winner").html("<strong>You beat Barney!<br/>You earned "+p1_score+" * "+multiplier+"= </strong><span style=\"font-size:30px;\">"+(p1_score*multiplier)+"</span> points!");
- 	 				$tabs.tabs('select', 3); 
+ 					$("#winner").parent().parent().css('background-color', '#FFA500');
+ 					$("#winner").html("<h1>You beat Barney!</h1>You earned "+p1_score+" * "+multiplier+"= </strong><span style=\"font-size:30px;\">"+(p1_score*multiplier)+"</span> points!");
+ 					$tabs.tabs('select', 3); 
  	 				moveBarney("lose"); //incorrect win lose
  	 				moveClayton("win");
  				}else if (p1_score==p2_score){
@@ -215,11 +216,11 @@ function getStyleByScore(power){
 
 function getChessStyle(cell_index){
 	var cellstyle = "width: 75px; position:relative; ";
-	if(cell_index % 2 == 0){
-		cellstyle+=" background-color:#F26B10;";
-	}else{
+//	if(cell_index % 2 == 0){
+//		cellstyle+=" background-color:#F26B10;";
+//	}else{
 		cellstyle+=" background-color:#F8F0DF;";
-	}
+//	}
 	return cellstyle;
 }
 
@@ -235,9 +236,10 @@ function generateBoardCell(cardindex){
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\">";
 	if(showgeneinfo=="1"){
-		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
 	}
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+	boardhtml+="<div class=\"select_card_button btn btn-primary\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable small_level_button\" style=\"height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\" href=\"#\">"+displayname+"</a></div></td>";
 	
 	return boardhtml;
 }
@@ -255,11 +257,17 @@ function generateHandCell(cardindex, player){
 	}
 	cards[cardindex].displayname = displayname;
 	boardhtml+="<td style=\""+cellstyle+"\">";
-	if(showgeneinfo=="1"){
+/* 	if(showgeneinfo=="1"){
 		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
 	}
 	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
-	
+ */	
+	if(showgeneinfo=="1"){
+		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+	}
+//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+	boardhtml+="<div class=\"select_card_button btn btn-primary\" style=\"cursor:default;\" id=\"card_index_"+cardindex+"\"><span class=\"selectable small_level_button\" style=\"cursor:default; height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\">"+displayname+"</span></div></td>";
+
 	return boardhtml;
 }
 
@@ -297,7 +305,7 @@ function setupOpponent(){
 
 function generateBoard(){
 	var cardindex = -1;
-	var boardhtml ="<table border=\"1\">";
+	var boardhtml ="<table >"; //border=\"4\" bordercolor=\"orange\"
 	for (var r = 0; r < nrows; r++) {
 		boardhtml+="<tr align=\"center\" style=\"height: 75px\";>";
 			for (var c = 0; c < ncols; c++) {
@@ -555,7 +563,7 @@ function addCardToBarney(){
 	card_index = "#card_index_"+card_index;
 	
 	$(card_index).parent().fadeTo(500, 0.75, function (){
-		$(card_index).parent().css('background-color', '#FBBBB9');
+		$(card_index).parent().css('background-color', 'transparent');
 		$(card_index).parent().html("");
 	});
 	
@@ -583,7 +591,7 @@ function setupHandAddRemove(){
 			evaluateHand(p1_hand, 1);
 			//hide button from board
 			$(this).parent().fadeTo(500, 0.75, function (){
-				$(this).css('background-color', '#82CAFA');
+				$(this).css('background-color', 'transparent');
 				$(this).html("");
 				//add a card to barney's hand
 				board_state_clickable = false;
@@ -718,7 +726,7 @@ $(document).ready(function() {
 
 
 	<div id="game_score_box_1"
-		style="text-align: center; left: 450px; position: absolute; top: 600px; width: 350px; z-index: 2;">
+		style="text-align: center; left: 460px; position: absolute; top: 600px; width: 350px; z-index: 2;">
 		<img style="left:0px; top:0px; position:absolute;" id="clayton1" width="100px" src="images/200px-Clayton.png"/>
 		<h4>Your score</h4>
 		<h1 id="game_score_1" style="text-align: center;">0</h1>
@@ -746,7 +754,7 @@ $(document).ready(function() {
 
 
 	<div id="game_score_box_2"
-		style="text-align: center; left: 450px; position: absolute; top: 75px; width: 350px; z-index: 2;">
+		style="text-align: center; left: 460px; position: absolute; top: 75px; width: 350px; z-index: 2;">
 		<img style="left:0px; top:0px; position:absolute;" id="barney5" src="images/barney.png"/>		
 		<div>
 		<strong style="text-align: center; font-size:20px;">Barney's score</strong><br/><br/>
@@ -782,7 +790,7 @@ $(document).ready(function() {
 if(showgeneinfo=="1"){
 %>
 <div id="infobox"
-		style="height: 375px; left: 450px; position: absolute; top: 170px; width: 500px; overflow: scroll; padding:10;">
+		style="height: 375px; left: 460px; position: absolute; top: 170px; width: 500px; overflow: scroll; padding:10;">
 		<div id="infobox_header"><strong>Click on a <img src="images/info-icon.png"> for clues </strong></div>
 		<div id="tabs">
 	<ul>
@@ -822,9 +830,11 @@ if(showgeneinfo=="1"){
 %>
 	<div id="endgame"
 		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 400px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
+		<div  style="margin-top:10px; margin-left:10px;">
 		<h1>Round Over</h1>
-		<div id="winner"></div> 
+		<div id="winner"  ></div> 
 		<br><input id="holdem_button" type="submit" value="Try another board" />
+		</div> 
 		<!-- <div class="row">
 		<div id="cv_results_1" 
 		style="left: 5px; position: absolute; top: 50px; width: 400px;">

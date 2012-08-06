@@ -214,17 +214,17 @@
 
 .lose{
     -moz-animation-delay: 0s;
-    -moz-animation-duration: 1s;
+    -moz-animation-duration: 2s;
     -moz-animation-iteration-count: 1;
     -moz-animation-name: barneylose;
     -moz-animation-play-state: running;
     -webkit-animation-delay: 0s;
-    -webkit-animation-duration: 1s;
+    -webkit-animation-duration: 2s;
     -webkit-animation-iteration-count: 1;
     -webkit-animation-name: barneylose;
     -webkit-animation-play-state: running;
     animation-delay: 0s;
-    animation-duration: 1s;
+    animation-duration: 2s;
     animation-iteration-count: 1;
     animation-name: barneylose;
     animation-play-state: running;
