@@ -786,20 +786,20 @@ $(document).ready(function() {
 		</div>
 	</div>
 
-<%
-if(showgeneinfo=="1"){
-%>
 <div id="infobox"
 		style="height: 375px; left: 460px; position: absolute; top: 170px; width: 500px; overflow: scroll; padding:10;">
 		<div id="infobox_header"><strong>Click on a <img src="images/info-icon.png"> for clues </strong></div>
 		<div id="tabs">
 	<ul>
+	<%if(!(dataset.equals("mammal")||dataset.equals("zoo"))){ %>
 		<li><a href="#gene_description">Gene</a></li>
 		<li><a href="#ontology">Ontology</a></li>
 		<li><a href="#rifs">Rifs</a></li>
+	<%} %>	
 		<li><a href="#p1_current_tree">Yours</a></li>
 		<li><a href="#p2_current_tree">Barney's</a></li>
 	</ul>
+	<%if(!(dataset.equals("mammal")||dataset.equals("zoo"))){ %>
 	<div id="gene_description">
 		<p>Gene description</p>
 		
@@ -810,6 +810,7 @@ if(showgeneinfo=="1"){
 	<div id="rifs">
 		<p>Gene References into Function</p>
 	</div>
+		<%} %>	
 	<div id="p1_current_tree" style="left: 5px; position: absolute; top: 50px; width: 400px;">
 		<p>Your decision tree will be displayed here.</p>
 	</div>
@@ -818,16 +819,7 @@ if(showgeneinfo=="1"){
 	</div>
 </div>	
 	</div>
-	
 
-	
-	
-	
-	
-	
-<% 
-}
-%>
 	<div id="endgame"
 		style="height: 410px; left: 30px; position: absolute; top: 175px; width: 400px; background-color: #F2F2F2; z-index:3; overflow: scroll;">
 		<div  style="margin-top:10px; margin-left:10px;">
