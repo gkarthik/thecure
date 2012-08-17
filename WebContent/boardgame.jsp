@@ -451,7 +451,7 @@ function setupShowInfoHandler(){
 		var cell_id = this.id;
 		var name = this.innerText;
 		showgene(cell_id, name);
-		$tabs.tabs('select', 0); //it always goes back to the gene description on an info request
+//		$tabs.tabs('select', 0); //it always goes back to the gene description on an info request
 	  });
 }
 
