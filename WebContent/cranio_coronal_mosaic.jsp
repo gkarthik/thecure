@@ -5,37 +5,44 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 <%
+//params for game board
 String game_params = "&mosaic_url=cranio_coronal_mosaic.jsp&dataset=coronal_case_control&title=Craniostenostosis&nrows=5&ncols=5&max_hand=5";
+int level = -1;
+int num_tile_rows = 10;
+int num_tile_cols = 10;
 
-
-	String username = "";
-	Player player = (Player) session.getAttribute("player");
-	if (player == null) {
-		response.sendRedirect("/combo/login.jsp");
-	} else {
-		username = player.getName();
-	}
-	if (player != null) {
-		int levels_passed = 0;
-		List<Integer> zoo_scores = player.getLevel_tilescores().get("coronal_case_control");
-		if (zoo_scores == null) {
-			zoo_scores = new ArrayList<Integer>(4);
-			for (int i = 0; i < 4; i++) {
-				zoo_scores.add(0);
-			}
-			player.getLevel_tilescores().put("coronal_case_control", zoo_scores);
-		}else{
-			boolean passed_one = false;
-			for(int i=0; i<zoo_scores.size(); i++){
-				if(zoo_scores.get(i)>0){
-					levels_passed = i;
-					passed_one = true;
-				}
-			}
-			if(passed_one){
-				levels_passed++;
+boolean all_levels_open = true;
+String username = "";
+Player player = (Player) session.getAttribute("player");
+if (player == null) {
+	response.sendRedirect("/combo/login.jsp");
+} else {
+	username = player.getName();
+}
+if (player != null) {
+	int levels_passed = 0;
+	List<Integer> zoo_scores = player.getLevel_tilescores().get("coronal_case_control");
+	if (zoo_scores == null) {
+		zoo_scores = new ArrayList<Integer>(num_tile_rows*num_tile_cols);
+		for (int i = 0; i < num_tile_rows*num_tile_cols; i++) {
+			zoo_scores.add(0);
+		}
+		player.getLevel_tilescores().put("coronal_case_control", zoo_scores);
+	}else{
+		boolean passed_one = false;
+		for(int i=0; i<zoo_scores.size(); i++){
+			if(zoo_scores.get(i)>0){
+				levels_passed = i;
+				passed_one = true;
 			}
 		}
+		if(passed_one){
+			levels_passed++;
+		}
+		for(int i=zoo_scores.size(); i<num_tile_rows*num_tile_cols; i++){
+			zoo_scores.add(i,0);
+		}
+	}
 %>
 
 <!DOCTYPE html>
@@ -88,31 +95,28 @@ String game_params = "&mosaic_url=cranio_coronal_mosaic.jsp&dataset=coronal_case
 					<br>
 			</div>
 			<div class="row">		
-					<div id="keeper" class="span6">
+					<div id="keeper" class="span7">
 						<table>
 							<%
-								int level = -1;
-								int num_tile_rows = 4;
-								int num_tile_cols = 4;
+							String tile_index = "";
 								for (int i = 0; i < num_tile_rows; i++) {
 							%>
 							<tr>
 								<%
 									for (int j = 0; j < num_tile_cols; j++) {
 												level++;
+												tile_index = i+"_"+j;
 												int score = 0;
-												if (zoo_scores.size() > level) {
+												if(zoo_scores.get(level)!=null&&zoo_scores.get(level)>0){
 													score = zoo_scores.get(level);
 												}
 								%>
-								<td><div id="level_<%=level %>">
-					<% if(levels_passed == level){ %>
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
-						<%}else if(levels_passed > level){ %>
-						<img width="100" src="images/skull/skull_<%=level%>.png">
-						<%}else{%>
-						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
-						<% }%>				
+								<td width="50" ><div id="level_<%=level %>">
+					<% if(zoo_scores.get(level)==null||zoo_scores.get(level)<1){ %>
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary "><div class="small_level_button" style="height:20px; line-height:20px; font-weight:normal; width:30px;"><%=level %></div></a>
+						<%}else { %>
+						<img src="images/cube/cube_bots_<%=tile_index%>.png">
+						<%}%>				
 					</div></td>								
 								<%
 									}
@@ -129,6 +133,7 @@ String game_params = "&mosaic_url=cranio_coronal_mosaic.jsp&dataset=coronal_case
 						<p><a href="games.jsp">Back to game selector</a></p>
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
+
 					
 			</div>
 		</div>

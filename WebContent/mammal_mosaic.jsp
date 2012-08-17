@@ -37,7 +37,7 @@ if (player != null) {
 		}
 	}
 String board_size = "&nrows=1&ncols=2&max_hand=1";
-if(levels_passed>3){
+if(levels_passed>1){
 	board_size = "&nrows=2&ncols=2&max_hand=2";
 }
 game_params+=board_size;
@@ -117,12 +117,13 @@ game_params+=board_size;
 												if (zoo_scores.size() > level) {
 													score = zoo_scores.get(level);
 												}
+												
 								%>
 								<td><div id="level_<%=level %>">
 					<% if(levels_passed == level){ %>
 						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
 						<%}else if(levels_passed > level){ %>
-						<img width="100" src="images/Elephant_Shrew_<%=level%>.jpg">
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>"><img width="100" src="images/Elephant_Shrew_<%=level%>.jpg"></a>
 						<%}else{%>
 						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
 						<% }%>				
@@ -138,7 +139,7 @@ game_params+=board_size;
 						<p>Level 1: Elephant Shrew</p>
 					</div>
 					
-					<div id="opossum" class="span3">
+<%-- 					<div id="opossum" class="span3">
 						<table>
 							<%
 								for (int i = 0; i < num_tile_rows; i++) {
@@ -170,7 +171,7 @@ game_params+=board_size;
 							%>
 						</table>
 						<p>Level 2: Opossum</p>
-					</div>
+					</div> --%>
 					<div id="back" class="span3">
 						<p><a href="games.jsp">Back to game selector</a></p>
 						<jsp:include page="scoreboard_table.jsp" />

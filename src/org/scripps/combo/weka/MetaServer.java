@@ -232,12 +232,15 @@ public class MetaServer extends HttpServlet {
 				}else if(board.equals("mammal_1")){
 					cards = weka.getCardsByIndices("3,9");
 				}else if(board.equals("mammal_2")){
-					cards = weka.getCardsByIndices("13,12");
+					cards = weka.getCardsByIndices("9,7,6,14");
 				}else if(board.equals("mammal_3")){
+					cards = weka.getCardsByIndices("4,3,1,13");
+				}
+				/*}else if(board.equals("mammal_3")){
 					cards = weka.getCardsByIndices("8,11");
 				}else if(board.equals("mammal_4")){
 					cards = weka.getCardsByIndices("2,16,1,12");
-				}else if(board.equals("mammal_5")){
+				}*/else if(board.equals("mammal_5")){
 					cards = weka.getCardsByIndices("9,7,6,14");
 				}else if(board.equals("mammal_6")){
 					cards = weka.getCardsByIndices("6,11,2,15");
