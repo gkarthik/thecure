@@ -1,0 +1,99 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,select,p,blockquote,th,td{margin:0;padding:0}table{border-collapse:collapse;border-spacing:0}fieldset,img{border:0}address,button,caption,cite,code,dfn,em,input,optgroup,option,select,strong,textarea,th,var{font:inherit}del,ins{text-decoration:none}li{list-style:none}caption,th{text-align:left}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}q:before,q:after{content:''}abbr,acronym{border:0;font-variant:normal}sup{vertical-align:baseline}sub{vertical-align:baseline}legend{color:#000}
+
+/* Max Nanis <nanis@scripps.edu> */
+
+* {
+ /* outline: 1px solid green; */
+}
+
+body {
+  border-top: 20px solid #FF6699;
+}
+
+/* Main top */
+
+div#main {
+  width: 960px;
+  margin: 0 auto;
+}
+
+div#main h1 {
+  color: #3DAECC;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  font-size: 100px;
+  text-align: center;
+  padding: 40px;
+}
+
+div#main p {
+  color : #F69;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  line-height: 145%;
+  font-size: 25px;
+}
+
+/* Sectional compartment styles */
+
+div#main div.section {
+  padding: 20px;
+  margin: 20px;
+}
+
+div#main div.section h2 {
+  text-align: center;
+  padding: 10px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  font-size: 32px;
+  background-color: #3E9AB2;
+}
+
+div#main div.section p {
+  color : #20282B;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  padding: 4px;
+  text-indent: 16px;
+}
+
+/* Footer Specific Styles */
+
+div#footer {
+  width: 960px;
+  margin: 300px auto 0px;
+  padding: 40px;
+
+  bottom: 0px;
+  background-color: #20282B;
+  overflow: hidden;
+}
+
+div#footer div#column {
+  width: 440px;
+  padding: 0px 20px 20px 20px;
+  float: left;
+}
+
+div#footer div#column p {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  padding: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+/* Universal Utility Styles */
+
+.right {
+  text-align: right;
+}
+
+span.pink {
+  color: #B2365F;
+}
