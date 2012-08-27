@@ -8,6 +8,11 @@ html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre
 
 /* Max Nanis <nanis@scripps.edu> */
 
+@font-face {
+	font-family: League-Gothic;
+	src: url("League-Gothic.otf") format("opentype");
+}
+
 * {
  /* outline: 1px solid green; */
 }
@@ -24,12 +29,13 @@ div#main {
 }
 
 div#main h1 {
-  color: #3DAECC;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-  font-weight: 300;
-  font-size: 100px;
   text-align: center;
-  padding: 40px;
+  padding: 0px 40px 0px 40px;
+  font-family: "League-Gothic", Courier;
+  font-size: 200px;
+  text-transform: uppercase;
+  color: #B2365F;
+  text-shadow: 0px 2px 6px #666;
 }
 
 div#main p {
@@ -48,11 +54,15 @@ div#main div.section {
 
 div#main div.section h2 {
   text-align: center;
-  padding: 10px;
+  padding: 8px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-  font-weight: 300;
+  font-weight: 200;
   font-size: 32px;
+  letter-spacing: 4px;
+  color: #FFF57F;
+  text-shadow: 0px 0px 6px #666;
   background-color: #3E9AB2;
+  border-bottom: 16px solid #3DAECC;
 }
 
 div#main div.section p {
@@ -66,7 +76,7 @@ div#main div.section p {
 
 div#footer {
   width: 960px;
-  margin: 300px auto 0px;
+  margin: 100px auto 0px;
   padding: 40px;
 
   bottom: 0px;
