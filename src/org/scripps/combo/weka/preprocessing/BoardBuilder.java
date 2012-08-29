@@ -20,7 +20,7 @@ public class BoardBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String train_file = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_train.arff";
+		String train_file = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_train.arff" ;
 		int n_per_board = 25;
 		String output_file = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_train_boards_by25.txt";
 		try {
