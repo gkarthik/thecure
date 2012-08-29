@@ -6,7 +6,7 @@
 <%@ page import="java.util.ArrayList"%>
 <%
 //params for game board
-String game_params = "&mosaic_url=bc_gr_mosaic.jsp&dataset=griffith_full_filtered&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
+String game_params = "&mosaic_url=boardroom.jsp&dataset=griffith_full_filtered&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
 int level = -1;
 int num_tile_rows = 10;
 int num_tile_cols = 10;
@@ -15,7 +15,7 @@ boolean all_levels_open = true;
 	String username = "";
 	Player player = (Player) session.getAttribute("player");
 	if (player == null) {
-		response.sendRedirect("/combo/login.jsp");
+		response.sendRedirect("login.jsp");
 	} else {
 		username = player.getName();
 	}
@@ -58,11 +58,10 @@ boolean all_levels_open = true;
 <link
 	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
 	rel="stylesheet" type="text/css" />
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
-	type="text/javascript"></script>
-<script
-	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-</head>
+	
+	<script src="js/libs/jquery-1.8.0.min.js"></script>
+<script src="js/libs/jquery-ui-1.8.0.min.js"></script>
+
 <body>
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner"

@@ -50,8 +50,10 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 	type="text/css" media="screen">
 <link rel="stylesheet" href="assets/css/combo.css" type="text/css"
 	media="screen">
-<link rel="stylesheet" href="assets/css/jquery-ui-1.8.css"
-	type="text/css" media="screen">
+	
+<link
+	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
 		
 <style>
 body {
@@ -70,6 +72,15 @@ body {
 		ran = ""+(int)Math.rint(Math.random()*1000);
 	}
 %>
+
+<script src="js/libs/d3.v2.min.js"></script>
+<script src="js/libs/underscore-min.js"></script>
+<script src="js/libs/jquery-1.8.0.min.js"></script>
+
+<script src="js/libs/jquery-ui-1.8.0.min.js"></script>
+
+<script src="js/libs/jquery.sparkline.min.js"></script>
+<script src="js/tree.js"></script>
 
 <script>	
 var cards = new Array();
@@ -676,7 +687,7 @@ $(document).ready(function() {
 					<ul class="nav">
 						<li><a href="help.jsp" target="blank">Help!</a>
 						</li>
-						<li><a href="index.jsp">logout</a>
+						<li><a href="logout.jsp">logout</a>
 						</li>
 					</ul>
 				</div>
@@ -847,12 +858,6 @@ $(document).ready(function() {
 	</div>
 	
 	<div id="sound"></div>
-
-<script src="js/libs/d3.v2.min.js"></script>
-<script src="js/libs/underscore-min.js"></script>
-<script src="js/libs/jquery.sparkline.min.js"></script>
-<script src="js/trees.js"></script>
-<script src="js/libs/jquery-ui-1.8.0.min.js"></script>
 
 </body>
 </html>
