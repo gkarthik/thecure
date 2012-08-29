@@ -7,6 +7,6 @@ Player player = (Player) session.getAttribute("player");
 if(player!=null){
 	session.removeAttribute("player");
 }
-response.sendRedirect("/combo/index.jsp");   
+response.sendRedirect("./");   
 %>
 

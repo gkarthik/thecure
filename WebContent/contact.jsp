@@ -16,10 +16,10 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">COMBO</a>
+          <a class="brand" href="./">The Cure</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="play.jsp">Play!</a></li>
+              <li><a href="boardroom.jsp">Play!</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -38,7 +38,7 @@
   	<li><a href="https://groups.google.com/forum/#!forum/genegames">Write to the Web forum</a></li>
   	<li><a href="mailto:bgood@scripps.edu">Email me</a></li>
   	<li><a href="https://twitter.com/bgood/">Follow me</a></li>
-  	<li><a href="http://sulab.org/contact-us/">Stalk us</a></li>
+  	<li><a href="http://sulab.org/contact-us/">Find us on a map</a></li>
   	</ul>
     </div>
     </div>
