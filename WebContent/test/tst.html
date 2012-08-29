@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Insert title here</title>
+<script src="../js/libs/d3.v2.min.js"></script>
+</head>
+<body>
+<script>
+var data = {};
+data.chart = d3.range(20).map(function(i) {
+  return {timestamp: ( new Date(2012, 9, (i+6), 1, 1, 23, 23).getTime() ), y: (Math.sin(i / 3) + 1) / 2};
+});
+data.leaderboard = d3.range(10).map(function(i) {
+    return {username: ("username" + i), score: 1000-(i*50)}
+})
+console.log(data);
+</script>
+</body>
+</html>

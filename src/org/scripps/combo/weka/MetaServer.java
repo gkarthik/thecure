@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.servlet.ServletConfig;
@@ -29,6 +30,7 @@ import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
+import org.scripps.util.Mail;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.JRip;
@@ -50,7 +52,7 @@ public class MetaServer extends HttpServlet {
 		name_dataset = new HashMap<String, Weka>();
 	}
 
-	public void init(ServletConfig config){
+	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
 

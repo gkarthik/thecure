@@ -36,6 +36,7 @@ if(player==null){
 }
 
 //take them to the games area
+//optionally add a "how to play' screen here if{newuser}
 if (success) {
     session.setAttribute("username", username);
     session.setAttribute("player", player);
