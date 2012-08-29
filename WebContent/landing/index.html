@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+        <div id="main">
+          
+          <h1>The Cure</h1>
+          <h2>Play Games, Defeat Cancer</h2>
+
+          <div id="header">
+
+            <div id="chart"></div>
+
+            <div id="action">
+              <input class="playnow" type="submit" value="Play Now" />
+
+              <div id="email">
+                <label for="email">Refer a Friend:</label><br />
+                <input class="email" type="email" name="usremail" placeholder="Email Address" />
+                <input class="email" type="email" name="usremail" placeholder="Your Name" />
+                <input class="emailsub" type="submit" value="Submit" />
+              </div>
+            </div>
+
+            <div id="leaderboard">
+              <h3>HIVE Leader Board</h3>
+              <ol>
+                <li><span class="username">username</span> <span class="score">300 pts</span></li>
+                <li><span class="username">username</span> <span class="score">300 pts</span></li>
+                <li><span class="username">username</span> <span class="score">300 pts</span></li>
+                <li><span class="username">username</span> <span class="score">300 pts</span></li>
+                <li><span class="username">username</span> <span class="score">300 pts</span></li>
+              </ol>
+
+            </div>
+
+          </div>
+
+          <div class="section">
+            <h2>How it works</h2>
+              <ol>
+                <li>People like you have different kinds of biological expertise, problem-solving abilities, and information-seeking strategies.</li>
+                <li>Each of you plays a game that captures this human intelligence</li>
+                <li>The player intelligence combined with artificial intelligence to form a novel, robust predictor of breast cancer prognosis</li>
+                <li>Better determinations of prognosis result in more effective treatments</li>
+                <li>More people defeat breast cancer!</li>
+              </ol>
+          </div>
+
+          <div class="section">
+            <h2>How to play</h2>
+            <p>From this day forward, Flight Control will be known by two words: 'Tough' and 'Competent.' Tough means we are forever accountable for what we do or what we fail to do. We will never again compromise our responsibilities. Every time we walk into Mission Control we will know what we stand for. Competent means we will never take anything for granted. We will never be found short in our knowledge and in our skills. Mission Control will be perfect. When you leave this meeting today you will go to your office and the first thing you will do there is to write 'Tough and Competent' on your blackboards. It will never be erased. Each day when you enter the room these words will remind you of the price paid by Grissom, White, and Chaffee. These words are the price of admission to the ranks of Mission Control.</p>
+          </div>
+
+        </div>
+
+        <div id="footer">
+          <div id="column">
+            <p>The Su Laboratory</p>
+            <p>Team <span class="pink">HIVE</span> in DREAM5 Competition</p>
+            <p><span class="pink">Project Team:</span> Andrew Su, Ben Good, Salvatore Loguercio, Max Nanis</p>
+          </div>
+          <div id="column" class="right">
+            <p><span class="pink">The Scripps Research Institute</span></p>
+            <p>10550 North Torrey Pines Road</p>
+            <p>La Jolla, CA 92037</p>
+          </div>
+        </div>
+  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/underscore-min.js"></script>
+  <script src="js/libs/d3.v2.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        
+      var data = d3.range(20).map(function(i) {
+        return {x: i / 19, y: (Math.sin(i / 3) + 1) / 2};
+      });
+
+  var w = 200,
+      h = 200,
+      p = 30,
+      x = d3.scale.linear().domain([0, 1]).range([0, w]),
+      y = d3.scale.linear().domain([0, 1]).range([h, 0]);
+
+  var vis = d3.select("#chart")
+    .data([data])
+    .append("svg:svg")
+    .attr("width", w + p * 2)
+    .attr("height", h + p * 2)
+    .append("svg:g")
+    .attr("transform", "translate(" + p + "," + p + ")");
+
+  var rules = vis.selectAll("g.rule")
+    .data(x.ticks(6))
+    .enter().append("svg:g")
+    .attr("class", "rule");
+
+  rules.append("svg:line")
+    .attr("x1", x)
+    .attr("x2", x)
+    .attr("y1", 0)
+    .attr("y2", h - 1);
+
+  rules.append("svg:line")
+    .attr("class", function(d) { return d ? null : "axis"; })
+    .attr("y1", y)
+    .attr("y2", y)
+    .attr("x1", 0)
+    .attr("x2", w + 1);
+
+  rules.append("svg:text")
+    .attr("x", x)
+    .attr("y", h + 3)
+    .attr("dy", ".71em")
+    .attr("text-anchor", "middle")
+    .text(x.tickFormat(10));
+
+  rules.append("svg:text")
+    .attr("y", y)
+    .attr("x", -3)
+    .attr("dy", ".35em")
+    .attr("text-anchor", "end")
+    .text(y.tickFormat(10));
+
+  vis.append("svg:path")
+    .attr("class", "line")
+    .attr("d", d3.svg.line()
+      .x(function(d) { return x(d.x); })
+      .y(function(d) { return y(d.y); }));
+
+  vis.selectAll("circle.line")
+    .data(data)
+    .enter().append("svg:circle")
+    .attr("class", "line")
+    .attr("cx", function(d) { return x(d.x); })
+    .attr("cy", function(d) { return y(d.y); })
+    .attr("r", 1.5);
+    });
+  </script>
+  </body>
+</html>

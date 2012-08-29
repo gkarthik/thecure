@@ -1,0 +1,284 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,select,p,blockquote,th,td{margin:0;padding:0}table{border-collapse:collapse;border-spacing:0}fieldset,img{border:0}address,button,caption,cite,code,dfn,em,input,optgroup,option,select,strong,textarea,th,var{font:inherit}del,ins{text-decoration:none}li{list-style:none}caption,th{text-align:left}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}q:before,q:after{content:''}abbr,acronym{border:0;font-variant:normal}sup{vertical-align:baseline}sub{vertical-align:baseline}legend{color:#000}
+
+/* Max Nanis <nanis@scripps.edu> */
+
+@font-face {
+	font-family: League-Gothic;
+	src: url("League-Gothic.otf") format("opentype");
+}
+
+* {
+ /* outline: 1px solid green; */
+}
+
+body {
+  border-top: 20px solid #FF6699;
+}
+
+/* Main top */
+
+/*
+ *Join the CURE
+ play now       invite a friend
+ *
+1. we know science
+2. get people to play
+
+interested in your mind
+
+
+*/
+div#main {
+  width: 960px;
+  margin: 0 auto;
+}
+
+div#main h1 {
+  text-align: center;
+  padding: 0px 40px 0px 40px;
+  font-family: "League-Gothic", Courier;
+  font-size: 200px;
+  text-transform: uppercase;
+  color: #B2365F;
+  text-shadow: 0px 2px 6px #666;
+}
+
+div#main h2 {
+  text-align: center;
+  padding: 0px 40px 0px 40px;
+  font-family: "League-Gothic", Courier;
+  font-size: 60px;
+  text-transform: uppercase;
+  color: #20282B;
+  text-shadow: 0px 2px 6px #666;
+  position: relative;
+  top: -30px;
+}
+
+div#main p {
+  color : #F69;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  line-height: 145%;
+  font-size: 25px;
+}
+
+
+/* Header section */
+
+#header {
+  overflow:hidden;
+}
+
+#main #action {
+  width: 380px;
+  float: left;
+}
+
+#main #action input.playnow {
+  margin: 30px 0px 0px 50px;
+  text-align:center;
+  padding: 0px 20px 0px 20px;
+  border: none;
+  font-family: "League-Gothic", Courier;
+  font-size: 80px;
+  letter-spacing: 4px;
+  text-shadow: 0px 2px 6px #666;
+    -webkit-border-radius: 8px;
+          border-radius: 8px;
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box;
+  color: #20282B;
+  border: 10px solid #3DAECC;
+  background-color: #B2365F;
+  background-image: linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
+  background-image: -o-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
+  background-image: -moz-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
+  background-image: -webkit-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
+  background-image: -ms-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
+  background-image: -webkit-gradient(linear, left bottom,	left top,	color-stop(0.08, rgb(178,54,95)), color-stop(0.5, rgb(255,102,153)));
+}
+
+#header #chart {
+  margin: 12px 12px 12px 40px;
+  width: 260px;
+  height: 260px;
+  float: left;
+  font: 10px sans-serif;
+}
+
+#chart .rule line {
+  stroke: #eee;
+  shape-rendering: crispEdges;
+}
+
+#chart .rule line.axis {
+  stroke: #000;
+}
+
+#chart .line {
+  fill: none;
+  stroke: #B2365F;
+  stroke-width: 1.5px;
+}
+
+#chart circle.line {
+  fill: #fff;
+}
+
+#action #email {
+  margin: 20px;
+  float: left;
+}
+
+#action #email label {
+  margin: 0px 0px 0px 20px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+ 
+}
+
+#action #email input.email {
+  margin: 6px 20px 6px 20px;
+  padding: 6px;
+  color: #666;
+
+  font: italic 16px Georgia, "Times New Roman", Times, serif;
+
+  letter-spacing: 1px;
+  border: none;
+  -webkit-border-radius: 2px;
+          border-radius: 2px;
+ -webkit-box-shadow: 0px 0px 4px 0px #20282B;
+          box-shadow: 0px 0px 4px 0px #20282B;
+}
+
+#action #email input.emailsub {
+  border: none;
+  background-color: #B2365F;
+  padding: 20px 8px 20px 8px;
+  float: right;
+  position: relative;
+  right: 40px;
+  bottom: 30px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: bold;
+    text-shadow: 1px 1px 2px #fff;
+  -webkit-border-radius: 2px;
+          border-radius: 2px;
+ -webkit-box-shadow: 0px 0px 4px 0px #20282B;
+          box-shadow: 0px 0px 4px 0px #20282B;
+  cursor: pointer;
+}
+
+#header #leaderboard {
+  float: left;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+  padding: 26px 0px 6px 0px;
+
+}
+
+#header #leaderboard h3 {
+  font-weight: bold;
+  text-align: center;
+  padding: 4px;
+  font-size: 22px;
+  color: #20282B;
+}
+
+#header #leaderboard ol {
+  margin: 2px;
+}
+
+#header #leaderboard ol li {
+  padding: 8px;
+  border-bottom: 1px solid #3DAECC;
+  color: #20282B;
+}
+
+#header #leaderboard span.score {
+  color: #B2365F;
+  float: right;
+}
+
+/* Sectional compartment styles */
+
+div#main div.section {
+  padding: 20px;
+  margin: 20px;
+}
+
+div#main div.section h2 {
+  text-align: center;
+  padding: 8px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+  font-size: 32px;
+  letter-spacing: 4px;
+  color: #FFF57F;
+  text-shadow: 0px 0px 6px #666;
+  background-color: #3E9AB2;
+  border-bottom: 16px solid #3DAECC;
+}
+
+div#main div.section p {
+  color : #20282B;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  padding: 4px;
+  text-indent: 16px;
+}
+
+div#main div.section ol {
+  padding: 4px;
+  margin-left:60px;
+}
+
+div#main div.section ol li {
+  padding: 8px;
+  color : #20282B;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  line-height: 145%;
+  font-size: 25px;
+  list-style-type: disc;
+}
+
+/* Footer Specific Styles */
+
+div#footer {
+  width: 960px;
+  margin: 100px auto 0px;
+  padding: 40px;
+
+  bottom: 0px;
+  background-color: #20282B;
+  overflow: hidden;
+}
+
+div#footer div#column {
+  width: 440px;
+  padding: 0px 20px 20px 20px;
+  float: left;
+}
+
+div#footer div#column p {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  padding: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+/* Universal Utility Styles */
+
+.right {
+  text-align: right;
+}
+
+span.pink {
+  color: #B2365F;
+}
