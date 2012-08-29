@@ -44,7 +44,7 @@ $(document).ready(function() {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">COMBO</a>
+          <a class="brand" href="/">The Cure</a>
       </div>
     </div>
 	</div>

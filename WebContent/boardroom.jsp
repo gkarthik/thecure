@@ -74,7 +74,6 @@ boolean all_levels_open = true;
 				<div class="nav-collapse">
 					<ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>
-						<li><a href="games.jsp">other games</a></li>
 						<li><a href="logout.jsp">logout</a></li>
 					</ul>
 				</div>
@@ -129,7 +128,6 @@ boolean all_levels_open = true;
 					
 			
 					<div id="back" class="span3">
-						<p><a href="games.jsp">Back to game selector</a></p>
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
 
