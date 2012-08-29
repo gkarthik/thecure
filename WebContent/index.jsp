@@ -16,10 +16,15 @@ GameLog.high_score sb = log.getScoreBoard();
 
 <link rel="apple-touch-startup-image" href="images/barney.png">
 
+<link
+	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
-	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-	<script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+<script src="js/libs/jquery-1.8.0.min.js"></script>
+<script src="js/libs/jquery-ui-1.8.0.min.js"></script>
+
+
 
 <script type="text/javascript">
 $(document).ready(function() {

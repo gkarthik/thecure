@@ -18,7 +18,7 @@ Hello <%=username %>
 <% 
 //try again
 if (username == null || password == null) {
-	response.sendRedirect("/combo/login.jsp");   
+	response.sendRedirect("login.jsp");   
 }
 //validate
 boolean success = true;
@@ -39,8 +39,8 @@ if(player==null){
 if (success) {
     session.setAttribute("username", username);
     session.setAttribute("player", player);
- 	response.sendRedirect("./games.jsp");   
+ 	response.sendRedirect("boardroom.jsp");   
 }else{ //something went wrong 
-	response.sendRedirect("./login.jsp");    
+	response.sendRedirect("login.jsp");    
 }
 %>
