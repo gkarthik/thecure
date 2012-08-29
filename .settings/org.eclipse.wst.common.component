@@ -3,7 +3,7 @@
     <wb-module deploy-name="combo">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <property name="context-root" value="combo"/>
         <property name="java-output-path" value="/combo/build/classes"/>
+        <property name="context-root" value="cure"/>
     </wb-module>
 </project-modules>
