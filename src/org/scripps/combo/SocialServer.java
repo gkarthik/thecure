@@ -82,6 +82,7 @@ public class SocialServer extends HttpServlet {
 			String by = request.getParameter("by");
 			String message = by+" has invited "+invited+" to play the cure.";
 			mail.sendMail(message, "Invite", "bgood@scripps.edu", "Ben", "Ben", "ben.mcgee.good@gmail.com");
+			response.sendRedirect("/cure/");
 		}else if(command.equals("gamelogs")){
 			GameLog log = new GameLog();
 			GameLog.high_score sb = log.getScoreBoard();
@@ -91,42 +92,7 @@ public class SocialServer extends HttpServlet {
 			out.write(json);
 			System.out.println(json);
 			out.close();
-		}
-/*				"{
-  "data": {
-    "leadersboard": [
-      {
-        "score": 1349,
-        "username": "george"
-      },
-      {
-        "score": 13,
-        "username": "geo"
-      },
-      {
-        "score": 149,
-        "username": "orge"
-      }
-    ],
-    "chart": [
-      {
-        "timestamp": 1349510483023,
-        "y": 0.1
-      },
-      {
-        "timestamp": 1349510483024,
-        "y": 0.2
-      },
-      {
-        "timestamp": 1349510483025,
-        "y": 0.3
-      }
-    ]
-  }
-}"
-*/		
-		
-		
+		}		
 	}
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
