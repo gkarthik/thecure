@@ -23,17 +23,6 @@ body {
 
 /* Main top */
 
-/*
- *Join the CURE
- play now       invite a friend
- *
-1. we know science
-2. get people to play
-
-interested in your mind
-
-
-*/
 div#main {
   width: 960px;
   margin: 0 auto;
@@ -101,6 +90,12 @@ div#main p {
   background-image: -webkit-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
   background-image: -ms-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
   background-image: -webkit-gradient(linear, left bottom,	left top,	color-stop(0.08, rgb(178,54,95)), color-stop(0.5, rgb(255,102,153)));
+  cursor: pointer;
+}
+
+#main #action input.playnow:active {
+  -webkit-box-shadow: 0px 0px 12px 0px #3DAECC;
+          box-shadow: 0px 0px 12px 0px #3DAECC;
 }
 
 #header #chart {
@@ -120,14 +115,22 @@ div#main p {
   stroke: #000;
 }
 
+#chart line {
+  fill: none;
+  stroke: #B2365F;
+  stroke-width: .5px;
+}
+
 #chart .line {
   fill: none;
   stroke: #B2365F;
-  stroke-width: 1.5px;
 }
 
-#chart circle.line {
-  fill: #fff;
+
+#chart path.domain {
+  shape-rendering: crispEdges;
+  stroke: #373c3f;
+  fill: none;
 }
 
 #action #email {
@@ -139,7 +142,14 @@ div#main p {
   margin: 0px 0px 0px 20px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
- 
+}
+
+#action #email p#emailAlert {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+  font-size: 20px;
+  position: absolute;
+  margin-left: 44px;
 }
 
 #action #email input.email {
@@ -173,6 +183,11 @@ div#main p {
  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
           box-shadow: 0px 0px 4px 0px #20282B;
   cursor: pointer;
+}
+
+#action #email input.emailsub:active {
+ -webkit-box-shadow: 0px 0px 8px 0px #20282B;
+          box-shadow: 0px 0px 8px 0px #20282B;
 }
 
 #header #leaderboard {
@@ -226,6 +241,21 @@ div#main div.section h2 {
   border-bottom: 16px solid #3DAECC;
 }
 
+div#main div.section h3 {
+  text-align: center;
+  padding: 8px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+  font-size: 32px;
+  letter-spacing: 4px;
+  color: #3DAECC;
+}
+
+div#main div.section a {
+  text-decoration: none;
+  color: #3DAECC;
+}
+
 div#main div.section p {
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
@@ -273,6 +303,11 @@ div#footer div#column p {
   color: #999;
 }
 
+div#footer iframe.twitter-share-button {
+  float: left;
+  margin: 8px;
+}
+
 /* Universal Utility Styles */
 
 .right {
@@ -281,4 +316,10 @@ div#footer div#column p {
 
 span.pink {
   color: #B2365F;
+}
+
+sup {
+  position: relative;
+  font-size: 16px;
+  top: -8px;
 }
