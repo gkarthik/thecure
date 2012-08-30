@@ -62,6 +62,9 @@ boolean all_levels_open = true;
 	<script src="js/libs/jquery-1.8.0.min.js"></script>
 <script src="js/libs/jquery-ui-1.8.0.min.js"></script>
 
+<jsp:include page="js/analytics.js" />
+</head>
+
 <body>
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner"
@@ -131,7 +134,7 @@ boolean all_levels_open = true;
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
 
-					
+									
 			</div>
 		</div>
 	</div>

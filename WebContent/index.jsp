@@ -39,7 +39,9 @@ $(document).ready(function() {
 
 </script>
 
+<jsp:include page="js/analytics.js" />
 </head>
+
 <body>
 	<div class="navbar navbar-fixed-top">
       <div class="navbar-inner">

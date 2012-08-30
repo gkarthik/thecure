@@ -3,17 +3,27 @@
  */
 package org.scripps.combo;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.json.JSONObject;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Track data for combo - high scores, players, etc.
@@ -21,26 +31,11 @@ import org.scripps.util.MapFun;
  *
  */
 public class GameLog {
-
+	ObjectMapper mapper;
+	ObjectNode json_root;
 	Map<String, Integer> pheno_multiplier;
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		GameLog log = new GameLog();
-		GameLog.high_score sb = log.getScoreBoard();
-		for(String name : sb.getPlayer_max().keySet()){
-			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
-			System.out.println(name+" "+sb.getPlayer_global_points().get(name));
-		}
-//		for(String board : sb.getBoard_max().keySet()){
-//			System.out.println(board+" "+sb.getBoard_max().get(board)+" "+sb.getBoard_avg().get(board));
-//		}
-
-	}
-
-		
+	
 	public GameLog() {
 		super();
 		pheno_multiplier = new HashMap<String, Integer>();
@@ -49,11 +44,78 @@ public class GameLog {
 		pheno_multiplier.put("vantveer", 10);
 		pheno_multiplier.put("coronal_case_control", 15);
 		pheno_multiplier.put("griffith_full_filtered", 20);
+		mapper = new ObjectMapper();
+		json_root = mapper.createObjectNode();
+	}
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		GameLog log = new GameLog();
+		GameLog.high_score sb = log.getScoreBoard();
+		String json = log.getD3CompatibleJson(sb);
+		System.out.println(json);
+//		for(String name : sb.getPlayer_max().keySet()){
+//			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
+//			System.out.println(name+" "+sb.getPlayer_global_points().get(name));
+//		}
+//		for(Entry<Long, Integer> date_game : sb.getDate_games().entrySet()){
+//			System.out.println(date_game.getKey()+" "+date_game.getValue());
+//		}
+//		JSONObject r = new JSONObject(sb);
+//		System.out.println(r.toString());
+//		for(String board : sb.getBoard_max().keySet()){
+//			System.out.println(board+" "+sb.getBoard_max().get(board)+" "+sb.getBoard_avg().get(board));
+//		}
+
 	}
 
 
 
+
+	public String getD3CompatibleJson(high_score sb){
+		String json = "";
+		
+		//json_root.put("name", top.getLabel());
+		//json_root.put("kind", "split_node");
+		
+		ArrayNode games = mapper.createArrayNode();		
+		//for chart
+		for(Entry<Long, Integer> date_game : sb.getDate_games().entrySet()){
+			//System.out.println(date_game.getKey()+" "+date_game.getValue());
+			ObjectNode game = mapper.createObjectNode();
+			game.put("timestamp", date_game.getKey());
+			game.put("y", date_game.getValue());
+			games.add(game);
+		}
+		json_root.put("chart", games);
+		
+		ArrayNode scores = mapper.createArrayNode();
+		//for scoreboard
+		for(Entry<String, Integer> player_score : sb.getPlayer_global_points().entrySet()){
+			ObjectNode player = mapper.createObjectNode();
+			player.put("username", player_score.getKey());
+			player.put("score", player_score.getValue());
+			scores.add(player);
+		}
+		json_root.put("leadersboard", scores);
+		try {
+			json = mapper.writeValueAsString(json_root);
+		} catch (JsonGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return json;
+	}
+
 	public class high_score{
+		Map<Long, Integer> date_games;
 		Map<String, Integer> player_global_points;
 		Map<String, Integer> player_games;
 		Map<String, Integer> player_max;
@@ -97,8 +159,16 @@ public class GameLog {
 		public void setBoard_avg(Map<String, Float> board_avg) {
 			this.board_avg = board_avg;
 		}
-		
+		public Map<Long, Integer> getDate_games() {
+			return date_games;
+		}
+
+		public void setDate_games(Map<Long, Integer> date_games) {
+			this.date_games = date_games;
+		}
 	}
+	
+
 	
 	public high_score getScoreBoard(){
 		high_score scores = new high_score();
@@ -108,7 +178,8 @@ public class GameLog {
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
 		Map<String, Integer> board_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();
-		
+		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();;
+		int games_won = 0;
 		for(Hand hand : hands){
 			String player = hand.getPlayer_name();
 			if(hand.getPhenotype()==null){
@@ -126,6 +197,8 @@ public class GameLog {
 			if(board_performance < 1){
 				continue;
 			}
+			games_won++;
+			date_games.put(hand.getTimestamp().getTimeInMillis(), games_won);
 			
 			points = multiplier*board_performance;
 			Integer gpoints = player_global_points.get(player);
@@ -228,6 +301,7 @@ public class GameLog {
 		scores.setPlayer_avg(player_avg_out);
 		scores.setPlayer_max(player_max_out);
 		scores.setPlayer_global_points(player_global_out);
+		scores.setDate_games(date_games);
 		return scores;
 	}
 	
@@ -250,6 +324,9 @@ public class GameLog {
 				hand.setPhenotype(rslt.getString("phenotype"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
+				Calendar t = Calendar.getInstance();
+				t.setTime(rslt.getTimestamp("time"));
+				hand.setTimestamp(t);
 				hands.add(hand);
 			}
 		} catch (SQLException e) {

@@ -7,6 +7,17 @@
   </welcome-file-list>
   <servlet>
     <description></description>
+    <display-name>SocialServer</display-name>
+    <servlet-name>SocialServer</servlet-name>
+    <servlet-class>org.scripps.combo.SocialServer</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SocialServer</servlet-name>
+    <url-pattern>/SocialServer</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <description></description>
     <display-name>WekaServer</display-name>
     <servlet-name>WekaServer</servlet-name>
     <servlet-class>org.scripps.combo.weka.WekaServer</servlet-class>

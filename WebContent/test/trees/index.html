@@ -46,13 +46,24 @@
 }
 
 </style>
-</head>
-<body>
-<div id="chart33"></div>
 <script src="libs/d3.v2.min.js"></script>
 <script src="libs/underscore-min.js"></script>
 <script src="libs/jquery-1.7.2.min.js"></script>
 <script src="libs/jquery.sparkline.min.js"></script>
 <script src="combo_script.js"></script>
+</head>
+<body>
+<script>
+var data = {};
+data.chart = d3.range(20).map(function(i) {
+  return {timestamp: ( new Date(2012, 9, (i+6), 1, 1, 23, 23).getTime() ), y: (Math.sin(i / 3) + 1) / 2};
+});
+data.leaderboard = d3.range(10).map(function(i) {
+    return {username: ("username" + i), score: 1000-(i*50)}
+})
+</script>
+
+<div id="chart33"></div>
+
 </body>
 </html>
