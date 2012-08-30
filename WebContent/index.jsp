@@ -12,7 +12,7 @@ GameLog.high_score sb = log.getScoreBoard();
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="blue" />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Welcome to COMBO1, games of prediction and discovery</title>
+<title>Welcome to The Cure.  A game to help defeat breast cancer.</title>
 
 <link rel="apple-touch-startup-image" href="images/barney.png">
 
@@ -27,7 +27,7 @@ GameLog.high_score sb = log.getScoreBoard();
 
 
 <script type="text/javascript">
-$(document).ready(function() {
+/* $(document).ready(function() {
   var agent =  navigator.userAgent;
   if((agent.indexOf("Safari") == -1)&&(agent.indexOf("Chrome") == -1)&&(agent.indexOf("AppleWebKit") == -1)){
   	alert("Sorry, this only works on Chrome and Safari right now... \nLooks like you are using \n"+agent);
@@ -35,7 +35,7 @@ $(document).ready(function() {
   setTimeout(function() { 
 	  window.scrollTo(0, 1); 
 	  }, 100);
-});
+}); */
 
 </script>
 
@@ -51,12 +51,11 @@ $(document).ready(function() {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">COMBO</a>
+          <a class="brand" href="./">The Cure</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="about.jsp" target="_blank">About</a></li>
-              <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
-              <li><a href="http://www.genegames.org" target="_blank">Other gene games</a></li>
+              <li><a href="contact.jsp" target="_blank">Contact</a></li>
               <li><a href="login.jsp">Login and play</a></li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -69,12 +68,15 @@ $(document).ready(function() {
     <div class="row">
     <div class="span10">
 		<div id="welcome" style="text-align:center;">
-			<h1 class="offset1">Welcome to COMBO!</h1>
-			<p>Come on in and <a href="login.jsp">play as yourself</a>. Or play <a href="checkuser.jsp?username=anonymous_hero&password=123">anonymously</a></p> 
-
-			<p> 
-			Read <a href="about.jsp" target="_blank">about</a> the COMBO concept, or sign up for our <a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">mailing list</a>.
-			</p>
+			<h1 class="offset1">Welcome to TheCure!</h1>
+			<p>Come on in and <a href="login.jsp">play</a></p> 
+			<form action="./SocialServer">
+				Your name <input id="by" type="text" name="by" /><br>
+				Invited person's email <input id="invited" type="text" name="invited" /><br>
+				<input id="command" type="hidden" name="command" value="invite"/>
+				<input	type="submit" value="Submit" /> 		
+			</form>	
+			
 		</div>
 	</div>
 	</div>

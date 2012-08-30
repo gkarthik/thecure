@@ -8,6 +8,9 @@ String password = request.getParameter("password");
 String newuser = request.getParameter("newuser");
 String email = request.getParameter("email");
 String ip = request.getRemoteAddr();
+String degree = request.getParameter("degree");
+String cancer = request.getParameter("cancer");
+String biologist = request.getParameter("biologist");
 Player player = new Player();
 player.setName(username);
 player.setPassword(password);
@@ -25,7 +28,7 @@ boolean success = true;
 
 //try to create a new user 
 if(newuser!=null){
-	player = Player.create(username, ip, password, email); 
+	player = Player.create(username, ip, password, email, degree, cancer, biologist); 
 }else{
 	player = player.lookupByUserPassword();
 }

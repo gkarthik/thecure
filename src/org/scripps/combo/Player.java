@@ -27,6 +27,9 @@ public class Player {
 	int top_score;
 	int games_played;
 	String email;
+	String degree;
+	String cancer;
+	String biologist;
 
 	//Each game (the string key) contains multiple levels (the indexes of list of integers)
 	//position in the list corresponds to the level 
@@ -121,7 +124,7 @@ public class Player {
 		return player;
 	}
 	
-	public static Player create(String name, String ip, String password, String email){
+	public static Player create(String name, String ip, String password, String email, String degree, String cancer, String biologist){
 		//first check if username taken
 		Player player =  lookupPlayer(name);
 		if(player!=null){
@@ -129,7 +132,7 @@ public class Player {
 		}
 		//if no player exists make a new one
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into player values(null,?,?,?,0,0,?,'',?,?)";
+		String insert = "insert into player values(null,?,?,?,0,0,?,'',?,?,?,?,?)";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, name);
@@ -138,7 +141,11 @@ public class Player {
 			p.setString(4,email);
 			p.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
 			p.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+			p.setString(7, degree);
+			p.setString(8,cancer);
+			p.setString(9, biologist);
 			p.executeUpdate();
+			
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
