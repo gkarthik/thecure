@@ -6,6 +6,7 @@ package org.scripps.combo;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 
 import org.scripps.util.JdbcConnection;
 
@@ -26,6 +27,7 @@ public class Hand {
 	String phenotype;
 	String game_type;
 	int win;
+	Calendar timestamp;
 	
 	public int getId() {
 		return id;
@@ -127,6 +129,13 @@ public class Hand {
 	public void setWin(int win) {
 		this.win = win;
 	}
+	public Calendar getTimestamp() {
+		return timestamp;
+	}
+	public void setTimestamp(Calendar timestamp) {
+		this.timestamp = timestamp;
+	}
+
 
 
 	

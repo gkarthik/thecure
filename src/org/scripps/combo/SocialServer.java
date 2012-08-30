@@ -82,8 +82,16 @@ public class SocialServer extends HttpServlet {
 			String by = request.getParameter("by");
 			String message = by+" has invited "+invited+" to play the cure.";
 			mail.sendMail(message, "Invite", "bgood@scripps.edu", "Ben", "Ben", "ben.mcgee.good@gmail.com");
-		}else if(command.equals("")){
-			String json = ""; //send it all, plus a logged in user
+		}else if(command.equals("gamelogs")){
+			GameLog log = new GameLog();
+			GameLog.high_score sb = log.getScoreBoard();
+			String json = log.getD3CompatibleJson(sb);
+			response.setContentType("text/json");
+			PrintWriter out = response.getWriter();
+			out.write(json);
+			System.out.println(json);
+			out.close();
+		}
 /*				"{
   "data": {
     "leadersboard": [
@@ -116,7 +124,7 @@ public class SocialServer extends HttpServlet {
     ]
   }
 }"
-*/		}
+*/		
 		
 		
 	}
