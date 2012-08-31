@@ -39,11 +39,16 @@ public class GameLog {
 	public GameLog() {
 		super();
 		pheno_multiplier = new HashMap<String, Integer>();
-		pheno_multiplier.put("mammal", 5);
-		pheno_multiplier.put("zoo", 7);
-		pheno_multiplier.put("vantveer", 10);
-		pheno_multiplier.put("coronal_case_control", 15);
-		pheno_multiplier.put("griffith_full_filtered", 20);
+//		pheno_multiplier.put("mammal", 5);
+//		pheno_multiplier.put("zoo", 7);
+//		pheno_multiplier.put("vantveer", 10);
+//		pheno_multiplier.put("coronal_case_control", 15);
+//		pheno_multiplier.put("griffith_full_filtered", 20);
+		pheno_multiplier.put("mammal", 0);
+		pheno_multiplier.put("zoo", 0);
+		pheno_multiplier.put("vantveer", 0);
+		pheno_multiplier.put("coronal_case_control", 0);
+		pheno_multiplier.put("griffith_full_filtered", 0);
 		pheno_multiplier.put("dream_breast_cancer", 21);
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();

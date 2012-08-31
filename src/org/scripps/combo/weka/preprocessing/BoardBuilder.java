@@ -7,12 +7,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.scripps.combo.Board;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.card;
+import org.scripps.combo.weka.Weka.execution;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
@@ -55,10 +58,13 @@ public class BoardBuilder {
 		int board_id = 1;
 		Collections.shuffle(gene_ids);
 		Board board = new Board();
+		List<card> bcards = new ArrayList<card>();
+		Map<Integer, Board> board_score = new HashMap<Integer, Board>();
 		board.setPhenotype("dream_breast_cancer");
 		for(String gene : gene_ids){
 			board.getEntrez_ids().add(gene);
 			List<card> cards = weka.geneid_cards.get(gene);
+			bcards.addAll(cards);
 			String gene_symbol = "";
 			for(card c : cards){
 				gene_symbol = c.getName();
@@ -67,9 +73,13 @@ public class BoardBuilder {
 			board.getGene_symbols().add(gene_symbol);
 			
 			if(board_id%n_per_board==0){
+				execution base = weka.pruneAndExecute(bcards);
+				float base_score = (float)base.eval.pctCorrect();
+				board.setBase_score(base_score);
 				board.insert();
 				board = new Board();
 				board.setPhenotype("dream_breast_cancer");
+				bcards = new ArrayList<card>();
 			}
 			board_id++;
 		}
