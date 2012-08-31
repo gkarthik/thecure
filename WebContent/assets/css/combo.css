@@ -153,11 +153,11 @@
 	cursor: pointer;
 	display: block;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-size: 25px;
-	font-weight: bold;
-	height: 50px;
+	font-size: 15px;
+	font-weight: normal;
+	height: 25px;
 	letter-spacing: normal;
-	line-height: 60px;
+	line-height: 30px;
 	margin-bottom: 0px;
 	margin-left: 0px;
 	margin-right: 0px;
@@ -172,7 +172,7 @@
 	text-rendering: optimizelegibility;
 	text-shadow: rgba(0, 0, 0, 0.246094) 0px 0px 0px;
 	vertical-align: baseline;
-	width: 25px;
+	width: 35px;
 }
 
 .btn-game-1 {

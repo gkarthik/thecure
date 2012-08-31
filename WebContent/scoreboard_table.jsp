@@ -13,7 +13,7 @@ if(player!=null&&(!player.getName().equals("anonymous_hero"))){
 %>
 
 			<table>
-			<caption><b><u>Combo leaders</u></b></caption>
+			<caption><b><u>Leaders</u></b></caption>
 				<thead>
 					<tr>
 						<th>Rank</th>
