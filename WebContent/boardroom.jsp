@@ -2,12 +2,13 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.Config"%>
 <%@ page import="org.scripps.combo.Player"%>
+<%@ page import="org.scripps.combo.Board"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 <%
 //params for game board
-String game_params = "&mosaic_url=boardroom.jsp&dataset=griffith_full_filtered&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
-int level = -1;
+String game_params = "&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
+int level = 0;
 int num_tile_rows = 10;
 int num_tile_cols = 10;
 
@@ -19,30 +20,10 @@ boolean all_levels_open = true;
 	} else {
 		username = player.getName();
 	}
-	if (player != null) {
-		int levels_passed = 0;
-		List<Integer> zoo_scores = player.getLevel_tilescores().get("griffith_full_filtered");
-		if (zoo_scores == null) {
-			zoo_scores = new ArrayList<Integer>(num_tile_rows*num_tile_cols);
-			for (int i = 0; i < num_tile_rows*num_tile_cols; i++) {
-				zoo_scores.add(0);
-			}
-			player.getLevel_tilescores().put("griffith_full_filtered", zoo_scores);
-		}else{
-			boolean passed_one = false;
-			for(int i=0; i<zoo_scores.size(); i++){
-				if(zoo_scores.get(i)>0){
-					levels_passed = i;
-					passed_one = true;
-				}
-			}
-			if(passed_one){
-				levels_passed++;
-			}
-			for(int i=zoo_scores.size(); i<num_tile_rows*num_tile_cols; i++){
-				zoo_scores.add(i,0);
-			}
-		}
+	if (player != null) { 
+		Board control = new Board();
+		List<Board> boards = control.getBoardsByPhenotype("dream_breast_cancer");
+		//System.out.println(boards.size());
 %>
 
 <!DOCTYPE html>
@@ -89,9 +70,9 @@ boolean all_levels_open = true;
 		<div class="hero-unit">
 			<div class="row">
 					<h2>Breast Cancer 10 Year survival</h2>
-					<p>The goal of this game is to use gene expression levels in breast cancer tumors to predict 10 year survival. If a high quality signature can be identified it can be used to modify treatment accordingly.  <strong>Hint</strong>, genes regulating cell cycle, 
-		invasion, metastasis and angiogenesis may be important.</p>
-					<p>As always, you must defeat your nemesis Barney <img width="25" src="images/barney.png"> to turn a tile over.
+					<p>The goal of this game is to use gene expression levels in breast cancer tumors to predict 10 year survival. 
+					If a high quality signature can be identified it can be used to modify treatment accordingly.  </p>
+					<p>You must defeat your nemesis Barney <img width="25" src="images/barney.png">. 
 						To win each round, find the best combination of genes to use to classify a new sample.</p>
 					<br>
 			</div>
@@ -105,19 +86,15 @@ boolean all_levels_open = true;
 							<tr>
 								<%
 									for (int j = 0; j < num_tile_cols; j++) {
-												level++;
-												tile_index = i+"_"+j;
-												int score = 0;
-												if(zoo_scores.get(level)!=null&&zoo_scores.get(level)>0){
-													score = zoo_scores.get(level);
-												}
+										level++;
+										Board board = boards.get(level);
 								%>
-								<td width="50" ><div id="level_<%=level %>">
-					<% if(zoo_scores.get(level)==null||zoo_scores.get(level)<1){ %>
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary "><div class="small_level_button" style="height:20px; line-height:20px; font-weight:normal; width:30px;"><%=level %></div></a>
-						<%}else { %>
-						<img src="images/cube/cube_bots_<%=tile_index%>.png">
-						<%}%>				
+					<td width="50" ><div id="level_<%=level %>">
+						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary ">
+						 <div class="small_level_button" style="height:20px; line-height:20px; font-weight:normal; width:30px;"><%=level %>
+						 </div>
+						</a>
+		
 					</div></td>								
 								<%
 									}

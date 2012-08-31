@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.scripps.combo.Board;
 import org.scripps.combo.Hand;
 import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
@@ -55,7 +57,7 @@ public class MetaServer extends HttpServlet {
 	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
-
+		/*
 		//training game data 
 		try { 
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
@@ -112,7 +114,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-/*
+
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
 			Weka cranio_case_weka = new Weka(train_loc);
@@ -145,7 +147,18 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-*/
+		 */
+
+		try {
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_clinical_10yr.arff");
+			Weka dream_weka = new Weka(train_loc);
+			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/Illumina2entrez.txt"));
+			name_dataset.put("dream_breast_cancer", dream_weka);	
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -204,27 +217,46 @@ public class MetaServer extends HttpServlet {
 				"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
 				"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
 				"\"tree\":"+tree_json+"}";
-		//		System.out.println(treeoutput);
+				//		System.out.println(treeoutput);
 				out.write(treeoutput);
 				out.close();
 			}
 			// initialize a random gene 'board' - a list of attributes from the training set of specified size
 		}else if(command.equals("getboard")){
-			String raninput = request.getParameter("ran");
-			int ran = 1;
-			if(raninput!=null){
-				ran = Integer.parseInt(raninput);
-			}else{			
-				ran = (int)Math.rint(Math.random()*1000);
+			if(dataset_name.equals("dream_breast_cancer")){
+				String board_id = request.getParameter("ran");
+				Board board = new Board();
+				board = board.getBoardById(board_id);
+				List<card> cards = new ArrayList<card>();
+				List<String> genes = board.getEntrez_ids();
+				Collections.shuffle(genes);
+				for(String gene : genes){
+					List<card> related = weka.geneid_cards.get(gene);
+					//Collections.shuffle(related);
+					cards.add(related.get(0)); //may need to work on this..
+				}
+				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
+				response.setContentType("text/json");
+				PrintWriter out = response.getWriter();
+				out.write(r.toString());
+				out.close();
+			}else{ 
+				String raninput = request.getParameter("ran");
+				int ran = 1;
+				if(raninput!=null){
+					ran = Integer.parseInt(raninput);
+				}else{			
+					ran = (int)Math.rint(Math.random()*1000);
+				}
+				int nrows = Integer.parseInt(request.getParameter("y"));
+				int ncols = Integer.parseInt(request.getParameter("x"));
+				List<Weka.card> cards = weka.getRandomCards(nrows * ncols, ran);
+				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
+				response.setContentType("text/json");
+				PrintWriter out = response.getWriter();
+				out.write(r.toString());
+				out.close();
 			}
-			int nrows = Integer.parseInt(request.getParameter("y"));
-			int ncols = Integer.parseInt(request.getParameter("x"));
-			List<Weka.card> cards = weka.getRandomCards(nrows * ncols, ran);
-			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
-			response.setContentType("text/json");
-			PrintWriter out = response.getWriter();
-			out.write(r.toString());
-			out.close();
 		}else if(command.equals("getspecificboard")){
 			String board = request.getParameter("board");
 			List<Weka.card> cards = new ArrayList<Weka.card>();
@@ -323,7 +355,7 @@ public class MetaServer extends HttpServlet {
 			hand.setWin(win_);
 			hand.save();
 			//update player info
-	
+
 			if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
 				//update stars
 				//Player player = Player.lookupPlayer(player_name);
