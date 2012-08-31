@@ -77,7 +77,7 @@ boolean all_levels_open = true;
 					<br>
 			</div>
 			<div class="row">		
-					<div id="keeper" class="span7">
+					<div id="keeper" class="span8">
 						<table>
 							<%
 							String tile_index = "";
@@ -88,10 +88,18 @@ boolean all_levels_open = true;
 									for (int j = 0; j < num_tile_cols; j++) {
 										level++;
 										Board board = boards.get(level);
+										int d = (int)board.getBase_score()-50;
+										String rating = "1";
+										if(d>5&&d<10){
+											rating = "2";
+										}else if(d<5){
+											rating = "3";
+										}
+										int b_id = board.getId();
 								%>
 					<td width="50" ><div id="level_<%=level %>">
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-primary ">
-						 <div class="small_level_button" style="height:20px; line-height:20px; font-weight:normal; width:30px;"><%=level %>
+						<a href="boardgame.jsp?level=<%=b_id %><%=game_params %>" class="btn btn-primary ">
+						 <div class="small_level_button"><%=level %>(<%=rating%>) 
 						 </div>
 						</a>
 		
@@ -107,7 +115,7 @@ boolean all_levels_open = true;
 					</div>
 					
 			
-					<div id="back" class="span3">
+					<div id="back" class="span2">
 						<jsp:include page="scoreboard_table.jsp" />
 					</div>
 
