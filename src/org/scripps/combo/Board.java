@@ -21,6 +21,7 @@ public class Board {
 	int n_wins;
 	float average_score;
 	float max_score;
+	float base_score;
 	Timestamp updated;
 	List<String> attribute_names;
 	
@@ -34,6 +35,7 @@ public class Board {
 		n_wins = 0;
 		average_score = 0;
 		max_score = 0;
+		base_score = 0;
 		updated = new Timestamp(System.currentTimeMillis());
 		
 	}
@@ -59,7 +61,7 @@ public class Board {
 	public void insert(){
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("insert into board values(null,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement pst = conn.connection.prepareStatement("insert into board values(null,?,?,?,?,?,?,?,?,?,?)");
 			pst.clearParameters();
 			pst.setString(1,getPhenotype());
 			pst.setString(2,list2string(getEntrez_ids()));
@@ -70,6 +72,7 @@ public class Board {
 			pst.setFloat(7,getMax_score());
 			pst.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
 			pst.setString(9, list2string(getAttribute_names()));
+			pst.setFloat(10, getBase_score());
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -86,7 +89,7 @@ public class Board {
 		}
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("update board set phenotype = ?, entrez_ids = ?, gene_symbols = ?, n_players = ?, n_wins = ?, average_score = ?, max_score = ?, updated = ?, attribute_names = ? where id = "+getId());
+			PreparedStatement pst = conn.connection.prepareStatement("update board set phenotype = ?, entrez_ids = ?, gene_symbols = ?, n_players = ?, n_wins = ?, average_score = ?, max_score = ?, updated = ?, attribute_names = ?, base_score = ? where id = "+getId());
 			pst.clearParameters();
 			pst.setString(1,getPhenotype());
 			pst.setString(2,list2string(getEntrez_ids()));
@@ -97,6 +100,7 @@ public class Board {
 			pst.setFloat(7,getMax_score());
 			pst.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
 			pst.setString(9, list2string(getAttribute_names()));
+			pst.setFloat(10, getBase_score());
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -123,6 +127,7 @@ public class Board {
 				board.setPhenotype(phenotype);
 				board.setUpdated(rslt.getTimestamp("updated"));
 				board.setAttribute_names(string2list(rslt.getString("attribute_names")));
+				board.setBase_score(rslt.getFloat("base_score"));
 				boards.add(board);
 			}
 		} catch (SQLException e) {
@@ -148,6 +153,7 @@ public class Board {
 				board.setPhenotype(phenotype);
 				board.setUpdated(rslt.getTimestamp("updated"));
 				board.setAttribute_names(string2list(rslt.getString("attribute_names")));
+				board.setBase_score(rslt.getFloat("base_score"));
 				return board;
 			}
 		} catch (SQLException e) {
@@ -220,6 +226,16 @@ public class Board {
 
 	public void setAttribute_names(List<String> attribute_names) {
 		this.attribute_names = attribute_names;
+	}
+
+
+	public float getBase_score() {
+		return base_score;
+	}
+
+
+	public void setBase_score(float base_score) {
+		this.base_score = base_score;
 	}
 	
 	
