@@ -20,7 +20,7 @@ boolean all_levels_open = true;
 		response.sendRedirect("login.jsp");
 	} else {
 		username = player.getName();
-	}
+	} 
 	if (player != null) { 
 		Board control = new Board();
 		List<Board> boards = control.getBoardsByPhenotype("dream_breast_cancer");
@@ -139,7 +139,7 @@ function toHex(n) {
 										}
 								%>
 							<td width="50">
-								<%if(!anyone_won_level){ %>
+								<%if(!player_won_level){ %>
 								<div id="level_<%=level %>">
 									<div class="small_level_button">
 										<a href="boardgame.jsp?level=<%=b_id %><%=game_params %>"

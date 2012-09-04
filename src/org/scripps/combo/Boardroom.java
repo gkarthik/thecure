@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.scripps.combo.model.Board;
-import org.scripps.combo.model.Player;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,21 +23,22 @@ public class Boardroom {
 	List<boardview> boardviews;
 	ObjectMapper mapper;
 	ObjectNode json_root;
-	int n_won;
-
-	public Boardroom(){
+	
+	Boardroom(){
 		boardviews = new ArrayList<boardview>();
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
-		n_won = 0;
 	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+		Boardroom b = new Boardroom();
+		b.buildBoardView("bgood", "dream_breast_cancer");
+		String j = b.renderjsonBoardViews();
+		System.out.println(j);
 	}
-
+	
 	public String renderjsonBoardViews(){
 		String json = "";
 		if(boardviews==null||boardviews.size()==0){
@@ -61,7 +59,6 @@ public class Boardroom {
 			views.add(v);
 		}
 		json_root.put("boards", views);
-		json_root.put("n_won", n_won);
 		try {
 			json = mapper.writeValueAsString(json_root);
 		} catch (JsonGenerationException e) {
@@ -76,22 +73,22 @@ public class Boardroom {
 		}
 		return json;
 	}
-
-
+	
+	
 	/**
 	 * Produce the data to generate a player-specific view of the board collection
-	 * @param player_id
+	 * @param player_name
 	 * @param phenotype
 	 */
-	public void buildBoardView(int player_id, String dataset, String room){
-		Player player = Player.lookupPlayerById(player_id);
+	public void buildBoardView(String player_name, String phenotype){
+		Player player = Player.lookupPlayer(player_name);
 		if (player == null) {
 			return;
 		} 
-	
-		List<Board> boards = Board.getBoardsByDatasetRoom(dataset, room); //"dream_breast_cancer"
-		Map<Integer,Integer> player_board_scores = player.getDataset_board_scores().get(dataset);
-		n_won = 0;
+		Board control = new Board();
+		List<Board> boards = control.getBoardsByPhenotype(phenotype); //"dream_breast_cancer"
+		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get(phenotype);
+		
 		int position = 0;
 		for(Board board : boards){
 			boardview view = new boardview(board, position);
@@ -104,40 +101,34 @@ public class Boardroom {
 				player_score = player_board_scores.get(b_id);									
 				if(player_score!=null){
 					player_won_level = true;
-					n_won++;
 				}
 			}
 			//community
 			boolean anyone_won_level = false;
 			int max_score = 0;
 			boolean beat_base = false;
-
-			Map<String, List<Integer>> all_player_board_scores = Board.getPlayerBoardScoresForWins(b_id);
-			//			List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
+			List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
 			float avg_score = 0;
-			int unique_player_wins = 0;
-			if(all_player_board_scores!=null&&all_player_board_scores.size()>0){
-				unique_player_wins = all_player_board_scores.keySet().size();
+			int attempts = 0;
+			if(all_scores!=null&&all_scores.size()>0){
+				attempts = all_scores.size();
 				anyone_won_level = true;
-				for(String p : all_player_board_scores.keySet()){
-					List<Integer> all_scores = all_player_board_scores.get(p);
-					for(Integer s : all_scores){
-						if(s > max_score){
-							max_score = s;
-						}
-						avg_score+=s;
+				for(Integer s : all_scores){
+					if(s > max_score){
+						max_score = s;
 					}
-					avg_score = avg_score/all_scores.size();
+					avg_score+=s;
 				}
+				avg_score = avg_score/all_scores.size();
 			}
 			if(max_score > base_score){
 				beat_base = true;
 			}
-
-			if(!room.contains("edu")&&((unique_player_wins > 12)||(player_won_level))){
+			
+			if((attempts > 9)||(player_won_level)){
 				view.setEnabled(false);
-			}//for edu rooms, let them play over and over...
-			view.setAttempts(unique_player_wins);
+			}
+			view.setAttempts(attempts);
 			if(player_won_level){
 				view.setTrophy(true);
 				view.setPlayer_score(player_score);
@@ -148,8 +139,8 @@ public class Boardroom {
 			position++;
 		}
 	}
-
-
+	
+	
 	public class boardview {
 		Board board;
 		int position;
@@ -159,7 +150,7 @@ public class Boardroom {
 		int player_score;
 		float avg_win_score; // all wins
 		int max_score;
-
+				
 		public boardview(Board board, int position) {
 			super();
 			this.board = board;
@@ -167,7 +158,7 @@ public class Boardroom {
 			this.enabled = true;
 			this.trophy = false;
 		}
-
+		
 		public int getPosition() {
 			return position;
 		}
@@ -222,7 +213,7 @@ public class Boardroom {
 		public void setMax_score(int max_score) {
 			this.max_score = max_score;
 		}
-
+		
 	}
 
 
