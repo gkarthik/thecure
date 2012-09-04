@@ -26,13 +26,14 @@ body {
 div#main {
   width: 960px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 div#main h1 {
   text-align: center;
   padding: 0px 40px 0px 40px;
   font-family: "League-Gothic", Courier;
-  font-size: 100px;
+  font-size: 150px;
   text-transform: uppercase;
   color: #B2365F;
   text-shadow: 0px 2px 6px #666;
@@ -42,7 +43,7 @@ div#main h2 {
   text-align: center;
   padding: 0px 40px 0px 40px;
   font-family: "League-Gothic", Courier;
-  font-size: 50px;
+  font-size: 52px;
   text-transform: uppercase;
   color: #20282B;
   text-shadow: 0px 2px 6px #666;
@@ -65,17 +66,16 @@ div#main p {
 }
 
 #main #action {
-  width: 380px;
   float: left;
 }
 
 #main #action input.playnow {
-  margin: 30px 0px 0px 50px;
+  margin: 0px 0px 0px 32px;
   text-align:center;
   padding: 0px 20px 0px 20px;
   border: none;
   font-family: "League-Gothic", Courier;
-  font-size: 80px;
+  font-size: 62px;
   letter-spacing: 4px;
   text-shadow: 0px 2px 6px #666;
     -webkit-border-radius: 8px;
@@ -133,13 +133,16 @@ div#main p {
   fill: none;
 }
 
+#action {
+  position: relative;
+}
+
 #action #email {
-  margin: 20px;
+  margin: 20px 0px 20px 0px;
   float: left;
 }
 
 #action #email label {
-  margin: 0px 0px 0px 20px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
 }
@@ -149,11 +152,12 @@ div#main p {
   font-weight: 200;
   font-size: 20px;
   position: absolute;
-  margin-left: 44px;
+  margin-left: 10px;
+  bottom: -2px;
 }
 
 #action #email input.email {
-  margin: 6px 20px 6px 20px;
+  margin: 6px 20px 6px 10px;
   padding: 6px;
   color: #666;
 
@@ -172,9 +176,9 @@ div#main p {
   background-color: #B2365F;
   padding: 20px 8px 20px 8px;
   float: right;
-  position: relative;
-  right: 40px;
-  bottom: 30px;
+  position: absolute;
+  left: 208px;
+  bottom: 32px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: bold;
     text-shadow: 1px 1px 2px #fff;
@@ -190,15 +194,12 @@ div#main p {
           box-shadow: 0px 0px 8px 0px #20282B;
 }
 
-#header #leaderboard {
-  float: left;
+#leaderboard {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
-  padding: 26px 0px 6px 0px;
-
 }
 
-#header #leaderboard h3 {
+#leaderboard h3 {
   font-weight: bold;
   text-align: center;
   padding: 4px;
@@ -206,49 +207,59 @@ div#main p {
   color: #20282B;
 }
 
-#header #leaderboard ol {
+#leaderboard ol {
   margin: 2px;
 }
 
-#header #leaderboard ol li {
+#leaderboard ol li {
   padding: 8px;
   border-bottom: 1px solid #3DAECC;
   color: #20282B;
 }
 
-#header #leaderboard span.score {
+#leaderboard span.score {
   color: #B2365F;
   float: right;
 }
 
 /* Sectional compartment styles */
 
-div#main div.section {
-  padding: 20px;
-  margin: 20px;
+div#main #column1 {
+  width: 640px;
+  float: left;
+  overflow: hidden;
 }
 
-div#main div.section h2 {
-  text-align: center;
-  padding: 8px;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-  font-weight: 200;
-  font-size: 32px;
-  letter-spacing: 4px;
-  color: #FFF57F;
-  text-shadow: 0px 0px 6px #666;
-  background-color: #3E9AB2;
-  border-bottom: 16px solid #3DAECC;
+div#main #column2 {
+  width: 320px;
+  float: left;
+  overflow: hidden;
+}
+
+div#main #column1 div.section {
+  padding: 20px;
+  margin: 0px;
+}
+
+div#main #sections {
+
 }
 
 div#main div.section h3 {
-  text-align: center;
-  padding: 8px;
+  margin: 12px 0px 12px 4px;
+  padding: 4px 4px 4px 16px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
-  font-size: 32px;
+  font-size: 38px;
   letter-spacing: 4px;
   color: #3DAECC;
+}
+
+div#main div.section h3:hover {
+  cursor: pointer;
+  background-color: #3DAECC;
+  background-color: rgba(61,174,204,.6);
+  color: #fff;
 }
 
 div#main div.section a {
@@ -256,33 +267,38 @@ div#main div.section a {
   color: #3DAECC;
 }
 
-div#main div.section p {
+div#main div#column1 div#sections.section p {
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
-  padding: 4px;
+  padding: 20px;
   text-indent: 16px;
+  font-size: 20px;
 }
 
-div#main div.section ol {
+div#main div#column1 div#sections.section ol {
   padding: 4px;
-  margin-left:60px;
+  margin-left:24px;
 }
 
-div#main div.section ol li {
+div#main div#column1 div#sections.section ol li h4 {
+  font-size: 24px;
+  color: #F59;
+}
+
+div#main div#column1 div#sections.section ol li {
   padding: 8px;
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
   line-height: 145%;
-  font-size: 25px;
-  list-style-type: disc;
+  font-size: 18px;
+  list-style-type: none;
 }
 
 /* Footer Specific Styles */
 
 div#footer {
   width: 960px;
-  margin: 100px auto 0px;
-  padding: 40px;
+  margin: 60px auto 0px;
 
   bottom: 0px;
   background-color: #20282B;
@@ -290,8 +306,8 @@ div#footer {
 }
 
 div#footer div#column {
-  width: 440px;
-  padding: 0px 20px 20px 20px;
+  width: 400px;
+  padding: 40px 40px 60px 40px;
   float: left;
 }
 
