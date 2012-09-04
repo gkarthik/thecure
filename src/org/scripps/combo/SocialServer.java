@@ -90,7 +90,6 @@ public class SocialServer extends HttpServlet {
 			response.setContentType("text/json");
 			PrintWriter out = response.getWriter();
 			out.write(json);
-			System.out.println(json);
 			out.close();
 		}		
 	}

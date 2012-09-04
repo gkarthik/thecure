@@ -104,7 +104,7 @@ public class GameLog {
 			player.put("score", player_score.getValue());
 			scores.add(player);
 		}
-		json_root.put("leadersboard", scores);
+		json_root.put("leaderboard", scores);
 		try {
 			json = mapper.writeValueAsString(json_root);
 		} catch (JsonGenerationException e) {
@@ -183,8 +183,8 @@ public class GameLog {
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
 		Map<String, Integer> board_max = new HashMap<String, Integer>();
-		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();
-		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();;
+		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();		
+		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();
 		int games_won = 0;
 		for(Hand hand : hands){
 			String player = hand.getPlayer_name();

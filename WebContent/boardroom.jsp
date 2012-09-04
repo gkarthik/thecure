@@ -4,6 +4,7 @@
 <%@ page import="org.scripps.combo.Player"%>
 <%@ page import="org.scripps.combo.Board"%>
 <%@ page import="java.util.List"%>
+<%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
 <%
 //params for game board
@@ -23,7 +24,10 @@ boolean all_levels_open = true;
 	if (player != null) { 
 		Board control = new Board();
 		List<Board> boards = control.getBoardsByPhenotype("dream_breast_cancer");
-		//System.out.println(boards.size());
+		//the logged-in player's performance on this boardroom
+		int levels_passed = 0;
+		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get("dream_breast_cancer");
+		
 %>
 
 <!DOCTYPE html>
@@ -39,14 +43,24 @@ boolean all_levels_open = true;
 <link
 	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
 	rel="stylesheet" type="text/css" />
-	
-	<script src="js/libs/jquery-1.8.0.min.js"></script>
+
+<script src="js/libs/jquery-1.8.0.min.js"></script>
 <script src="js/libs/jquery-ui-1.8.0.min.js"></script>
 
 <jsp:include page="js/analytics.js" />
 </head>
 
 <body>
+	<script>
+function rgbToHex(R,G,B) {return toHex(R)+toHex(G)+toHex(B)}
+function toHex(n) {
+ n = parseInt(n,10);
+ if (isNaN(n)) return "00";
+ n = Math.max(0,Math.min(n,255));
+ return "0123456789ABCDEF".charAt((n-n%16)/16)
+      + "0123456789ABCDEF".charAt(n%16);
+}
+</script>
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner"
 			style="background-color: blue; background-image: -webkit-linear-gradient(top, blue, black);">
@@ -57,8 +71,10 @@ boolean all_levels_open = true;
 					class="brand">Breast Cancer 10 Year Survival</a>
 				<div class="nav-collapse">
 					<ul class="nav">
-              <li><a href="contact.jsp">Contact</a></li>
-						<li><a href="logout.jsp">logout</a></li>
+						<li><a href="contact.jsp">Contact</a>
+						</li>
+						<li><a href="logout.jsp">logout</a>
+						</li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -69,57 +85,86 @@ boolean all_levels_open = true;
 	<div class="container">
 		<div class="hero-unit">
 			<div class="row">
-					<h2>Breast Cancer 10 Year survival</h2>
-					<p>The goal of this game is to use gene expression levels in breast cancer tumors to predict 10 year survival. 
-					If a high quality signature can be identified it can be used to modify treatment accordingly.  </p>
-					<p>You must defeat your nemesis Barney <img width="25" src="images/barney.png">. 
-						To win each round, find the best combination of genes to use to classify a new sample.</p>
-					<br>
+				<h2>Breast Cancer 10 Year survival</h2>
+				<p>The goal of this game is to use gene expression levels in
+					breast cancer tumors to predict 10 year survival. If a high quality
+					signature can be identified it can be used to modify treatment
+					accordingly.</p>
+				<p>
+					You must defeat your nemesis Barney <img width="25"
+						src="images/barney.png">. To win each round, find the best
+					combination of genes to use to classify a new sample.
+				</p>
+				<br>
 			</div>
-			<div class="row">		
-					<div id="keeper" class="span8">
-						<table>
-							<%
+			<div class="row">
+				<div id="keeper" class="span8">
+					<table>
+						<%
 							String tile_index = "";
 								for (int i = 0; i < num_tile_rows; i++) {
 							%>
-							<tr>
-								<%
+						<tr>
+							<%
 									for (int j = 0; j < num_tile_cols; j++) {
 										level++;
+										//board
 										Board board = boards.get(level);
-										int d = (int)board.getBase_score()-50;
-										String rating = "1";
-										if(d>5&&d<10){
-											rating = "2";
-										}else if(d<5){
-											rating = "3";
-										}
 										int b_id = board.getId();
+										int base_score = (int)board.getBase_score();
+										//player
+										boolean player_won_level = false;
+										Integer player_score = null;
+										if(player_board_scores!=null){
+											player_score = player_board_scores.get(b_id);									
+											if(player_score!=null){
+												player_won_level = true;
+											}
+										}
+										//community
+										boolean anyone_won_level = false;
+										int max_score = 0;
+										boolean beat_base = false;
+										List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
+										if(all_scores!=null&&all_scores.size()>0){
+											anyone_won_level = true;
+											for(Integer s : all_scores){
+												if(s > max_score){
+													max_score = s;
+												}
+											}
+										}
+										if(max_score > base_score){
+											beat_base = true;
+										}
 								%>
-					<td width="50" ><div id="level_<%=level %>">
-						<a href="boardgame.jsp?level=<%=b_id %><%=game_params %>" class="btn btn-primary ">
-						 <div class="small_level_button"><%=level %>(<%=rating%>) 
-						 </div>
-						</a>
-		
-					</div></td>								
+							<td width="50">
+								<%if(!anyone_won_level){ %>
+								<div id="level_<%=level %>">
+									<div class="small_level_button">
+										<a href="boardgame.jsp?level=<%=b_id %><%=game_params %>"
+											class="btn btn-primary "> <%=level %>(<%=base_score %>) </a>
+									</div>
+								</div>
+								<%}else{ %>
+								<div id="level_<%=level %>">won</div> <%} %>
+							</td>
 								<%
-									}
+								}
 								%>
-							</tr>
-							<%
+						</tr>
+						<%
 								}
 							%>
-						</table>
-					</div>
-					
-			
-					<div id="back" class="span2">
-						<jsp:include page="scoreboard_table.jsp" />
-					</div>
+					</table>
+				</div>
 
-									
+
+				<div id="back" class="span2">
+					<jsp:include page="scoreboard_table.jsp" />
+				</div>
+
+
 			</div>
 		</div>
 	</div>

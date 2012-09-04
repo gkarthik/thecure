@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.util.JdbcConnection;
@@ -110,10 +112,64 @@ public class Board {
 		}
 	}
 	
+	public List<Integer> getBoardScoresfromDb(int board_id){
+		List<Integer> board_scores = new ArrayList<Integer>();
+		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(gethands);
+			ResultSet hands = p.executeQuery();
+			while(hands.next()){
+				int training = hands.getInt("training_accuracy");
+				int cv = hands.getInt("cv_accuracy");
+				int win = hands.getInt("win");				
+				if(win>0){
+					if(training<0){
+						training = cv;
+					}
+					board_scores.add(training);
+				}
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return board_scores;
+	}
+	
+//	public void updatePlay(int board_id, int cv_score, String player){
+//		if(getId()<1){
+//			System.out.println("Can't update without an id");
+//			return;
+//		}
+//		JdbcConnection conn = new JdbcConnection();
+//		try {
+//			PreparedStatement pst = conn.connection.prepareStatement("update board set n_players = ?, n_wins = ?, average_score = ?, max_score = ?, updated = ? where id = "+getId());
+//			pst.clearParameters();
+//			pst.setString(1,getPhenotype());
+//			pst.setString(2,list2string(getEntrez_ids()));
+//			pst.setString(3, list2string(getGene_symbols()));
+//			pst.setInt(4, getN_players());
+//			pst.setInt(5, getN_wins());
+//			pst.setFloat(6, getAverage_score());
+//			pst.setFloat(7,getMax_score());
+//			pst.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+//			pst.setString(9, list2string(getAttribute_names()));
+//			pst.setFloat(10, getBase_score());
+//			pst.executeUpdate();
+//			pst.close();
+//			conn.connection.close();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+	
 	public List<Board> getBoardsByPhenotype(String phenotype){
 		List<Board> boards = new ArrayList<Board>();
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from board where phenotype = '"+phenotype+"'");
+		ResultSet rslt = conn.executeQuery("select * from board where phenotype = '"+phenotype+"' order by base_score desc");
 		try {
 			while(rslt.next()){
 				Board board = new Board();

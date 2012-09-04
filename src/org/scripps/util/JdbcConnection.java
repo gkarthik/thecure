@@ -19,9 +19,9 @@ public class JdbcConnection {
 	
 	public JdbcConnection(){
 		String serverLocation = "127.0.0.1";
-		String db = "combo";
-		String user = "combo";
-		String password = "combo";
+		String db = "cure";
+		String user = "cure";
+		String password = "cure";
 		createConnection(serverLocation, db, user, password);
 	}
 	/**

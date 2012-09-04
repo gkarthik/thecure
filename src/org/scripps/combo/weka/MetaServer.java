@@ -364,22 +364,16 @@ public class MetaServer extends HttpServlet {
 				//check if they passed the level
 				if(win!=null&&win.equals("1")){
 					//update session
-					List<Integer> scores = player.getLevel_tilescores().get(dataset_name);
+					Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
 					if(scores==null){
-						scores = new ArrayList<Integer>(20);
-						scores.add(0);
-					}
-					if(board_id>=scores.size()){
-						for(int m=scores.size()-1; m<=board_id; m++){
-							scores.add(0);
-						}
+						scores = new HashMap<Integer,Integer>();
 					}
 					if(game.equals("verse_barney")){
-						scores.set(board_id, cv_accuracy);
+						scores.put(board_id, cv_accuracy);
 					}else{
-						scores.set(board_id, training_accuracy);
+						scores.put(board_id, training_accuracy);
 					}
-					player.getLevel_tilescores().put(dataset_name, scores);
+					player.getPhenotype_board_scores().put(dataset_name, scores);
 					s.setAttribute("player", player);
 				}
 			}else if(game!=null&&game.equals("barney")){
