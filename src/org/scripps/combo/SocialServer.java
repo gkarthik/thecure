@@ -91,7 +91,20 @@ public class SocialServer extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			out.write(json);
 			out.close();
-		}		
+		}else if(command.equals("boardroom")){
+			Boardroom b = new Boardroom();
+			String username = request.getParameter("username");
+			String phenotype = request.getParameter("phenotype"); //"dream_breast_cancer"
+			b.buildBoardView(username, phenotype);
+			String json = b.renderjsonBoardViews();
+			response.setContentType("text/json");
+			PrintWriter out = response.getWriter();
+			out.write(json);
+			out.close();
+		}else if(command.equals("iforgot")){
+			String mail = request.getParameter("mail");
+			
+		}
 	}
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){

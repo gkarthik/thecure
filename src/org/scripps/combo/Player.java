@@ -60,18 +60,8 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
-				//storing as a comma delimited string in db for now.
-				String levels_ = r.getString("barney_levels");
-				List<Integer> barney_levels = new ArrayList<Integer>();
-				if(levels_!=null){
-					String[] levels = levels_.split(",");
-					for(String level : levels){
-						if(isNumeric(level)){
-							barney_levels.add(Integer.parseInt(level));
-						}
-					}
-				}
-				player.setBarney_levels(barney_levels);
+				//for boardroom
+				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -109,7 +99,7 @@ public class Player {
 					}
 				}
 				//need to get rid of barney level idea..
-				player.setBarney_levels(barney_levels);
+				//player.setBarney_levels(barney_levels);
 				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();

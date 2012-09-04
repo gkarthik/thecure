@@ -57,7 +57,7 @@ public class MetaServer extends HttpServlet {
 	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
-		/*
+		
 		//training game data 
 		try { 
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
@@ -69,6 +69,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		/*
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
 			Weka zoo_weka = new Weka(train_loc);
