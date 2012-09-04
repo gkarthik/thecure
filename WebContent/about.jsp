@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>About COMBO</title>
+<title>About TheCure</title>
 <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
 </head>
 <body>
@@ -16,11 +16,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">COMBO</a>
+          <a class="brand" href="/combo/">TheCure</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>
-              <li><a href="games.jsp">Play!</a></li>
+              <li><a href="login.jsp">Play</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -35,7 +35,7 @@
     
     <div id="content">
     <h1>Synopsis</h1>
-    <p>COMBO is a card game (and a hard game!).  Assemble the best hands and you can win - just like poker.  The challenge with COMBO is that
+    <p>TheCure is a card game (and a hard game!).  Assemble the best hands and you can win - just like poker.  The challenge with TheCure is that
 	we don't know the rules yet!  Until you play, the game can't tell you if you have the equivalent of a royal flush or a 
 	pair of 2s.  By playing the game, you will be both teaching and learning the rules of nature.  
     </p>
@@ -62,21 +62,19 @@
     <h2>Opportunity</h2>
     <p>One advantage when it comes to addressing these problems is our increasing understanding of biology.  Our knowledge of genes, biological 
     mechanisms and disease is growing exponentially and much of this knowledge is available on the Web.  When we start looking for predictive patterns
-    in a dataset such as the breast cancer example, we can use this knowledge to guide our search.  COMBO was created as a fun way to solicit 
+    in a dataset such as the breast cancer example, we can use this knowledge to guide our search.  TheCure was created as a fun way to solicit 
     help in guiding the search for stable patterns that can be used to make biologically and medically important predictions.  
     </p>
-    <p>When people play COMBO they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions 
-    about the best combinations (COMBOs!) of variables (e.g. genes) to use to build predictive patterns.  These combos are the 'hands' in the COMBO
+    <p>When people play TheCure they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions 
+    about the best combinations of variables (e.g. genes) to use to build predictive patterns.  These combos are the 'hands' in TheCure
     card game.  Every time a game is played, the hands are evaluated and stored.  Eventually predictors will be developed using advanced machine 
     learning algorithms that are informed by the hands played in the game.  
     </p>
-    <strong><center><a href="login.jsp">Play COMBO</a> and share in discovery!</center></strong>
+    <strong><center><a href="login.jsp">Play TheCure</a> and share in discovery!</center></strong>
     <h3>Barney<a href="http://commons.wikimedia.org/wiki/File:YHTBTR-character-noback.png"><img src="images/barney.png"/></a></h3>
     <p>The opponent in combo came from a <a href="http://commons.wikimedia.org/wiki/File:YHTBTR-character-noback.png">Wikipedia Commons image</a> from the game "<a href="http://en.wikipedia.org/wiki/You_Have_To_Burn_The_Rope">You have to Burn the Rope</a>".  Thanks for sharing!
     </p>
     <br>
-    <h4>Future prospects</h4>
-    <p><a href="./assets/MosaicMockup.mov">Watch a silent movie about Combo2.0 (aka 'Mosaic'')..</a><p>
     </div>
     </div>
     </div>

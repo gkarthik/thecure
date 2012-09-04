@@ -32,7 +32,7 @@
 
               <div id="email">
                 <label for="email">Refer a Friend:</label><br />
-                <input id="refEmail" class="email" type="email" name="usremail" placeholder="Email Address" />
+                <input id="refEmail" class="email" type="email" name="usremail" placeholder="Friend's Email" />
                 <input id="refName" class="email" type="email" name="usremail" placeholder="Your Name" />
                 <p id="emailAlert" style="display: none;" ></p>
                 <input class="emailsub" type="submit" value="Submit" />
@@ -49,15 +49,38 @@
 
           </div>
 
-          <div class="section">
-            <h2>How it works</h2>
+          <div id="sections" class="section">
+            <h3>About</h3>
+            <div id="about"><p>
+            TheCure is a serious, biology-based card game. Assemble the best hands and you can win - just like poker. The challenge with TheCure is that we don't know the rules yet! Until you play, we can't tell you if you have the equivalent of a royal flush or a pair of 2s. By playing the game, you will be both teaching and learning the rules of nature.
+            </p></div>
+            <h3>Background</h3>
+              <div id="background"><p>Using the latest technology we can now assess the activity level of more than 20,000 known human genes and identify literally millions of variations in every human genome. The challenge now is to make use of all of this data. For example, if a woman has been diagnosed with breast cancer we would like to be able to predict whether the cancer will metastasize and how quickly because we can use this information to make decisions about treatment - e.g. whether or not she should receive chemotherapy. Given a collection of samples from tumors that did and did not end up spreading, we take measurements using all the technology at our disposal and then attempt to identify consistent patterns. If a particular gene is much more active then normal in all the samples that eventually spread, this might be a good signal to look for in future patients.
+              </p></div>
+            <h3>Challenge</h3>
+              <div id="challenge"><p>In seeking these patterns we are faced with two key problems, reproducibility and a combinatorial explosion. First, it often happens that patterns observed in one dataset do not appear with the same strength in new datasets. This is partly caused by natural biological variability and partly by the relative immaturity of the measuring technology that is being applied. Aside from reproducibility, the patterns themselves may be very complex. It may take a unique combination of 25 different variables to produce an excellent predictive pattern. The trouble is that it is impossible to test all such potential combinations. If we assume 20,000 human genes, there are on the order of 10^82 possible 25 gene combinations! (People estimate that the total number of atoms in the universe is close to 10^80.)
+              </p></div>
+            <h3>The idea</h3>
+              <div id="idea"><p>One advantage when it comes to addressing these problems is our increasing understanding of biology. Our knowledge of genes, biological mechanisms and disease is growing exponentially and much of this knowledge is available on the Web. When we start looking for predictive patterns in a dataset such as the breast cancer example, we can use this knowledge to guide our search. TheCure was created as a fun way to solicit help in guiding the search for stable patterns that can be used to make biologically and medically important predictions.  When people play TheCure they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions about the best combinations of variables (e.g. genes) to use to build predictive patterns. These combos are the 'hands' in TheCure card game. Every time a game is played, the hands are evaluated and stored. Eventually predictors will be developed using advanced machine learning algorithms that are informed by the hands played in the game.
+              </p></div>
+            <h3>Current mission: DREAM7 challenge</h3>
+              <div id="mission"><p>TheCure team is currently working on the DREAM7 breast cancer prognosis challenge.  The goal is to, by October 1, create the world’s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  Join us now!
+              </p></div>
+            <h3>FAQ</h3>
+              <div id="faq">
               <ol>
-                <li>People like you have different kinds of biological expertise, problem-solving abilities, and information-seeking strategies.</li>
-                <li>Each of you plays a game that captures this human intelligence</li>
-                <li>The player intelligence combined with artificial intelligence to form a novel, robust predictor of breast cancer prognosis</li>
-                <li>Better determinations of prognosis result in more effective treatments</li>
-                <li>More people defeat breast cancer!</li>
+              <li><h4>Who can play?</h4>
+              <p>Anyone is welcome to play.  The more you know about biology and disease at the level of gene function, the better you are likely to do, but you can also learn as you go.  The game provides a lot of information about the genes as well as links off to related Web resources.  We hope that anyone who plays will learn something about gene function.</p>
+              </li>
+              <li><h4>How do you evaluate the quality of the data provided by game players?</h4>
+              <p>The predictors generated using thecure data are evaluated for accuracy on independent test datasets - just like any other predictor inferred by experts or by statistics would be.
+              By testing on real data, we can tell the good players apart from those that are guessing randomly.  Since each player action in the game is associated with their account, it is then very easy to filter out data that is not useful.  
+              This approach, while it may seem strange for a scientific project, follows the 'publish then filter' approach that has made the Web so successful.  We hope that it encourages many people to share their time and their intelligence with the project.
+              </p>
+              </li>
               </ol>
+              </div>
+
           </div>
 
         
@@ -82,6 +105,7 @@
           </div>
         </div>
   <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/jquery-ui-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
   <script type="text/javascript" charset="utf-8">
@@ -93,8 +117,8 @@ function drawGraph(data, targetEl){
     var width = 200;
 
     var timeScale = d3.time.scale.utc().range([0, width]);
-    var firstDomain = format.parse('2012-9-1');
-    var secondDomain = format.parse('2012-9-30');
+    var firstDomain = format.parse('2012-8-1');
+    var secondDomain = format.parse('2012-8-30');
     timeScale.domain([firstDomain, secondDomain])
 
     var y = d3.scale.linear()
@@ -158,20 +182,30 @@ function drawGraph(data, targetEl){
    }
 
     $(document).ready(function() {
+    //set up accordian for result viewer
+   	 $("#sections").accordion({ collapsible: true });
+ 	 $("#sections").accordion( "activate" , 0 );
       ////////////////////////////////////////////////////////////////
       // Here is where the data var will be prebuild by ben's jsp side
       ////////////////////////////////////////////////////////////////
       var data = {};
-      data.chart = d3.range(20).map(function(i) {
+      /* data.chart = d3.range(20).map(function(i) {
         return {timestamp: ( new Date(2012, 9, (i+6), 1, 1, 23, 23).getTime() ), y: (Math.sin(i / 3) + 1) / 2};
       });
       data.leaderboard = d3.range(10).map(function(i) {
           return {username: ("username" + i), score: 1000-(i*50)}
-      })
+      }) */
+      var url = "/cure/SocialServer?command=gamelogs";
+      $.getJSON(url, function(data) {
+    	  //drawGraph(data, "#chart");
+          fillTopScores(data);
+	});
       ////////////////////////////////////////////////////////////////
 
-      drawGraph(data, "#chart");
-      fillTopScores(data);
+     /*  drawGraph(data, "#chart");
+      fillTopScores(data); */
+      
+      
         function validateEmail(email) {
           var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
           var emailEl = $("input#refEmail"),

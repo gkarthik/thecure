@@ -31,18 +31,15 @@ public class Player {
 	String cancer;
 	String biologist;
 
-	//Each game (the string key) contains multiple levels (the indexes of list of integers)
-	//position in the list corresponds to the level 
-	//The value for the integer corresponds to score for that level
-	//(originally mapped to starts 0 unlocked, 1 = 1 star, 2 = 2 stars)
-	Map<String, List<Integer>> level_tilescores;
+	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
+	//the Map links board_ids to the player's score on that board
+	Map<String, Map<Integer,Integer>> phenotype_board_scores; 
 	List<Integer> barney_levels;	
 	
 	
 	public Player() {
-		level_tilescores = new HashMap<String, List<Integer>>();
+		phenotype_board_scores = new HashMap<String, Map<Integer,Integer>>();
 	}
-
 
 	public static boolean isNumeric(String str)
 	{
@@ -111,9 +108,9 @@ public class Player {
 						}
 					}
 				}
+				//need to get rid of barney level idea..
 				player.setBarney_levels(barney_levels);
-				//right now only tied to mammal game
-				player.setLevelTileScoresWithDb();
+				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();
 			
@@ -183,7 +180,7 @@ public class Player {
 		return levels;
 	}
 	
-	public void setLevelTileScoresWithDb(){
+	public void setBoardScoresWithDb(){
 		//anonymous players don't get to track their scores..
 		if(name.equals("anonymous_hero")){
 			return;
@@ -204,20 +201,15 @@ public class Player {
 				int win = hands.getInt("win");
 				
 				if(win>0){
-					List<Integer> tile_scores = level_tilescores.get(phenotype);
+					Map<Integer,Integer> tile_scores = phenotype_board_scores.get(phenotype);
 					if(tile_scores==null){
-						tile_scores = new ArrayList<Integer>();
-					}
-					if(board_id+1>tile_scores.size()){
-						for(int i=tile_scores.size(); i<=board_id; i++){
-							tile_scores.add(-1);
-						}
+						tile_scores = new HashMap<Integer,Integer>();
 					}
 					if(training<0){
 						training = cv;
 					}
-					tile_scores.set(board_id, training);
-					level_tilescores.put(phenotype, tile_scores);
+					tile_scores.put(board_id, training);
+					phenotype_board_scores.put(phenotype, tile_scores);
 				}
 			}
 			conn.connection.close();
@@ -281,14 +273,48 @@ public class Player {
 	}
 
 
-	public Map<String, List<Integer>> getLevel_tilescores() {
-		return level_tilescores;
+	public String getDegree() {
+		return degree;
 	}
 
 
-	public void setLevel_tilescores(Map<String, List<Integer>> level_tilescores) {
-		this.level_tilescores = level_tilescores;
+	public void setDegree(String degree) {
+		this.degree = degree;
 	}
+
+
+	public String getCancer() {
+		return cancer;
+	}
+
+
+	public void setCancer(String cancer) {
+		this.cancer = cancer;
+	}
+
+
+	public String getBiologist() {
+		return biologist;
+	}
+
+
+	public void setBiologist(String biologist) {
+		this.biologist = biologist;
+	}
+
+
+	public Map<String, Map<Integer, Integer>> getPhenotype_board_scores() {
+		return phenotype_board_scores;
+	}
+
+
+	public void setPhenotype_board_scores(
+			Map<String, Map<Integer, Integer>> phenotype_board_scores) {
+		this.phenotype_board_scores = phenotype_board_scores;
+	}
+
+
+
 
 
 	
