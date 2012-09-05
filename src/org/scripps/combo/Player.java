@@ -71,6 +71,32 @@ public class Player {
 		return player;
 	}
 	
+	public static List<Player> lookupByEmail(String email){
+		List<Player> players = new ArrayList<Player>();
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "select * from player where email = ?";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setString(1, email);
+			ResultSet r = p.executeQuery();
+			while(r.next()){
+				Player player = new Player();
+				player.setName(r.getString("name"));
+				player.setPassword(r.getString("password"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
+				players.add(player);
+			}
+			conn.connection.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return players;
+	}
+	
 	public Player lookupByUserPassword(){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
