@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="board.css">
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+    <div id="boards"></div>
+  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/underscore-min.js"></script>
+  <script src="js/libs/d3.v2.min.js"></script>
+  <script src="board.json"></script>
+  <script type="text/javascript" charset="utf-8">
+
+  $(document).ready(function() {
+
+      ////////////////////////////////////////////////////////////////
+      // Here is where the data var will be prebuild by ben's jsp side
+      ////////////////////////////////////////////////////////////////
+      console.log( data.boards );
+      ////////////////////////////////////////////////////////////////
+      var boards = $("#boards")
+
+      //double check the sort/ordering by difficulty
+      data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
+
+      // Check to ensure the board is/can be a grid
+      // this will clip the most difficult boards // thoughts?
+      var base = Math.sqrt( data.boards.length );
+      if ( Math.floor(base) !== base) {
+        // trim it up
+        data.boards = _.first(data.boards, Math.pow( Math.floor(base), 2 ) );
+      }
+
+      //setup scale
+      var scores = _.pluck(data.boards, "base_score" );
+      var colors = d3.scale.linear()
+        .domain([ _.min(scores), _.max(scores) ])
+        .range(["#B2365F", "#F69"]);
+
+      var attempts = _.pluck(data.boards, "attempts");
+      var attempt = d3.scale.linear()
+        .domain([ _.min(attempts), _.max(attempts) ])
+        .range([0, 100]);
+
+      _.each(data.boards, function(v, i) {
+          var scaleColor = colors(v.base_score);
+          var scaleAttempt = attempt(v.attempts);
+        var board = boards.append("<div id='board_"+v.position+"' class='board' style='background-color: "+scaleColor+";'>"+(v.position+1)+"<div class='score_slider'><div class='score_value' style='width:"+scaleAttempt+"%;'></div></div></div>")
+      })
+
+      console.log( data.boards );
+
+    });
+  </script>
+  </body>
+</html>
