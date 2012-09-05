@@ -1,0 +1,55 @@
+/*
+Copyright (c) 2011, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.com/yui/license.html
+version: 2.9.0
+*/
+html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,select,p,blockquote,th,td{margin:0;padding:0}table{border-collapse:collapse;border-spacing:0}fieldset,img{border:0}address,button,caption,cite,code,dfn,em,input,optgroup,option,select,strong,textarea,th,var{font:inherit}del,ins{text-decoration:none}li{list-style:none}caption,th{text-align:left}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}q:before,q:after{content:''}abbr,acronym{border:0;font-variant:normal}sup{vertical-align:baseline}sub{vertical-align:baseline}legend{color:#000}
+
+/* Max Nanis <nanis@scripps.edu> */
+
+@font-face {
+	font-family: League-Gothic;
+	src: url("League-Gothic.otf") format("opentype");
+}
+
+* {
+ /* outline: 1px solid green; */
+}
+
+body {
+}
+
+/* Custom */
+
+#boards {
+
+}
+
+#boards div.board {
+  height: 40px;
+  width: 40px;
+  float: left;
+  margin: 4px;
+  padding: 4px 0px 0px 0px;
+  position: relative;
+
+
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  text-align: center;
+}
+
+#boards div.board div.score_slider {
+  background-color: green;
+  height: 8px;
+  width: 40px;
+  position: absolute;
+  bottom: 0px;
+}
+
+#boards div.board div.score_value {
+  position: relative;
+  background-color: red;
+  height: 8px;
+}

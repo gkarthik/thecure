@@ -270,7 +270,7 @@ div#main div.section a {
 div#main div#column1 div#sections.section p {
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
-  padding: 20px;
+  padding: 0px 20px 20px 20px;
   text-indent: 16px;
   font-size: 20px;
 }
@@ -283,6 +283,7 @@ div#main div#column1 div#sections.section ol {
 div#main div#column1 div#sections.section ol li h4 {
   font-size: 24px;
   color: #F59;
+  padding: 0px 0px 10px 0px;
 }
 
 div#main div#column1 div#sections.section ol li {
