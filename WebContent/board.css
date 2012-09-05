@@ -8,18 +8,6 @@ html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre
 
 /* Max Nanis <nanis@scripps.edu> */
 
-@font-face {
-	font-family: League-Gothic;
-	src: url("League-Gothic.otf") format("opentype");
-}
-
-* {
- /* outline: 1px solid green; */
-}
-
-body {
-}
-
 /* Custom */
 
 #boards {
@@ -27,29 +15,56 @@ body {
 }
 
 #boards div.board {
-  height: 40px;
-  width: 40px;
+  height: 46px;
+  width: 46px;
   float: left;
   margin: 4px;
-  padding: 4px 0px 0px 0px;
   position: relative;
 
-
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-  font-weight: 300;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  color: #8C8C8C;
+  background-color: #F7FDFF;
   text-align: center;
+
+  -webkit-box-shadow: 0px 0px 4px 0px #B7BBBD;
+          box-shadow: 0px 0px 4px 0px #B7BBBD;
+
+  -webkit-box-shadow: 0px 0px 4px 0px rgba(183, 187, 189, .5);
+          box-shadow: 0px 0px 4px 0px rgba(183, 187, 189, .5);
+
+}
+
+#boards div.board span.symbol {
+  position: relative;
 }
 
 #boards div.board div.score_slider {
-  background-color: green;
-  height: 8px;
-  width: 40px;
+  background-color: #3DAECC;
+  background-color: rgba(61,174,204,.6);
+  height: 6px;
+  width: 46px;
   position: absolute;
   bottom: 0px;
 }
 
 #boards div.board div.score_value {
   position: relative;
-  background-color: red;
-  height: 8px;
+  background-color: #D45580;
+  height: 6px;
+}
+
+#boards div.board.enabled {
+
+}
+
+#boards div.board.enabled:hover {
+  cursor: pointer;
+}
+
+#boards div.board.disabled {
+}
+
+#boards div.board.disabled:hover {
+
 }
