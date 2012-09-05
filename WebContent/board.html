@@ -49,16 +49,44 @@
         .domain([ _.min(scores), _.max(scores) ])
         .range(["#B2365F", "#F69"]);
 
-      var attempts = _.pluck(data.boards, "attempts");
       var attempt = d3.scale.linear()
-        .domain([ _.min(attempts), _.max(attempts) ])
+        .domain([0, 10])
         .range([0, 100]);
 
       _.each(data.boards, function(v, i) {
-          var scaleColor = colors(v.base_score);
-          var scaleAttempt = attempt(v.attempts);
-        var board = boards.append("<div id='board_"+v.position+"' class='board' style='background-color: "+scaleColor+";'>"+(v.position+1)+"<div class='score_slider'><div class='score_value' style='width:"+scaleAttempt+"%;'></div></div></div>")
+        var scaleColor = colors(v.base_score);
+        var scaleAttempt = attempt(v.attempts);
+        var isEnabled;
+        ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled"; 
+
+        var content;
+        var size = 20;
+        var top_pos = 4;
+        if ( v.enabled == false ) {
+          content = "•";
+          size = size*3;
+          top_pos = -18;
+        }
+        if ( v.trophy == true) {
+          content = "★";
+          size = size*0.4;
+          top_pos = 4;
+        }
+        if ( v.enabled == false && v.trophy == true) {
+          content = "★";
+          top_pos = 4;
+        }
+
+        if ( v.enabled == true && v.trophy == false && v.attempts < 10 ) {
+          content = (v.position+1);
+          top_pos = 9;
+        }
+
+        
+
+        var board = boards.append("<div id='board_"+v.position+"' class='board "+isEnabled+"' style='font-size:"+size+"px;' ><span class='symbol' style='top:"+top_pos +"px'>"+content+"</span><div class='score_slider'><div class='score_value' style='width:"+scaleAttempt+"%;'></div></div></div>")
       })
+
 
       console.log( data.boards );
 
