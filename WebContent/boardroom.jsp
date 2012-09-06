@@ -109,7 +109,7 @@ function toHex(n) {
 									for (int j = 0; j < num_tile_cols; j++) {
 										level++;
 										//board
-										Board board = boards.get(level);
+										Board board = boards.get((level-1));
 										int b_id = board.getId();
 										int base_score = (int)board.getBase_score();
 										//player

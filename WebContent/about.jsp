@@ -16,7 +16,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">TheCure</a>
+          <a class="brand" href="/cure/">TheCure</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="contact.jsp">Contact</a></li>

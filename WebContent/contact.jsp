@@ -36,9 +36,9 @@
     <h1>Contact</h1>
   	<ul>
   	<li><a href="https://groups.google.com/forum/#!forum/genegames">Write to the Web forum</a></li>
-  	<li><a href="mailto:bgood@scripps.edu">Email me</a></li>
-  	<li><a href="https://twitter.com/bgood/">Follow me</a></li>
-  	<li><a href="http://sulab.org/contact-us/">Find us on a map</a></li>
+  	<li>Email <a href="mailto:bgood@scripps.edu">Ben</a></li>
+  	<li>Follow <a href="https://twitter.com/genegame/">genegame on twitter</a></li>
+  	<li><a href="http://sulab.org/contact-us/">Visit the lab contact page</a></li>
   	</ul>
     </div>
     </div>

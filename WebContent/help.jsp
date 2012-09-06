@@ -22,11 +22,10 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/combo/">COMBO</a>
+          <a class="brand" href="/cure/">The Cure</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="about.jsp" target="_blank">About</a></li>
-              <li><a href="https://groups.google.com/forum/#!forum/genegames" target="_blank">Contact</a></li>
+              <li><a href="contact.jsp">Contact</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -41,7 +40,7 @@
 		<p></p>
 		<br>
 		<div id="game result">
-			<h1>COMBO instructions</h1>
+			<h1>Instructions</h1>
 		<p>Basic game play: maximize your score by choosing the best combination of genes</p>
 		<p>Click the name of a gene to add it to your hand. Your score will be calculated each time your hand is changed.</p>  
 		<p>Careful though!. Once you add a card to your hand it will stay there for the whole round - no takebacks! </p>

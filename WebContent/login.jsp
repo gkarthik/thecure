@@ -58,7 +58,7 @@ var bad = '<%=bad%>';
 			<div class="container">
 				<a class="btn btn-navbar" data-toggle="collapse"
 					data-target=".nav-collapse"> <span class="icon-bar"></span> </a> <a
-					class="brand" href="/">The Cure</a>
+					class="brand" href="/cure/">The Cure</a>
 			</div>
 		</div>
 	</div>
@@ -96,9 +96,12 @@ var bad = '<%=bad%>';
 									* Username: <input id="usernameinput" type="text"
 										name="username" /><br> Password: <input
 										id="passwordinput" type="password" name="password" /><br>
-									Email address: <input id="emailinput" type="text" name="email" /><br>
+									Email address: <input id="refEmail" class="email" type="email" name="email" placeholder="email" />
+									<br>
+								<p id="emailAlert" style="display: none;" ></p>
 									Most recently awarded academic degree: <select name="degree"
 										width="10">
+										<option value="ns" selected>Please choose one</option>
 										<option value="none">None</option>
 										<option value="bachelors">Bachelors</option>
 										<option value="masters">Masters</option>
@@ -107,11 +110,13 @@ var bad = '<%=bad%>';
 										<option value="other">other</option>
 									</select><br /> Do you consider yourself knowledgeable about cancer
 									biology?: <select name="cancer">
-										<option value="no" selected>No</option>
+										<option value="ns" selected>Please choose one</option>
+										<option value="no">No</option>
 										<option value="yes">Yes</option>
 									</select><br /> Do you consider yourself a biologist?: <select
 										name="biologist">
-										<option value="no" selected>No</option>
+										<option value="ns" selected>Please choose one</option>
+										<option value="no">No</option>
 										<option value="yes">Yes</option>
 									</select> <input type="hidden" name="newuser" value="1" /> <br />
 									<input type="submit" value="Submit" />

@@ -323,7 +323,13 @@ public class Weka {
 				att_meta.put(a.name(),c);
 				String symbol = c.getName();
 				if(symbol!=null){
-					getTrain().renameAttribute(a, symbol);
+					String treename = symbol;
+					if(a.name().startsWith("ILMN")){
+						treename+="_expr";
+					}else{
+						treename+="_cnv";
+					}
+					getTrain().renameAttribute(a, treename);
 					if(getTest()!=null){
 						getTest().renameAttribute(a, symbol);
 					}
