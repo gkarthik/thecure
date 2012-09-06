@@ -13,84 +13,85 @@
         <link rel="stylesheet" href="board.css">
     </head>
     <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-        <![endif]-->
-    <div id="boards"></div>
+      <div id="boards"></div>
+
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
   <script src="board.json"></script>
   <script type="text/javascript" charset="utf-8">
 
-  $(document).ready(function() {
-
-      ////////////////////////////////////////////////////////////////
-      // Here is where the data var will be prebuild by ben's jsp side
-      ////////////////////////////////////////////////////////////////
-      console.log( data.boards );
-      ////////////////////////////////////////////////////////////////
-      var boards = $("#boards")
-
-      //double check the sort/ordering by difficulty
-      data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
+  function drawGrid(targetEl, data, box_size) {
+    //double check the sort/ordering by difficulty
+    data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
 
       // Check to ensure the board is/can be a grid
       // this will clip the most difficult boards // thoughts?
       var base = Math.sqrt( data.boards.length );
       if ( Math.floor(base) !== base) {
-        // trim it up
         data.boards = _.first(data.boards, Math.pow( Math.floor(base), 2 ) );
       }
-
-      //setup scale
-      var scores = _.pluck(data.boards, "base_score" );
-      var colors = d3.scale.linear()
-        .domain([ _.min(scores), _.max(scores) ])
-        .range(["#B2365F", "#F69"]);
 
       var attempt = d3.scale.linear()
         .domain([0, 10])
         .range([0, 100]);
 
-      _.each(data.boards, function(v, i) {
-        var scaleColor = colors(v.base_score);
-        var scaleAttempt = attempt(v.attempts);
-        var isEnabled;
-        ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled"; 
+      var targetEl = $(targetEl),
+          hw = box_size,
+          text_size = Math.floor(hw*.435),
+          margin = Math.floor(hw*.09),
+          top_pos = Math.floor(hw*.09),
+          pro_height = Math.floor(hw*.15);
 
-        var content;
-        var size = 20;
-        var top_pos = 4;
-        if ( v.enabled == false ) {
+      _.each(data.boards, function(v, i) {
+        var scaleAttempt = attempt(v.attempts),
+            isEnabled,
+            content,
+            font_size = text_size;
+       ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled"; 
+
+       if ( v.enabled == false ) {
           content = "•";
-          size = size*3;
-          top_pos = -18;
+          font_size = font_size*3;
+          top_pos = -(hw*.4);
         }
         if ( v.trophy == true) {
           content = "★";
-          size = size*0.4;
-          top_pos = 4;
+          font_size = font_size*0.4;
+          top_pos = Math.floor(hw*.09);
         }
         if ( v.enabled == false && v.trophy == true) {
           content = "★";
-          top_pos = 4;
+          top_pos = Math.floor(hw*.09);
         }
 
         if ( v.enabled == true && v.trophy == false && v.attempts < 10 ) {
           content = (v.position+1);
-          top_pos = 9;
+          top_pos = Math.floor(hw*.2);
         }
-
-        
-
-        var board = boards.append("<div id='board_"+v.position+"' class='board "+isEnabled+"' style='font-size:"+size+"px;' ><span class='symbol' style='top:"+top_pos +"px'>"+content+"</span><div class='score_slider'><div class='score_value' style='width:"+scaleAttempt+"%;'></div></div></div>")
+        var board = targetEl.append("\
+            <div id='board_"+ v.board_id +"' class='board "+ isEnabled +"' style='height:"+ hw +"px; width:"+ hw +"px; font-size:"+ font_size +"px; margin:"+ margin +"px' > \
+              <span class='symbol' style='top:"+ top_pos +"px'>"+ content +"</span>\
+              <div class='score_slider' style='width:"+ hw +"px; height:"+ pro_height +"px;'>\
+                <div class='score_value' style='width:"+ scaleAttempt +"%; height:"+ pro_height +"px;'></div>\
+              </div>\
+              </div>");
       })
 
+      $.each( $("div.board.enabled"), function(i, v) {
+          var board_id = $(this).attr('id').split('_')[1];
+          $(this).click(function(e) {
+            var url = "boardgame.jsp?level="+board_id+"&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
+            window.location.href = url;
+          })
+      })
 
-      console.log( data.boards );
+  }
 
-    });
+
+  $(document).ready(function() {
+    drawGrid("#boards", data, 30);
+  });
   </script>
   </body>
 </html>
