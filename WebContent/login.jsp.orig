@@ -1,23 +1,82 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 
+<<<<<<< local
+=======
 <%
 String bad = request.getParameter("bad");
 %>
 
+>>>>>>> other
 <!DOCTYPE html>
 <html>
+<<<<<<< local
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Login to COMBO</title>
-    <link href="assets/css/bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
+    <link href="assets/css/combo_bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
     <link	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
-    <link href="assets/css/style.css" rel="stylesheet" type="text/css">
-   </head>
+  </head>
+=======
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<title>Login</title>
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css"
+	type="text/css" media="screen">
+<link
+	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
+>>>>>>> other
 
 <body>
-
   <div class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+    <a class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse"> <span class="icon-bar"></span> </a> <a
+        class="brand" href="/">The Cure</a>
+      </div>
+  </div>
+  </div>
+
+<<<<<<< local
+  <div class="container">
+=======
+<script>
+var bad = '<%=bad%>';
+	function clearInput() {
+		$('input[type=text]').focus(function() {
+			$(this).val('');
+		});
+	}
+
+	$(document).ready(function() {
+		//start with new user area hidden
+		$("#newuser").hide();
+		$("#olduser").hide();
+		console.log("bad is "+bad);
+		if(bad=="nametaken"){
+			alert("Sorry, that user name has been taken. Please try another one.");
+			$("#newuser").show();
+			$("#olduser").hide();
+		}else if(bad=="pw"){
+			alert("Sorry, that username/password combination is invalid.  Please try again.  ");
+			$("#olduser").show();
+		} else{		
+			$("#olduser").show();
+		//show new user on click
+		$("#newuserlink").click(function(e) {
+			e.preventDefault();
+			$("#newuser").show();
+			$("#olduser").hide();
+		});
+		}
+	});
+</script>
+<jsp:include page="js/analytics.js" />
+</head>
+<body>
+	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container">
 				<a class="btn btn-navbar" data-toggle="collapse"
@@ -26,22 +85,18 @@ String bad = request.getParameter("bad");
 			</div>
 		</div>
 	</div>
-
-  <div class="container">
+	<div class="container">
+>>>>>>> other
 		<div class="hero-unit">
 			<div class="row">
-				<div class="span6 offset2">
+				<div class="span12">
 					<div id="login">
 						<div id="olduser">
 							<strong>Enter your credentials here</strong>
 
               <form action="./checkuser.jsp">
-                <label for="username">Username:</label><br />
-                <input id="usernameinput" type="text" name="username" placeholder="Username" /><br>
-                
-                <label for="password">Password:</label><br />
-                <input id="passwordinput" type="password" name="password" placeholder="Password" /><br>
-                
+                Username: <input id="usernameinput" type="text" name="username" /><br>
+                Password: <input id="passwordinput" type="password" name="password" /><br>
                 <input type="submit" value="Submit" />
               </form>
 							or
@@ -107,7 +162,6 @@ String bad = request.getParameter("bad");
 <script src="js/libs/jquery-1.8.0.min.js"></script>
 <script src="js/libs/jquery-ui-1.8.0.min.js"></script>
 <script>
-var bad = '<%=bad%>';
 	function clearInput() {
 		$('input[type=text]').focus(function() {
 			$(this).val('');
@@ -117,24 +171,12 @@ var bad = '<%=bad%>';
 	$(document).ready(function() {
 		//start with new user area hidden
 		$("#newuser").hide();
-		$("#olduser").hide();
-		console.log("bad is "+bad);
-		if(bad=="nametaken"){
-			alert("Sorry, that user name has been taken. Please try another one.");
-			$("#newuser").show();
-			$("#olduser").hide();
-		}else if(bad=="pw"){
-			alert("Sorry, that username/password combination is invalid.  Please try again.  ");
-			$("#olduser").show();
-		} else{		
-			$("#olduser").show();
-		//show new user on click
+		//show on click
 		$("#newuserlink").click(function(e) {
 			e.preventDefault();
 			$("#newuser").show();
 			$("#olduser").hide();
 		});
-		}
 	});
 </script>
 <jsp:include page="js/analytics.js" />
