@@ -3,6 +3,10 @@
  */
 package org.scripps.util;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -123,5 +127,29 @@ public class MapFun {
 			outmap.put(in.getValue(), in.getKey());
 		}
 		return outmap;
+	}
+	
+	public static HashMap<String, String> read2columnMap(String file){
+		HashMap<String, String> map = new HashMap<String, String>();
+		try {
+			BufferedReader f = new BufferedReader(new FileReader(file));
+			String line = f.readLine().trim();
+			while(line!=null){
+				if(!line.startsWith("#")){
+					String[] item = line.split("\t");
+					if(item!=null&&item.length>1){
+						map.put(item[0], item[1]);
+					}
+				}
+				line = f.readLine();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return map;
 	}
 }

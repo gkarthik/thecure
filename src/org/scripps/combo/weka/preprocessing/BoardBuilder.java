@@ -30,16 +30,51 @@ public class BoardBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_10yr.arff" ;
-		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Illumina2entrez.txt"; 
+		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
+		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
 		int n_per_board = 25;
 		try {
 			createRandomBoardsByGenes(train_file, metadatafile, n_per_board);
+			//String progenes = "1164,51203,9055,9833,332,983,9768,9133,10112,9232,6790,991,51659,4085,11065,1163,9212,8318,51514,7153,3148,7298,3020,5341,9582";
+			//loadSelectedGeneBoard(train_file, metadatafile,progenes);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	public static void loadSelectedGeneBoard(String train_file, String metadatafile, String csv_geneids) throws FileNotFoundException{
+		Weka weka = new Weka(train_file);
+		weka.loadMetadata(new FileInputStream(metadatafile));
+		//produce the list of unique entrez gene ids
+		//Set<String> gene_ids = weka.geneid_cards.keySet();
+		
+		String[] gene_ids = csv_geneids.split(",");
+		System.out.println("N gene ids: "+gene_ids.length);
+		Board board = new Board();
+		List<card> bcards = new ArrayList<card>();
+		board.setPhenotype("dream_breast_cancer");
+		for(String gene : gene_ids){
+			board.getEntrez_ids().add(gene);
+			List<card> cards = weka.geneid_cards.get(gene);
+			bcards.addAll(cards);
+			String gene_symbol = "";
+			for(card c : cards){
+				gene_symbol = c.getName();
+				board.getAttribute_names().add(c.getAtt_name());
+			}
+			board.getGene_symbols().add(gene_symbol);
+		}
+		execution base = weka.pruneAndExecute(bcards);
+			float base_score = (float)base.eval.pctCorrect();
+			board.setBase_score(base_score);
+			board.insert();
+			board = new Board();
+			board.setPhenotype("dream_breast_cancer");
+			bcards = new ArrayList<card>();
+		
+	}
+	
 /**
  * Loads the database with pre-generated genesets to use for boards
  * @param train_file
@@ -54,12 +89,11 @@ public class BoardBuilder {
 		//produce the list of unique entrez gene ids
 		//Set<String> gene_ids = weka.geneid_cards.keySet();
 		List<String> gene_ids = new ArrayList<String>(weka.geneid_cards.keySet());
-		System.out.println(gene_ids.size());
+		System.out.println("N gene ids: "+gene_ids.size());
 		int board_id = 1;
 		Collections.shuffle(gene_ids);
 		Board board = new Board();
 		List<card> bcards = new ArrayList<card>();
-		Map<Integer, Board> board_score = new HashMap<Integer, Board>();
 		board.setPhenotype("dream_breast_cancer");
 		for(String gene : gene_ids){
 			board.getEntrez_ids().add(gene);

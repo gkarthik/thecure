@@ -123,211 +123,272 @@ function playSound(url) {
 
 function evaluateHand(cardsinhand, player){
 	var url = 'MetaServer?dataset=<%=dataset%>&command=getscore&features=';
-	features = "";
-	feature_names = "";
-	var chand = "cardsinhand_"+player;
-
-	$.each(cardsinhand, function(index, value) {
-	    features+=value.att_index+",";
-		feature_names += value.att_name + ":"+value.name+"|";
-	  });
-	url +=features;
-
-	//goes to server, runs the default evaluation with a decision tree
- 	$.getJSON(url, function(data) {
- 		var treeheight = 250;
- 		var treewidth = 420;
- 		//console.log(data.max_depth +" depth");
- 		if(data.max_depth>6){
- 			treeheight = 500;
- 		}
- 		if(player=="1"){
- 			//draw the current tree
- 			$("#p1_current_tree").empty();
- 			drawTree(data, treewidth, treeheight, "#p1_current_tree");
- 			//var prev_score = p1_score;
- 			p1_score = data.evaluation.accuracy;
- 			if(p1_hand.length==max_hand){
- 				$("#player1_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 			}
-			$("#game_score_1").text(p1_score);
- 		}else if(player=="2"){
- 			//draw the current tree
- 			$("#p2_current_tree").empty();
- 			drawTree(data, treewidth, treeheight, "#p2_current_tree");
- 			//var prev_score = p2_score;
- 			$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 			p2_score = data.evaluation.accuracy;
- 			if(p2_hand.length==max_hand){
- 				$("#player2_j48_score").html('<strong> score '+data.evaluation.accuracy+'</strong>');
- 			}
- 			$("#game_score_2").text(p2_score);
- 			board_state_clickable = true;
- 			if(p2_hand.length!=max_hand&&p1_score<p2_score&&p1_score>0){
- 				moveBarney("correct"); //incorrect win lose
-			}else if (p1_score>p2_score){
-				moveClayton("correct"); //incorrect win lose
-			}
- 			
- 		}
- 		//if its the last hand, show the results
- 		if(p2_hand.length==max_hand){ 
- 			window.setTimeout(function() {
- 				var $tabs = $("#tabs").tabs();		
- 	 			if(p1_score<p2_score&&p1_score>0){
- 					$("#winner").text("Sorry, you lost this hand. ");
- 	 				$tabs.tabs('select', 4); 
- 	 				moveBarney("win"); //incorrect win lose
- 	 	 			$("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
- 				}else if (p1_score>p2_score){
- 					$("#winner").parent().parent().css('background-color', '#FFA500');
- 					$("#winner").html("<h1>You beat Barney!</h1>You earned "+p1_score+" * "+multiplier+"= </strong><span style=\"font-size:30px;\">"+(p1_score*multiplier)+"</span> points!");
- 					$tabs.tabs('select', 3); 
- 	 				moveBarney("lose"); //incorrect win lose
- 	 				moveClayton("win");
- 				}else if (p1_score==p2_score){
- 					$("#winner").text("You tied Barney! ");
- 	 				$tabs.tabs('select', 3); 
- 	 				moveBarney("win"); //incorrect win lose
- 	 				moveClayton("win");
- 	 	 			$("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
- 				}
- 				$("#board").hide();
- 				$("#endgame").show(); 				
- 			}, 1500); 
- 		}
-	}); 
-}
-
-function getStyleByScore(power){
-	var colors = ["#F8F0DF","#F7E6C1","#F7DB9B","#F5CC6C","#F5BE3F", "#F26B10"];
-	var cellstyle = "width: 75px; position:relative; ";
-	//color by estimated individual predictive power
-	if(power==0){
-		//cellstyle+=" background-color:"+colors[0]+";";
-	}else if(power>0&&power<0.12){
-		cellstyle+=" background-color:"+colors[0]+";";
-	}else if(power<0.13){
-		cellstyle+=" background-color:"+colors[1]+";";
-	}else if(power<0.14){
-		cellstyle+=" background-color:"+colors[2]+";";
-	}else if(power<0.15){
-		cellstyle+=" background-color:"+colors[3]+";";
-	}else if(power<0.16){
-		cellstyle+=" background-color:"+colors[4]+";";
-	}else if(power>0.15){
-		cellstyle+=" background-color:"+colors[5]+";";
-	}
-	return cellstyle;
-}
-
-function getChessStyle(cell_index){
-	var cellstyle = "width: 75px; position:relative; ";
-//	if(cell_index % 2 == 0){
-//		cellstyle+=" background-color:#F26B10;";
-//	}else{
-		cellstyle+=" background-color:#F8F0DF;";
-//	}
-	return cellstyle;
-}
-
-
-function generateBoardCell(cardindex){
-	var boardhtml = "";
-	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getChessStyle(cardindex);
-	if(displayname==null||displayname.length==0){
-		displayname = cards[cardindex].att_name;
-	}
-	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-	if(showgeneinfo=="1"){
-		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-	}
-//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
-	boardhtml+="<div class=\"select_card_button btn btn-primary\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable small_level_button\" style=\"height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\" href=\"#\">"+displayname+"</a></div></td>";
-	
-	return boardhtml;
-}
-
-/**
- * cardindex refers to the location on the board and the handle in the board card Map
- */
-function generateHandCell(cardindex, player){
-	var boardhtml = "";
-	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
-	if(displayname==null||displayname.length==0){
-		displayname = cards[cardindex].att_name;
-	}
-	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-/* 	if(showgeneinfo=="1"){
-		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-	}
-	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
- */	
-	if(showgeneinfo=="1"){
-		boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-	}
-//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
-	boardhtml+="<div class=\"select_card_button btn btn-primary\" style=\"cursor:default;\" id=\"card_index_"+cardindex+"\"><span class=\"selectable small_level_button\" style=\"cursor:default; height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\">"+displayname+"</span></div></td>";
-
-	return boardhtml;
-}
-
-function generateUsedBoardCell(cardindex){
-
-	var boardhtml = "";
-	var displayname = cards[cardindex].name;
-	var power = cards[cardindex].power;
-	var cellstyle = getStyleByScore(power);
-	if(displayname==null||displayname.length==0){
-		displayname = cards[cardindex].att_name;
-	}
-	cards[cardindex].displayname = displayname;
-	boardhtml+="<td style=\""+cellstyle+"\">";
-	boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"+displayname+"<br/>Used..</div>";
-	return boardhtml;
-}
-
-
-function setupOpponent(){
-	opponent_sort = cards.slice(0);
-	//maintain the indexes to the board
-	$.each(opponent_sort, function(index, value) {
-		opponent_sort[index].board_index = index;
-	  });
-	//rank by the power value - now ascending
-	opponent_sort.sort(function(a, b){
-		 return a.power - b.power;
+	if(dataset=='dream_breast_cancer'){
+		url = 'MetaServer?dataset=<%=dataset%>&command=getscore&geneids=';
+		geneids = "";
+		feature_names = "";
+		var chand = "cardsinhand_" + player;
+		$.each(cardsinhand, function(index, value) {
+				geneids += value.unique_id + ",";
+				feature_names += value.att_name + ":" + value.name + "|";
 		});
-	//check
-	//$.each(opponent_sort, function(index, value) {
-	//    console.log(index+" "+value.power+" "+opponent_sort[index].board_index);
-	//  });
-}
+		url += geneids;
+	}else{	
+		features = "";
+		feature_names = "";
+		var chand = "cardsinhand_"+player;
 
-function generateBoard(){
-	var cardindex = -1;
-	var boardhtml ="<table >"; //border=\"4\" bordercolor=\"orange\"
-	for (var r = 0; r < nrows; r++) {
-		boardhtml+="<tr align=\"center\" style=\"height: 75px\";>";
-			for (var c = 0; c < ncols; c++) {
+		$.each(cardsinhand, function(index, value) {
+		    features+=value.att_index+",";
+			feature_names += value.att_name + ":"+value.name+"|";
+		  });
+		url +=features;
+	}
+		//goes to server, runs the default evaluation with a decision tree
+		$.getJSON(
+						url,
+						function(data) {
+							var treeheight = 250;
+							var treewidth = 420;
+							//console.log(data.max_depth +" depth");
+							if (data.max_depth > 6) {
+								treeheight = 500;
+							}
+							if (player == "1") {
+								//draw the current tree
+								$("#p1_current_tree").empty();
+								drawTree(data, treewidth, treeheight,
+										"#p1_current_tree");
+								//sometimes randomness in cross-validation gets you a different score even without producing
+								//any tree at all.
+								if (data.max_depth < 2) {
+									p1_score = 50;
+								} else {
+									p1_score = data.evaluation.accuracy;
+								}
+								if (p1_hand.length == max_hand) {
+									$("#player1_j48_score").html(
+											'<strong> score ' + p1_score
+													+ '</strong>');
+								}
+								$("#game_score_1").text(p1_score);
+							} else if (player == "2") {
+								//draw the current tree
+								$("#p2_current_tree").empty();
+								drawTree(data, treewidth, treeheight,
+										"#p2_current_tree");
+								//same as above
+								if (data.max_depth < 2) {
+									p2_score = 50;
+								} else {
+									p2_score = data.evaluation.accuracy;
+								}
+								$("#player2_j48_score").html(
+										'<strong> score ' + p2_score
+												+ '</strong>');
+
+								if (p2_hand.length == max_hand) {
+									$("#player2_j48_score").html(
+											'<strong> score ' + p2_score
+													+ '</strong>');
+								}
+								$("#game_score_2").text(p2_score);
+								board_state_clickable = true;
+								if (p2_hand.length != max_hand
+										&& p1_score<p2_score&&p1_score>0) {
+									moveBarney("correct"); //incorrect win lose
+								} else if (p1_score > p2_score) {
+									moveClayton("correct"); //incorrect win lose
+								}
+
+							}
+							//if its the last hand, show the results
+							if (p2_hand.length == max_hand) {
+								//save
+								saveHand();
+								//show
+								window
+										.setTimeout(
+												function() {
+													var $tabs = $("#tabs")
+															.tabs();
+													if (p1_score<p2_score&&p1_score>0) {
+														$("#winner")
+																.text(
+																		"Sorry, you lost this hand. ");
+														$tabs.tabs('select', 4);
+														moveBarney("win"); //incorrect win lose
+														$("#winner")
+																.append(
+																		"<br><a href=\""+replay+"\">Play Level Again?</a>");
+													} else if (p1_score > p2_score) {
+														$("#winner")
+																.parent()
+																.parent()
+																.css(
+																		'background-color',
+																		'#FFA500');
+														$("#winner")
+																.html(
+																		"<h1>You beat Barney!</h1>You earned "
+																				+ p1_score
+																				+ " * "
+																				+ multiplier
+																				+ "= </strong><span style=\"font-size:30px;\">"
+																				+ (p1_score * multiplier)
+																				+ "</span> points!");
+														$tabs.tabs('select', 3);
+														moveBarney("lose"); //incorrect win lose
+														moveClayton("win");
+													} else if (p1_score == p2_score) {
+														$("#winner")
+																.text(
+																		"You tied Barney! ");
+														$tabs.tabs('select', 3);
+														moveBarney("win"); //incorrect win lose
+														moveClayton("win");
+														$("#winner")
+																.append(
+																		"<br><a href=\""+replay+"\">Play Level Again?</a>");
+													}
+													$("#board").hide();
+													$("#endgame").show();
+												}, 1500);
+							}
+						});
+	}
+
+	function getStyleByScore(power) {
+		var colors = [ "#F8F0DF", "#F7E6C1", "#F7DB9B", "#F5CC6C", "#F5BE3F",
+				"#F26B10" ];
+		var cellstyle = "width: 75px; position:relative; ";
+		//color by estimated individual predictive power
+		if (power == 0) {
+			//cellstyle+=" background-color:"+colors[0]+";";
+		} else if (power > 0 && power < 0.12) {
+			cellstyle += " background-color:" + colors[0] + ";";
+		} else if (power < 0.13) {
+			cellstyle += " background-color:" + colors[1] + ";";
+		} else if (power < 0.14) {
+			cellstyle += " background-color:" + colors[2] + ";";
+		} else if (power < 0.15) {
+			cellstyle += " background-color:" + colors[3] + ";";
+		} else if (power < 0.16) {
+			cellstyle += " background-color:" + colors[4] + ";";
+		} else if (power > 0.15) {
+			cellstyle += " background-color:" + colors[5] + ";";
+		}
+		return cellstyle;
+	}
+
+	function getChessStyle(cell_index) {
+		var cellstyle = "width: 75px; position:relative; ";
+		//	if(cell_index % 2 == 0){
+		//		cellstyle+=" background-color:#F26B10;";
+		//	}else{
+		cellstyle += " background-color:#F8F0DF;";
+		//	}
+		return cellstyle;
+	}
+
+	function generateBoardCell(cardindex) {
+		var boardhtml = "";
+		var displayname = cards[cardindex].name;
+		var power = cards[cardindex].power;
+		var cellstyle = getChessStyle(cardindex);
+		if (displayname == null || displayname.length == 0) {
+			displayname = cards[cardindex].att_name;
+		}
+		cards[cardindex].displayname = displayname;
+		boardhtml += "<td style=\""+cellstyle+"\">";
+		if (showgeneinfo == "1") {
+			boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+		}
+		//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+		boardhtml += "<div class=\"select_card_button btn btn-primary\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable small_level_button\" style=\"height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\" href=\"#\">"
+				+ displayname + "</a></div></td>";
+
+		return boardhtml;
+	}
+
+	/**
+	 * cardindex refers to the location on the board and the handle in the board card Map
+	 */
+	function generateHandCell(cardindex, player) {
+		var boardhtml = "";
+		var displayname = cards[cardindex].name;
+		var power = cards[cardindex].power;
+		var cellstyle = getStyleByScore(power);
+		if (displayname == null || displayname.length == 0) {
+			displayname = cards[cardindex].att_name;
+		}
+		cards[cardindex].displayname = displayname;
+		boardhtml += "<td style=\""+cellstyle+"\">";
+		/* 	if(showgeneinfo=="1"){
+		 boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+		 }
+		 boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\">"+displayname+"</div></td>";
+		 */
+		if (showgeneinfo == "1") {
+			boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+		}
+		//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
+		boardhtml += "<div class=\"select_card_button btn btn-primary\" style=\"cursor:default;\" id=\"card_index_"+cardindex+"\"><span class=\"selectable small_level_button\" style=\"cursor:default; height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\">"
+				+ displayname + "</span></div></td>";
+
+		return boardhtml;
+	}
+
+	function generateUsedBoardCell(cardindex) {
+
+		var boardhtml = "";
+		var displayname = cards[cardindex].name;
+		var power = cards[cardindex].power;
+		var cellstyle = getStyleByScore(power);
+		if (displayname == null || displayname.length == 0) {
+			displayname = cards[cardindex].att_name;
+		}
+		cards[cardindex].displayname = displayname;
+		boardhtml += "<td style=\""+cellstyle+"\">";
+		boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"
+				+ displayname + "<br/>Used..</div>";
+		return boardhtml;
+	}
+
+	function setupOpponent() {
+		opponent_sort = cards.slice(0);
+		//maintain the indexes to the board
+		$.each(opponent_sort, function(index, value) {
+			opponent_sort[index].board_index = index;
+		});
+		//rank by the power value - now ascending
+		opponent_sort.sort(function(a, b) {
+			return a.power - b.power;
+		});
+		//check
+		//$.each(opponent_sort, function(index, value) {
+		//    console.log(index+" "+value.power+" "+opponent_sort[index].board_index);
+		//  });
+	}
+
+	function generateBoard() {
+		var cardindex = -1;
+		var boardhtml = "<table >"; //border=\"4\" bordercolor=\"orange\"
+		for ( var r = 0; r < nrows; r++) {
+			boardhtml += "<tr align=\"center\" style=\"height: 75px\";>";
+			for ( var c = 0; c < ncols; c++) {
 				cardindex++;
 				var boardcell = generateBoardCell(cardindex);
-				boardhtml+=boardcell;
+				boardhtml += boardcell;
 			}
-			boardhtml+="</tr>";	
+			boardhtml += "</tr>";
 		}
-	boardhtml+="</table>";
-	$("#board").empty(); 
-	$("#board").append(boardhtml);
-	
-	//set the par - use all the features on the board
-	var url = 'MetaServer?dataset=<%=dataset%>&command=getscore&features=';
+		boardhtml += "</table>";
+		$("#board").empty();
+		$("#board").append(boardhtml);
+
+		//set the par - use all the features on the board
+		var url = 'MetaServer?dataset=<%=dataset%>&command=getscore&features=';
 	var features = "";
 	$.each(cards, function(index, value) {
 	    features+=value.att_index+",";
@@ -468,23 +529,43 @@ function saveHand(){
 	 if(p1_score > p2_score){
 		 win = "1";
 	 }
-		var saveurl = 'MetaServer?dataset=<%=dataset%>&command=savehand&features='
-			+ features + '&player_name=' + player_name + '&score='
-			+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-			+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
-		
+
+	 var saveurl;
+		if(dataset=='dream_breast_cancer'){ 
+			geneids = "";
+			feature_names = "";
+			$.each(p1_hand, function(index, value) {
+					geneids += value.unique_id + ",";
+					feature_names += value.att_name + ":" + value.name + "|";
+			});
+			saveurl = 'MetaServer?dataset=<%=dataset%>&command=savehand&geneids='
+				+ geneids + '&player_name=' + player_name + '&score='
+				+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
+				+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
+		}else{	
+			features = "";
+			feature_names = "";
+			$.each(p1_hand, function(index, value) {
+			    features+=value.att_index+",";
+				feature_names += value.att_name + ":"+value.name+"|";
+			  });
+			saveurl = 'MetaServer?dataset=<%=dataset%>&command=savehand&features='
+				+ features + '&player_name=' + player_name + '&score='
+				+ par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
+				+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
+		}
 		//player_name , score, cv_accuracy, board_id
 		//console.log("saved "+saveurl);
-		$.getJSON(saveurl, function(data) {
-			window.location.replace("<%=mosaic_url%>");
-		});
+
 }
 
 function setupHoldem(){
 	//add the save handler
-	 $("#holdem_button").on("click", function () {				
-		 saveHand();
-	});	
+	  $("#holdem_button").on("click", function () {				
+			$.getJSON(saveurl, function(data) {
+				window.location.replace("<%=mosaic_url%>");
+			});
+	});	 
 }
 
 //function to get random number upto m
@@ -683,7 +764,7 @@ $(document).ready(function() {
 				<a class="btn btn-navbar" data-toggle="collapse"
 					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
 					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
-					class="brand" href="/combo/">COMBO</a>
+					class="brand" href="/cure/">The Cure</a>
 				<div class="nav-collapse">
 					<ul class="nav">
 						<li><a href="help.jsp" target="blank">Help!</a>
@@ -833,7 +914,7 @@ $(document).ready(function() {
 		<div  style="margin-top:10px; margin-left:10px;">
 		<h1>Round Over</h1>
 		<div id="winner"  ></div> 
-		<br><input id="holdem_button" type="submit" value="Try another board" />
+		<br><input class="save_hand" id="holdem_button" type="submit" value="Try another board" />
 		</div> 
 		<!-- <div class="row">
 		<div id="cv_results_1" 
