@@ -60,18 +60,8 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
-				//storing as a comma delimited string in db for now.
-				String levels_ = r.getString("barney_levels");
-				List<Integer> barney_levels = new ArrayList<Integer>();
-				if(levels_!=null){
-					String[] levels = levels_.split(",");
-					for(String level : levels){
-						if(isNumeric(level)){
-							barney_levels.add(Integer.parseInt(level));
-						}
-					}
-				}
-				player.setBarney_levels(barney_levels);
+				//for boardroom
+				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -79,6 +69,32 @@ public class Player {
 			e.printStackTrace();
 		}
 		return player;
+	}
+	
+	public static List<Player> lookupByEmail(String email){
+		List<Player> players = new ArrayList<Player>();
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "select * from player where email = ?";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setString(1, email);
+			ResultSet r = p.executeQuery();
+			while(r.next()){
+				Player player = new Player();
+				player.setName(r.getString("name"));
+				player.setPassword(r.getString("password"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
+				players.add(player);
+			}
+			conn.connection.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return players;
 	}
 	
 	public Player lookupByUserPassword(){
@@ -109,7 +125,7 @@ public class Player {
 					}
 				}
 				//need to get rid of barney level idea..
-				player.setBarney_levels(barney_levels);
+				//player.setBarney_levels(barney_levels);
 				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();

@@ -27,6 +27,7 @@ import javax.servlet.http.HttpSession;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.scripps.combo.Board;
+import org.scripps.combo.Card;
 import org.scripps.combo.Hand;
 import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
@@ -57,7 +58,7 @@ public class MetaServer extends HttpServlet {
 	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
-		/*
+
 		//training game data 
 		try { 
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
@@ -69,6 +70,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		/*
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
 			Weka zoo_weka = new Weka(train_loc);
@@ -150,9 +152,9 @@ public class MetaServer extends HttpServlet {
 		 */
 
 		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_clinical_10yr.arff");
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
 			Weka dream_weka = new Weka(train_loc);
-			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/Illumina2entrez.txt"));
+			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"));
 			name_dataset.put("dream_breast_cancer", dream_weka);	
 			train_loc.close();
 		} catch (IOException e) {
@@ -192,9 +194,22 @@ public class MetaServer extends HttpServlet {
 		// handle request to score feature set
 		if(command.equals("getscore")){
 			String features=request.getParameter("features");
-			if(features==null){
+			String geneids=request.getParameter("geneids");
+			if(features==null&&geneids==null){
 				handleBadRequest(request, response, "no features");
-			}else{
+			}else if(features==null){
+				features = "";
+				String[] gids = geneids.split(",");
+				for(String geneid : gids){
+					List<card> cards = weka.getGeneid_cards().get(geneid);
+					if(cards!=null){
+						for(card c : cards){
+							features+=c.getAtt_index()+",";
+						}
+					}
+				}
+			}
+			if(features!=null){
 				//String model = request.getParameter("wekamodel");
 				J48 wekamodel = new J48();
 				Weka.execution result = weka.pruneAndExecute(features, wekamodel);
@@ -230,10 +245,15 @@ public class MetaServer extends HttpServlet {
 				List<card> cards = new ArrayList<card>();
 				List<String> genes = board.getEntrez_ids();
 				Collections.shuffle(genes);
+				int location = 1; //0 is db default.  1 is top left corner.
 				for(String gene : genes){
 					List<card> related = weka.geneid_cards.get(gene);
-					//Collections.shuffle(related);
-					cards.add(related.get(0)); //may need to work on this..
+					for(card c : related){
+						//captures where its going to be shown to the player
+						c.setDisplay_loc(location);
+					}
+					location++;
+					cards.add(related.get(0)); //right now we only use the card to show the gene_id..  so only need one.  on the way back, this id is remapped to all the related attributes
 				}
 				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
 				response.setContentType("text/json");
@@ -311,9 +331,24 @@ public class MetaServer extends HttpServlet {
 			out.close();
 		}
 		else if(command.equals("savehand")){
+			String features=request.getParameter("features");
+			String geneids=request.getParameter("geneids");
+			if(features==null&&geneids==null){
+				handleBadRequest(request, response, "no features");
+			}else if(features==null){
+				features = "";
+				String[] gids = geneids.split(",");
+				for(String geneid : gids){
+					List<card> cards = weka.getGeneid_cards().get(geneid);
+					if(cards!=null){
+						for(card c : cards){
+							features+=c.getAtt_index()+",";
+						}
+					}
+				}
+			}			
 			String player_name = request.getParameter("player_name");
 			String ip = request.getRemoteAddr();
-			String features = request.getParameter("features");
 			String feature_names = request.getParameter("feature_names");
 			String phenotype = dataset_name;
 			String score_s = request.getParameter("score");
@@ -393,10 +428,25 @@ public class MetaServer extends HttpServlet {
 				}
 
 			}
-
 			System.out.println("saved a hand "+player_name+" "+score);
-		}
+		}else if(command.equals("playedcard")){
+			String player_name = request.getParameter("player_name");
+			String player_id = request.getParameter("player_id");
+			String geneid = request.getParameter("geneid");	
+			String board_id = request.getParameter("board_id");
+			String phenotype = request.getParameter("dataset");
+			if(geneid!=null&&weka.getGeneid_cards()!=null){
+				List<card> cards = weka.getGeneid_cards().get(geneid);
+				if(cards!=null){
+					for(card c : cards){
+						Card tosave = new Card(c, player_name, player_id, phenotype, board_id);
+						tosave.save();
+					}
+				}
+			}
+		}//else we don't need to keep it fpr now.
 	}
+
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
 		System.out.println("Bad request: "+problem);
