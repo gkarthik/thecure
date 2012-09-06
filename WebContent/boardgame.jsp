@@ -2,6 +2,7 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.weka.Weka"%>
 <%@ page import="org.scripps.combo.GameLog"%>
+<%@ page import="org.scripps.combo.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 
@@ -19,6 +20,8 @@ if(request.getParameter("geneinfo")!=null){
 }
 
 String username = (String)session.getAttribute("username");
+Player p = (Player)session.getAttribute("player");
+String player_id = ""+p.getId();
 String level = request.getParameter("level");
 int ilevel = 0;
 if(level!=null){
@@ -100,6 +103,7 @@ var p1_indexes = new Array();
 var p2_hand = new Array();
 var p2_indexes = new Array();
 var player_name = "<%=username%>";
+var player_id = "<%=player_id%>";
 var features = "";
 var feature_names = "";
 var barney_init = 0;
@@ -658,6 +662,15 @@ function addCardToBarney(){
 	//console.log(board_state_clickable);
 }
 
+function saveSelection(card){
+	var geneid = card.unique_id;
+	var saveurl = "MetaServer?dataset=<%=dataset%>&command=playedcard&board_id="+level+"&player_name="+player_name+"&player_id="+player_id+"&geneid="+geneid;
+	$.getJSON(saveurl, function(data) {
+		console.log("saved a card");
+		console.log(saveurl);
+	});
+}
+
 function setupHandAddRemove(){
 	$(".select_card_button").on("click", function () {
 		if(board_state_clickable){
@@ -675,6 +688,7 @@ function setupHandAddRemove(){
 				setupShowInfoHandler();
 			});
 			p1_hand.push(cards[cell_id]);
+			saveSelection(cards[cell_id]);
 			evaluateHand(p1_hand, 1);
 			//hide button from board
 			$(this).parent().fadeTo(500, 0.75, function (){

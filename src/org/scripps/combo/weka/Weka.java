@@ -420,6 +420,7 @@ public class Weka {
 		public String name;
 		public String unique_id;
 		public float power;
+		public int display_loc;
 		//more to come here
 		public card(int att_index, String att_name, String name,
 				String unique_id) {
@@ -468,6 +469,12 @@ public class Weka {
 		}
 		public void setPower(float power) {
 			this.power = power;
+		}
+		public int getDisplay_loc() {
+			return display_loc;
+		}
+		public void setDisplay_loc(int display_loc) {
+			this.display_loc = display_loc;
 		}
 
 
