@@ -13,21 +13,15 @@ html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre
 	src: url("League-Gothic.otf") format("opentype");
 }
 
-html {
-  width: 100%;
-  height: 100%;
+* {
+ /* outline: 1px solid green; */
+}
+
+body {
+  border-top: 20px solid #FF6699;
 }
 
 /* Main top */
-
-div#topBar {
-  background-color: #F69;
-  height: 20px;
-  width: 100%;
-  position: relative;
-  right: 0px;
-  -webkit-appearance: none;
-}
 
 div#main {
   width: 960px;
@@ -72,7 +66,7 @@ div#main p {
 }
 
 #main #action {
-
+  float: left;
 }
 
 #main #action input.playnow {
@@ -175,17 +169,17 @@ div#main p {
           border-radius: 2px;
  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
           box-shadow: 0px 0px 4px 0px #20282B;
-
-  background-color: rgba(61,174,204,.2);
 }
 
 #action #email input.emailsub {
   border: none;
-  background-color: #F69;
+  background-color: #B2365F;
   padding: 20px 8px 20px 8px;
-  position: relative;
-  top: -28px;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  float: right;
+  position: absolute;
+  left: 208px;
+  bottom: 32px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: bold;
     text-shadow: 1px 1px 2px #fff;
   -webkit-border-radius: 2px;
@@ -193,19 +187,6 @@ div#main p {
  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
           box-shadow: 0px 0px 4px 0px #20282B;
   cursor: pointer;
-  -webkit-appearance: none;
-}
-
-
-#column2 h4 {
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-  text-align: center;
-  padding: 14px;
-}
-
-#column2 h4 a {
-  text-decoration: none;
-  color: #B2365F;
 }
 
 #action #email input.emailsub:active {
@@ -244,24 +225,20 @@ div#main p {
 /* Sectional compartment styles */
 
 div#main #column1 {
-  width: 560px;
+  width: 640px;
   float: left;
-  padding: 0px 0px 0px 20px;
+  overflow: hidden;
 }
 
 div#main #column2 {
   width: 320px;
   float: left;
-  padding: 0px 40px 0px 0px;
+  overflow: hidden;
 }
 
 div#main #column1 div.section {
   padding: 20px;
   margin: 0px;
-}
-
-#twitterUserFeed {
-  margin: 20px 0px 0px 0px;
 }
 
 div#main #sections {
@@ -305,7 +282,7 @@ div#main div#column1 div#sections.section ol {
 
 div#main div#column1 div#sections.section ol li h4 {
   font-size: 24px;
-  color: #F69;
+  color: #F59;
   padding: 0px 0px 10px 0px;
 }
 
@@ -329,27 +306,18 @@ div#footer {
   overflow: hidden;
 }
 
-div#footer div.row{
-	display: none;
-}
-
-div#footer div.column {
+div#footer div#column {
+  width: 400px;
   padding: 40px 40px 60px 40px;
   float: left;
 }
-div#footer div.column.c1 { width: 480px; }
-div#footer div.column.c2 { width: 320px; text-align: right; }
 
-div#footer div.column p {
+div#footer div#column p {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 300;
   padding: 8px;
   font-size: 12px;
   color: #999;
-}
-
-div#footer a {
-  text-decoration: none;
 }
 
 div#footer iframe.twitter-share-button {
