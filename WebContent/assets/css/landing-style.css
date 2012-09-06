@@ -13,33 +13,37 @@ html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre
 	src: url("League-Gothic.otf") format("opentype");
 }
 
-html {
-  width: 100%;
-  height: 100%;
+* {
+ /* outline: 1px solid green; */
+}
+
+body {
+  border-top: 20px solid #FF6699;
 }
 
 /* Main top */
 
-div#topBar {
-  background-color: #F69;
-  height: 20px;
-  width: 100%;
-  position: relative;
-  right: 0px;
-  -webkit-appearance: none;
-}
+/*
+ *Join the CURE
+ play now       invite a friend
+ *
+1. we know science
+2. get people to play
 
+interested in your mind
+
+
+*/
 div#main {
   width: 960px;
   margin: 0 auto;
-  overflow: hidden;
 }
 
 div#main h1 {
   text-align: center;
   padding: 0px 40px 0px 40px;
   font-family: "League-Gothic", Courier;
-  font-size: 150px;
+  font-size: 200px;
   text-transform: uppercase;
   color: #B2365F;
   text-shadow: 0px 2px 6px #666;
@@ -49,7 +53,7 @@ div#main h2 {
   text-align: center;
   padding: 0px 40px 0px 40px;
   font-family: "League-Gothic", Courier;
-  font-size: 52px;
+  font-size: 60px;
   text-transform: uppercase;
   color: #20282B;
   text-shadow: 0px 2px 6px #666;
@@ -72,16 +76,17 @@ div#main p {
 }
 
 #main #action {
-
+  width: 380px;
+  float: left;
 }
 
 #main #action input.playnow {
-  margin: 0px 0px 0px 32px;
+  margin: 30px 0px 0px 50px;
   text-align:center;
   padding: 0px 20px 0px 20px;
   border: none;
   font-family: "League-Gothic", Courier;
-  font-size: 62px;
+  font-size: 80px;
   letter-spacing: 4px;
   text-shadow: 0px 2px 6px #666;
     -webkit-border-radius: 8px;
@@ -96,12 +101,6 @@ div#main p {
   background-image: -webkit-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
   background-image: -ms-linear-gradient(bottom, rgb(178,54,95) 8%, rgb(255,102,153) 50%);
   background-image: -webkit-gradient(linear, left bottom,	left top,	color-stop(0.08, rgb(178,54,95)), color-stop(0.5, rgb(255,102,153)));
-  cursor: pointer;
-}
-
-#main #action input.playnow:active {
-  -webkit-box-shadow: 0px 0px 12px 0px #3DAECC;
-          box-shadow: 0px 0px 12px 0px #3DAECC;
 }
 
 #header #chart {
@@ -121,49 +120,30 @@ div#main p {
   stroke: #000;
 }
 
-#chart line {
-  fill: none;
-  stroke: #B2365F;
-  stroke-width: .5px;
-}
-
 #chart .line {
   fill: none;
   stroke: #B2365F;
+  stroke-width: 1.5px;
 }
 
-
-#chart path.domain {
-  shape-rendering: crispEdges;
-  stroke: #373c3f;
-  fill: none;
-}
-
-#action {
-  position: relative;
+#chart circle.line {
+  fill: #fff;
 }
 
 #action #email {
-  margin: 20px 0px 20px 0px;
+  margin: 20px;
   float: left;
 }
 
 #action #email label {
+  margin: 0px 0px 0px 20px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
-}
-
-#action #email p#emailAlert {
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-  font-weight: 200;
-  font-size: 20px;
-  position: absolute;
-  margin-left: 10px;
-  bottom: -2px;
+ 
 }
 
 #action #email input.email {
-  margin: 6px 20px 6px 10px;
+  margin: 6px 20px 6px 20px;
   padding: 6px;
   color: #666;
 
@@ -175,17 +155,17 @@ div#main p {
           border-radius: 2px;
  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
           box-shadow: 0px 0px 4px 0px #20282B;
-
-  background-color: rgba(61,174,204,.2);
 }
 
 #action #email input.emailsub {
   border: none;
-  background-color: #F69;
+  background-color: #B2365F;
   padding: 20px 8px 20px 8px;
+  float: right;
   position: relative;
-  top: -28px;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  right: 40px;
+  bottom: 30px;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: bold;
     text-shadow: 1px 1px 2px #fff;
   -webkit-border-radius: 2px;
@@ -193,32 +173,17 @@ div#main p {
  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
           box-shadow: 0px 0px 4px 0px #20282B;
   cursor: pointer;
-  -webkit-appearance: none;
 }
 
-
-#column2 h4 {
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-  text-align: center;
-  padding: 14px;
-}
-
-#column2 h4 a {
-  text-decoration: none;
-  color: #B2365F;
-}
-
-#action #email input.emailsub:active {
- -webkit-box-shadow: 0px 0px 8px 0px #20282B;
-          box-shadow: 0px 0px 8px 0px #20282B;
-}
-
-#leaderboard {
+#header #leaderboard {
+  float: left;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
+  padding: 26px 0px 6px 0px;
+
 }
 
-#leaderboard h3 {
+#header #leaderboard h3 {
   font-weight: bold;
   text-align: center;
   padding: 4px;
@@ -226,135 +191,86 @@ div#main p {
   color: #20282B;
 }
 
-#leaderboard ol {
+#header #leaderboard ol {
   margin: 2px;
 }
 
-#leaderboard ol li {
+#header #leaderboard ol li {
   padding: 8px;
   border-bottom: 1px solid #3DAECC;
   color: #20282B;
 }
 
-#leaderboard span.score {
+#header #leaderboard span.score {
   color: #B2365F;
   float: right;
 }
 
 /* Sectional compartment styles */
 
-div#main #column1 {
-  width: 560px;
-  float: left;
-  padding: 0px 0px 0px 20px;
-}
-
-div#main #column2 {
-  width: 320px;
-  float: left;
-  padding: 0px 40px 0px 0px;
-}
-
-div#main #column1 div.section {
+div#main div.section {
   padding: 20px;
-  margin: 0px;
+  margin: 20px;
 }
 
-#twitterUserFeed {
-  margin: 20px 0px 0px 0px;
-}
-
-div#main #sections {
-
-}
-
-div#main div.section h3 {
-  margin: 12px 0px 12px 4px;
-  padding: 4px 4px 4px 16px;
+div#main div.section h2 {
+  text-align: center;
+  padding: 8px;
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 200;
-  font-size: 38px;
+  font-size: 32px;
   letter-spacing: 4px;
-  color: #3DAECC;
+  color: #FFF57F;
+  text-shadow: 0px 0px 6px #666;
+  background-color: #3E9AB2;
+  border-bottom: 16px solid #3DAECC;
 }
 
-div#main div.section h3:hover {
-  cursor: pointer;
-  background-color: #3DAECC;
-  background-color: rgba(61,174,204,.6);
-  color: #fff;
-}
-
-div#main div.section a {
-  text-decoration: none;
-  color: #3DAECC;
-}
-
-div#main div#column1 div#sections.section p {
+div#main div.section p {
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
-  padding: 0px 20px 20px 20px;
-  text-indent: 16px;
-  font-size: 20px;
-}
-
-div#main div#column1 div#sections.section ol {
   padding: 4px;
-  margin-left:24px;
+  text-indent: 16px;
 }
 
-div#main div#column1 div#sections.section ol li h4 {
-  font-size: 24px;
-  color: #F69;
-  padding: 0px 0px 10px 0px;
+div#main div.section ol {
+  padding: 4px;
+  margin-left:60px;
 }
 
-div#main div#column1 div#sections.section ol li {
+div#main div.section ol li {
   padding: 8px;
   color : #20282B;
   font-family: "adobe-garamond-pro", Georgia, serif;
   line-height: 145%;
-  font-size: 18px;
-  list-style-type: none;
+  font-size: 25px;
+  list-style-type: disc;
 }
 
 /* Footer Specific Styles */
 
 div#footer {
   width: 960px;
-  margin: 60px auto 0px;
+  margin: 100px auto 0px;
+  padding: 40px;
 
   bottom: 0px;
   background-color: #20282B;
   overflow: hidden;
 }
 
-div#footer div.row{
-	display: none;
-}
-
-div#footer div.column {
-  padding: 40px 40px 60px 40px;
+div#footer div#column {
+  width: 440px;
+  padding: 0px 20px 20px 20px;
   float: left;
 }
-div#footer div.column.c1 { width: 480px; }
-div#footer div.column.c2 { width: 320px; text-align: right; }
 
-div#footer div.column p {
+div#footer div#column p {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 300;
   padding: 8px;
   font-size: 12px;
   color: #999;
-}
-
-div#footer a {
-  text-decoration: none;
-}
-
-div#footer iframe.twitter-share-button {
-  float: left;
-  margin: 8px;
 }
 
 /* Universal Utility Styles */
@@ -365,10 +281,4 @@ div#footer iframe.twitter-share-button {
 
 span.pink {
   color: #B2365F;
-}
-
-sup {
-  position: relative;
-  font-size: 16px;
-  top: -8px;
 }
