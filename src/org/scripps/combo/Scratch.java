@@ -1,6 +1,7 @@
 package org.scripps.combo;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -69,28 +70,12 @@ public class Scratch {
 		//makeAndTest70geneClassifier();
 		//crossvalidateTest();
 		//geneSetSearch();
-		
-		String train_file = "/Users/bgood/data/zoo_mammals.arff";
+		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
+		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
 		Weka weka = new Weka(train_file);
-		J48 classifier = new J48();
-		classifier.setUnpruned(false); 
-		Evaluation eval_train = new Evaluation(weka.getTrain());
-		classifier.buildClassifier(weka.getTrain());
-		eval_train.evaluateModel(classifier, weka.getTrain());
-		System.out.println(classifier.graph());
-		FastVector nodes = new FastVector(); FastVector edges = new FastVector();
-		DotParser dot = new DotParser(new StringReader(classifier.graph()), nodes, edges);
-		dot.parse();
-		Enumeration nn = nodes.elements();
-		while(nn.hasMoreElements()){
-			GraphNode g = (GraphNode) nn.nextElement();
-			System.out.println(g.getID()+" "+g.getLbl());
-		}
-		Enumeration ee = edges.elements();
-		while(ee.hasMoreElements()){
-			GraphEdge e = (GraphEdge) nn.nextElement();
-			System.out.println(e.getSrcLbl()+" "+e.getDestLbl());
-		}
+		weka.loadMetadata(new FileInputStream(metadatafile));
+		List<card> cards = weka.getGeneid_cards().get("6505");
+		System.out.println(cards);
 	}
 
 	public static void buildrankedListofGenesForEnrichmentTesting() throws Exception {

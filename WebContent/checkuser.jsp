@@ -25,26 +25,34 @@ if (username == null || password == null) {
 }
 //validate
 boolean success = true;
-
+boolean nametaken = false;
+boolean passwordfailed = false;
 //try to create a new user 
 if(newuser!=null){
 	player = Player.create(username, ip, password, email, degree, cancer, biologist); 
+	//returns null if the user name is taken
+	if(player==null){
+		nametaken = true;
+		success = false;
+	}
 }else{
 	player = player.lookupByUserPassword();
+	if(player==null){
+		passwordfailed = true;
+		success = false;
+	}
 }
-//look them up again to set their id
-if(player==null){
-	//TODO informative error messages
-	success=false;
-}
-
 //take them to the games area
-//optionally add a "how to play' screen here if{newuser}
 if (success) {
     session.setAttribute("username", username);
     session.setAttribute("player", player);
- 	response.sendRedirect("boardroom.jsp");   
-}else{ //something went wrong 
-	response.sendRedirect("login.jsp");    
+    //if they've passed training, they will be taken to the main game area
+    response.sendRedirect("training.jsp"); 
+}else if(nametaken==true){ //something went wrong 
+	response.sendRedirect("login.jsp?bad=nametaken");    
+}else if(passwordfailed){
+	response.sendRedirect("login.jsp?bad=pw"); 
+}else{
+	response.sendRedirect("login.jsp"); 
 }
 %>

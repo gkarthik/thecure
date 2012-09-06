@@ -44,7 +44,7 @@ public class GameLog {
 //		pheno_multiplier.put("vantveer", 10);
 //		pheno_multiplier.put("coronal_case_control", 15);
 //		pheno_multiplier.put("griffith_full_filtered", 20);
-		pheno_multiplier.put("mammal", 0);
+		pheno_multiplier.put("mammal", 1);
 		pheno_multiplier.put("zoo", 0);
 		pheno_multiplier.put("vantveer", 0);
 		pheno_multiplier.put("coronal_case_control", 0);
