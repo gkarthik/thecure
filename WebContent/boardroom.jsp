@@ -21,7 +21,7 @@ boolean all_levels_open = true;
 	} else {
 		username = player.getName();
 	} 
-	if (player != null) { 		
+	if (player != null) {
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
@@ -162,14 +162,13 @@ boolean all_levels_open = true;
 
   }
 
-
   $(document).ready(function() {
       var username = '<%=username%>';
       var phenotype = "dream_breast_cancer";
       var url = "/cure/SocialServer?command=boardroom&username="+username+"&phenotype="+phenotype;
-	      $.getJSON(url, function(data) {
-	    	  drawGrid("#boards", data, 35);
-		    });    
+        $.getJSON(url, function(data) {
+          drawGrid("#boards", data, 35);
+        });
   });
   </script>
   </body>

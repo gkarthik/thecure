@@ -10,24 +10,13 @@ String bad = request.getParameter("bad");
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Login to COMBO</title>
-    <link href="assets/css/combo_bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
+    <link href="assets/css/bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
     <link	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
-  </head>
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+   </head>
 
 <body>
-  <div class="navbar navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container">
-    <a class="btn btn-navbar" data-toggle="collapse"
-					data-target=".nav-collapse"> <span class="icon-bar"></span> </a> <a
-        class="brand" href="/">The Cure</a>
-      </div>
-  </div>
-  </div>
 
-</head>
-<body>
-  
   <div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container">
@@ -38,18 +27,21 @@ String bad = request.getParameter("bad");
 		</div>
 	</div>
 
-  
   <div class="container">
 		<div class="hero-unit">
 			<div class="row">
-				<div class="span12">
+				<div class="span6 offset2">
 					<div id="login">
 						<div id="olduser">
 							<strong>Enter your credentials here</strong>
 
               <form action="./checkuser.jsp">
-                Username: <input id="usernameinput" type="text" name="username" /><br>
-                Password: <input id="passwordinput" type="password" name="password" /><br>
+                <label for="username">Username:</label><br />
+                <input id="usernameinput" type="text" name="username" placeholder="Username" /><br>
+                
+                <label for="password">Password:</label><br />
+                <input id="passwordinput" type="password" name="password" placeholder="Password" /><br>
+                
                 <input type="submit" value="Submit" />
               </form>
 							or

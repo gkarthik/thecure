@@ -10,7 +10,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="assets/css/landing-style.css">
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -35,8 +35,7 @@
             </div>
             <h3 class="challenge">Challenge</h3>
             <div id="challenge" style="display: none;">
-              <p>In seeking these patterns we are faced with two key problems, reproducibility and a combinatorial explosion. First, it often happens that patterns observed in one dataset do not appear with the same strength in new datasets. This is partly caused by natural biological variability and partly by the relative immaturity of the measuring technology that is being applied. Aside from reproducibility, the patterns themselves may be very complex. It may take a unique combination of 25 different variables to produce an excellent predictive pattern. The trouble is that it is impossible to test all such potential combinations. If we assume 20,000 human genes, there are on the order of 10<sup>82</sup> possible 25 gene combinations! (People estimate that the <a href="http://en.wikipedia.org/wiki/Observable_universe">total number of atoms in the universe</a> is close to 10<sup>80</sup>.)
-              </p>
+              <p>In seeking these patterns we are faced with two key problems, reproducibility and a combinatorial explosion. First, it often happens that patterns observed in one dataset do not appear with the same strength in new datasets. This is partly caused by natural biological variability and partly by the relative immaturity of the measuring technology that is being applied. Aside from reproducibility, the patterns themselves may be very complex. It may take a unique combination of 25 different variables to produce an excellent predictive pattern. The trouble is that it is impossible to test all such potential combinations. If we assume 20,000 human genes, there are on the order of 10<sup>82</sup> possible 25 gene combinations! (People estimate that the <a href="http://en.wikipedia.org/wiki/Observable_universe">total number of atoms in the universe</a> is close to 10<sup>80</sup>.)</p>
             </div>
             <h3 class="idea">The idea</h3>
             <div id="idea" style="display: none;">
@@ -65,12 +64,11 @@
           <div id="column2">
 
             <div id="chart"></div>
-
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
 
               <div id="email">
-                <label for="email">Refer a Friend:</label><br />
+                <label for="usremail">Refer a Friend:</label><br />
                 <input id="refEmail" class="email" type="email" name="usremail" placeholder="Friend's Email" />
                 <input id="refName" class="email" type="email" name="usremail" placeholder="Your Name" />
                 <p id="emailAlert" style="display: none;" ></p>
@@ -80,15 +78,10 @@
 
             <div id="leaderboard">
               <h3>Leader Board</h3>
-              <ol>
-
-              </ol>
-
+              <ol></ol>
             </div>
 
           </div>
-
-
 
         </div>
 
@@ -99,14 +92,12 @@
             <p><span class="pink">Project Team:</span>Ben Good, Salvatore Loguercio, Max Nanis, Chunlei Wu, Andrew Su</p>
             <a href="https://twitter.com/share" class="twitter-share-button" data-text="The Cure: Play games, Defeat Cancer" data-hashtags="thecure">Tweet</a>
             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-          
           </div>
+          
           <div id="column" class="right">
             <p><span class="pink">The Scripps Research Institute</span></p>
             <p>10550 North Torrey Pines Road</p>
             <p>La Jolla, CA 92037</p>
-
-
           </div>
         </div>
   <script src="js/libs/jquery-1.8.0.min.js"></script>
@@ -188,31 +179,15 @@ function drawGraph(data, targetEl){
   $(document).ready(function() {
 
       handleContentDisplay();
-      ////////////////////////////////////////////////////////////////
-      // Here is where the data var will be prebuild by ben's jsp side
-      ////////////////////////////////////////////////////////////////
-      var data = {};
-     /*  data.chart = d3.range(20).map(function(i) {
-        return {timestamp: ( new Date(2012, 9, (i+6), 1, 1, 23, 23).getTime() ), y: (Math.sin(i / 3) + 1) / 2};
-      });
-      data.leaderboard = d3.range(10).map(function(i) {
-          return {username: ("username" + i), score: 1000-(i*50)}
-      });
-      */
       var url = "/cure/SocialServer?command=gamelogs";
       $.getJSON(url, function(data) {
-    	  //drawGraph(data, "#chart");
-          fillTopScores(data);
-	    });
-      ////////////////////////////////////////////////////////////////
-
-     /*  drawGraph(data, "#chart");
-      fillTopScores(data); */
+        //drawGraph(data, "#chart");
+        fillTopScores(data);
+     });
 
         function handleContentDisplay() {
-        
+
           $.each( $("#column1 h3") , function(i,v) {
-            
             $(v).toggle(function() {
                 var selEl = $(this).attr('class').split(' ')[0];
                 $("#column1 #"+selEl).slideDown();
