@@ -310,7 +310,7 @@ var data = {
     },
     {
       "position": 28,
-      "attempts": 0,
+      "attempts": 9,
       "enabled": true,
       "trophy": false,
       "board_id": 320,
@@ -409,8 +409,8 @@ var data = {
     },
     {
       "position": 37,
-      "attempts": 0,
-      "enabled": true,
+      "attempts": 10,
+      "enabled": false,
       "trophy": false,
       "board_id": 283,
       "base_score": 59.91790008544922,
