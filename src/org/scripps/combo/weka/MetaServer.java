@@ -27,6 +27,7 @@ import javax.servlet.http.HttpSession;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.scripps.combo.Board;
+import org.scripps.combo.Card;
 import org.scripps.combo.Hand;
 import org.scripps.combo.Player;
 import org.scripps.combo.weka.Weka.card;
@@ -244,9 +245,14 @@ public class MetaServer extends HttpServlet {
 				List<card> cards = new ArrayList<card>();
 				List<String> genes = board.getEntrez_ids();
 				Collections.shuffle(genes);
+				int location = 1; //0 is db default.  1 is top left corner.
 				for(String gene : genes){
 					List<card> related = weka.geneid_cards.get(gene);
-					//Collections.shuffle(related);
+					for(card c : related){
+						//captures where its going to be shown to the player
+						c.setDisplay_loc(location);
+					}
+					location++;
 					cards.add(related.get(0)); //right now we only use the card to show the gene_id..  so only need one.  on the way back, this id is remapped to all the related attributes
 				}
 				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
@@ -422,10 +428,25 @@ public class MetaServer extends HttpServlet {
 				}
 
 			}
-
 			System.out.println("saved a hand "+player_name+" "+score);
-		}
+		}else if(command.equals("playedcard")){
+			String player_name = request.getParameter("player_name");
+			String player_id = request.getParameter("player_id");
+			String geneid = request.getParameter("geneid");	
+			String board_id = request.getParameter("board_id");
+			String phenotype = request.getParameter("dataset");
+			if(geneid!=null&&weka.getGeneid_cards()!=null){
+				List<card> cards = weka.getGeneid_cards().get(geneid);
+				if(cards!=null){
+					for(card c : cards){
+						Card tosave = new Card(c, player_name, player_id, phenotype, board_id);
+						tosave.save();
+					}
+				}
+			}
+		}//else we don't need to keep it fpr now.
 	}
+
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
 		System.out.println("Bad request: "+problem);
