@@ -27,6 +27,7 @@ import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
+import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
@@ -124,6 +125,9 @@ public class Weka {
 	 */
 	public void loadMetadata(InputStream metadata){
 		loadAttributeMetadata(metadata);
+		//add power
+		ASEvaluation eval_method = new ReliefFAttributeEval();
+		setCardPower(eval_method);
 		//only use genes with metadata
 		filterForGeneIdMapping();
 		//map the names so the trees look right..
