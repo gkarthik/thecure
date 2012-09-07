@@ -129,11 +129,11 @@ boolean all_levels_open = true;
         if ( v.trophy == true) {
           content = "★";
           font_size = font_size*0.4;
-          top_pos = Math.floor(hw*.14);
+          top_pos = Math.floor(hw*.2);
         }
         if ( v.enabled == false && v.trophy == true) {
           content = "★";
-          top_pos = Math.floor(hw*.14);
+          top_pos = Math.floor(hw*.2);
         }
 
         if ( v.enabled == true && v.trophy == false && v.attempts < 10 ) {
