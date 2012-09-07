@@ -46,7 +46,7 @@ String bad = request.getParameter("bad");
                 <input id="loginSubmit" type="submit" value="Submit" />
               </form>
               <div id="newuserlink">
-                <a href="">New player? click here.</a>
+                <a href="login.jsp?bad=n">New player? click here.</a>
               </div>
               <div id="iforgot">
                 <a href="forgot.jsp">Forgot</a>
@@ -124,7 +124,6 @@ var bad = '<%=bad%>';
 		//start with new user area hidden
 		$("#newuser").hide();
 		$("#olduser").hide();
-		console.log("bad is "+bad);
 		if(bad=="nametaken"){
 			alert("Sorry, that user name has been taken. Please try another one.");
 			$("#newuser").show();
@@ -132,7 +131,10 @@ var bad = '<%=bad%>';
 		}else if(bad=="pw"){
 			alert("Sorry, that username/password combination is invalid.  Please try again.  ");
 			$("#olduser").show();
-		} else{		
+		}else if(bad=='n'){ 
+			$("#newuser").show();
+			$("#olduser").hide();
+		}else{		
 			$("#olduser").show();
 		//show new user on click
 		$("#newuserlink").click(function(e) {
