@@ -24,7 +24,11 @@
       int max = 10;
       int r = 0;
       for(String name : sb.getPlayer_global_points().keySet()){
-        r++;
+      r++;
+      String displayName = name;
+      if(name == null || name.length() == 0) {
+        displayName = "anon";
+      }
         if(r<=max||player.getName().equals(name)){
            if(show_player&&player.getName().equals(name)){
         %>
@@ -32,8 +36,8 @@
         <% } else { %>
           <li>
         <% } %>
-       <span class="rank"> <%=r%> </span>
-        <span class="player"> <%=name%> </span>
+        <span class="rank"> <%=r%> </span>
+        <span class="player"> <%=displayName%> </span>
         <span class="points"> <%=sb.getPlayer_global_points().get(name)%> </span>
       </li>
       <% }} %>
