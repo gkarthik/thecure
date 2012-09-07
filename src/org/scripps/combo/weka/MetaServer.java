@@ -35,6 +35,8 @@ import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Mail;
 
+import weka.attributeSelection.ASEvaluation;
+import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.J48;
@@ -154,7 +156,7 @@ public class MetaServer extends HttpServlet {
 		try {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
 			Weka dream_weka = new Weka(train_loc);
-			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"));
+			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"));			
 			name_dataset.put("dream_breast_cancer", dream_weka);	
 			train_loc.close();
 		} catch (IOException e) {

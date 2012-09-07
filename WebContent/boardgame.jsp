@@ -155,8 +155,8 @@ function evaluateHand(cardsinhand, player){
 							var treeheight = 250;
 							var treewidth = 420;
 							//console.log(data.max_depth +" depth");
-							if (data.max_depth > 6) {
-								treeheight = 500;
+							if (data.max_depth > 2) {
+								treeheight = 200 + 30*data.max_depth;
 							}
 							if (player == "1") {
 								//draw the current tree
@@ -225,7 +225,18 @@ function evaluateHand(cardsinhand, player){
 														$("#winner")
 																.append(
 																		"<br><a href=\""+replay+"\">Play Level Again?</a>");
-													} else if (p1_score > p2_score) {
+													} else if (p1_score > p2_score && dataset=='mammal' && level==3) {
+														$("#winner")
+														.parent()
+														.parent()
+														.css('background-color', 'pink');
+														$("#winner").html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
+														$("#holdem_button").hide();
+														$tabs.tabs('select', 3);
+														moveBarney("lose"); //incorrect win lose
+														moveClayton("win");
+													}
+													else if (p1_score > p2_score) {
 														$("#winner")
 																.parent()
 																.parent()
@@ -559,7 +570,7 @@ function saveHand(){
 				+ "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
 		}
 		$.getJSON(saveurl, function(data) {
-			console.log("saved a hand");
+			//console.log("saved a hand");
 		});
 
 }
@@ -666,8 +677,8 @@ function saveSelection(card){
 	var geneid = card.unique_id;
 	var saveurl = "MetaServer?dataset=<%=dataset%>&command=playedcard&board_id="+level+"&player_name="+player_name+"&player_id="+player_id+"&geneid="+geneid;
 	$.getJSON(saveurl, function(data) {
-		console.log("saved a card");
-		console.log(saveurl);
+		//console.log("saved a card");
+		//console.log(saveurl);
 	});
 }
 
@@ -865,8 +876,17 @@ $(document).ready(function() {
 	</div>
 
 	<div id="game_meta_info"
-		style="text-align: center; left: 750px; position: absolute; top: 55px; z-index: 2;">
-		<strong>Dataset: <%=dataset %></strong><br/><strong>Point Multiplier: <%=multiplier %></strong>
+		style="text-align: center; left: 750px; position: absolute; top: 55px; z-index: 2; width:200px">
+		<%if(dataset.equals("mammal")){
+		String fs = "features that distinguish";
+		if(max_hand.equals("1")){
+			fs = "feature that distinguishes";
+		}
+		%>	
+		<strong>Pick <b><%=max_hand%></b> <%=fs %> mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...</strong>
+		<%}else if(dataset.equals("dream_breast_cancer")){ %>		
+		<strong>Pick <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
+		<%} %>
 	</div>
 
 	<div id="player2_title_area"
