@@ -112,6 +112,25 @@ public class Board {
 		}
 	}
 	
+	public void updateMaxScore(){
+		if(getId()<1){
+			System.out.println("Can't update without an id");
+			return;
+		}
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement pst = conn.connection.prepareStatement("update board set max_score = ? where id = "+getId());
+			pst.clearParameters();
+			pst.setFloat(1,getMax_score());			
+			pst.executeUpdate();
+			pst.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public List<Integer> getBoardScoresfromDb(int board_id){
 		List<Integer> board_scores = new ArrayList<Integer>();
 		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
