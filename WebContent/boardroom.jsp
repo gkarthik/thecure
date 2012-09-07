@@ -115,8 +115,10 @@ boolean all_levels_open = true;
           pro_height = Math.floor(hw*.15);
 
       _.each(data.boards, function(v, i) {
-        var scaleAttempt = attempt(v.attempts),
-            isEnabled,
+
+        var scaleAttempt = attempt(v.attempts);
+            if (scaleAttempt > 100) { scaleAttempt = 100; }
+        var isEnabled,
             content,
             font_size = text_size;
        ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled"; 
