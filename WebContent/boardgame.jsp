@@ -313,13 +313,14 @@ function evaluateHand(cardsinhand, player){
 			displayname = cards[cardindex].att_name;
 		}
 		cards[cardindex].displayname = displayname;
-		boardhtml += "<td style=\""+cellstyle+"\">";
+		boardhtml += "<td><div style=\"margin:5px "+cellstyle+"\">";
+		//style=\"position:absolute; top:4; right:0;\"
 		if (showgeneinfo == "1") {
-			boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
+			boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute;top:4px; right:0px;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
 		}
 		//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 		boardhtml += "<div class=\"select_card_button btn btn-primary\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable small_level_button\" style=\"height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\" href=\"#\">"
-				+ displayname + "</a></div></td>";
+				+ displayname + "</a></div></div></td>";
 
 		return boardhtml;
 	}
@@ -336,7 +337,7 @@ function evaluateHand(cardsinhand, player){
 			displayname = cards[cardindex].att_name;
 		}
 		cards[cardindex].displayname = displayname;
-		boardhtml += "<td style=\""+cellstyle+"\">";
+		boardhtml += "<td><div style=\"margin:5px "+cellstyle+"\">";
 		/* 	if(showgeneinfo=="1"){
 		 boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
 		 }
@@ -347,7 +348,7 @@ function evaluateHand(cardsinhand, player){
 		}
 		//	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
 		boardhtml += "<div class=\"select_card_button btn btn-primary\" style=\"cursor:default;\" id=\"card_index_"+cardindex+"\"><span class=\"selectable small_level_button\" style=\"cursor:default; height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\">"
-				+ displayname + "</span></div></td>";
+				+ displayname + "</span></div></div></td>";
 
 		return boardhtml;
 	}
