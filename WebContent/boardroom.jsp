@@ -63,10 +63,20 @@ boolean all_levels_open = true;
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
-            <h2>Breast Cancer 10 Year survival</h2>
-            <p>The goal of this game is to use gene expression levels in breast cancer tumors to predict 10 year survival. If a high quality signature can be identified it can be used to modify treatment accordingly.</p>
-            <p>You must defeat your nemesis Barney <img width="25" src="images/barney.png">. To win each round, find the best combination of genes to use to classify a new sample.</p>
-          </div>
+            <h2>DREAM7 challenge: predict breast cancer survival</h2>
+            
+            <p>Your objective is to identify genes that can be used to classify tumor samples  
+				into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis.  
+				Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) 
+				
+				To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
+				
+				<p>
+					Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck.  
+					This is not going to be easy, give it your best shot! <a href="help.jsp#data"><span style="color: #B2365F;">More..</span></a>
+				</p>
+				<br/>
+		 </div>
           <div class="row">
             <div id="boards" class="span7"></div>
             <div id="back" class="span3">
@@ -76,6 +86,7 @@ boolean all_levels_open = true;
         </div>
       </div>
 
+	
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>

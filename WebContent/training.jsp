@@ -85,6 +85,7 @@
 	<div class="container">
 		<div class="hero-unit">
 			<div class="row">
+			<div class="span8">
 				<h2>Training Summary</h2>
 				<p> Before you get started with The Cure, please take a moment to play through a few simple examples.  
 				These will help to get you familiar with the game interface and give you some points to get you started.</p>
@@ -96,9 +97,11 @@
 					Click on the numbered tiles below to play. Defeat Barney at each level to advance to the Breast Cancer challenge.
 				</p>
 				<br>
+				</div>
 			</div>
 			<div class="row">
-				<div id="shrew" class="span3">
+			<br/>
+				<div id="shrew" class="span3 offset3">
 					<table>
 						<%
 							int level = -1;
@@ -133,9 +136,7 @@
 									<%
 										} else if (levels_passed > level) {
 									%>
-									<a href="boardgame.jsp?level=<%=level%><%=gps%>"><img
-										width="100" src="images/Elephant_Shrew_<%=level%>.jpg">
-									</a>
+									<p><span style="font-size: 100px; color: #B2365F;">★</span></p>
 									<%
 										} else {
 									%>
@@ -156,10 +157,6 @@
 						%>
 					</table>
 					<p>Training levels 1-4</p>
-				</div>
-
-				<div id="back" class="span3">
-					<jsp:include page="scoreboard_table.jsp" />
 				</div>
 
 			</div>
