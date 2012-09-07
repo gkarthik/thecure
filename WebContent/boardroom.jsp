@@ -49,7 +49,7 @@ boolean all_levels_open = true;
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </a>
-            <a class="brand">The Cure</a>
+            <a class="brand" href="/cure/">The Cure</a>
             <div class="nav-collapse">
               <ul class="nav">
                 <li><a href="contact.jsp">Contact</a></li>
@@ -85,8 +85,8 @@ boolean all_levels_open = true;
           </div>
         </div>
       </div>
-
-	
+      
+      <jsp:include page="footer.jsp" />
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
@@ -124,7 +124,7 @@ boolean all_levels_open = true;
        if ( v.enabled == false ) {
           content = "•";
           font_size = font_size*3;
-          top_pos = -(hw*.4);
+          top_pos = (hw*.2);
         }
         if ( v.trophy == true) {
           content = "★";

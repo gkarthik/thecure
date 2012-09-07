@@ -10,6 +10,7 @@ String bad = request.getParameter("bad");
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Login to play The Cure</title>
+    <meta name="viewport" content="width=device-width">
     <link href="assets/css/bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
     <link	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
     <link href="assets/css/style.css" rel="stylesheet" type="text/css">
@@ -108,6 +109,8 @@ String bad = request.getParameter("bad");
 			</div>
 		</div>
   </div>
+
+  <jsp:include page="footer.jsp" />
 
 <% //-- Moved JS to end of body faster load times %>
 <script src="js/libs/jquery-1.8.0.min.js"></script>
