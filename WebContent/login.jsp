@@ -124,7 +124,6 @@ var bad = '<%=bad%>';
 		//start with new user area hidden
 		$("#newuser").hide();
 		$("#olduser").hide();
-		console.log("bad is "+bad);
 		if(bad=="nametaken"){
 			alert("Sorry, that user name has been taken. Please try another one.");
 			$("#newuser").show();
