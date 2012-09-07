@@ -54,18 +54,16 @@ String bad = request.getParameter("bad");
             </div>
 
             <div id="newuser">
-						  <p>
-								<strong>You must have an account to play so that we
-									can reward you properly. <br />Don’t worry, we won’t spam
-									you.</strong>
-							</p>
-                
+              <h2>Sign Up</h2>
+						  <p>You must have an account to play so that we can reward you properly.</p>
+              <p class="sub">Don’t worry, we won’t spam you.</p>
+
               <form id="newuser" action="./checkuser.jsp">
-                <label for="username">* Username:</label>
-                <input id="usernameinput" type="text" name="username" />
+                <label for="username">Username:</label>
+                <input id="usernameinput" type="text" name="username" placeholder="Desired Username" />
 
                 <label for="password">Password:</label>
-                <input id="passwordinput" type="password" name="password" />
+                <input id="passwordinput" type="password" name="password" placeholder="Password" />
 
                 <label for="email">Email:</label>
                 <input id="refEmail" class="email" type="email" name="email" placeholder="email" />
@@ -99,7 +97,7 @@ String bad = request.getParameter("bad");
                 <input type="submit" value="Submit" id="loginSubmit" />
               </form>
               <div id="message">
-                <p>* We suggest an anonymous handle like ‘shamu76’, as this will be associated with your game play and will be visible to other players in the game.</p>
+                <p class="sub">* We suggest an anonymous handle like ‘shamu76’, as this will be associated with your game play and will be visible to other players in the game.</p>
               </div>
             </div>
 
