@@ -52,3 +52,50 @@ body div.container div#login div#olduser form {
   background-color: #3DAECC;
   background-color: rgba(61, 174, 204, .6);
 }
+
+body div.container div#login div#olduser form input {
+  margin: 6px 20px 6px 10px;
+  padding: 6px;
+  color: #666;
+  font: italic 16px Georgia, "Times New Roman", Times, serif;
+  letter-spacing: 1px;
+  border: none;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
+  box-shadow: 0px 0px 4px 0px #20282B;
+}
+
+body div.container div#login div#olduser form label {
+  text-align: left;
+  margin: 14px 0px 10px 50px;
+  padding: 0px;
+  font-size: 18px;
+}
+
+body div.container div#login div#olduser form input#loginSubmit {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  border: none;
+  background-color: white;
+  padding: 8px 12px 8px 12px;
+  box-shadow: inset 0px 0px 4px #333;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+body div.container div#login div#olduser form input#loginSubmit:hover {
+  box-shadow: 0px 0px 4px #333;
+
+}
+
+body div.container div#login div#olduser form input#loginSubmit:active {
+  box-shadow: inset 0px 0px 8px #333;
+}
+
+body div.container div#login div#olduser div#newuserlink,
+body div.container div#login div#olduser div#iforgot {
+float: left;
+margin: 10px;
+width: 180px;
+}

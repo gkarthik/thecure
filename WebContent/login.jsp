@@ -36,24 +36,23 @@ String bad = request.getParameter("bad");
 							<strong>Enter your credentials here</strong>
 
               <form action="./checkuser.jsp">
-                <label for="username">Username:</label><br />
+                <label for="username">Username:</label>
                 <input id="usernameinput" type="text" name="username" placeholder="Username" /><br>
                 
-                <label for="password">Password:</label><br />
+                <label for="password">Password:</label>
                 <input id="passwordinput" type="password" name="password" placeholder="Password" /><br>
                 
-                <input type="submit" value="Submit" />
+                <input id="loginSubmit" type="submit" value="Submit" />
               </form>
-							or
-							<div id="newuserlink">
-								<a href="">New player? click here.</a>
-							</div>
-							or
-							<div id="iforgot">
-								<a href="forgot.jsp">Forgot</a>
-							</div>
-						</div>
-						<div id="newuser">
+              <div id="newuserlink">
+                <a href="">New player? click here.</a>
+              </div>
+              <div id="iforgot">
+                <a href="forgot.jsp">Forgot</a>
+              </div>
+            </div>
+
+            <div id="newuser">
 							<div id="reg" class="span8">
 								<p>
 									<strong>You must have an account to play so that we
