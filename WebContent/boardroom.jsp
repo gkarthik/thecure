@@ -164,7 +164,7 @@ boolean all_levels_open = true;
       var phenotype = "dream_breast_cancer";
       var url = "/cure/SocialServer?command=boardroom&username="+username+"&phenotype="+phenotype;
         $.getJSON(url, function(data) {
-          drawGrid("#boards", data, 35);
+          drawGrid("#boards", data, 45);
         });
   });
 </script>

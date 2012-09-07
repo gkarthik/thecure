@@ -35,7 +35,7 @@
   <div class="container">
     <div class="hero-unit">
       <div class="row">
-        <div  id="helptext">
+        <div  id="games">
           <h2>Help defeat <img src="images/barney.png">!</h2>
           <div id="game result">
             <h1>Instructions</h1>
@@ -46,15 +46,13 @@
           <h2>Scoring</h2>
             <p>Your score is determined by using the genes that you select to train machine learning algorithms to classify real biological samples. The better the genes reflect the phenotype, the better you will score in the game.  This all happens behind the scenes in real time!</p>
             <p>For the geeks, we are using the <a href="http://www.cs.waikato.ac.nz/ml/weka/">WEKA</a> implementation of Quinlan's C4.5 decision tree learning algorithm and performing a 10 fold cross-validation to produce each game score.</p>
-          </div>
-        </div>
-      </div>
-      <div class = "row" id = "data">
-       <h2>The Data</h2>
+          <h2 id="data">The Data</h2>
        <p>The data used to run this game is the same as is provided by the SAGE7 challenge to all participants.  (Note that we are not affiliated with SAGE7 beyond acting as participants. )  
        For detailed information, check out their <a href="https://sagebionetworks.jira.com/wiki/display/BCC/Breast+Cancer+Challenge%3A+Detailed+Description">technical information</a>.
        When you select genes in the game, predictive models are constructed using information from both gene expression and copy number variation.  Clinical information is
-       not included at this time.  Each board contains a different set of genes.
+       not included at this time.  Each board contains a different set of genes.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
