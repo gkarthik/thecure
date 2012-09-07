@@ -47,12 +47,10 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 <meta name="description" content="A game">
 <meta name="author" content="Ben">
 
-<link rel="stylesheet" href="assets/css/barney.css"
-	type="text/css" media="screen">
-<link rel="stylesheet" href="assets/css/combo_bootstrap.css"
-	type="text/css" media="screen">
-<link rel="stylesheet" href="assets/css/combo.css" type="text/css"
-	media="screen">
+<link rel="stylesheet" href="assets/css/barney.css" type="text/css"	media="screen">
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css"	media="screen">
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
 	
 <link
 	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
@@ -67,7 +65,7 @@ body {
 
 
 
-<title>COMBO: <%=title %></title>
+<title>The Cure: <%=title %></title>
 
 <%
 	String ran = request.getParameter("level");
@@ -782,25 +780,25 @@ $(document).ready(function() {
 <jsp:include page="js/analytics.js" />
 </head>
 <body>
-	<div class="navbar navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container">
-				<a class="btn btn-navbar" data-toggle="collapse"
-					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
-					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
-					class="brand" href="/cure/">The Cure</a>
-				<div class="nav-collapse">
-					<ul class="nav">
-						<li><a href="help.jsp" target="blank">Help!</a>
-						</li>
-						<li><a href="logout.jsp">logout</a>
-						</li>
-					</ul>
-				</div>
-				<!--/.nav-collapse -->
-			</div>
-		</div>
-	</div>
+<div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand">The Cure</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="help.jsp" target="blank">Help!</a>
+              <li><a href="contact.jsp">Contact</a></li>
+			  <li><a href="logout.jsp">logout</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
 
 	<div>
 		<%
@@ -856,8 +854,8 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_1"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
-					<tr id="player1_hand" align='center' style='height: 75px; background-color:#82CAFA;'>
+				<table border='0'>
+					<tr id="player1_hand" align='center' style='height: 75px;'>
 
 					</tr>
 				</table>
@@ -899,8 +897,8 @@ $(document).ready(function() {
 			style="position: relative; top: 45px; width: 500px;">
 			<div id="player_box_2"
 				style="position: relative; top: 15px; width: 400px;">
-				<table border='1'>
-					<tr id="player2_hand" align='center' style='height: 75px; background-color:#FBBBB9;'>
+				<table border='0'>
+					<tr id="player2_hand" align='center' style='height: 75px; '>
 
 					</tr>
 				</table>

@@ -35,6 +35,8 @@
     
     <div id="content" class="contact">
       <h1>Contact</h1>
+      <p>We would love to hear from you!  This project is just getting started so any ideas you share now could have a huge impact on its success.  
+      <br/>Let us know what you think! </p>
   	  <ul>
   	    <li><a href="https://groups.google.com/forum/#!forum/genegames">Write to the Web forum</a></li>
   	    <li>Email <a href="mailto:bgood@scripps.edu">Ben</a></li>
