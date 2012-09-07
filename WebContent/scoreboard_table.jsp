@@ -21,10 +21,12 @@
     </h3>
     <ol>
       <%
+      int max = 10;
       int r = 0;
       for(String name : sb.getPlayer_global_points().keySet()){
         r++;
-        if(show_player&&player.getName().equals(name)){
+        if(r<=max||player.getName().equals(name)){
+           if(show_player&&player.getName().equals(name)){
         %>
           <li class="currentPlayer">
         <% } else { %>
@@ -34,6 +36,6 @@
         <span class="player"> <%=name%> </span>
         <span class="points"> <%=sb.getPlayer_global_points().get(name)%> </span>
       </li>
-      <% } %>
+      <% }} %>
     </ol>
   </div>

@@ -47,11 +47,11 @@
 <html>
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Mammal Mosaic</title>
-<link rel="stylesheet" href="assets/css/combo_bootstrap.css"
-	type="text/css" media="screen">
-<link rel="stylesheet" href="assets/css/combo.css" type="text/css"
-	media="screen">
+<title>Training Room</title>
+
+<link rel="stylesheet" href="assets/css/combo.css" type="text/css"	media="screen">
+<link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+<link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
 
 <link
 	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
@@ -62,28 +62,25 @@
 	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 </head>
 <body>
-	<div class="navbar navbar-fixed-top">
-		<div class="navbar-inner"
-			style="background-color: blue; background-image: -webkit-linear-gradient(top, blue, black);">
-			<div class="container">
-				<a class="btn btn-navbar" data-toggle="collapse"
-					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
-					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
-					class="brand">The Cure : training</a>
-				<div class="nav-collapse">
-					<ul class="nav">
-						<li><a
-							href="contact.jsp">Contact</a>
-						</li>
-						<li><a href="logout.jsp">logout</a>
-						</li>
 
-					</ul>
-				</div>
-				<!--/.nav-collapse -->
-			</div>
-		</div>
-	</div>
+<div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="./">The Cure : training</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="contact.jsp">Contact</a></li>
+			  <li><a href="logout.jsp">logout</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
 
 	<div class="container">
 		<div class="hero-unit">
@@ -92,7 +89,7 @@
 				<p> Before you get started with The Cure, please take a moment to play through a few simple examples.  
 				These will help to get you familiar with the game interface and give you some points to get you started.</p>
 				
-				<p>In this training level, your objective is to identify characteristics (e.g. number of legs, breathes air, etc.) that can be used to classify any animal into 
+				<p>In this training stage, your objective is to identify characteristics (e.g. number of legs, breathes air, etc.) that can be used to classify any animal into 
 				one of two groups: mammals and not mammals.  To win, you must pick the right characteristic before your opponent Barney <img width="25" src="images/barney.png">!
 				
 				<p>
@@ -161,43 +158,7 @@
 					<p>Training levels 1-4</p>
 				</div>
 
-				<%-- 					<div id="opossum" class="span3">
-						<table>
-							<%
-								for (int i = 0; i < num_tile_rows; i++) {
-							%>
-							<tr>
-								<%
-									for (int j = 0; j < num_tile_cols; j++) {
-												level++;
-												int score = 0;
-												if (zoo_scores.size() > level) {
-													score = zoo_scores.get(level);
-												}
-								%>
-								<td><div id="level_<%=level %>">
-					<% if(levels_passed == level){ %>
-						<a href="boardgame.jsp?level=<%=level %><%=game_params %>" class="btn btn-large btn-primary "><div class="big_level_button"><%=level+1 %></div></a>
-						<%}else if(levels_passed > level){ %>
-						<img width="100" src="images/possum_<%=level-4%>.jpg">
-						<%}else{%>
-						<div class="btn btn-large btn-primary disabled"><img src="images/lock-6-64.png"></div>
-						<% }%>				
-					</div></td>								
-								<%
-									}
-								%>
-							</tr>
-							<%
-								}
-							%>
-						</table>
-						<p>Level 2: Opossum</p>
-					</div> --%>
 				<div id="back" class="span3">
-					<p>
-						<a href="games.jsp">Back to game selector</a>
-					</p>
 					<jsp:include page="scoreboard_table.jsp" />
 				</div>
 

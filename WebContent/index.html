@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Community view for The Cure Breast Cancer Challenge</title>
+        <title>The Cure: Play Games, Defeat Cancer</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -41,9 +41,9 @@
             <div id="idea" style="display: none;">
               <p>One advantage when it comes to addressing these problems is our increasing understanding of biology. Our knowledge of genes, biological mechanisms and disease is growing exponentially and much of this knowledge is available on the Web. When we start looking for predictive patterns in a dataset such as the breast cancer example, we can use this knowledge to guide our search. TheCure was created as a fun way to solicit help in guiding the search for stable patterns that can be used to make biologically and medically important predictions.  When people play TheCure they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions about the best combinations of variables (e.g. genes) to use to build predictive patterns. These combos are the 'hands' in TheCure card game. Every time a game is played, the hands are evaluated and stored. Eventually predictors will be developed using advanced machine learning algorithms that are informed by the hands played in the game.</p>
             </div>
-            <h3 class="mission">Current mission: <br /> DREAM7 challenge</h3>
+            <h3 class="mission">Current mission: <br /> <span class="pink">DREAM7 challenge</span></h3>
             <div id="mission" style="display: none;">
-              <p>TheCure team is currently working on the DREAM7 breast cancer prognosis challenge.  The goal is to, by October 1, create the world’s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  Join us now!</p>
+              <p>TheCure team is currently working on the <a href="http://www.the-dream-project.org/challenges/sage-bionetworks-dream-breast-cancer-prognosis-challenge">DREAM7 breast cancer prognosis challenge</a>.  The goal is to, by October 14, create the world’s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  <a href="login.jsp">Join us now!</a></p>
             </div>
             <h3 class="faq">FAQ</h3>
             <div id="faq" style="display: none;">
@@ -87,10 +87,10 @@
 
         <div id="footer">
           <div id="column">
-            <p>The Su Laboratory</p>
-            <p>Team <span class="pink">HIVE</span> in DREAM5 Competition</p>
+            <p><a href="http://sulab.org"><span class="pink">The Su Laboratory</span></a></p>
+            <p>Team <span class="pink">HIVE</span> in DREAM7 Competition</p>
             <p><span class="pink">Project Team:</span>Ben Good, Salvatore Loguercio, Max Nanis, Chunlei Wu, Andrew Su</p>
-            <a href="https://twitter.com/share" class="twitter-share-button" data-text="The Cure: Play games, Defeat Cancer" data-hashtags="thecure">Tweet</a>
+            <a href="https://twitter.com/share" class="twitter-share-button" data-text="The Cure: Play games, Defeat Cancer http://www.genegames.org/cure/" data-hashtags="thecure">Tweet</a>
             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
           </div>
           
@@ -245,7 +245,8 @@ function drawGraph(data, targetEl){
         $("input.playnow").click(function(e) {
             //link to the game, need to do anything else?
             var gameUrl = "login.jsp";
-            window.open(gameUrl);
+            window.location.replace(gameUrl);
+            // window.open(gameUrl);
             return false;
         })
 
