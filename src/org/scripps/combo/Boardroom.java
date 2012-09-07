@@ -24,7 +24,7 @@ public class Boardroom {
 	ObjectMapper mapper;
 	ObjectNode json_root;
 	
-	Boardroom(){
+	public Boardroom(){
 		boardviews = new ArrayList<boardview>();
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
