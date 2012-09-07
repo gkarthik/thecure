@@ -32,72 +32,80 @@ String bad = request.getParameter("bad");
 			<div class="row">
 				<div class="span6 offset2">
 					<div id="login">
-						<div id="olduser">
-							<strong>Enter your credentials here</strong>
+
+            <div id="olduser">
+              <strong>Enter your credentials here</strong>
 
               <form action="./checkuser.jsp">
-                <label for="username">Username:</label><br />
+                <label for="username">Username:</label>
                 <input id="usernameinput" type="text" name="username" placeholder="Username" /><br>
                 
-                <label for="password">Password:</label><br />
+                <label for="password">Password:</label>
                 <input id="passwordinput" type="password" name="password" placeholder="Password" /><br>
                 
-                <input type="submit" value="Submit" />
+                <input id="loginSubmit" type="submit" value="Submit" />
               </form>
-							or
-							<div id="newuserlink">
-								<a href="">New player? click here.</a>
-							</div>
-							or
-							<div id="iforgot">
-								<a href="forgot.jsp">Forgot</a>
-							</div>
+              <div id="newuserlink">
+                <a href="">New player? click here.</a>
+              </div>
+              <div id="iforgot">
+                <a href="forgot.jsp">Forgot</a>
+              </div>
+            </div>
+
+            <div id="newuser">
+						  <p>
+								<strong>You must have an account to play so that we
+									can reward you properly. <br />Don’t worry, we won’t spam
+									you.</strong>
+							</p>
+                
+              <form id="newuser" action="./checkuser.jsp">
+                <label for="username">Username:</label>
+                <input id="usernameinput" type="text" name="username" />
+
+                <label for="password">Password:</label>
+                <input id="passwordinput" type="password" name="password" />
+
+                <label for="email">Email:</label>
+                <input id="refEmail" class="email" type="email" name="email" placeholder="email" />
+                  
+                <p id="emailAlert" style="display: none;" ></p>
+
+                <label for="degree">Most recently awarded academic degree:</label>
+                <select name="degree" width="10">
+                  <option value="ns" selected>Please choose one</option>
+                  <option value="none">None</option>
+                  <option value="bachelors">Bachelors</option>
+                  <option value="masters">Masters</option>
+                  <option value="phd">Ph.D.</option>
+                  <option value="md">M.D.</option>
+                  <option value="other">other</option>
+                </select>
+
+                <label for="degree">Do you consider yourself knowledgeable about cancer biology?:</label>
+                <select name="cancer">
+                  <option value="ns" selected>Please choose one</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+
+                <label for="username">Do you consider yourself a biologist?:</label>
+                <select name="biologist">
+                  <option value="ns" selected>Please choose one</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select> <input type="hidden" name="newuser" value="1" /> <br />
+                <input type="submit" value="Submit" id="loginSubmit" />
+              </form>
+              <div id="message">
+                <p>* We suggest an anonymous handle like ‘shamu76’, as this will be associated with your game play and will be visible to other players in the game.</p>
+              </div>
+            </div>
+
 						</div>
-						<div id="newuser">
-							<div id="reg" class="span8">
-								<p>
-									<strong>You must have an account to play so that we
-										can reward you properly. <br />Don’t worry, we won’t spam
-										you. </strong>
-								</p>
-								<form id="newuser" action="./checkuser.jsp">
-									* Username: <input id="usernameinput" type="text"
-										name="username" /><br> Password: <input
-										id="passwordinput" type="password" name="password" /><br>
-									Email address: <input id="refEmail" class="email" type="email" name="email" placeholder="email" />
-									<br>
-								<p id="emailAlert" style="display: none;" ></p>
-									Most recently awarded academic degree: <select name="degree"
-										width="10">
-										<option value="ns" selected>Please choose one</option>
-										<option value="none">None</option>
-										<option value="bachelors">Bachelors</option>
-										<option value="masters">Masters</option>
-										<option value="phd">Ph.D.</option>
-										<option value="md">M.D.</option>
-										<option value="other">other</option>
-									</select><br /> Do you consider yourself knowledgeable about cancer
-									biology?: <select name="cancer">
-										<option value="ns" selected>Please choose one</option>
-										<option value="no">No</option>
-										<option value="yes">Yes</option>
-									</select><br /> Do you consider yourself a biologist?: <select
-										name="biologist">
-										<option value="ns" selected>Please choose one</option>
-										<option value="no">No</option>
-										<option value="yes">Yes</option>
-									</select> <input type="hidden" name="newuser" value="1" /> <br />
-									<input type="submit" value="Submit" />
-								</form>
-							</div>
-							<div id="message" class="span2">
-								<p>* We suggest an anonymous handle like ‘shamu76’, as this
-									will be associated with your game play and will be visible to
-									other players in the game.</p>
-							</div>
-						</div>
-						<br />
-					</div>
+          
+          </div>
 				</div>
 			</div>
 		</div>

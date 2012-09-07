@@ -36,59 +36,45 @@ boolean all_levels_open = true;
         <meta name="viewport" content="width=device-width">
         <link rel="stylesheet" href="assets/css/board.css">
         <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
-		<link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
-        <jsp:include page="js/analytics.js" />
+        <link rel="stylesheet" href="assets/css/combo.css" type="text/css" media="screen">
+        <link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
     </head>
     <body>
-    <div class="navbar navbar-fixed-top">
-		<div class="navbar-inner"
-			style="background-color: blue; background-image: -webkit-linear-gradient(top, blue, black);">
-			<div class="container">
-				<a class="btn btn-navbar" data-toggle="collapse"
-					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
-					class="icon-bar"></span> <span class="icon-bar"></span> </a> <a
-					class="brand">Breast Cancer 10 Year Survival</a>
-				<div class="nav-collapse">
-					<ul class="nav">
-						<li><a href="contact.jsp">Contact</a>
-						</li>
-						<li><a href="logout.jsp">logout</a>
-						</li>
-					</ul>
-				</div>
-				<!--/.nav-collapse -->
-			</div>
-		</div>
-	</div>
+      
+      <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand">The Cure</a>
+            <div class="nav-collapse">
+              <ul class="nav">
+                <li><a href="contact.jsp">Contact</a></li>
+                <li><a href="logout.jsp">logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
 
-	<div class="container">
-		<div class="hero-unit">
-			<div class="row">
-				<h2>Breast Cancer 10 Year survival</h2>
-				<p>The goal of this game is to use gene expression levels in
-					breast cancer tumors to predict 10 year survival. If a high quality
-					signature can be identified it can be used to modify treatment
-					accordingly.</p>
-				<p>
-					You must defeat your nemesis Barney <img width="25"
-						src="images/barney.png">. To win each round, find the best
-					combination of genes to use to classify a new sample.
-				</p>
-				<br>
-			</div>
-			<div class="row">
-				<div id="boards" class="span8"></div>
-				<div id="back" class="span2">
-					<jsp:include page="scoreboard_table.jsp" />
-				</div>
-
-
-			</div>
-		</div>
-	</div>
-
-
-
+      <div class="container boardroom">
+        <div class="hero-unit">
+          <div class="row">
+            <h2>Breast Cancer 10 Year survival</h2>
+            <p>The goal of this game is to use gene expression levels in breast cancer tumors to predict 10 year survival. If a high quality signature can be identified it can be used to modify treatment accordingly.</p>
+            <p>You must defeat your nemesis Barney <img width="25" src="images/barney.png">. To win each round, find the best combination of genes to use to classify a new sample.</p>
+          </div>
+          <div class="row">
+            <div id="boards" class="span7"></div>
+            <div id="back" class="span3">
+              <jsp:include page="scoreboard_table.jsp" />
+            </div>
+          </div>
+        </div>
+      </div>
 
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
@@ -170,7 +156,9 @@ boolean all_levels_open = true;
           drawGrid("#boards", data, 35);
         });
   });
-  </script>
+</script>
+<jsp:include page="js/analytics.js" />
+
   </body>
 </html>
 <%} %>
