@@ -3,55 +3,53 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-<title>Forgot password</title>
-<link rel="stylesheet" href="assets/css/combo_bootstrap.css"
-	type="text/css" media="screen">
-<link rel="stylesheet" href="style.css">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Forgot password</title>
+    <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="assets/css/style.css">
+  </head>
+  
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span> </a> 
+          <a class="brand" href="/cure/">The Cure</a>				
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="contact.jsp">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="hero-unit">
+        <div class="row">
+          <div class="span6 offset2">
+            <div id="login">
+              <div id="email">
+                
+                <label for="mail">Enter your email address:</label>
+                <input id="refEmail" class="email" type="email" name="mail" placeholder="email" />
+                
+                <p id="emailAlert" style="display: none;" ></p>
+                
+                <input class="emailsub" type="submit" value="Submit" id="loginSubmit" />
+                <a href="login.jsp">Back to login</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<jsp:include page="js/analytics.js" />
-</head>
-<body>
-	<div class="navbar navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container">
-				<a class="btn btn-navbar" data-toggle="collapse"
-					data-target=".nav-collapse"> <span class="icon-bar"></span> </a> <a class="brand" href="/cure/">The Cure</a>				
-					<div class="nav-collapse">
-					<ul class="nav">
-						<li><a
-							href="contact.jsp">Contact</a>
-						</li>
-
-					</ul>
-				</div>
-			
-			</div>
-		</div>
-	</div>
-	<div class="container">
-		<div class="hero-unit">
-			<div class="row">
-				<div class="span12">
-					<div id="login">
-						<div id="email">
-							Enter your email address: 
-							<input id="refEmail" class="email" type="email" name="mail" placeholder="email" />
-								<br>
-								<p id="emailAlert" style="display: none;" ></p>
-								<input class="emailsub" type="submit" value="Submit" />
-								<a href="login.jsp">Back to login</a>
-														
-						</div>						
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-  <script src="js/libs/jquery-1.8.0.min.js"></script>
-  <script src="js/libs/underscore-min.js"></script>
-	<script>
+    <script src="js/libs/jquery-1.8.0.min.js"></script>
+    <script src="js/libs/underscore-min.js"></script>
+    <script>
 	  $(document).ready(function() {	
 	function validateEmail(email) {
         var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -94,6 +92,7 @@
         }
       });
 	  });	
-	</script>
+  </script>
+<jsp:include page="js/analytics.js" />
 </body>
 </html>
