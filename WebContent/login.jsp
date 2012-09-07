@@ -9,7 +9,7 @@ String bad = request.getParameter("bad");
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <title>Login to COMBO</title>
+    <title>Login to play The Cure</title>
     <link href="assets/css/bootstrap.css" rel="stylesheet"  type="text/css" media="screen">
     <link	href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
     <link href="assets/css/style.css" rel="stylesheet" type="text/css">
@@ -61,7 +61,7 @@ String bad = request.getParameter("bad");
 							</p>
                 
               <form id="newuser" action="./checkuser.jsp">
-                <label for="username">Username:</label>
+                <label for="username">* Username:</label>
                 <input id="usernameinput" type="text" name="username" />
 
                 <label for="password">Password:</label>
