@@ -59,7 +59,7 @@ String bad = request.getParameter("bad");
               <p class="sub">Don’t worry, we won’t spam you.</p>
 
               <form id="newuser" action="./checkuser.jsp">
-                <label for="username">Username:</label>
+                <label for="username">Username *:</label>
                 <input id="usernameinput" type="text" name="username" placeholder="Desired Username" />
 
                 <label for="password">Password:</label>

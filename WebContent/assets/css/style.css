@@ -166,12 +166,14 @@ div#content h1 {
   letter-spacing: 4px;
 }
 
-div#content ul li a {
+div#content ul li a,
+#games p a {
   color: #3DAECC;
   text-decoration: none;
 }
 
-div#content ul li a:hover {
+div#content ul li a:hover,
+#games p a:hover {
   text-decoration: none;
 }
 
