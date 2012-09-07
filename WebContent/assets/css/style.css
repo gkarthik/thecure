@@ -24,11 +24,28 @@ body div.navbar-inner div.container a.brand {
   font-size: 28px;
   padding: 6px;
   margin: 0px;
-  text-shadow: 0px 0px 4px rgba(61, 174, 204, .6);
+  text-shadow:16 0px 0px 4px rgba(61, 174, 204, .6);
 }
 
+body div.navbar-inner div.container div.nav-collapse ul.nav li a {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 300;
+  letter-spacing: 4px;
+  font-size: 16px;
+  margin: 0px;
+}
+
+body div.navbar-inner div.container div.nav-collapse ul.nav li a:hover {
+  background-color: #B2365F;
+}
+
+.navbar .nav > li > a {
+  border-right: 1px solid #B2365F;
+  border-right: 1px solid #B2365F;
+}
 body div.container div.hero-unit {
   background-color: white;
+  border: none;
 }
 
 body div.container div#login {
@@ -38,7 +55,7 @@ body div.container div#login {
   text-align: center;
 }
 
-body div.container div#login div#olduser strong {
+body div.container div#login strong {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 200;
   font-size: 32px;
@@ -46,9 +63,171 @@ body div.container div#login div#olduser strong {
   letter-spacing: 2px;
 }
 
-body div.container div#login div#olduser form {
+body div.container div#login form {
   padding: 8px;
   margin: 20px 0px 0px 0px;
   background-color: #3DAECC;
   background-color: rgba(61, 174, 204, .6);
+}
+
+body div.container div#login form input {
+  margin: 6px 20px 6px 10px;
+  padding: 6px;
+  color: #666;
+  font: italic 16px Georgia, "Times New Roman", Times, serif;
+  letter-spacing: 1px;
+  border: none;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-box-shadow: 0px 0px 4px 0px #20282B;
+  box-shadow: 0px 0px 4px 0px #20282B;
+}
+
+body div.container div#login form label {
+  text-align: left;
+  margin: 14px 0px 10px 50px;
+  padding: 0px;
+  font-size: 18px;
+}
+
+body div.container div#login form input#loginSubmit {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  border: none;
+  background-color: white;
+  padding: 8px 12px 8px 12px;
+  box-shadow: inset 0px 0px 4px #333;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+body div.container div#login form input#loginSubmit:hover {
+  box-shadow: 0px 0px 4px #333;
+
+}
+
+body div.container div#login form input#loginSubmit:active {
+  box-shadow: inset 0px 0px 8px #333;
+}
+
+body div.container div#login div#newuserlink,
+body div.container div#login div#iforgot {
+float: left;
+margin: 10px;
+width: 180px;
+}
+
+div#content.contact {
+  text-align: center;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+}
+
+div#content.contact ul {
+  font-size: 18px;
+  list-style-type: none;
+}
+
+div#content.contact ul li {
+  padding: 4px;
+}
+
+div#content h1 {
+  color: #20282B;
+  letter-spacing: 4px;
+}
+
+div#content ul li a {
+  color: #3DAECC;
+  text-decoration: none;
+}
+
+div#content ul li a:hover {
+  text-decoration: none;
+}
+
+/* FAQ Page */
+
+div#games p,
+div.boardroom p {
+  color: #20282B;
+  font-family: "adobe-garamond-pro", Georgia, serif;
+  padding: 0px 20px 20px 20px;
+  font-size: 20px;
+  padding: 6px;
+  margin: 0px;
+}
+
+div#games h1 {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  font-size: 42px;
+  letter-spacing: 4px;
+  color: #3DAECC;
+}
+
+div#games h2,
+div.boardroom h2 {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  font-size: 36px;
+  letter-spacing: 4px;
+  color: #3DAECC;
+  padding: 10px 0px 10px 0px;
+}
+
+/* Boardroom */
+#leaderboard {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 200;
+}
+#leaderboard h2 {
+  font-weight: bold;
+  text-align: center;
+  padding: 4px;
+  font-size: 22px;
+  color: #20282B;
+}
+
+#leaderboard h3 {
+  font-weight: bold;
+  text-align: center;
+  padding: 4px;
+  font-size: 16px;
+  color: #20282B;
+}
+
+#leaderboard ol {
+  margin: 2px;
+  padding: 0px;
+}
+
+#leaderboard ol li {
+  padding: 8px;
+  border-bottom: 1px solid #3DAECC;
+  color: #20282B;
+  list-style-type: none;
+}
+
+#leaderboard span.rank {
+  color: #B2365F;
+  float: left;
+}
+
+#leaderboard ol li span.rank {
+  width: 70px;
+}
+
+#leaderboard span.player {
+  color: #B2365F;
+}
+
+#leaderboard span.points {
+  color: #B2365F;
+  float: right;
+}
+
+#leaderboard ol li.currentPlayer {
+  background-color: rgba(61,174,204,.2);
+  box-shadow: 0px 0px 4px rgba(61, 174, 204, .6);
 }
