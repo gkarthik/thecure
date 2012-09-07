@@ -31,15 +31,14 @@
         <div class="row">
           <div class="span6 offset2">
             <div id="login">
-              <div id="email">
+              <div id="email" class="forgot">
                 
-                <label for="mail">Enter your email address:</label>
-                <input id="refEmail" class="email" type="email" name="mail" placeholder="email" />
+                <label for="mail">Enter your email address:</label> <br />
+                <input id="refEmail" class="email" type="email" name="mail" placeholder="email" /><br />
                 
-                <p id="emailAlert" style="display: none;" ></p>
-                
+                <p id="emailAlert" style="display: none;" ></p><br />
                 <input class="emailsub" type="submit" value="Submit" id="loginSubmit" />
-                <a href="login.jsp">Back to login</a>
+                <a href="login.jsp"><span class="pink">Back to login</span></a>
               </div>
             </div>
           </div>
