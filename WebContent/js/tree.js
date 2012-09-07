@@ -27,8 +27,6 @@ function drawTree(json, width, height, selector_string){
 		$(selector_string).append("Could not build a useful tree with the selected features...");
 		return;
 	}
-//	console.log("drawing tree");
-//	console.log(json);
 	var green = "#1FA13A",
 	  orange = "#D44413",
 	  depth = json.max_depth-1;
@@ -58,7 +56,6 @@ function drawTree(json, width, height, selector_string){
 	      leaf_nodes.push(node);
 	    }
 	  });
-	 // console.log(leaf_nodes);
 	  //Draw the links first so they're behind the nodes
 	  var link = vis.selectAll("path.link")
 	  .data(links)
@@ -131,8 +128,6 @@ function drawTree(json, width, height, selector_string){
 
 
 function drawTreeNoLeaf(json, width, height, selector_string){
-	console.log("drawing tree");
-	console.log(json);
   var green = "#1FA13A",
   orange = "#D44413",
   //width = 400,
@@ -164,7 +159,6 @@ function drawTreeNoLeaf(json, width, height, selector_string){
       leaf_nodes.push(node);
     }
   });
-  //console.log(leaf_nodes);
   //Draw the links first so they're behind the nodes
   var link = vis.selectAll("path.link")
   .data(links)

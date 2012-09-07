@@ -45,7 +45,7 @@
         </div>
       </div>
     </div>
-
+  <jsp:include page="footer.jsp" />
     <script src="js/libs/jquery-1.8.0.min.js"></script>
     <script src="js/libs/underscore-min.js"></script>
     <script>

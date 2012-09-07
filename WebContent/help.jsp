@@ -60,7 +60,7 @@ Finally, we merged CNV, gene expression and survival data in a single table with
       </div>
     </div>
   </div>
-
+  <jsp:include page="footer.jsp" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
   <script	src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
   <jsp:include page="js/analytics.js" />

@@ -232,7 +232,8 @@ div.boardroom h2 {
 }
 
 
-#content.about h1 {
+#content.about h1,
+#content.contact h1 {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 200;
   font-size: 42px;
@@ -240,6 +241,8 @@ div.boardroom h2 {
   color: #3DAECC;
   padding: 10px 0px 10px 0px;
 }
+
+#content.contact h1 { font-size: 60px; }
 
 #content.about h2 {
   font-family: "adobe-garamond-pro", Georgia, serif;
@@ -256,11 +259,12 @@ div.boardroom h2 {
   font-weight: 200;
 }
 #leaderboard h2 {
-  font-weight: bold;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  color: #3DAECC;
   text-align: center;
   padding: 4px;
   font-size: 22px;
-  color: #20282B;
 }
 
 #leaderboard h3 {
@@ -363,3 +367,39 @@ body div.container div#email.forgot input#loginSubmit:active {
 span.pink {
   color: #B2365F;
 }
+
+/* Footer Specific Styles */
+
+div#footer {
+  width: 960px;
+  margin: 60px auto 0px;
+
+  bottom: 0px;
+  background-color: #20282B;
+  overflow: hidden;
+}
+
+div#footer div.column {
+  padding: 40px 40px 60px 40px;
+  float: left;
+}
+div#footer div.column.c1 { width: 480px; }
+div#footer div.column.c2 { width: 320px; text-align: right; }
+
+div#footer div.column p {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  padding: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+div#footer a {
+  text-decoration: none;
+}
+
+div#footer iframe.twitter-share-button {
+  float: left;
+  margin: 8px;
+}
+

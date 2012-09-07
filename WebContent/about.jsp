@@ -25,7 +25,7 @@
               <li><a href="contact.jsp">Contact</a></li>
               <li><a href="login.jsp">Play</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
     </div>
@@ -52,5 +52,6 @@
         </div>
       </div>
     </div>
+    <jsp:include page="footer.jsp" />
 </body>
 </html>
