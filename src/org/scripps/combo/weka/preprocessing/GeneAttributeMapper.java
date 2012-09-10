@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.card;
+import org.scripps.util.Gene;
 import org.scripps.util.MyGeneInfo;
 
 import weka.core.Instances;
@@ -50,13 +51,68 @@ public class GeneAttributeMapper {
 		//		String input = "/Users/bgood/genegames/cranio/craniosynostosis_1.txt";
 		//		String out = "/Users/bgood/genegames/cranio/craniosynostosis_transposed_lambdoid_control.txt";
 		//		prepareCraniosynostosisData(input, out);
-		String clinical_input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/filtered_combined_data_anno.final.test.2.txt";
-		String input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/processed_final2_test_survival_combined_gcrma.txt";
-		String output = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.txt";
-		//prepareGriffithBreastCancerData(clinical_input, input, output);
-		filterGriffithDataUsingList("/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_gene_set_from_paper.txt",
-				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.arff",
-				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_test.arff");
+		//		String clinical_input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/filtered_combined_data_anno.final.test.2.txt";
+		//		String input = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/processed_final2_test_survival_combined_gcrma.txt";
+		//		String output = "/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.txt";
+		//		//prepareGriffithBreastCancerData(clinical_input, input, output);
+		//		filterGriffithDataUsingList("/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_gene_set_from_paper.txt",
+		//				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_test.arff",
+		//				"/Users/bgood/workspace/combo/WebContent/WEB-INF/data/griffith/full_filtered_test.arff");
+		String in = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map.txt";
+		String out = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
+		updateGeneSymbolsInMetadataFile(in, out);
+	}
+
+	/**
+	 * Use mygene.info to get any updates to the gene symbols and entrez gene ids
+	 * @param metadatafile
+	 * @param output
+	 */
+	public static void updateGeneSymbolsInMetadataFile(String metadatafile, String output){
+		BufferedReader f;
+		int ndiff_symbols = 0; int ndiff_ids = 0;
+		try {
+			f = new BufferedReader(new FileReader(metadatafile));
+			FileWriter writer = new FileWriter(output);
+			writer.write("Att_name	Gene_symbol	Entrez\n");
+			String line = f.readLine();
+			line = f.readLine(); //skip header
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String name = item[1];
+				String id = item[2];
+				//check for data change
+				Gene g = MyGeneInfo.getGeneInfoByGeneid(id, true);
+				if(g!=null){
+					String symbol = g.getGeneSymbol();
+					String newid = g.getGeneID();
+					if(!(symbol==null||symbol.equals(name))){
+						ndiff_symbols++;
+						System.out.println(ndiff_symbols+"\t"+name+"\tto\t"+symbol+"\t"+id);
+						name = symbol;
+					}
+					if(!(newid==null||newid.equals(id))){
+						ndiff_ids++;
+						System.out.println(ndiff_ids+"\t"+id+"\tto\t"+newid+"\t"+name);
+						id = newid;
+					}
+				}else{
+					System.out.println("No gene info found for "+id);
+				}
+				//write row again
+				writer.write(attribute+"\t"+name+"\t"+id+"\n");
+				line = f.readLine();
+			}
+			writer.close();
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void filterGriffithDataUsingList(String input_list, String arff_data, String output){
@@ -106,7 +162,7 @@ public class GeneAttributeMapper {
 			e.printStackTrace();
 		}		
 	}
-	
+
 
 	/**
 	 * Transpose the file for weka, strip out unneeded info. Note prepended probe ids with local unique ids to ensure uniqueness
@@ -142,8 +198,8 @@ public class GeneAttributeMapper {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-	 	List<String[]> readrows = new ArrayList<String[]>();
+
+		List<String[]> readrows = new ArrayList<String[]>();
 		String[] sample_ids = null;
 		try {			
 			f = new BufferedReader(new FileReader(input_tab));
@@ -208,7 +264,7 @@ public class GeneAttributeMapper {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		 
+
 	}
 
 	/**
