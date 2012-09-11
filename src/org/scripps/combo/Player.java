@@ -107,6 +107,9 @@ public class Player {
 			p.setString(2,password);
 			ResultSet r = p.executeQuery();
 			if(r.next()){
+				if(!r.getString("name").equals(name)){ //this is here because mysql isn't set up to check for case and its screwing up the scoreboard
+					return null; 
+				}
 				player = new Player();
 				player.setName(r.getString("name"));
 				player.setPassword(r.getString("password"));
