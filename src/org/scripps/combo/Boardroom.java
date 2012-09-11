@@ -34,9 +34,12 @@ public class Boardroom {
 	 */
 	public static void main(String[] args) {
 		Boardroom b = new Boardroom();
-		b.buildBoardView("bgood", "dream_breast_cancer");
-		String j = b.renderjsonBoardViews();
-		System.out.println(j);
+		b.buildBoardView("gene", "dream_breast_cancer");
+//		String j = b.renderjsonBoardViews();
+//		System.out.println(j);
+		for(boardview board : b.getBoardviews()){
+			System.out.println(1+board.getPosition()+"\t"+board.getBoard().getId());
+		}
 	}
 
 	public String renderjsonBoardViews(){
