@@ -58,9 +58,15 @@ public class GameLog {
 	 */
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
-		GameLog.high_score sb = log.getScoreBoard();
-		String json = log.getD3CompatibleJson(sb);
-		System.out.println(json);
+		List<Hand> whs = log.getTheFirstWinningHandPerPlayerPerBoard();
+		
+		for(Hand hand : whs){
+			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_name()+"\t"+hand.getCv_accuracy());
+		}
+		
+//		GameLog.high_score sb = log.getScoreBoard();
+//		String json = log.getD3CompatibleJson(sb);
+//		System.out.println(json);
 //		for(String name : sb.getPlayer_max().keySet()){
 //			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
 //			System.out.println(name+" "+sb.getPlayer_global_points().get(name));
@@ -178,7 +184,7 @@ public class GameLog {
 	
 	public high_score getScoreBoard(){
 		high_score scores = new high_score();
-		List<Hand> hands = getAllWinningHands();
+		List<Hand> hands = getTheFirstWinningHandPerPlayerPerBoard();
 		Map<String, Integer> player_global_points = new HashMap<String, Integer>();
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
@@ -311,6 +317,10 @@ public class GameLog {
 		return scores;
 	}
 	
+	/**
+	 * get everything - includes multiple hands per board per player caused by refreshes..
+	 * @return
+	 */
 	public List<Hand> getAllWinningHands(){
 		List<Hand> hands = new ArrayList<Hand>();
 		JdbcConnection conn = new JdbcConnection();
@@ -342,6 +352,48 @@ public class GameLog {
 		return hands;
 	}
 
+	/**
+	 * Limit the hand list to the first hand per player per board that was won.
+	 * @return
+	 */
+	public List<Hand> getTheFirstWinningHandPerPlayerPerBoard(){
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select * from hand where win > 0 and player_name != 'anonymous_hero' order by time asc");
+		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
+		try {
+			while(rslt.next()){
+				Hand hand = new Hand();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
+				hand.setFeatures(rslt.getString("features"));
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setScore(rslt.getInt("score"));
+				hand.setFeature_names(rslt.getString("feature_names"));
+				hand.setGame_type(rslt.getString("game_type"));
+				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
+				hand.setWin(rslt.getInt("win"));
+				Calendar t = Calendar.getInstance();
+				t.setTime(rslt.getTimestamp("time"));
+				hand.setTimestamp(t);
+				
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_name())){
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_name(), hand);
+			//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}else{
+			//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<Hand> hands = new ArrayList<Hand>(bpw_hand.values());
+		return hands;
+	}	
+	
 
 	public Map<String, Integer> getPheno_multiplier() {
 		return pheno_multiplier;
