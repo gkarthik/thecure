@@ -31,37 +31,50 @@ public class GeneRanker {
 	 */
 	public static void main(String[] args) {
 		Board b = new Board();
+		int min_hands_per_board = 10;
+		int min_players_per_board = 5;
+		int n_finished_boards = 0;
 		List<Board> boards = b.getBoardsByPhenotype("dream_breast_cancer");
 		Map<Board, Map<String, Float>> board_gene_freq = new HashMap<Board, Map<String, Float>>();
 		for(Board board : boards){
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
 			List<Hand> hands = getHandsByBoard(board.getId());
-			float n_hands = 0;
-			for(Hand hand : hands){
-				n_hands++;
-				String[] feature_names = hand.getFeature_names().split("\\|");
-				if(feature_names.length>4){
-					for(String feature : feature_names){
-						String gene = feature.split(":")[0];
-						Float freq = gene_freq.get(gene);
-						if(freq==null){
-							freq = new Float(0);
+			float n_hands = hands.size();
+			Set<String> players = new HashSet<String>();
+			if(n_hands>=min_hands_per_board){
+				for(Hand hand : hands){
+					players.add(hand.getPlayer_name());
+					String[] feature_names = hand.getFeature_names().split("\\|");
+					if(feature_names.length>4){
+						Set<String> distinct = new HashSet<String>();
+						for(String feature : feature_names){
+							String gene = feature.split(":")[0];
+							if(distinct.add(gene)){//onlu count once if the same gene gets into multiple hands
+								Float freq = gene_freq.get(gene);
+								if(freq==null){
+									freq = new Float(0);
+								}
+								freq++;
+								gene_freq.put(gene, freq);
+							}
 						}
-						freq++;
-						gene_freq.put(gene, freq);
 					}
 				}
+
+				//convert counts to fractions
+				for(String gene : gene_freq.keySet()){
+					if(gene_freq.get(gene)!=null){
+						gene_freq.put(gene, gene_freq.get(gene)/n_hands);
+					}
+				}
+				if(players.size()>=min_players_per_board){
+					board_gene_freq.put(board, gene_freq);
+					n_finished_boards++;
+				}
 			}
-			//convert counts to fractions
-//			for(String gene : gene_freq.keySet()){
-//				if(gene_freq.get(gene)!=null){
-//					gene_freq.put(gene, gene_freq.get(gene)/n_hands);
-//				}
-//			}
-			board_gene_freq.put(board, gene_freq);
 		}
-		
-		
+
+		//deal with genes appearing on multiple boards
 		Map<String, Float> global_gene_freq = new HashMap<String, Float>();
 		Map<String, Float> global_gene_nboards = new HashMap<String, Float>();
 		for(Entry<Board, Map<String, Float>> board_map : board_gene_freq.entrySet()){
@@ -83,14 +96,21 @@ public class GeneRanker {
 		}
 		//convert to fractions over multiple boards
 		for(String gene : global_gene_freq.keySet()){
+			if(global_gene_freq.get(gene)/global_gene_nboards.get(gene)>1){
+				System.out.println(gene+" "+global_gene_freq.get(gene)+" "+global_gene_nboards.get(gene));
+				System.out.println("..");
+			}
 			global_gene_freq.put(gene, global_gene_freq.get(gene)/global_gene_nboards.get(gene));
 		}
 		List<String> ranked = MapFun.sortMapByValue(global_gene_freq); 
 		for(String gene : ranked){
-			if(global_gene_nboards.get(gene)>1){
-				System.out.println(gene+"\t"+global_gene_freq.get(gene)+"\t"+global_gene_nboards.get(gene));
-			}
+			System.out.println(gene+"\t"+global_gene_freq.get(gene)+"\t"+global_gene_nboards.get(gene));
+			//			if(global_gene_nboards.get(gene)>1){
+			//				System.out.println(gene+"\t"+global_gene_freq.get(gene)+"\t"+global_gene_nboards.get(gene));
+			//			}
 		}
+		System.out.println("");
+		System.out.println("N finished boards "+n_finished_boards);
 	}
 
 

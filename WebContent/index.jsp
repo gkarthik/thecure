@@ -50,6 +50,11 @@
             <div id="contact" style="display: none;">
             <p>Please feel free to get in touch with us via email, twitter, messenger pigeon etc.  See our details on the <a href="contact.jsp">contact page</a>.
             </div>
+            <h3 class="twitterwidget">Game Updates</h3>
+             <div id="twitterwidget" style="display: none;">
+				<a class="twitter-timeline" data-dnt=true href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
+				<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>              	
+            </div>            
             <h3 class="faq">FAQ</h3>
             <div id="faq" style="display: none;">
               <ol>
@@ -72,17 +77,17 @@
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
 
-              <div id="email">
+<!--               <div id="email">
                 <label for="usremail">Refer a Friend:</label><br />
                 <input id="refEmail" class="email" type="email" name="usremail" placeholder="Friend's Email" />
                 <input id="refName" class="email" type="email" name="usremail" placeholder="Your Name" />
                 <p id="emailAlert" style="display: none;" ></p>
                 <input class="emailsub" type="submit" value="Submit" />
-              </div>
+              </div> -->
             </div>
 
             <div id="leaderboard">
-              <h3>Leader Board</h3>
+              <h3>Top Players</h3>
               <ol></ol>
             </div>
 
@@ -159,7 +164,7 @@ function drawGraph(data, targetEl){
     function fillTopScores(data) {
       var olEl = $("div#leaderboard ol");
       var leaders = _.sortBy(data.leaderboard, function(obj) { return -obj.score; });
-      _( _.first(leaders, 6) ).each(function(v, i) {
+      _( _.first(leaders, 10) ).each(function(v, i) {
         olEl.append('<li><span class="username">'+v.username+'</span> <span class="score">'+v.score+'</span></li>')
        })
    }
