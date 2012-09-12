@@ -4,10 +4,14 @@
 package org.scripps.combo;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.scripps.util.JdbcConnection;
 
@@ -99,6 +103,87 @@ public class Hand {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Limit the hand list to the first hand per player per board that was won.
+	 * @return
+	 */
+	public static List<Hand> getTheFirstWinningHandPerPlayerPerBoard(){
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select * from hand where win > 0 and player_name != 'anonymous_hero' order by time asc");
+		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
+		try {
+			while(rslt.next()){
+				Hand hand = new Hand();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
+				hand.setFeatures(rslt.getString("features"));
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setScore(rslt.getInt("score"));
+				hand.setFeature_names(rslt.getString("feature_names"));
+				hand.setGame_type(rslt.getString("game_type"));
+				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
+				hand.setWin(rslt.getInt("win"));
+				Calendar t = Calendar.getInstance();
+				t.setTime(rslt.getTimestamp("time"));
+				hand.setTimestamp(t);
+				
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_name())){
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_name(), hand);
+			//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}else{
+			//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<Hand> hands = new ArrayList<Hand>(bpw_hand.values());
+		return hands;
+	}
+	
+	/**
+	 * get everything - includes multiple hands per board per player caused by refreshes..
+	 * @return
+	 */
+	public static List<Hand> getAllHands(boolean only_winning){
+		List<Hand> hands = new ArrayList<Hand>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select * from hand where player_name != 'anonymous_hero' ";
+		if(only_winning){
+			q+=" and win > 0 "; 
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				Hand hand = new Hand();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
+				hand.setFeatures(rslt.getString("features"));
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setScore(rslt.getInt("score"));
+				hand.setFeature_names(rslt.getString("feature_names"));
+				hand.setGame_type(rslt.getString("game_type"));
+				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
+				hand.setWin(rslt.getInt("win"));
+				Calendar t = Calendar.getInstance();
+				t.setTime(rslt.getTimestamp("time"));
+				hand.setTimestamp(t);
+				hands.add(hand);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return hands;
 	}
 	public int getTraining_accuracy() {
 		return training_accuracy;

@@ -60,7 +60,7 @@ public class BoardBuilder {
 		String[] badgenids = {"100129828","11039","642567","100133941","1159","730415","2495","3105","3020","23117","7381","1880","100130526","3119","NA"};
 		List<String> bad = Arrays.asList(badgenids);
 		Weka weka = new Weka(train_file);
-		weka.loadMetadata(new FileInputStream(metadatafile));
+		weka.loadMetadata(new FileInputStream(metadatafile), true);
 		//all genes
 		List<String> gene_ids = new ArrayList<String>(weka.geneid_cards.keySet());
 		//produce the list of unique entrez gene ids
@@ -132,7 +132,7 @@ public class BoardBuilder {
 	
 		public static void loadSelectedGeneBoard(String train_file, String metadatafile, String csv_geneids) throws FileNotFoundException{
 			Weka weka = new Weka(train_file);
-			weka.loadMetadata(new FileInputStream(metadatafile));
+			weka.loadMetadata(new FileInputStream(metadatafile), false);
 			//produce the list of unique entrez gene ids
 			//Set<String> gene_ids = weka.geneid_cards.keySet();
 
@@ -174,7 +174,7 @@ public class BoardBuilder {
 			String[] badgenids = {"100129828","11039","642567","100133941","1159","730415","2495","3105","3020","23117","7381","1880","100130526","3119","NA"};
 			List<String> bad = Arrays.asList(badgenids);
 			Weka weka = new Weka(train_file);
-			weka.loadMetadata(new FileInputStream(metadatafile));
+			weka.loadMetadata(new FileInputStream(metadatafile), false);
 			//produce the list of unique entrez gene ids
 			//Set<String> gene_ids = weka.geneid_cards.keySet();
 			List<String> gene_ids = new ArrayList<String>(weka.geneid_cards.keySet());
