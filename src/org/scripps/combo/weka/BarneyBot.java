@@ -41,7 +41,7 @@ public class BarneyBot {
 		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
 		Weka weka = new Weka(train_file);
 		weka.setEval_method("training_set");
-		weka.loadMetadata(new FileInputStream(metadatafile));
+		weka.loadMetadata(new FileInputStream(metadatafile), true);
 		//lookup the boards
 		Boardroom b = new Boardroom();
 		b.buildBoardView("bgood", "dream_breast_cancer");

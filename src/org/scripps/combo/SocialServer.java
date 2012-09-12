@@ -85,7 +85,8 @@ public class SocialServer extends HttpServlet {
 			response.sendRedirect("/cure/");
 		}else if(command.equals("gamelogs")){
 			GameLog log = new GameLog();
-			GameLog.high_score sb = log.getScoreBoard();
+			List<Hand> hands = Hand.getTheFirstWinningHandPerPlayerPerBoard();
+			GameLog.high_score sb = log.getScoreBoard(hands);
 			String json = log.getD3CompatibleJson(sb);
 			response.setContentType("text/json");
 			PrintWriter out = response.getWriter();

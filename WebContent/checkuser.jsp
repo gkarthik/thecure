@@ -43,7 +43,7 @@ if(newuser!=null){
 	}
 }
 //take them to the games area
-if (success) {
+if (success) {	
     session.setAttribute("username", username);
     session.setAttribute("player", player);
     //if they've passed training, they will be taken to the main game area
