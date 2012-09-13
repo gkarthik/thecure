@@ -52,6 +52,13 @@
         </div>
       </div>
     </div>
-    <jsp:include page="footer.jsp" />
+
+  <jsp:include page="footer.jsp" />
+  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/underscore-min.js"></script>
+  <script src="js/libs/d3.v2.min.js"></script>
+  <script src="js/cure.js"></script>
+  <jsp:include page="js/analytics.js" />
+
 </body>
 </html>

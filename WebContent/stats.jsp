@@ -27,7 +27,6 @@
             <a class="brand" href="/cure/">The Cure</a>
             <div class="nav-collapse">
               <ul class="nav">
-              <li><a href="cure2%2E0/index.jsp">Cure 2.0</a></li>
                 <li><a href="contact.jsp">Contact</a></li>
                 <li><a href="logout.jsp">logout</a></li>
               </ul>
@@ -36,16 +35,13 @@
         </div>
       </div>
 
-      <div class="container stats">
+      <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
-            <h2>Games won per day</h2>
-            <div id="games_won" class="stats_graph"></div>
+            <div id="chart1"></div>
           </div>
 
           <div class="row">
-            <h2>Leader Board</h2>
-            <div id="leaderPie"></div>
           </div>
         </div>
       </div>
