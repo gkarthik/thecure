@@ -23,7 +23,7 @@ public class Boardroom {
 	List<boardview> boardviews;
 	ObjectMapper mapper;
 	ObjectNode json_root;
-	
+
 	public Boardroom(){
 		boardviews = new ArrayList<boardview>();
 		mapper = new ObjectMapper();
@@ -34,11 +34,14 @@ public class Boardroom {
 	 */
 	public static void main(String[] args) {
 		Boardroom b = new Boardroom();
-		b.buildBoardView("bgood", "dream_breast_cancer");
-		String j = b.renderjsonBoardViews();
-		System.out.println(j);
+		b.buildBoardView("gene", "dream_breast_cancer");
+//		String j = b.renderjsonBoardViews();
+//		System.out.println(j);
+		for(boardview board : b.getBoardviews()){
+			System.out.println(1+board.getPosition()+"\t"+board.getBoard().getId());
+		}
 	}
-	
+
 	public String renderjsonBoardViews(){
 		String json = "";
 		if(boardviews==null||boardviews.size()==0){
@@ -73,8 +76,8 @@ public class Boardroom {
 		}
 		return json;
 	}
-	
-	
+
+
 	/**
 	 * Produce the data to generate a player-specific view of the board collection
 	 * @param player_name
@@ -88,7 +91,7 @@ public class Boardroom {
 		Board control = new Board();
 		List<Board> boards = control.getBoardsByPhenotype(phenotype); //"dream_breast_cancer"
 		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get(phenotype);
-		
+
 		int position = 0;
 		for(Board board : boards){
 			boardview view = new boardview(board, position);
@@ -107,28 +110,33 @@ public class Boardroom {
 			boolean anyone_won_level = false;
 			int max_score = 0;
 			boolean beat_base = false;
-			List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
+
+			Map<String, List<Integer>> all_player_board_scores = control.getPlayerBoardScoresForWins(b_id);
+			//			List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
 			float avg_score = 0;
-			int attempts = 0;
-			if(all_scores!=null&&all_scores.size()>0){
-				attempts = all_scores.size();
+			int unique_player_wins = 0;
+			if(all_player_board_scores!=null&&all_player_board_scores.size()>0){
+				unique_player_wins = all_player_board_scores.keySet().size();
 				anyone_won_level = true;
-				for(Integer s : all_scores){
-					if(s > max_score){
-						max_score = s;
+				for(String p : all_player_board_scores.keySet()){
+					List<Integer> all_scores = all_player_board_scores.get(p);
+					for(Integer s : all_scores){
+						if(s > max_score){
+							max_score = s;
+						}
+						avg_score+=s;
 					}
-					avg_score+=s;
+					avg_score = avg_score/all_scores.size();
 				}
-				avg_score = avg_score/all_scores.size();
 			}
 			if(max_score > base_score){
 				beat_base = true;
 			}
-			
-			if((attempts > 9)||(player_won_level)){
+
+			if((unique_player_wins > 9)||(player_won_level)){
 				view.setEnabled(false);
 			}
-			view.setAttempts(attempts);
+			view.setAttempts(unique_player_wins);
 			if(player_won_level){
 				view.setTrophy(true);
 				view.setPlayer_score(player_score);
@@ -139,8 +147,8 @@ public class Boardroom {
 			position++;
 		}
 	}
-	
-	
+
+
 	public class boardview {
 		Board board;
 		int position;
@@ -150,7 +158,7 @@ public class Boardroom {
 		int player_score;
 		float avg_win_score; // all wins
 		int max_score;
-				
+
 		public boardview(Board board, int position) {
 			super();
 			this.board = board;
@@ -158,7 +166,7 @@ public class Boardroom {
 			this.enabled = true;
 			this.trophy = false;
 		}
-		
+
 		public int getPosition() {
 			return position;
 		}
@@ -213,7 +221,7 @@ public class Boardroom {
 		public void setMax_score(int max_score) {
 			this.max_score = max_score;
 		}
-		
+
 	}
 
 

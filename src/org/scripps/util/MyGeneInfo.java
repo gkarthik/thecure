@@ -39,18 +39,43 @@ public class MyGeneInfo {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static void main(String[] args) throws UnsupportedEncodingException {
-		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
-		id.iterator().next();
-		Gene g = getGeneInfoByGeneid("2989", true);
-		System.out.println(g);
+//		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
+//		id.iterator().next();
+//		Gene g = getGeneInfoByGeneid("2989", true);
+		Gene g = getGeneInfoByGeneid("730415", true);
+		System.out.println(g.toString());
 
 	}
 
+	public static String getCurrentGeneid(String geneid){
+		String g = "";
+		String jsonr = "";
+		try {
+			jsonr = getGeneInfo(geneid, true, "entrezgene");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(jsonr==null||jsonr.length()==0||jsonr.startsWith("<html><title>404")){
+			return null;
+		}
+		//System.out.println(jsonr);
+		try {
+			JSONObject r = new JSONObject(jsonr);
+			g = (String) ""+r.get("entrezgene");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			System.err.println("unparseable jsonr for "+geneid+"\n"+jsonr);
+			e.printStackTrace();
+		}
+		return g;
+	}
+	
 
 	public static Gene getGeneInfoByGeneid(String id, boolean external) throws UnsupportedEncodingException{
 		Gene g = null;
 		String symbol = "";
-		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot");
+		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot,entrezgene");
 		if(jsonr==null||jsonr.length()==0||jsonr.startsWith("<html><title>404")){
 			return null;
 		}
@@ -59,7 +84,7 @@ public class MyGeneInfo {
 			JSONObject r = new JSONObject(jsonr);
 
 			g = new Gene();
-			g.setGeneID(id);
+			g.setGeneID(""+r.getInt("entrezgene"));
 			if(r.has("symbol")){
 				symbol = r.getString("symbol");
 				g.setGeneSymbol(symbol);

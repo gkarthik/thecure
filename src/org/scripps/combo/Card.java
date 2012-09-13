@@ -72,7 +72,7 @@ public class Card {
 		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
 		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
 		Weka weka = new Weka(train_file);
-		weka.loadMetadata(new FileInputStream(metadatafile));
+		weka.loadMetadata(new FileInputStream(metadatafile), true);
 		List<card> cards = weka.getGeneid_cards().get("6505");
 		for(card c : cards){
 			Card tosave = new Card(c, "bgood", "1", "test_pheno", "567");

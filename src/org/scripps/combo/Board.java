@@ -156,6 +156,36 @@ public class Board {
 		}
 		return board_scores;
 	}
+
+	public Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
+		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
+		String gethands = "select player_name, phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where win > 0" +
+				" and board_id = '"+board_id+"' and player_name != 'anonymous_hero' ";
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(gethands);
+			ResultSet hands = p.executeQuery();
+			while(hands.next()){
+				int training = hands.getInt("training_accuracy");
+				int cv = hands.getInt("cv_accuracy");
+				String player_name = hands.getString("player_name");
+				if(training<0){
+					training = cv;
+				}
+				List<Integer> board_scores = player_board_scores.get(player_name);
+				if(board_scores==null){
+					board_scores = new ArrayList<Integer>();
+				}
+				board_scores.add(training);
+				player_board_scores.put(player_name, board_scores);
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return player_board_scores;
+	}	
 	
 //	public void updatePlay(int board_id, int cv_score, String player){
 //		if(getId()<1){

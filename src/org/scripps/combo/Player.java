@@ -71,6 +71,36 @@ public class Player {
 		return player;
 	}
 	
+	
+	public static List<Player> getAllPlayers(){
+		List<Player> players = new ArrayList<Player>();
+		JdbcConnection conn = new JdbcConnection();
+		String q= "select * from player";
+		try {
+
+			ResultSet r = conn.executeQuery(q);
+			while(r.next()){
+				Player player = new Player();
+				player.setName(r.getString("name"));
+				player.setPassword(r.getString("password"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
+				player.setBiologist(r.getString("biologist"));
+				player.setCancer(r.getString("cancer"));
+				player.setDegree(r.getString("degree"));				
+				players.add(player);
+				
+			}
+			conn.connection.close();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return players;
+	}
+	
 	public static List<Player> lookupByEmail(String email){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();
@@ -107,6 +137,9 @@ public class Player {
 			p.setString(2,password);
 			ResultSet r = p.executeQuery();
 			if(r.next()){
+				if(!r.getString("name").equals(name)){ //this is here because mysql isn't set up to check for case and its screwing up the scoreboard
+					return null; 
+				}
 				player = new Player();
 				player.setName(r.getString("name"));
 				player.setPassword(r.getString("password"));
