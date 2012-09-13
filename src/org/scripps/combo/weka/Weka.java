@@ -111,7 +111,7 @@ public class Weka {
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
 		if(meta_stream!=null){
-			loadMetadata(meta_stream);
+			loadMetadata(meta_stream, true);
 			meta_stream.close();
 		}
 	}
@@ -123,11 +123,13 @@ public class Weka {
 	 * @param metadatafile
 	 * @return
 	 */
-	public void loadMetadata(InputStream metadata){
+	public void loadMetadata(InputStream metadata, boolean add_power){
 		loadAttributeMetadata(metadata);
 		//add power
-		ASEvaluation eval_method = new ReliefFAttributeEval();
-		setCardPower(eval_method);
+		if(add_power){
+			ASEvaluation eval_method = new ReliefFAttributeEval();
+			setCardPower(eval_method);
+		}
 		//only use genes with metadata
 		filterForGeneIdMapping();
 		//map the names so the trees look right..

@@ -58,9 +58,15 @@ public class GameLog {
 	 */
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
-		GameLog.high_score sb = log.getScoreBoard();
-		String json = log.getD3CompatibleJson(sb);
-		System.out.println(json);
+		List<Hand> whs = Hand.getTheFirstWinningHandPerPlayerPerBoard();
+		
+		for(Hand hand : whs){
+			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_name()+"\t"+hand.getCv_accuracy());
+		}
+		
+//		GameLog.high_score sb = log.getScoreBoard();
+//		String json = log.getD3CompatibleJson(sb);
+//		System.out.println(json);
 //		for(String name : sb.getPlayer_max().keySet()){
 //			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
 //			System.out.println(name+" "+sb.getPlayer_global_points().get(name));
@@ -126,6 +132,7 @@ public class GameLog {
 		Map<String, Integer> player_games;
 		Map<String, Integer> player_max;
 		Map<String, Float> player_avg;
+		Map<String, Float> player_avg_fwin;
 		Map<String, Integer> board_max;
 		Map<String, Float> board_avg;
 		public Map<String, Integer> getPlayer_max() {
@@ -172,13 +179,19 @@ public class GameLog {
 		public void setDate_games(Map<Long, Integer> date_games) {
 			this.date_games = date_games;
 		}
+		public Map<String, Float> getPlayer_avg_fwin() {
+			return player_avg_fwin;
+		}
+		public void setPlayer_avg_fwin(Map<String, Float> player_avg_fwin) {
+			this.player_avg_fwin = player_avg_fwin;
+		}
 	}
 	
 
 	
-	public high_score getScoreBoard(){
+	public high_score getScoreBoard(List<Hand> hands){
 		high_score scores = new high_score();
-		List<Hand> hands = getAllWinningHands();
+		
 		Map<String, Integer> player_global_points = new HashMap<String, Integer>();
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
@@ -311,37 +324,10 @@ public class GameLog {
 		return scores;
 	}
 	
-	public List<Hand> getAllWinningHands(){
-		List<Hand> hands = new ArrayList<Hand>();
-		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand where win > 0 and player_name != 'anonymous_hero'");
-		try {
-			while(rslt.next()){
-				Hand hand = new Hand();
-				hand.setBoard_id(rslt.getInt("board_id"));
-				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
-				hand.setFeatures(rslt.getString("features"));
-				hand.setId(rslt.getInt("id"));
-				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_name(rslt.getString("player_name"));
-				hand.setScore(rslt.getInt("score"));
-				hand.setFeature_names(rslt.getString("feature_names"));
-				hand.setGame_type(rslt.getString("game_type"));
-				hand.setPhenotype(rslt.getString("phenotype"));
-				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
-				hand.setWin(rslt.getInt("win"));
-				Calendar t = Calendar.getInstance();
-				t.setTime(rslt.getTimestamp("time"));
-				hand.setTimestamp(t);
-				hands.add(hand);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return hands;
-	}
 
+
+	
+	
 
 	public Map<String, Integer> getPheno_multiplier() {
 		return pheno_multiplier;
