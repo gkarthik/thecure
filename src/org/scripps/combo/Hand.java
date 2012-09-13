@@ -109,9 +109,13 @@ public class Hand {
 	 * Limit the hand list to the first hand per player per board that was won.
 	 * @return
 	 */
-	public static List<Hand> getTheFirstWinningHandPerPlayerPerBoard(){
+	public static List<Hand> getTheFirstHandPerPlayerPerBoard(boolean only_winning){
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand where win > 0 and player_name != 'anonymous_hero' order by time asc");
+		String q = "select * from hand where player_name != 'anonymous_hero' order by time asc";
+		if(only_winning){
+			q = "select * from hand where win > 0 and player_name != 'anonymous_hero' order by time asc";
+		}
+		ResultSet rslt = conn.executeQuery(q);
 		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
 		try {
 			while(rslt.next()){

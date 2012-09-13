@@ -2,9 +2,12 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.GameLog"%>
 <%@ page import="org.scripps.combo.Player"%>
+<%@ page import="org.scripps.combo.Hand"%>
+<%@ page import="java.util.List"%>
 <%
   GameLog log = new GameLog();
-  GameLog.high_score sb = log.getScoreBoard();
+  List<Hand> whs = Hand.getTheFirstHandPerPlayerPerBoard(true);
+  GameLog.high_score sb = log.getScoreBoard(whs);
   Player player = (Player) session.getAttribute("player");
   boolean show_player = false;
   if(player!=null&&(!player.getName().equals("anonymous_hero"))){

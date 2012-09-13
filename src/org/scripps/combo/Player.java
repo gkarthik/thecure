@@ -35,17 +35,17 @@ public class Player {
 	//the Map links board_ids to the player's score on that board
 	Map<String, Map<Integer,Integer>> phenotype_board_scores; 
 	List<Integer> barney_levels;	
-	
-	
+
+
 	public Player() {
 		phenotype_board_scores = new HashMap<String, Map<Integer,Integer>>();
 	}
 
 	public static boolean isNumeric(String str)
 	{
-	  return str.matches("-?\\d+(.\\d+)?");
+		return str.matches("-?\\d+(.\\d+)?");
 	}
-	
+
 	public static Player lookupPlayer(String name){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
@@ -70,8 +70,14 @@ public class Player {
 		}
 		return player;
 	}
-	
-	
+
+	public static Map<String, Player> playerListToMap(List<Player> players){
+		Map<String, Player> name_player = new HashMap<String, Player>();
+		for(Player p : players){
+			name_player.put(p.getName(), p);
+		}
+		return name_player;
+	}
 	public static List<Player> getAllPlayers(){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();
@@ -90,17 +96,17 @@ public class Player {
 				player.setCancer(r.getString("cancer"));
 				player.setDegree(r.getString("degree"));				
 				players.add(player);
-				
+
 			}
 			conn.connection.close();
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return players;
 	}
-	
+
 	public static List<Player> lookupByEmail(String email){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();
@@ -119,14 +125,14 @@ public class Player {
 				players.add(player);
 			}
 			conn.connection.close();
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return players;
 	}
-	
+
 	public Player lookupByUserPassword(){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
@@ -162,14 +168,14 @@ public class Player {
 				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return player;
 	}
-	
+
 	public static Player create(String name, String ip, String password, String email, String degree, String cancer, String biologist){
 		//first check if username taken
 		Player player =  lookupPlayer(name);
@@ -191,7 +197,7 @@ public class Player {
 			p.setString(8,cancer);
 			p.setString(9, biologist);
 			p.executeUpdate();
-			
+
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -200,7 +206,7 @@ public class Player {
 		player = lookupPlayer(name);
 		return player;
 	}
-	
+
 	public void updateBarneyLevelsInDatabase(){
 		//if no player exists make a new one
 		JdbcConnection conn = new JdbcConnection();
@@ -217,7 +223,7 @@ public class Player {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String barneyLevels2string(){
 		String levels = "";
 		if(barney_levels!=null&&barney_levels.size()>0){
@@ -228,7 +234,7 @@ public class Player {
 		}
 		return levels;
 	}
-	
+
 	public void setBoardScoresWithDb(){
 		//anonymous players don't get to track their scores..
 		if(name.equals("anonymous_hero")){
@@ -248,7 +254,7 @@ public class Player {
 				int training = hands.getInt("training_accuracy");
 				int cv = hands.getInt("cv_accuracy");
 				int win = hands.getInt("win");
-				
+
 				if(win>0){
 					Map<Integer,Integer> tile_scores = phenotype_board_scores.get(phenotype);
 					if(tile_scores==null){
@@ -267,7 +273,7 @@ public class Player {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -366,6 +372,6 @@ public class Player {
 
 
 
-	
-	
+
+
 }
