@@ -113,6 +113,36 @@ public class Card {
 
 	}
 
+	public static List<Card> getAllPlayedCards(String user_id){
+		List<Card> cards = new ArrayList<Card>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select * from card where user_id = '"+user_id+"'";
+
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				Card card = new Card(
+						rslt.getString("username"), 
+						rslt.getString("user_id"),
+						rslt.getString("phenotype"),
+						rslt.getString("board_id"), 
+						rslt.getInt("att_index"),
+						rslt.getString("att_name"),
+						rslt.getString("name"),
+						rslt.getString("geneid"),
+						rslt.getFloat("power"),
+						rslt.getInt("display_loc"),
+						rslt.getTimestamp("timestamp"),
+						rslt.getString("id"));
+				cards.add(card);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cards;
+	}
+	
 	public static List<Card> getAllPlayedCards(){
 		List<Card> cards = new ArrayList<Card>();
 		JdbcConnection conn = new JdbcConnection();

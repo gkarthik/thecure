@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.scripps.util.JdbcConnection;
 
@@ -30,6 +31,7 @@ public class Player {
 	String degree;
 	String cancer;
 	String biologist;
+	float avg_cards_per_hand;
 
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
@@ -41,6 +43,55 @@ public class Player {
 		phenotype_board_scores = new HashMap<String, Map<Integer,Integer>>();
 	}
 
+	
+	public static void describePlayers(){
+		List<Player> players = Player.getAllPlayers();
+		Map<String, Player> name_player = Player.playerListToMap(players);
+		GameLog log = new GameLog();
+		List<Hand> wm = Hand.getAllHands(false); //Hand.getTheFirstHandPerPlayerPerBoard(false); //
+		//remove mammal
+		List<Hand> hands = new ArrayList<Hand>();
+		for(Hand hand : wm){
+			if(hand.getBoard_id()>4){
+				hands.add(hand);
+			}
+		}
+		
+		Map<String, Float> player_cardsboard = new HashMap<String, Float>();
+		for(Player player : players){
+			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId());
+			float avg_cards_board = 0;
+			for(Entry<String, Integer> board_count : board_counts.entrySet()){
+				avg_cards_board+= board_count.getValue();
+			}
+			avg_cards_board = avg_cards_board/board_counts.size();
+			player_cardsboard.put(player.getName(), avg_cards_board);
+		}
+	
+		System.out.println("name	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
+		GameLog.high_score sb = log.getScoreBoard(hands);
+	
+		for(String name : sb.getPlayer_avg().keySet()){
+			if(name_player.get(name)!=null){
+				TimeCounter tc = new TimeCounter(""+name_player.get(name).getId());
+				System.out.println(name+"\t"+
+						name_player.get(name).getBiologist()+"\t"+
+						name_player.get(name).getCancer()+"\t"+
+						name_player.get(name).getDegree()+"\t"+
+						sb.getPlayer_max().get(name)+"\t"
+						+sb.getPlayer_avg().get(name)+"\t"+
+						sb.getPlayer_global_points().get(name)+"\t"+
+						sb.getPlayer_games().get(name)+"\t"+
+						sb.getPlayer_avg_win().get(name)+"\t"+
+						player_cardsboard.get(name)+"\t"+
+						tc.getAvg_time_per_board()+"\t"+
+						tc.getAvg_time_per_card()+"\t"+
+						tc.getTotal_time()
+				);
+			}
+		}
+	}
+	
 	public static boolean isNumeric(String str)
 	{
 		return str.matches("-?\\d+(.\\d+)?");
@@ -366,6 +417,16 @@ public class Player {
 	public void setPhenotype_board_scores(
 			Map<String, Map<Integer, Integer>> phenotype_board_scores) {
 		this.phenotype_board_scores = phenotype_board_scores;
+	}
+
+
+	public float getAvg_cards_per_hand() {
+		return avg_cards_per_hand;
+	}
+
+
+	public void setAvg_cards_per_hand(float avg_cards_per_hand) {
+		this.avg_cards_per_hand = avg_cards_per_hand;
 	}
 
 
