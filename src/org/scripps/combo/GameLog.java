@@ -58,7 +58,7 @@ public class GameLog {
 	 */
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
-		List<Hand> whs = Hand.getTheFirstWinningHandPerPlayerPerBoard();
+		List<Hand> whs = Hand.getTheFirstHandPerPlayerPerBoard(true);
 		
 		for(Hand hand : whs){
 			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_name()+"\t"+hand.getCv_accuracy());
@@ -132,7 +132,7 @@ public class GameLog {
 		Map<String, Integer> player_games;
 		Map<String, Integer> player_max;
 		Map<String, Float> player_avg;
-		Map<String, Float> player_avg_fwin;
+		Map<String, Float> player_avg_win;
 		Map<String, Integer> board_max;
 		Map<String, Float> board_avg;
 		public Map<String, Integer> getPlayer_max() {
@@ -179,12 +179,13 @@ public class GameLog {
 		public void setDate_games(Map<Long, Integer> date_games) {
 			this.date_games = date_games;
 		}
-		public Map<String, Float> getPlayer_avg_fwin() {
-			return player_avg_fwin;
+		public Map<String, Float> getPlayer_avg_win() {
+			return player_avg_win;
 		}
-		public void setPlayer_avg_fwin(Map<String, Float> player_avg_fwin) {
-			this.player_avg_fwin = player_avg_fwin;
+		public void setPlayer_avg_win(Map<String, Float> player_avg_win) {
+			this.player_avg_win = player_avg_win;
 		}
+
 	}
 	
 
@@ -195,6 +196,7 @@ public class GameLog {
 		Map<String, Integer> player_global_points = new HashMap<String, Integer>();
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
+		Map<String, Float> player_win = new HashMap<String, Float>();
 		Map<String, Integer> board_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();		
 		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();
@@ -259,10 +261,20 @@ public class GameLog {
 			}
 			bscores.add(score);
 			board_games.put(board, bscores);
-			
+		
+			//update player win_ratio.
+			int win = hand.getWin();
+			Float wr = player_win.get(player);
+			if(wr==null){
+				wr = new Float(win);
+			}else{
+				wr+=win;
+			}
+			player_win.put(player, wr);
 		}
 		
 		//set averages
+		Map<String, Float> player_avg_win = new TreeMap<String, Float>();
 		Map<String, Float> player_avg = new TreeMap<String, Float>();
 		Map<String, Float> board_avg = new TreeMap<String, Float>();
 		Map<String, Integer> player_games_out = new HashMap<String, Integer>();
@@ -275,6 +287,7 @@ public class GameLog {
 			avg = avg/count;
 			player_avg.put(player, avg);
 			player_games_out.put(player, count);
+			player_avg_win.put(player, player_win.get(player)/count);
 		}
 		for(String board : board_max.keySet()){
 			float avg = 0; int count = 0;
@@ -321,6 +334,7 @@ public class GameLog {
 		scores.setPlayer_max(player_max_out);
 		scores.setPlayer_global_points(player_global_out);
 		scores.setDate_games(date_games);
+		scores.setPlayer_avg_win(player_avg_win);
 		return scores;
 	}
 	

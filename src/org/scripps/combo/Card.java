@@ -6,9 +6,14 @@ package org.scripps.combo;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.card;
@@ -35,7 +40,7 @@ public class Card {
 	
 	public Card(String username, String user_id, String phenotype,
 			String board_id, int att_index, String att_name, String name,
-			String unique_id, float power, int display_loc, Timestamp timestamp) {
+			String unique_id, float power, int display_loc, Timestamp timestamp, String db_id) {
 		super();
 		this.username = username;
 		this.user_id = user_id;
@@ -48,6 +53,7 @@ public class Card {
 		this.power = power;
 		this.display_loc = display_loc;
 		this.timestamp = timestamp;
+		this.db_id = db_id;
 	}
 
 	public Card(card c, String username, String user_id, String phenotype,
@@ -107,6 +113,54 @@ public class Card {
 
 	}
 
+	public static List<Card> getAllPlayedCards(){
+		List<Card> cards = new ArrayList<Card>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select * from card where username != 'anonymous_hero' ";
+
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				Card card = new Card(
+						rslt.getString("username"), 
+						rslt.getString("user_id"),
+						rslt.getString("phenotype"),
+						rslt.getString("board_id"), 
+						rslt.getInt("att_index"),
+						rslt.getString("att_name"),
+						rslt.getString("name"),
+						rslt.getString("geneid"),
+						rslt.getFloat("power"),
+						rslt.getInt("display_loc"),
+						rslt.getTimestamp("timestamp"),
+						rslt.getString("id"));
+				cards.add(card);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cards;
+	}
+	
+	public static Map<String, Integer> getBoardCardCount(int user_id ){
+		Map<String, Integer> board_count = new HashMap<String, Integer>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select board_id, count(*) from card where user_id = '"+user_id+"' group by username, board_id";
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				String board_id = rslt.getString(1);
+				int c = rslt.getInt(2);
+				board_count.put(board_id,c);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return board_count;
+	}
+	
 	public String getUsername() {
 		return username;
 	}

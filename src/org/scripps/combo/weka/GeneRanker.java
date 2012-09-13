@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.scripps.combo.Board;
+import org.scripps.combo.Card;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.Hand;
 import org.scripps.combo.Player;
@@ -46,19 +47,35 @@ public class GeneRanker {
 		//			e.printStackTrace();
 		//		}
 
+		//use played cards - as opposed to hands - to rate players
+		//List<Card> cards = Card.getAllPlayedCards();
+		//System.out.println(cards.size());
+
+		describePlayers();
+	}
+
+	public static void describePlayers(){
 		List<Player> players = Player.getAllPlayers();
-		Map<String, Player> name_player = new HashMap<String, Player>();
-		for(Player p : players){
-			name_player.put(p.getName(), p);
-		}
+		Map<String, Player> name_player = Player.playerListToMap(players);
 		GameLog log = new GameLog();
-		List<Hand> wm = Hand.getAllHands(false);
+		List<Hand> wm = Hand.getTheFirstHandPerPlayerPerBoard(false); // Hand.getAllHands(false);
 		//remove mammal
 		List<Hand> hands = new ArrayList<Hand>();
 		for(Hand hand : wm){
 			if(hand.getBoard_id()>4){
 				hands.add(hand);
 			}
+		}
+		
+		Map<String, Float> player_cardsboard = new HashMap<String, Float>();
+		for(Player player : players){
+			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId());
+			float avg_cards_board = 0;
+			for(Entry<String, Integer> board_count : board_counts.entrySet()){
+				avg_cards_board+= board_count.getValue();
+			}
+			avg_cards_board = avg_cards_board/board_counts.size();
+			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 		
 		GameLog.high_score sb = log.getScoreBoard(hands);
@@ -71,11 +88,13 @@ public class GeneRanker {
 						sb.getPlayer_max().get(name)+"\t"
 						+sb.getPlayer_avg().get(name)+"\t"+
 						sb.getPlayer_global_points().get(name)+"\t"+
-						sb.getPlayer_games().get(name));
+						sb.getPlayer_games().get(name)+"\t"+
+						sb.getPlayer_avg_win().get(name)+"\t"+
+						player_cardsboard.get(name)
+				);
 			}
 		}
 	}
-
 
 	/**
 	 * run a gene list through weka and see what comes out
