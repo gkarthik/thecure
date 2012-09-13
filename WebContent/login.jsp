@@ -1,10 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 
-<%
-String bad = request.getParameter("bad");
-%>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -34,7 +30,7 @@ String bad = request.getParameter("bad");
 				<div class="span6 offset2">
 					<div id="login">
 
-            <div id="olduser">
+            <div id="olduser" style="display: none;">
               <strong>Enter your credentials here</strong>
 
               <form action="./checkuser.jsp">
@@ -54,7 +50,7 @@ String bad = request.getParameter("bad");
               </div>
             </div>
 
-            <div id="newuser">
+            <div id="newuser" style="display: none;">
               <h2>Sign Up</h2>
 						  <p>You must have an account to play so that we can reward you properly.</p>
               <p class="sub">Don’t worry, we won’t spam you.</p>
@@ -102,8 +98,8 @@ String bad = request.getParameter("bad");
               </div>
             </div>
 
-						</div>
-          
+          </div>
+
           </div>
 				</div>
 			</div>
@@ -111,43 +107,10 @@ String bad = request.getParameter("bad");
   </div>
 
   <jsp:include page="footer.jsp" />
-
-<% //-- Moved JS to end of body faster load times %>
-<script src="js/libs/jquery-1.8.0.min.js"></script>
-<script src="js/libs/jquery-ui-1.8.0.min.js"></script>
-<script>
-var bad = '<%=bad%>';
-	function clearInput() {
-		$('input[type=text]').focus(function() {
-			$(this).val('');
-		});
-	}
-
-	$(document).ready(function() {
-		//start with new user area hidden
-		$("#newuser").hide();
-		$("#olduser").hide();
-		if(bad=="nametaken"){
-			alert("Sorry, that user name has been taken. Please try another one.");
-			$("#newuser").show();
-			$("#olduser").hide();
-		}else if(bad=="pw"){
-			alert("Sorry, that username/password combination is invalid.  Please try again.  ");
-			$("#olduser").show();
-		}else if(bad=='n'){ 
-			$("#newuser").show();
-			$("#olduser").hide();
-		}else{		
-			$("#olduser").show();
-		//show new user on click
-		$("#newuserlink").click(function(e) {
-			e.preventDefault();
-			$("#newuser").show();
-			$("#olduser").hide();
-		});
-		}
-	});
-</script>
-<jsp:include page="js/analytics.js" />
+  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/underscore-min.js"></script>
+  <script src="js/libs/d3.v2.min.js"></script>
+  <script src="js/cure.js"></script>
+  <jsp:include page="js/analytics.js" />
 </body>
 </html>

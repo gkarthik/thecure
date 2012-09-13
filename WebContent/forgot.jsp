@@ -45,53 +45,13 @@
         </div>
       </div>
     </div>
+
   <jsp:include page="footer.jsp" />
-    <script src="js/libs/jquery-1.8.0.min.js"></script>
-    <script src="js/libs/underscore-min.js"></script>
-    <script>
-	  $(document).ready(function() {	
-	function validateEmail(email) {
-        var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        var emailEl = $("input#refEmail"),
-            isValid = re.test(email);
-        if (isValid) {
-          emailEl.css({"boxShadow":"0px 0px 4px 0px #20282B"});
-        } else {
-          emailEl.css({"boxShadow":"0px 0px 8px 0px red"});
-          $("#emailAlert").html("Please enter a valid email address").fadeIn();
-        }
-        return isValid;
-      }
+  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/underscore-min.js"></script>
+  <script src="js/libs/d3.v2.min.js"></script>
+  <script src="js/cure.js"></script>
+  <jsp:include page="js/analytics.js" />
 
-      function submitEmail(email) {
-
-      $.get("/cure/SocialServer", { command: "iforgot", mail: email } )
-        .success(function(d) {
-          $("#emailAlert").html("Thank you, your password request has been sent to the provided email address.").fadeIn();
-          return true;
-        })
-        .error(function(d) {
-          $("#emailAlert").html("Sorry, error occured :(").fadeIn();
-          return false;
-        });
-        return false;
-      }
-
-      $("input#refEmail").blur(function() {
-        var email = $("input#refEmail").val();
-        validateEmail(email)
-      });
-
-      $(".emailsub").click(function() {
-        var email = $("input#refEmail");
-        if( validateEmail( email.val() ) ) {
-          if( submitEmail( email.val() ) ) {
-            email.val("");
-          };
-        }
-      });
-	  });	
-  </script>
-<jsp:include page="js/analytics.js" />
 </body>
 </html>

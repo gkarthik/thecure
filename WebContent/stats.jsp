@@ -1,28 +1,3 @@
-<%@ page language="java" contentType="text/html; charset=utf-8"
-	pageEncoding="utf-8"%>
-<%@ page import="org.scripps.combo.Config"%>
-<%@ page import="org.scripps.combo.Player"%>
-<%@ page import="org.scripps.combo.Board"%>
-<%@ page import="java.util.List"%>
-<%@ page import="java.util.Map"%>
-<%@ page import="java.util.ArrayList"%>
-<%
-//params for game board
-String game_params = "&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
-int level = 0;
-int num_tile_rows = 10;
-int num_tile_cols = 10;
-
-boolean all_levels_open = true;
-	String username = "";
-	Player player = (Player) session.getAttribute("player");
-	if (player == null) {
-		response.sendRedirect("login.jsp");
-	} else {
-		username = player.getName();
-	} 
-	if (player != null) {
-%>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
@@ -31,7 +6,7 @@ boolean all_levels_open = true;
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
+        <title>Stats</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <link rel="stylesheet" href="assets/css/board.css">
@@ -63,17 +38,10 @@ boolean all_levels_open = true;
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
-            <h2>DREAM7 challenge: predict breast cancer survival</h2>
-              <p>Your objective is to identify genes that can be used to classify tumor samples into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis. Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
-
-              <p>Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck. This is not going to be easy, give it your best shot! <a href="help.jsp#data"><span style="color: #B2365F;">More..</span></a></p>
-              <br/>
+            <div id="chart1"></div>
           </div>
+
           <div class="row">
-            <div id="boards" class="span7"></div>
-            <div id="back" class="span3">
-              <jsp:include page="scoreboard_table.jsp" />
-            </div>
           </div>
         </div>
       </div>
@@ -87,4 +55,3 @@ boolean all_levels_open = true;
 
   </body>
 </html>
-<%} %>
