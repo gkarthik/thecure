@@ -64,19 +64,11 @@ boolean all_levels_open = true;
         <div class="hero-unit">
           <div class="row">
             <h2>DREAM7 challenge: predict breast cancer survival</h2>
-            
-            <p>Your objective is to identify genes that can be used to classify tumor samples  
-				into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis.  
-				Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) 
-				
-				To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
-				
-				<p>
-					Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck.  
-					This is not going to be easy, give it your best shot! <a href="help.jsp#data"><span style="color: #B2365F;">More..</span></a>
-				</p>
-				<br/>
-		 </div>
+              <p>Your objective is to identify genes that can be used to classify tumor samples into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis. Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
+
+              <p>Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck. This is not going to be easy, give it your best shot! <a href="help.jsp#data"><span style="color: #B2365F;">More..</span></a></p>
+              <br/>
+          </div>
           <div class="row">
             <div id="boards" class="span7"></div>
             <div id="back" class="span3">
@@ -85,92 +77,13 @@ boolean all_levels_open = true;
           </div>
         </div>
       </div>
-      
-      <jsp:include page="footer.jsp" />
+
+  <jsp:include page="footer.jsp" />
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
-  <script type="text/javascript" charset="utf-8">
-
-  function drawGrid(targetEl, data, box_size) {
-    //double check the sort/ordering by difficulty
-    data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
-
-      // Check to ensure the board is/can be a grid
-      // this will clip the most difficult boards // thoughts?
-      var base = Math.sqrt( data.boards.length );
-      if ( Math.floor(base) !== base) {
-        data.boards = _.first(data.boards, Math.pow( Math.floor(base), 2 ) );
-      }
-
-      var attempt = d3.scale.linear()
-        .domain([0, 10])
-        .range([0, 100]);
-
-      var targetEl = $(targetEl),
-          hw = box_size,
-          text_size = Math.floor(hw*.435),
-          margin = Math.floor(hw*.09),
-          top_pos = Math.floor(hw*.09),
-          pro_height = Math.floor(hw*.15);
-
-      _.each(data.boards, function(v, i) {
-
-        var scaleAttempt = attempt(v.attempts);
-            if (scaleAttempt > 100) { scaleAttempt = 100; }
-        var isEnabled,
-            content,
-            font_size = text_size;
-       ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled"; 
-
-       if ( v.enabled == false ) {
-          content = "•";
-          font_size = font_size*3;
-          top_pos = (hw*.2);
-        }
-        if ( v.trophy == true) {
-          content = "★";
-          font_size = font_size*0.4;
-          top_pos = Math.floor(hw*.2);
-        }
-        if ( v.enabled == false && v.trophy == true) {
-          content = "★";
-          top_pos = Math.floor(hw*.2);
-        }
-
-        if ( v.enabled == true && v.trophy == false && v.attempts < 10 ) {
-          content = (v.position+1);
-          top_pos = Math.floor(hw*.2);
-        }
-        var board = targetEl.append("\
-            <div id='board_"+ v.board_id +"' class='board "+ isEnabled +"' style='height:"+ hw +"px; width:"+ hw +"px; font-size:"+ font_size +"px; margin:"+ margin +"px' > \
-              <span class='symbol' style='top:"+ top_pos +"px'>"+ content +"</span>\
-              <div class='score_slider' style='width:"+ hw +"px; height:"+ pro_height +"px;'>\
-                <div class='score_value' style='width:"+ scaleAttempt +"%; height:"+ pro_height +"px;'></div>\
-              </div>\
-              </div>");
-      })
-
-      $.each( $("div.board.enabled"), function(i, v) {
-          var board_id = $(this).attr('id').split('_')[1];
-          $(this).click(function(e) {
-            var url = "boardgame.jsp?level="+board_id+"&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
-            window.location.href = url;
-          })
-      })
-
-  }
-
-  $(document).ready(function() {
-      var username = '<%=username%>';
-      var phenotype = "dream_breast_cancer";
-      var url = "/cure/SocialServer?command=boardroom&username="+username+"&phenotype="+phenotype;
-        $.getJSON(url, function(data) {
-          drawGrid("#boards", data, 45);
-        });
-  });
-</script>
-<jsp:include page="js/analytics.js" />
+  <script src="js/cure.js"></script>
+  <jsp:include page="js/analytics.js" />
 
   </body>
 </html>

@@ -198,6 +198,7 @@ div#games h1 {
 }
 
 div#games h2,
+div#games h3,
 div.boardroom h2 {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 200;
@@ -206,6 +207,8 @@ div.boardroom h2 {
   color: #3DAECC;
   padding: 10px 0px 10px 0px;
 }
+
+div#games h3:hover { cursor: pointer; }
 
 /* About */
 
