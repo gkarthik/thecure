@@ -406,3 +406,37 @@ div#footer iframe.twitter-share-button {
   margin: 8px;
 }
 
+/* D3 Plot/Charting CSS */
+
+#chart1 {
+  position: relative;
+}
+
+#chart1 .rule line {
+  stroke: #eee;
+  shape-rendering: crispEdges;
+}
+
+#chart1 .rule line.axis {
+  stroke: #000;
+}
+
+#chart1 line {
+  fill: none;
+  stroke: #B2365F;
+  stroke-width: .5px;
+}
+
+#chart1 .line {
+  fill: none;
+  stroke: #B2365F;
+}
+
+
+#chart1 path.domain {
+  shape-rendering: crispEdges;
+  stroke: #373c3f;
+  fill: none;
+}
+
+
