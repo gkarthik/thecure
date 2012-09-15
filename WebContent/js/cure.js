@@ -9,8 +9,6 @@ CURE.load = function() {
     page = page.substring(0, page.indexOf('?'));
   }
   CURE.page = page.replace(".jsp","");
-  
-  console.log(CURE.page);
 
   switch(CURE.page)
   {
@@ -74,10 +72,16 @@ CURE.forgot = {
 
 CURE.stats = {
   init : function() {
-    var url = "/cure/SocialServer?command=boardroom";
-    $.getJSON(url, function(data) {
-      drawGraph(data, "chart1");
-    });
+  
+    var data = CURE.utilities.seedData();
+
+//
+//     var url = "/cure/SocialServer?command=stats";
+//     $.getJSON(url, function(data) {
+//       CURE.utilities.drawLineGraph(data, "chart1");
+//     });
+    CURE.utilities.drawLineGraph(data.chart1, "#chart1", 600);
+
   }
 }
 
@@ -127,7 +131,7 @@ CURE.boardroom = {
 
   drawGrid: function(targetEl, data, box_size) {
     //double check the sort/ordering by difficulty
-    data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
+    //data.boards = _.sortBy(data.boards, function(obj){ return -obj.base_score; })
 
     // Check to ensure the board is/can be a grid
     // this will clip the most difficult boards // thoughts?
@@ -198,8 +202,10 @@ CURE.boardroom = {
 CURE.landing = {
   init : function() {
     CURE.utilities.collapseInfo();
-
-    var url = "/cure/SocialServer?command=gamelogs";
+    // $('#twitter-widget-1').ready(function() {
+    //   CURE.landing.getTwitterTimeline();
+    // });
+      var url = "/cure/SocialServer?command=gamelogs";
       $.getJSON(url, function(data) {
         //drawGraph(data, "#chart");
         var listItems = CURE.utilities.listOfLeaderBoard(data, 6);
@@ -214,7 +220,7 @@ CURE.landing = {
       return false;
     })
 
-      // $("input#refEmail").blur(function() {
+       // $("input#refEmail").blur(function() {
       //     var email = $("input#refEmail").val();
       //     validateEmail(email)
       // })
@@ -229,6 +235,12 @@ CURE.landing = {
       //   }
       // })
 
+  },
+  getTwitterTimeline : function() {
+    var cssLink = document.createElement("link");
+    cssLink.href = "twitovr.css";  cssLink .rel = "stylesheet";
+    cssLink .type = "text/css";
+    $("twitter-widget-1").append(cssLink); 
   },
   submitEmail : function(email, name) {
     // /cure/SocialServer?command=invite&by=jessesmith&invited=sam@smith.org
@@ -254,6 +266,23 @@ CURE.utilities = {
     })
     return res;
   },
+  seedData : function() {
+    var res = {};
+
+    for(var i = 1; i < 6; i++) {
+      var chart = {};
+      chart.metadata = {
+        "x_axis_label" : "foo",
+        "y_axis_label" : "bar"
+      }
+      chart.data = d3.range(20).map(function(i) {
+        return {timestamp: ( new Date(2012, 8, (6+i), 1, 1, 23, 23).getTime() ), y: (Math.sin(i / 3) + 1) / 2};
+      })
+      res["chart"+i] = chart;
+    }
+    
+    return res;
+  },
   collapseInfo : function() {
     $.each( $("h3") , function(i,v) {
       $(v).toggle(function() {
@@ -265,18 +294,19 @@ CURE.utilities = {
       })
     });
   },
-  drawLineGraph : function(data, targetEl){
-    var format = d3.time.format.utc('%Y-%m-%e');
-    var height = 200;
-    var width = 200;
-    var timeScale = d3.time.scale.utc().range([0, width]);
-    var firstDomain = format.parse('2012-8-1');
-    var secondDomain = format.parse('2012-8-30');
+  drawLineGraph : function(data, targetEl, size){
+    var format = d3.time.format.utc('%Y-%m-%d');
+    var hw = size || 200;
+    var small_padding = hw*0.025;
+    var large_padding = hw*0.125;
+    var timeScale = d3.time.scale.utc().range([0, hw]);
+    var firstDomain = format.parse('2012-09-01');
+    var secondDomain = format.parse('2012-10-15');
     timeScale.domain([firstDomain, secondDomain])
 
     var y = d3.scale.linear()
       .domain([0, 1])
-      .range([height,0]);
+      .range([hw,0]);
 
     // axes
     var xAxis = d3.svg.axis().scale(timeScale);
@@ -286,42 +316,60 @@ CURE.utilities = {
 
     graphSvg.append('g')
       .attr('class', 'x_axis')
-      .attr('transform', 'translate(25,'+(height+5)+')')
-      .call(xAxis.ticks(7).tickFormat(d3.time.format('%d')));
+      .attr('transform', 'translate('+ large_padding +','+(hw + small_padding)+')')
+      .call(xAxis.tickFormat(d3.time.format('%b %d')));
 
     graphSvg.append('g')
       .attr('class', 'y_axis')
-      .attr('transform', 'translate(25,5)')
+      .attr('transform', 'translate('+ large_padding +','+ small_padding +')')
       .call(yAxis);
 
     graphSvg.append('g')
       .attr('class', 'guide_lines_x')
-      .attr('transform', 'translate(25,'+ (height+5) +')')
-      .call(xAxis.tickFormat('').tickSize(-height,0,0));
+      .attr('transform', 'translate('+ large_padding +','+ (hw+small_padding) +')')
+      .call(xAxis.tickFormat('').tickSize(-hw,0,0));
 
     graphSvg.append('g')
       .attr('class', 'guide_lines_y')
-      .attr('transform', 'translate(25,5)')
-      .call(yAxis.tickFormat('').tickSize(-width,0,0));
+      .attr('transform', 'translate('+ large_padding +', '+ small_padding +')')
+      .call(yAxis.tickFormat('').tickSize(-hw,0,0));
 
     var line = d3.svg.line()
       .x(function(d) { return timeScale( d.timestamp ) })
-      .y(function(d) { return y( d.y ) });
+      .y(function(d) { return y( d.y ) })
+      .interpolate("basis");
 
     graphSvg.append('g')
-      .attr('transform', 'translate('+(-width)+', 5)')
+      .attr('class', 'line')
+      .attr('transform', 'translate('+ large_padding +', '+ small_padding +')')
       .append('path')
       .attr('class', 'line')
-      .attr('d', line( data.chart ));
+      .attr('d', line( data.data ));
 
     graphSvg.append('g')
       .attr('class', 'points')
-      .attr('transform', 'translate('+(-width)+', 5)').selectAll('circle')
-      .data( data.chart ).enter()
+      .attr('transform', 'translate('+ large_padding +', '+ small_padding +')').selectAll('circle')
+      .data( data.data ).enter()
       .append('circle')
         .attr('r', 1.5)
         .attr('cx', function(d){ return timeScale( d.timestamp ); })
         .attr('cy', function(d){ return y( d.y ); })
+
+    // Axis labels
+    graphSvg.append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "center")
+      .attr("x", (hw/2)+large_padding )
+      .attr("y", hw + (large_padding - small_padding) )
+      .text( data.metadata.x_axis_label );
+
+    graphSvg.append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "center")
+      .attr("dy", hw )
+      .attr("x", "100")
+      .attr("transform", "rotate(-90)")
+      .text( data.metadata.y_axis_label );
   },
   validateEmail : function(email) {
     var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
