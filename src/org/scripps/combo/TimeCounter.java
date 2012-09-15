@@ -7,8 +7,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import org.scripps.combo.model.Card;
-
 /**
  * @author bgood
  *
@@ -21,27 +19,20 @@ public class TimeCounter {
 	float max_per_card = 0;
 	static int max_timeout = 300000; //5 minute max
 	
-	public TimeCounter(String user_id, String dataset){
-		setForUser(user_id, dataset);
+	public TimeCounter(String user_id){
+		setForUser(user_id);
 	}
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TimeCounter tc = new TimeCounter("54", null);
+		TimeCounter tc = new TimeCounter("54");
 		System.out.println("total time\t"+tc.total_time+"\tavg_time_card\t"+tc.avg_time_per_card+"\tavg_time_board\t"+tc.avg_time_per_board);
 	}
 
-	/**
-	 * Calculate the time this user has spent playing the cure
-	 * @param user_id
-	 */
-	public void setForUser(String user_id, String dataset){
-		List<Card> cards = Card.getAllPlayedCards(user_id, dataset);
-		if(cards==null||cards.size()==0){
-			return;
-		}
+	public void setForUser(String user_id){
+		List<Card> cards = Card.getAllPlayedCards(user_id);
 		Calendar t_prev = Calendar.getInstance();
 		int i = 0; long delta = 0; int c = 0;
 		String prev_board = cards.get(0).getBoard_id();
