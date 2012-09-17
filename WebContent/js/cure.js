@@ -88,42 +88,13 @@ CURE.stats = {
 
 CURE.boardgame = {
   init : function() {
-    //set up accordian for result viewer
-    //// $("#cv_results").accordion({ collapsible: true });
-    $("#endgame").hide();
-    //set up the board
-    if (level != null && CURE.dataset == "mammal") {
-      url = "MetaServer?dataset=mammal&command=getspecificboard&x="
-        + ncols
-        + "&y="
-        + nrows
-        + "&board=mammal_"
-        + level;
-    } else {
-      url = "MetaServer?dataset="+ CURE.dataset +"&command=getboard&x="+ncols+"&y="+nrows+"&ran="+level;
-    }
-    //data will contain the array of cards used to build the board for this game
-    $.getJSON(url, function(data) {
-      cards = data;
-      generateBoard();
-      //add to hand
-      setupHandAddRemove();
-      //set up handlers
-      // info box
-      setupShowInfoHandler();
-      //save hand
-      setupHoldem();
-      //set up opponent
-      setupOpponent();
-    });
-
     var cards = new Array();
         opponent_sort = new Array(),
-        nrows = <%=nrows%>,
-        ncols = <%=ncols%>,
-        level = <%=level%>,
-        showgeneinfo = <%=showgeneinfo%>,
-        max_hand = <%=max_hand%>,
+        nrows = CURE.utilities.getParameterByName("nrows"),
+        ncols = CURE.utilities.getParameterByName("ncols"),
+        level = CURE.utilities.getParameterByName("level"),
+        showgeneinfo = CURE.utilities.getParameterByName("geneinfo") || "1",
+        max_hand = CURE.utilities.getParameterByName("max_hand"),
         p1_score = 0,
         p2_score = 0,
         par_score = 0,
@@ -138,6 +109,55 @@ CURE.boardgame = {
         board_state_clickable = true,
         replay = "<%=full_request%>",
         multiplier = "<%=multiplier%>";
+
+    //set up accordian for result viewer
+    // $("#cv_results").accordion({ collapsible: true });
+    $("#endgame").hide();
+    
+    //set up the board
+    var args = { x : ncols, y : nrows }
+    if (level != null && CURE.dataset == "mammal") {
+      args.dataset = "mammal";
+      args.command = "getspecificboard";
+      args.board = "mammal_"+level;
+    } else {
+      args.dataset = CURE.dataset;
+      args.command = "getboard";
+      args.ran = level;
+    }
+    
+    //data will contain the array of cards used to build the board for this game
+    $.getJSON("MetaServer", args, function(data) {
+      cards = data;
+      generateBoard();
+      //add to hand
+      setupHandAddRemove();
+      //set up handlers
+      // info box
+      setupShowInfoHandler();
+      //save hand
+      setupHoldem();
+      //set up opponent
+      setupOpponent();
+
+      //== MAX NOTES;
+      //game_meta_info set this up
+
+
+    });
+
+ },
+  setupGameMetaInfo : function() {
+    //   <% if(dataset.equals("mammal")){
+    //   String fs = "features that distinguish";
+    //   if(max_hand.equals("1")){
+    //     fs = "feature that distinguishes";
+    //   }
+    // %>
+    // <strong>Pick <b><%=max_hand%></b> <%=fs %> mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...</strong>
+    // <% }else if(dataset.equals("dream_breast_cancer")){ %>
+    // <strong>Pick <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
+    // <% } %>
   },
   moveBarney : function(moveChoice) {
     $("#barney5").removeClass().hide().addClass(moveChoice).show();
@@ -235,7 +255,7 @@ CURE.boardgame = {
             moveClayton("win");
           } else if (p1_score > p2_score) {
             $("#winner").parent().parent().css('background-color', '#FFA500');
-            $("#winner").html(<h1>You beat Barney!</h1>You earned "
+            $("#winner").html("<h1>You beat Barney!</h1>You earned "
               + p1_score+ " * "+ multiplier
               + "= </strong><span style=\"font-size:30px;\">"
               + (p1_score * multiplier)
@@ -362,14 +382,15 @@ CURE.boardgame = {
     $("#board").append(boardhtml);
 
     //set the par - use all the features on the board
-    var url = 'MetaServer?dataset='+ CURE.dataset +'&command=getscore&features=';
-    var features = "";
-    $.each(cards, function(index, value) {
-      features+=value.att_index+",";
-    });
-    url +=features;
+    var f = [];
+    $.each(cards, function(i, v) { f.push(v.att_index); });
+    var args = {
+      dataset : CURE.dataset,
+      command : "getscore",
+      features : f.join(",")
+    }
 
-    $.getJSON(url, function(data) {
+    $.getJSON("MetaServer", args, function(data) {
       var par = data.evaluation.accuracy;
       $("#par_score").html("<strong>"+par+"</strong>");
     });
@@ -381,7 +402,7 @@ CURE.boardgame = {
       //mygene info
       $.getJSON(gene_url, mygene_info_get_gene_callback);
       //ncbi eutils
-      args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47', 'db' : 'gene', 'id' : geneid};
+      var args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47', 'db' : 'gene', 'id' : geneid};
       $.getJSON('http://entrezajax.appspot.com/efetch?callback=?', args, entrezajax_callback);
     } else {
       $("#infobox").empty();
@@ -558,131 +579,91 @@ CURE.boardgame = {
     if(
         ($.inArray(card_index, p1_indexes) == -1) &&
         ($.inArray(card_index, p2_indexes) == -1)
-        ){
-		return card_index;
-	}else{
-		//console.log(" iterated on "+card_index);
-		return getBarneysNextCard();
-	}
-}
- 
+        ) {
+      return card_index;
+    } else {
+      //console.log(" iterated on "+card_index);
+      return getBarneysNextCard();
+    }
+  },
+  addCardToBarney : function() {
+    card_index = getBarneysNextCard();
+    p2_indexes.push(card_index);
+    var handcell = generateHandCell(card_index);
 
-function addCardToBarney(){
-	card_index = getBarneysNextCard();
-	p2_indexes.push(card_index);
-	var handcell = generateHandCell(card_index);
-	
-	window.setTimeout(function() {  
-		$("#player2_hand").fadeTo(500, 1, function (){
-			$("#player2_hand").append(handcell);
-			setupShowInfoHandler();
-		//boardhtml+="<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:0; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-
-			//here
-			/* var $tabs = $("#tabs").tabs();
-			$(".feature_name").on("click", function () {
-				var cell_id = this.id;
-				var name = this.innerText;
-				showgene(cell_id, name);
-				$tabs.tabs('select', 0); //it always goes back to the gene description on an info request
-	  		}); */
-			//
-			
-		});
-	}, 700); 
-	
-	p2_hand.push(cards[card_index]);
-		
-	//hide button from board
-	card_index = "#card_index_"+card_index;
-	
-	$(card_index).parent().fadeTo(500, 0.75, function (){
-		$(card_index).parent().css('background-color', 'transparent');
-		$(card_index).parent().html("");
-	});
-	
-	evaluateHand(p2_hand, "2");
-	//console.log(board_state_clickable);
-}
-
-function saveSelection(card){
-	var geneid = card.unique_id;
-	var saveurl = "MetaServer?dataset="+ CURE.dataset +"&command=playedcard&board_id="+level+"&player_name="+ CURE.username +"&player_id="+ CURE.user_id +"&geneid="+geneid;
-	$.getJSON(saveurl, function(data) {
-		//console.log("saved a card");
-		//console.log(saveurl);
-	});
-}
-
-function setupHandAddRemove(){
-	$(".select_card_button").on("click", function () {
-		if(board_state_clickable){
-		if(p1_hand){
-			hand_size = p1_hand.length;
-		}else{
-			hand_size = 0;
-		}
-		if(hand_size < max_hand){
-			var cell_id = this.id.replace("card_index_", "");
-			p1_indexes.push(cell_id);			
-			var handcell = generateHandCell(cell_id);
-			$("#player1_hand").fadeTo(1000, 1, function (){
-				$("#player1_hand").append(handcell);
-				setupShowInfoHandler();
-			});
-			p1_hand.push(cards[cell_id]);
-			saveSelection(cards[cell_id]);
-			evaluateHand(p1_hand, 1);
-			//hide button from board
-			$(this).parent().fadeTo(500, 0.75, function (){
-				$(this).css('background-color', 'transparent');
-				$(this).html("");
-				//add a card to barney's hand
-				board_state_clickable = false;
-				addCardToBarney();
-			});
-					
-		}else{
-			alert("Sorry, you can only have 5 cards in your hand in this game."); 
-		}
-		}else{
-			alert("Wait your turn!"); 
-		}
-	  });
-}
-
-function createTooltip(event){       
-	
+    window.setTimeout(function() {
+      $("#player2_hand").fadeTo(500, 1, function (){
+        $("#player2_hand").append(handcell);
+        setupShowInfoHandler();
+      });
+    }, 700);
+    p2_hand.push(cards[card_index]);
+    
+    //hide button from board
+    card_index = "#card_index_"+card_index;
+    $(card_index).parent().fadeTo(500, 0.75, function (){
+      $(card_index).parent().css('background-color', 'transparent');
+      $(card_index).parent().html("");
+    });
+    evaluateHand(p2_hand, "2");
+    //console.log(board_state_clickable);
+  },
+  saveSelection : function(card) {
+    var geneid = card.unique_id;
+    var saveurl = "MetaServer?dataset="+ CURE.dataset +"&command=playedcard&board_id="+level+"&player_name="+ CURE.username +"&player_id="+ CURE.user_id +"&geneid="+geneid;
+    $.getJSON(saveurl, function(data) {
+      //console.log("saved a card");
+      //console.log(saveurl);
+    });
+  },
+  setupHandAddRemove : function() {
+    $(".select_card_button").on("click", function () {
+      if(board_state_clickable) {
+        if(p1_hand) {
+          hand_size = p1_hand.length;
+        } else {
+          hand_size = 0;
+        }
+        if(hand_size < max_hand) {
+          var cell_id = this.id.replace("card_index_", "");
+          p1_indexes.push(cell_id);
+          var handcell = generateHandCell(cell_id);
+          $("#player1_hand").fadeTo(1000, 1, function () {
+            $("#player1_hand").append(handcell);
+            setupShowInfoHandler();
+          });
+          p1_hand.push(cards[cell_id]);
+          saveSelection(cards[cell_id]);
+          evaluateHand(p1_hand, 1);
+          //hide button from board
+          $(this).parent().fadeTo(500, 0.75, function () {
+            $(this).css('background-color', 'transparent');
+            $(this).html("");
+            //add a card to barney's hand
+            board_state_clickable = false;
+            addCardToBarney();
+          });
+      } else {
+        alert("Sorry, you can only have 5 cards in your hand in this game.");
+      }
+      } else {
+        alert("Wait your turn!");
+      }
+    });
+  },
+  createTooltip : function(event) {
     $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
-	positionTooltip(event);        
-};
-
-function positionTooltip(event){
+    positionTooltip(event);
+  },
+  positionTooltip : function(event) {
     var tPosX = event.pageX - 10;
     var tPosY = event.pageY - 100;
     $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
-    //console.log("moused over 3");
-};
-
-function hideTooltip(event){       
-	$('div.tooltippy').hide();
-	positionTooltip(event);        
-};
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-  
+  },
+  hideTooltip : function(event){
+    $('div.tooltippy').hide();
+    positionTooltip(event);
+  }
 }
 
 CURE.login = {
@@ -719,8 +700,13 @@ CURE.login = {
 
 CURE.boardroom = {
   init: function() {
-    var url = "/cure/SocialServer?command=boardroom&username="+CURE.username+"&dataset="+CURE.dataset;
-    $.getJSON(url, function(data) {
+    var args = {
+      command : "boardroom",
+      username : CURE.username,
+      //this will become datatype when serverside is fixed
+      phenotype : CURE.dataset
+    }
+    $.getJSON("/cure/SocialServer", args, function(data) {
       CURE.boardroom.drawGrid("#boards", data, 45);
     });
   },
