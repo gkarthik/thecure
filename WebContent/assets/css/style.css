@@ -137,9 +137,13 @@ body div.container div#login form input#loginSubmit:active {
 
 body div.container div#login div#newuserlink,
 body div.container div#login div#iforgot {
-float: left;
-margin: 10px;
-width: 180px;
+  float: left;
+  margin: 10px;
+  width: 180px;
+}
+
+div#login div#newuserlink a {
+  font-size: 18px;
 }
 
 p.sub {
