@@ -38,22 +38,13 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
     <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
     <link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
 
-    <style>
-    body {
-      padding-top: 60px;  
-      /* 60px to make the container go all the way to the bottom of the topbar */
-    }
-    </style>
-
-<title>The Cure: <%=title %></title>
+    <title>The Cure: <%=title %></title>
 <%
 	String ran = request.getParameter("level");
 	if (ran == null) {		
 		ran = ""+(int)Math.rint(Math.random()*1000);
 	}
 %>
-
-
 </head>
 <body>
   <div class="navbar navbar-fixed-top">
@@ -77,6 +68,8 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
   </div>
 
   <div id="boardgame">
+    <div id="game_meta_info"></div>
+
     <div id="player_2_area">
       <div id="player2_title_area">
         <h3>Barney's hand</h3>
@@ -85,8 +78,8 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
       <div id="player2">
         <div id="hand_info_box_2">
           <div id="player_box_2">
-            <table border='0'>
-              <tr id="player2_hand" align='center' style='height: 75px; '></tr>
+            <table>
+              <tr id="player2_hand"></tr>
             </table>
           </div>
         </div>
@@ -94,7 +87,7 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
       <div id="game_score_box_2">
         <img id="barney5" src="images/barney.png"/>
-          <strong>Barney's score</strong><br/><br/>
+          <strong>Barney's score</strong>
           <strong id="game_score_2">0</strong>
       </div>
 
@@ -141,15 +134,15 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
     <div id="player_1_area">
 
-      <div id="player1_title_area" style="left: 30px; position: absolute; top: 560px;">
+      <div id="player1_title_area">
         <h3>Your hand</h3>
       </div>
 
       <div id="player1">
         <div id="hand_info_box_1">
           <div id="player_box_1">
-            <table border='0'>
-              <tr id="player1_hand" align='center' style='height: 75px;'></tr>
+            <table>
+              <tr id="player1_hand"></tr>
             </table>
           </div>
         </div>
@@ -160,16 +153,7 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
         <h4>Your score</h4>
         <h1 id="game_score_1">0</h1>
       </div>
-
-
-
     </div>
-
-
-
-    <div id="game_meta_info"></div>
-
-
   </div>
 
   <jsp:include page="footer.jsp" />
@@ -183,5 +167,3 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
 </body>
 </html>
-
-
