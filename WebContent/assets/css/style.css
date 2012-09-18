@@ -443,6 +443,11 @@ div#footer iframe.twitter-share-button {
   fill: none;
 }
 
+#boardgame {
+  margin: 60px auto;
+  width: 960px;
+}
+
 #boardgame #game_area {
   overflow: hidden
 }
@@ -454,7 +459,7 @@ div#footer iframe.twitter-share-button {
   float: left;
 }
 
-#boardgame #game_area #board div.gamecard {
+#boardgame #game_area #board div.gamecard.active {
   position: relative;
   float: left;
   margin: 6px;
@@ -464,7 +469,7 @@ div#footer iframe.twitter-share-button {
   background-color: rgba(0,0,255,.2);
 }
 
-#boardgame #game_area #board div.gamecard span.help_label {
+#boardgame #game_area #board div.gamecard.active span.help_label {
   position: absolute;
   top: 0px;
   right: 0px;
