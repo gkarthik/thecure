@@ -50,11 +50,6 @@
             <div id="contact" style="display: none;">
             <p>Please feel free to get in touch with us via email, twitter, messenger pigeon etc.  See our details on the <a href="contact.jsp">contact page</a>.
             </div>
-            <h3 class="twitterwidget">Game Updates</h3>
-             <div id="twitterwidget" style="display: none;">
-				<a class="twitter-timeline" data-dnt=true href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
-				<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>              	
-            </div>            
             <h3 class="faq">FAQ</h3>
             <div id="faq" style="display: none;">
               <ol>
@@ -76,12 +71,16 @@
             <div id="chart"></div>
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
-
             </div>
 
             <div id="leaderboard">
               <h3>Top Players</h3>
               <ol></ol>
+            </div>
+
+            <div id="twitterUserFeed">
+              <a class="twitter-timeline" href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
+              <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
             </div>
 
           </div>
