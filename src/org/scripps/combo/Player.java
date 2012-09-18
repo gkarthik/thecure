@@ -44,12 +44,17 @@ public class Player {
 	}
 
 	
-	public static void describePlayers(){
+	public static void describePlayers(boolean all_hands){
 		List<Player> players = Player.getAllPlayers();
 		Map<String, Player> name_player = Player.playerListToMap(players);
 		GameLog log = new GameLog();
-		List<Hand> wm = Hand.getAllHands(false); //Hand.getTheFirstHandPerPlayerPerBoard(false); //
-		//remove mammal
+		List<Hand> wm = null;
+		if(all_hands){
+			wm = Hand.getAllHands(false); // //
+		}else{//just get the first hand per player per board
+			wm = Hand.getTheFirstHandPerPlayerPerBoard(false);
+		}
+			//remove mammal
 		List<Hand> hands = new ArrayList<Hand>();
 		for(Hand hand : wm){
 			if(hand.getBoard_id()>4){
