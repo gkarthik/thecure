@@ -94,10 +94,9 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
     </div>
 
     <div id="game_area">
-      <h2>Pick a feature</h2>
       <div id="board"></div>
 
-      <div id="infoboxes">
+      <div id="help_area">
         <div id="tabs">
           <ul>
             <li class="gene_description">Gene</li>
@@ -107,24 +106,27 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
             <li class="p2_current_tree">Barney's</li>
           </ul>
         </div>
-        <div class="infobox" id="gene_description">
-          <p>Gene description</p>
-        </div>
-        <div class="infobox" id="ontology" style="display: none;">
-          <p>Gene Ontology terms</p>
-        </div>
-        <div class="infobox" id="rifs" style="display: none;">
-          <p>Gene References into Function</p>
-        </div>
-        <div class="infobox" id="p1_current_tree" style="display: none;">
-          <p>Your decision tree will be displayed here.</p>
-        </div>
-        <div class="infobox" id="p2_current_tree" style="display: none;">
-          <p>Barney's decision tree will be displayed here.</p>
+
+        <div id="infoboxes">
+           <div class="infobox" id="gene_description">
+            <p>Gene description</p>
+          </div>
+          <div class="infobox" id="ontology" style="display: none;">
+            <p>Gene Ontology terms</p>
+          </div>
+          <div class="infobox" id="rifs" style="display: none;">
+            <p>Gene References into Function</p>
+          </div>
+          <div class="infobox" id="p1_current_tree" style="display: none;">
+            <p>Your decision tree will be displayed here.</p>
+          </div>
+          <div class="infobox" id="p2_current_tree" style="display: none;">
+            <p>Barney's decision tree will be displayed here.</p>
+          </div>
         </div>
       </div>
 
-      <div id="endgame">
+      <div id="endgame" style="display: none;">
         <h1>Round Over</h1>
         <div id="winner"></div><br>
         <input class="save_hand" id="holdem_button" type="submit" value="Try another board" />
@@ -150,10 +152,11 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
       <div id="game_score_box_1">
         <img id="clayton1" src="images/200px-Clayton.png"/>
-        <h4>Your score</h4>
-        <h1 id="game_score_1">0</h1>
+        <strong>Your score</strong>
+        <strong id="game_score_1">0</strong>
       </div>
     </div>
+
   </div>
 
   <jsp:include page="footer.jsp" />
