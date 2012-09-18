@@ -31,6 +31,9 @@ CURE.load = function() {
     case "boardroom":
       CURE.boardroom.init();
       break;
+    case "boardgame":
+      CURE.boardgame.init();
+      break;
     case "stats":
       CURE.stats.init();
       break;
@@ -129,16 +132,18 @@ CURE.boardgame = {
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
       cards = data;
-      generateBoard();
+      CURE.boardgame.generateBoard();
       //add to hand
-      setupHandAddRemove();
+      CURE.boardgame.setupHandAddRemove();
+      
       //set up handlers
-      // info box
-      setupShowInfoHandler();
+      //-- Mouse hover events for the info box
+      CURE.boardgame.setupShowInfoHandler();
+
       //save hand
-      setupHoldem();
+      CURE.boardgame.setupHoldem();
       //set up opponent
-      setupOpponent();
+      CURE.boardgame.setupOpponent();
 
       //== MAX NOTES;
       //game_meta_info set this up
@@ -200,7 +205,7 @@ CURE.boardgame = {
       if (player == "1") {
         //draw the current tree
         $("#p1_current_tree").empty();
-        drawTree(data, treewidth, treeheight, "#p1_current_tree");
+        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p1_current_tree");
         //sometimes randomness in cross-validation gets you a different score even without producing
         //any tree at all.
         if (data.max_depth < 2) {
@@ -215,7 +220,7 @@ CURE.boardgame = {
       } else if (player == "2") {
         //draw the current tree
         $("#p2_current_tree").empty();
-        drawTree(data, treewidth, treeheight, "#p2_current_tree");
+        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p2_current_tree");
         //same as above
         if (data.max_depth < 2) {
           p2_score = 50;
@@ -229,9 +234,9 @@ CURE.boardgame = {
         $("#game_score_2").text(p2_score);
         board_state_clickable = true;
         if (p2_hand.length != max_hand && p1_score<p2_score&&p1_score>0) {
-          moveBarney("correct"); //incorrect win lose
+          CURE.boardgame.moveBarney("correct"); //incorrect win lose
         } else if (p1_score > p2_score) {
-          moveClayton("correct"); //incorrect win lose
+          CURE.boardgame.moveClayton("correct"); //incorrect win lose
         }
 
       }
@@ -244,15 +249,15 @@ CURE.boardgame = {
           if (p1_score<p2_score&&p1_score>0) {
             $("#winner").text("Sorry, you lost this hand. ");
             $tabs.tabs('select', 4);
-            moveBarney("win"); //incorrect win lose
+            CURE.boardgame.moveBarney("win"); //incorrect win lose
             $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
           } else if (p1_score > p2_score && CURE.dataset=='mammal' && level==3) {
             $("#winner").parent().parent().css('background-color', 'pink');
             $("#winner").html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
             $("#holdem_button").hide();
             $tabs.tabs('select', 3);
-            moveBarney("lose"); //incorrect win lose
-            moveClayton("win");
+            CURE.boardgame.moveBarney("lose"); //incorrect win lose
+            CURE.boardgame.moveClayton("win");
           } else if (p1_score > p2_score) {
             $("#winner").parent().parent().css('background-color', '#FFA500');
             $("#winner").html("<h1>You beat Barney!</h1>You earned "
@@ -261,13 +266,13 @@ CURE.boardgame = {
               + (p1_score * multiplier)
               + "</span> points!");
             $tabs.tabs('select', 3);
-            moveBarney("lose"); //incorrect win lose
-            moveClayton("win");
+            CURE.boardgame.moveBarney("lose"); //incorrect win lose
+            CURE.boardgame.moveClayton("win");
           } else if (p1_score == p2_score) {
             $("#winner").text("You tied Barney! ");
             $tabs.tabs('select', 3);
-            moveBarney("win"); //incorrect win lose
-            moveClayton("win");
+            CURE.boardgame.moveBarney("win"); //incorrect win lose
+            CURE.boardgame.moveClayton("win");
             $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
           }
           $("#board").hide();
@@ -326,7 +331,7 @@ CURE.boardgame = {
     var boardhtml = "",
         displayname = cards[cardindex].name,
         power = cards[cardindex].power,
-        cellstyle = getStyleByScore(power);
+        cellstyle = CURE.boardgame.getStyleByScore(power);
     if (displayname == null || displayname.length == 0) {
       displayname = cards[cardindex].att_name;
     }
@@ -344,7 +349,7 @@ CURE.boardgame = {
     var boardhtml = "";
     var displayname = cards[cardindex].name;
     var power = cards[cardindex].power;
-    var cellstyle = getStyleByScore(power);
+    var cellstyle = CURE.boardgame.getStyleByScore(power);
     if (displayname == null || displayname.length == 0) {
       displayname = cards[cardindex].att_name;
     }
@@ -372,7 +377,7 @@ CURE.boardgame = {
       boardhtml += "<tr align=\"center\" style=\"height: 75px\";>";
       for ( var c = 0; c < ncols; c++) {
         cardindex++;
-        var boardcell = generateBoardCell(cardindex);
+        var boardcell = CURE.boardgame.generateBoardCell(cardindex);
         boardhtml += boardcell;
       }
       boardhtml += "</tr>";
@@ -497,14 +502,25 @@ CURE.boardgame = {
     }
   },
   setupShowInfoHandler : function() {
-    //console.log("setting showInfoHandlers");
-    var $tabs = $("#tabs").tabs();
-    //reset and rebind (#todo - this unbind hack is here because of the way cards are added to hands, should improve that so we don't hav to rebind very element on the baord..)
+    console.log("show info handler");
+    //-- Handles switching between tab views
+    $.each( $("#infoboxes #tabs ul li") , function(i,v) {
+      $(v).toggle(function() {
+        var selEl = $(this).attr('class').split(' ')[0];
+        $("#"+selEl).slideDown();
+      }, function() {
+        var selEl = $(this).attr('class').split(' ')[0];
+        $("#"+selEl).slideUp();
+      })
+    });
+ 
+
+    //-- Handles updating the tabs with the gene of interest
     $(".feature_name").unbind("click");
     $(".feature_name").on("click", function () {
       var cell_id = this.id;
       var name = this.innerText;
-      showgene(cell_id, name);
+      CURE.boardgame.showgene(cell_id, name);
       // $tabs.tabs('select', 0); //it always goes back to the gene description on an info request
     });
   },
@@ -561,7 +577,7 @@ CURE.boardgame = {
     }
     var upper = lower+10;
 
-    sorted_index = randomXToY(lower,upper);
+    sorted_index = CURE.boardgame.randomXToY(lower,upper);
     //console.log("sorted index "+sorted_index);
     card_index = opponent_sort[sorted_index].board_index+"";
     if(
@@ -570,11 +586,11 @@ CURE.boardgame = {
       ) {
         return card_index;
     } else{
-      return getBarneysNextCard();
+      return CURE.boardgame.getBarneysNextCard();
     }
   },
   getBarneysNextCard : function(){
-    sorted_index = randomXToY(0, cards.length - 1);
+    sorted_index = CURE.boardgame.randomXToY(0, cards.length - 1);
     card_index = opponent_sort[sorted_index].board_index+"";
     if(
         ($.inArray(card_index, p1_indexes) == -1) &&
@@ -583,13 +599,13 @@ CURE.boardgame = {
       return card_index;
     } else {
       //console.log(" iterated on "+card_index);
-      return getBarneysNextCard();
+      return CURE.boardgame.getBarneysNextCard();
     }
   },
   addCardToBarney : function() {
-    card_index = getBarneysNextCard();
+    card_index = CURE.boardgame.getBarneysNextCard();
     p2_indexes.push(card_index);
-    var handcell = generateHandCell(card_index);
+    var handcell = CURE.boardgame.generateHandCell(card_index);
 
     window.setTimeout(function() {
       $("#player2_hand").fadeTo(500, 1, function (){
@@ -605,7 +621,7 @@ CURE.boardgame = {
       $(card_index).parent().css('background-color', 'transparent');
       $(card_index).parent().html("");
     });
-    evaluateHand(p2_hand, "2");
+    CURE.boardgame.evaluateHand(p2_hand, "2");
     //console.log(board_state_clickable);
   },
   saveSelection : function(card) {
@@ -627,21 +643,21 @@ CURE.boardgame = {
         if(hand_size < max_hand) {
           var cell_id = this.id.replace("card_index_", "");
           p1_indexes.push(cell_id);
-          var handcell = generateHandCell(cell_id);
+          var handcell = CURE.boardgame.generateHandCell(cell_id);
           $("#player1_hand").fadeTo(1000, 1, function () {
             $("#player1_hand").append(handcell);
-            setupShowInfoHandler();
+            CURE.boardgame.setupShowInfoHandler();
           });
           p1_hand.push(cards[cell_id]);
-          saveSelection(cards[cell_id]);
-          evaluateHand(p1_hand, 1);
+          CURE.boardgame.saveSelection(cards[cell_id]);
+          CURE.boardgame.evaluateHand(p1_hand, 1);
           //hide button from board
           $(this).parent().fadeTo(500, 0.75, function () {
             $(this).css('background-color', 'transparent');
             $(this).html("");
             //add a card to barney's hand
             board_state_clickable = false;
-            addCardToBarney();
+            CURE.boardgame.addCardToBarney();
           });
       } else {
         alert("Sorry, you can only have 5 cards in your hand in this game.");
@@ -653,7 +669,7 @@ CURE.boardgame = {
   },
   createTooltip : function(event) {
     $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
-    positionTooltip(event);
+    CURE.boardgame.positionTooltip(event);
   },
   positionTooltip : function(event) {
     var tPosX = event.pageX - 10;
@@ -662,7 +678,7 @@ CURE.boardgame = {
   },
   hideTooltip : function(event){
     $('div.tooltippy').hide();
-    positionTooltip(event);
+    CURE.boardgame.positionTooltip(event);
   }
 }
 
