@@ -76,12 +76,7 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
       </div>
 
       <div id="player2">
-        <div id="hand_info_box_2">
-          <div id="player_box_2">
-            <table>
-              <tr id="player2_hand"></tr>
-            </table>
-          </div>
+        <div id="player2_hand">
         </div>
       </div>
 
@@ -141,12 +136,7 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
       </div>
 
       <div id="player1">
-        <div id="hand_info_box_1">
-          <div id="player_box_1">
-            <table>
-              <tr id="player1_hand"></tr>
-            </table>
-          </div>
+        <div id="player1_hand">
         </div>
       </div>
 
