@@ -38,7 +38,9 @@
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
+
             <div id="chart1"></div>
+
           </div>
 
           <div class="row">
