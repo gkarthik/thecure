@@ -145,8 +145,6 @@ public class Annotation {
 				a.setVocabulary(rslt.getString("vocabulary"));
 				annos.add(a);
 			}
-			rslt.close();
-			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -174,8 +172,6 @@ public class Annotation {
 				a.setVocabulary(rslt.getString("vocabulary"));
 				annos.add(a);
 			}
-			rslt.close();
-			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
