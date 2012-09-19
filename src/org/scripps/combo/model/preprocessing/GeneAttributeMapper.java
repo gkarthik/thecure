@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo.weka.preprocessing;
+package org.scripps.combo.model.preprocessing;
 
 import java.io.BufferedReader;
 import java.io.File;

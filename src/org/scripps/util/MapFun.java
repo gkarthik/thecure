@@ -152,4 +152,21 @@ public class MapFun {
 		}
 		return map;
 	}
+	
+	public static String list2string(List<String> things, String delimiter){
+		String list = "";
+		for(String thing : things){
+			list+=thing+delimiter;
+		}
+		return list;
+	}
+	
+	public static List<String> string2list(String del, String delimiter){
+		List<String> l = new ArrayList<String>();
+		String[] split = del.split(delimiter);
+		for(String s : split){
+			l.add(s);
+		}
+		return l;
+	}
 }

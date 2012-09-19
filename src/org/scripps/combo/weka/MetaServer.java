@@ -26,10 +26,10 @@ import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.scripps.combo.Board;
-import org.scripps.combo.Card;
-import org.scripps.combo.Hand;
-import org.scripps.combo.Player;
+import org.scripps.combo.model.Board;
+import org.scripps.combo.model.Card;
+import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;

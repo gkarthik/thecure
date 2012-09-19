@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo;
+package org.scripps.combo.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +17,8 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
- *create table hand (id int(10) NOT NULL AUTO_INCREMENT, player_name varchar(50), ip varchar(25), score int, cv_accuracy int, features varchar(100), board_id int, primary key (id));
- */
+ * create table board (id int(10) NOT NULL AUTO_INCREMENT, dataset varchar(50) not null, n_players int default 0, n_wins int default 0, avg_score float default 0, max_score float default 0, base_score float default 0, created Date, updated timestamp, primary key (id));
+ **/
 public class Hand {
 	int id;
 	String player_name;

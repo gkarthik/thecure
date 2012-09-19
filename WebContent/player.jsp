@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
-<%@ page import="org.scripps.combo.Player"%>	
+<%@ page import="org.scripps.combo.model.Player"%>	
 <%@ page import="org.scripps.combo.GameLog"%>    
 <%
 String username = request.getParameter("username");

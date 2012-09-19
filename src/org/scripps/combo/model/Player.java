@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo;
+package org.scripps.combo.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.scripps.combo.GameLog;
+import org.scripps.combo.TimeCounter;
+import org.scripps.combo.GameLog.high_score;
 import org.scripps.util.JdbcConnection;
 
 /**

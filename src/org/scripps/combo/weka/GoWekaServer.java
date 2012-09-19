@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.scripps.combo.Hand;
-import org.scripps.combo.Player;
+import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Player;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.rules.JRip;

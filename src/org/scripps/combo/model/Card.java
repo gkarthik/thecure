@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo;
+package org.scripps.combo.model;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
