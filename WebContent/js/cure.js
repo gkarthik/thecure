@@ -139,9 +139,6 @@ CURE.boardgame = {
       game.setupInfoToggle();
 
       //save hand
-      game.setupHoldem();
-      //set up opponent
-      game.setupOpponent();
 
       //== MAX NOTES;
       //game_meta_info set this up
@@ -185,9 +182,9 @@ CURE.boardgame = {
           game.evaluateHand(game.p1_hand, 1);
 
           //hide button from board
-          //clicked_card.removeClass("active").addClass("selected");
-          //game.board_state_clickable = false;
-          //game.addCardToBarney();
+          clicked_card.removeClass("active").addClass("selected").unbind("click");
+          game.board_state_clickable = false;
+          game.addCardToBarney();
         } else {  alert("Sorry, you can only have 5 cards in your hand in this game."); }
       } else { alert("Wait your turn!"); }
     })
@@ -265,7 +262,7 @@ CURE.boardgame = {
 
       //-- If it's the last hand-- save out & display the results
       if ( game.p2_hand.length == game.max_hand) {
-        game.saveHand();
+        //game.saveHand();
         window.setTimeout( game.showTheResults(), 1500 );
       }
     });
@@ -292,7 +289,7 @@ CURE.boardgame = {
 
     } else if ( game.p1_score > game.p2_score ) {
 
-      targetEl.html("<h1>You beat Barney!</h1>You earned "
+      winnerEl.html("<h1>You beat Barney!</h1>You earned "
         + game.p1_score + " * " + game.multiplier
         + "= </strong><span style=\"font-size:30px;\">"
         + ( game.p1_score * game.multiplier )
@@ -310,6 +307,34 @@ CURE.boardgame = {
     }
     $("#board").hide();
     $("#endgame").show();
+  },
+  addCardToBarney : function() {
+    var game = CURE.boardgame;
+    var card_obj = game.getBarneysNextCard();
+
+    game.p2_hand.push(card_obj);
+    var playedCard = game.returnCard(card_obj);
+    $("#player2_hand").append( playedCard );
+
+    var selected_card = $("#boardgame #game_area #board div#card_"+card_obj.unique_id);
+    selected_card.removeClass("active").addClass("selected").unbind("click");
+
+    game.evaluateHand( game.p2_hand, "2");
+  },
+  getBarneysNextCard : function(){
+    var game = CURE.boardgame;
+    var index = Math.floor( Math.random() * game.cards.length )
+    //var card_obj = _.find(game.cards, function(obj){ return obj.board_index == index; });
+    var card_obj = game.cards[index];
+    //-- Check to see if the randomly selected card is already in 
+    //a player's hand
+    var used_cards = _.union( _(game.p1_hand).pluck('unique_id'), _(game.p2_hand).pluck('unique_id') )
+    
+    if( _(used_cards).include( card_obj.unique_id ) ) {
+      return game.getBarneysNextCard();
+    } else {
+      return card_obj;
+    }
   },
   setupInfoToggle : function() {
     //-- Handles switching between tab views
@@ -355,19 +380,6 @@ CURE.boardgame = {
     $("#clayton1").removeClass().hide().addClass(moveChoice).show();
   },
 
-
-  setupOpponent : function() {
-    opponent_sort = CURE.boardgame.cards.slice(0);
-    //maintain the indexes to the board
-    $.each(opponent_sort, function(index, value) {
-      opponent_sort[index].board_index = index;
-    });
-    //rank by the power value - now ascending
-    opponent_sort.sort(function(a, b) {
-      return a.power - b.power;
-    });
-  },
-
   saveHand : function() {
     par_score = p1_score - par;
     var win = "0";
@@ -379,7 +391,7 @@ CURE.boardgame = {
     if( CURE.dataset == 'dream_breast_cancer' ) {
       geneids = "";
       feature_names = "";
-    console.log(game.cards);
+    console.log(game.cads);
       $.each(p1_hand, function(index, value) {
         geneids += value.unique_id + ",";
         feature_names +=  value.unique_id+":"+value.att_name + ":" + value.name + "|";
@@ -404,86 +416,6 @@ CURE.boardgame = {
       //console.log("saved a hand");
     });
   },
-  setupHoldem : function(){
-    //add the save handler
-    $("#holdem_button").on("click", function () {
-      window.location.replace("<%=mosaic_url%>");
-    });
-  },
-  randomXToY : function(minVal,maxVal,floatVal) {
-    //function to get random number upto m
-    var randVal = minVal+(Math.random()*(maxVal-minVal));
-    return typeof floatVal=='undefined'?Math.round(randVal):randVal.toFixed(floatVal);
-  },
-  getBarneysNextCardGettingHarder : function() {
-    var lower = level;
-    if((lower+10)>=CURE.boardgame.cards.length) {
-      lower = CURE.boardgame.cards.length - 11;
-    }
-    var upper = lower+10;
-
-    sorted_index = CURE.boardgame.randomXToY(lower,upper);
-    //console.log("sorted index "+sorted_index);
-    card_index = opponent_sort[sorted_index].board_index+"";
-    if(
-        ( $.inArray(card_index, p1_indexes) == -1 ) &&
-        ( $.inArray(card_index, p2_indexes) == -1 )
-      ) {
-        return card_index;
-    } else{
-      return CURE.boardgame.getBarneysNextCard();
-    }
-  },
-  getBarneysNextCard : function(){
-    sorted_index = CURE.boardgame.randomXToY(0, CURE.boardgame.cards.length - 1);
-    card_index = opponent_sort[sorted_index].board_index+"";
-    if(
-        ($.inArray(card_index, p1_indexes) == -1) &&
-        ($.inArray(card_index, p2_indexes) == -1)
-        ) {
-      return card_index;
-    } else {
-      //console.log(" iterated on "+card_index);
-      return CURE.boardgame.getBarneysNextCard();
-    }
-  },
-  addCardToBarney : function() {
-    card_index = CURE.boardgame.getBarneysNextCard();
-    p2_indexes.push(card_index);
-    var handcell = CURE.boardgame.generateHandCell(card_index);
-
-    window.setTimeout(function() {
-      $("#player2_hand").fadeTo(500, 1, function (){
-        $("#player2_hand").append(handcell);
-        setupShowInfoHandler();
-      });
-    }, 700);
-    p2_hand.push(CURE.boardgame.cards[card_index]);
-    
-    //hide button from board
-    card_index = "#card_index_"+card_index;
-    $(card_index).parent().fadeTo(500, 0.75, function (){
-      $(card_index).parent().css('background-color', 'transparent');
-      $(card_index).parent().html("");
-    });
-    CURE.boardgame.evaluateHand(p2_hand, "2");
-    //console.log(board_state_clickable);
-  },
-
-
-  createTooltip : function(event) {
-    $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
-    CURE.boardgame.positionTooltip(event);
-  },
-  positionTooltip : function(event) {
-    var tPosX = event.pageX - 10;
-    var tPosY = event.pageY - 100;
-    $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
-  },
-  hideTooltip : function(event){
-    $('div.tooltippy').hide();
-    CURE.boardgame.positionTooltip(event);
-  }
 }
 
 CURE.login = {
