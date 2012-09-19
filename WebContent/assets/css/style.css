@@ -477,7 +477,7 @@ div#footer iframe.twitter-share-button {
   cursor: default;
 }
 
-#boardgame #game_area #board div.gamecard.active span.help_label {
+#boardgame #game_area #board div.gamecard span.help_label {
   position: absolute;
   top: 0px;
   right: 0px;
@@ -508,4 +508,17 @@ div#footer iframe.twitter-share-button {
   padding: 6px;
   margin: 5px;
   background-color: rgba(0,255,0,.2);
+}
+
+#boardgame img#barney5 {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+#boardgame img#clayton1 {
+  position: relative;
+  width: 50px;
+  height: 50px;
+
 }
