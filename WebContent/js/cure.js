@@ -299,11 +299,13 @@ CURE.boardgame = {
       game.moveClayton("win");
 
     } else if (p1_score == p2_score) {
+
       winnerEl.text("You tied Barney! ");
       //$tabs.tabs('select', 3);
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
       targetEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
+
     }
     $("#board").hide();
     $("#endgame").show();
