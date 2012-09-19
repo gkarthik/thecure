@@ -240,86 +240,76 @@ CURE.boardgame = {
           treewidth = 420;
       if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
 
-      if (player == "1") {
-        //draw the current tree
-        $("#p1_current_tree").empty();
-        utils.drawTree(data, treewidth, treeheight, "#p1_current_tree");
-
-        //sometimes randomness in cross-validation gets you a different score even without producing
-        //any tree at all.
-        if (data.max_depth < 2) {
-          game.p1_score = 50;
-        } else {
-          game.p1_score = data.evaluation.accuracy;
-        }
-        if ( game.p1_hand.length == game.max_hand ) {
-          $("#player1_j48_score").html('<strong> score ' + p1_score + '</strong>');
-        }
-        $("#game_score_1").text(p1_score);
-      } else if (player == "2") {
-        //draw the current tree
-        $("#p2_current_tree").empty();
-        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p2_current_tree");
-        //same as above
-        if (data.max_depth < 2) {
-          p2_score = 50;
-        } else {
-          p2_score = data.evaluation.accuracy;
-        }
-        $("#player2_j48_score").html('<strong> score '+ p2_score +'</strong>');
-        if (p2_hand.length == max_hand) {
-          $("#player2_j48_score").html('<strong> score '+ p2_score +'</strong>');
-        }
-        $("#game_score_2").text(p2_score);
-        board_state_clickable = true;
-        if (p2_hand.length != max_hand && p1_score<p2_score&&p1_score>0) {
-          CURE.boardgame.moveBarney("correct"); //incorrect win lose
-        } else if (p1_score > p2_score) {
-          CURE.boardgame.moveClayton("correct"); //incorrect win lose
-        }
-
+      //draw the current tree
+      $("#p"+ player +"_current_tree").empty();
+      utils.drawTree(data, treewidth, treeheight, "#p"+ player +"_current_tree");
+      //sometimes randomness in cross-validation gets you a different score even without producing
+      //any tree at all.
+      if (data.max_depth < 2) {
+        game["p"+ player +"_score"] = 50;
+      } else {
+        game["p"+ player +"_score"] = data.evaluation.accuracy;
       }
-      //if its the last hand, show the results
-      if (p2_hand.length == max_hand) {
-        saveHand();
-        //show
-        window.setTimeout(function() {
-          var $tabs = $("#tabs").tabs();
-          if (p1_score<p2_score&&p1_score>0) {
-            $("#winner").text("Sorry, you lost this hand. ");
-            $tabs.tabs('select', 4);
-            CURE.boardgame.moveBarney("win"); //incorrect win lose
-            $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
-          } else if (p1_score > p2_score && CURE.dataset=='mammal' && level==3) {
-            $("#winner").parent().parent().css('background-color', 'pink');
-            $("#winner").html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
-            $("#holdem_button").hide();
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("lose"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-          } else if (p1_score > p2_score) {
-            $("#winner").parent().parent().css('background-color', '#FFA500');
-            $("#winner").html("<h1>You beat Barney!</h1>You earned "
-              + p1_score+ " * "+ multiplier
-              + "= </strong><span style=\"font-size:30px;\">"
-              + (p1_score * multiplier)
-              + "</span> points!");
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("lose"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-          } else if (p1_score == p2_score) {
-            $("#winner").text("You tied Barney! ");
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("win"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-            $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
-          }
-          $("#board").hide();
-          $("#endgame").show();
-        }, 1500);
+      $("strong#game_score_"+player).html( game["p"+ player +"_score"] );
+
+      if (player == "2") {
+        game.board_state_clickable = true;
+        if (  game.p2_hand.length != game.max_hand &&
+              game.p1_score < game.p2_score &&
+              game.p1_score > 0 ) {
+          game.moveBarney("correct"); //incorrect win lose
+        } else if ( game.p1_score > game.p2_score ) {
+          game.moveClayton("correct"); //incorrect win lose
+        }
+      }
+
+      //-- If it's the last hand-- save out & display the results
+      if ( game.p2_hand.length == game.max_hand) {
+        game.saveHand();
+        window.setTimeout( game.showTheResults(), 1500 );
       }
     });
+  },
+  showTheResults : function() {
+    var game = CURE.boardgame,
+        winnerEl = $("#endgame #winner");
+    if (  game.p1_score < game.p2_score &&
+          game.p1_score > 0 ) {
+      winnerEl.text("Sorry, you lost this hand. ");
+      //$tabs.tabs('select', 4);
+      game.moveBarney("win"); //incorrect win lose
+      winnerEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
 
+    } else if ( game.p1_score > game.p2_score &&
+                CURE.dataset == 'mammal' &&
+                game.level == 3 ) {
+
+      winnerEl.html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
+      $("#holdem_button").hide();
+      //$tabs.tabs('select', 3);
+      game.moveBarney("lose"); //incorrect win lose
+      game.moveClayton("win");
+
+    } else if ( game.p1_score > game.p2_score ) {
+
+      targetEl.html("<h1>You beat Barney!</h1>You earned "
+        + game.p1_score + " * " + game.multiplier
+        + "= </strong><span style=\"font-size:30px;\">"
+        + ( game.p1_score * game.multiplier )
+        + "</span> points!");
+      //$tabs.tabs('select', 3);
+      game.moveBarney("lose"); //incorrect win lose
+      game.moveClayton("win");
+
+    } else if (p1_score == p2_score) {
+      winnerEl.text("You tied Barney! ");
+      //$tabs.tabs('select', 3);
+      game.moveBarney("win"); //incorrect win lose
+      game.moveClayton("win");
+      targetEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
+    }
+    $("#board").hide();
+    $("#endgame").show();
   },
   setupInfoToggle : function() {
     //-- Handles switching between tab views
