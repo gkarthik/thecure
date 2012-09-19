@@ -2,7 +2,7 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.weka.Weka"%>
 <%@ page import="org.scripps.combo.GameLog"%>
-<%@ page import="org.scripps.combo.Player"%>
+<%@ page import="org.scripps.combo.model.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
 

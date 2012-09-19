@@ -12,9 +12,9 @@ import java.util.List;
 import org.paukov.combinatorics.CombinatoricsVector;
 import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.combination.simple.SimpleCombinationGenerator;
-import org.scripps.combo.Board;
 import org.scripps.combo.Boardroom;
 import org.scripps.combo.Boardroom.boardview;
+import org.scripps.combo.model.Board;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 

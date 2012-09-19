@@ -7,6 +7,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.scripps.combo.model.Card;
+
 /**
  * @author bgood
  *

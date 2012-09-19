@@ -1,4 +1,4 @@
-package org.scripps.combo.weka.preprocessing;
+package org.scripps.combo.model.preprocessing;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.scripps.MapFun;
-import org.scripps.combo.Board;
+import org.scripps.combo.model.Board;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
