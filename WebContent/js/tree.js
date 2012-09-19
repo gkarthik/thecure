@@ -1,4 +1,3 @@
-var json33 = {"evaluation" : {"modelrep":"J48 pruned tree\n------------------\n\nMASP1 <= 0.074\n|   E2F1 <= -0.299: non-relapse (6.0)\n|   E2F1 > -0.299: relapse (44.0/14.0)\nMASP1 > 0.074: non-relapse (28.0/4.0)\n\nNumber of Leaves  : \t3\n\nSize of the tree : \t5\n","accuracy":64}, "max_depth":"5","num_leaves":"3","tree_size":"5","tree":{"name":"MASP1","kind":"split_node","children":[{"name":"<= 0.074","kind":"split_value","children":[{"name":"E2F1","kind":"split_node","children":[{"name":"<= -0.299","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":6.0,"errors":0.0}]},{"name":"> -0.299","kind":"split_value","children":[{"name":"relapse","kind":"leaf_node","bin_size":44.0,"errors":14.0}]}]}]},{"name":"> 0.074","kind":"split_value","children":[{"name":"non-relapse","kind":"leaf_node","bin_size":28.0,"errors":4.0}]}]}}
 
 $(document).ready(function() {
 	drawTree(json33,400,300,'#chart33');
@@ -19,8 +18,6 @@ function kind(kind_text) {
   return 3;
 }
 
-//@Ben -- how will this get triggered?
-//$(document).ready(function() {
   
 function drawTree(json, width, height, selector_string){
 	if(json.max_depth<2){

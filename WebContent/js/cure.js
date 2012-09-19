@@ -164,6 +164,8 @@ CURE.boardgame = {
     })
   },
   addCardSelectionHandlers : function() {
+    //-- Adds click event listeners on the cards in the board,
+    //when clicked, add to hand/save/etc...
     var game = CURE.boardgame;
 
     $("#board div.gamecard").click(function(e) {
@@ -180,30 +182,21 @@ CURE.boardgame = {
           $("#player1_hand").append(playedCard);
           game.p1_hand.push( card_obj );
           game.saveSelection( card_obj );
-          game.evaluateHand(p1_hand, 1);
+          game.evaluateHand(game.p1_hand, 1);
 
           //hide button from board
-          $(this).parent().fadeTo(500, 0.75, function () {
-            $(this).css('background-color', 'transparent');
-            $(this).html("");
-            //add a card to barney's hand
-            game.board_state_clickable = false;
-            game.addCardToBarney();
-          });
-
-        } else {
-        alert("Sorry, you can only have 5 cards in your hand in this game.");
-      }
-      } else {
-        alert("Wait your turn!");
-      }
-
+          //clicked_card.removeClass("active").addClass("selected");
+          //game.board_state_clickable = false;
+          //game.addCardToBarney();
+        } else {  alert("Sorry, you can only have 5 cards in your hand in this game."); }
+      } else { alert("Wait your turn!"); }
     })
   },
   returnCard : function(obj) {
     var game = CURE.boardgame;
     var card = "\
                 <div id='playedcard_"+ obj.unique_id +"' class='gamecard'>\
+                <span class='help_label'>i</span>\
                 <span class='gene_label'>"+ obj.display_name +"</span>\
                 </div>";
 
@@ -220,53 +213,46 @@ CURE.boardgame = {
       player_id : CURE.user_id,
       geneid : card.unique_id
     }
-    $.getJSON("MetaServer", args, function(data) {
-    });
+    $.getJSON("MetaServer", args, function(data) { });
   },
-  evaluateHand : function(cardsinhand, player) {
-    var url = 'MetaServer?dataset='+ CURE.dataset +'&command=getscore&features=';
+  evaluateHand : function(cardsInHand, player) {
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
+    var args = {
+      dataset : CURE.dataset,
+      command : "getscore"
+    }
+    
     if( CURE.dataset == 'dream_breast_cancer') {
-      url = 'MetaServer?dataset='+ CURE.dataset +'&command=getscore&geneids=';
-      geneids = "";
-      feature_names = "";
-      var chand = "cardsinhand_" + player;
-      $.each(cardsinhand, function(index, value) {
-        geneids += value.unique_id + ",";
-        feature_names += value.unique_id+":"+value.att_name + ":" + value.name + "|";
-      });
-      url += geneids;
+      var geneids = [];
+      _(cardsInHand).each( function(v) { geneids.push( v.unique_id ); });
+      args.geneids = geneids.join(",")
     } else {
-      features = "";
-      feature_names = "";
-      var chand = "cardsinhand_"+player;
-
-      $.each(cardsinhand, function(index, value) {
-        features+=value.att_index+",";
-        feature_names += value.unique_id+":"+value.att_name + ":"+value.name+"|";
-      });
-      url +=features;
+      var features = [];
+      _(cardsInHand).each( function(v) { features.push( v.att_index ); });
+      args.features = features.join(",")
     }
 
     //goes to server, runs the default evaluation with a decision tree
-    $.getJSON(url, function(data) {
+    $.getJSON("MetaServer", args, function(data) {
+      console.log(data);
       var treeheight = 250,
           treewidth = 420;
-      //console.log(data.max_depth +" depth");
-      if (data.max_depth > 2) {
-        treeheight = 200 + 30*data.max_depth;
-      }
+      if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
+
       if (player == "1") {
         //draw the current tree
         $("#p1_current_tree").empty();
-        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p1_current_tree");
+        utils.drawTree(data, treewidth, treeheight, "#p1_current_tree");
+
         //sometimes randomness in cross-validation gets you a different score even without producing
         //any tree at all.
         if (data.max_depth < 2) {
-          p1_score = 50;
+          game.p1_score = 50;
         } else {
-          p1_score = data.evaluation.accuracy;
+          game.p1_score = data.evaluation.accuracy;
         }
-        if (p1_hand.length == max_hand) {
+        if ( game.p1_hand.length == game.max_hand ) {
           $("#player1_j48_score").html('<strong> score ' + p1_score + '</strong>');
         }
         $("#game_score_1").text(p1_score);
@@ -333,6 +319,7 @@ CURE.boardgame = {
         }, 1500);
       }
     });
+
   },
   setupInfoToggle : function() {
     //-- Handles switching between tab views
@@ -829,6 +816,227 @@ CURE.utilities = {
     $.getJSON("MetaServer", args, function(data) {
       return data.evaluation.accuracy;
     });
+  },
+///////////////////////////////
+  kind : function(kind_text) {
+    switch(kind_text)
+    {
+      case "split_node":
+        return 0;
+      case "split_value":
+        return 1;
+      case "leaf_node":
+        return 2;
+      default:
+        return 3;
+    }
+    return 3;
+  },
+  drawTree : function(json, width, height, selector_string) {
+    var utils = CURE.utilities;
+    if(json.max_depth<2){
+      $(selector_string).append("Could not build a useful tree with the selected features...");
+      return;
+    }
+    var green = "#1FA13A",
+        orange = "#D44413",
+        depth = json.max_depth-1;
+    var cluster = d3.layout.tree()
+      .size([width-40, height-40]),
+      diagonal = d3.svg.diagonal();
+
+    var vis = d3.select(selector_string).append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(0,8)");
+
+    //Deeeebugging
+    var nodes = cluster.nodes(json.tree),
+        links = cluster.links(nodes),
+        color = d3.scale.linear().domain([0, depth]).range([orange, green]),
+        //Breaking out node types, uglyyyy
+        split_nodes = [], split_values = [], leaf_nodes = [];
+    _.each(nodes, function(node) {
+      if( utils.kind(node.kind) == 0) {
+        split_nodes.push(node);
+      } else if ( utils.kind(node.kind) == 1 ) {
+        split_values.push(node);
+      } else if ( utils.kind(node.kind) == 2 || utils.kind(node.kind) == 3 ) {
+        leaf_nodes.push(node);
+      }
+    });
+
+    //Draw the links first so they're behind the nodes
+    var link = vis.selectAll("path.link")
+    .data(links)
+    .enter().append("path")
+    .transition().delay(400).duration(200)
+    .attr("class", "link")
+    .attr("d", diagonal)
+    .style("stroke", function(d) { return color(d.source.depth) } )
+    .style("stroke-width", function(d) { return 1.3*(depth - d.source.depth+1) +"px" } );
+
+    //Drawing the groups to dom
+    var split_node = vis.selectAll("g.split_node")
+      .data(split_nodes)
+      .enter().append("g")
+      .attr("class", "split_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var split_value = vis.selectAll("g.split_value")
+      .data(split_values)
+      .enter().append("g")
+      .attr("class", "split_value")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var leaf_node = vis.selectAll("g.leaf_node")
+      .data(leaf_nodes)
+      .enter().append("g")
+      .attr("class", "leaf_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+
+    //Adding to the groups for that node type
+    split_node.append("rect")
+      .transition().delay(100).duration(400)
+      .attr("height", "18")
+      .attr("width", function(d) { return $.trim(d.name).length*9  })
+      .attr("x", function(d) { return -( $.trim(d.name).length*4.5 ) } )
+      .attr("y", "-2")
+    split_node.append("text")
+      //move it down slightly
+      .transition().delay(100).duration(400)
+      .attr("dy", 12)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    split_value.append("circle")
+      .transition().delay(100).duration(400)
+      .style("fill", function(d) { return color( d.depth ) })
+      .attr("r", "8")
+    split_value.append("text")
+      .transition().delay(100).duration(400)
+      //move it down slightly
+      .attr("dy", 4)
+      .attr("dx", 22)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    //Left node text
+    leaf_node.append("text")
+      .transition().delay(100).duration(400)
+      //move it down slightly
+      .attr("dy", 12)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    //Adding the bar graphs
+    //  _.each(leaf_nodes, function(d) {
+    //    $(selector_string).append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+30)+"px;left:"+(d.x +  $.trim(d.name).length*1.5   )+"px'></div>");
+    //    $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
+    //      type: 'pie',
+    //      width: '20',
+    //      height: '20',
+    //      sliceColors: ['#1FA13A','#D44413']
+    //      }).fadeIn(1200);
+    //    });
+  },
+  drawTreeNoLeaf : function(json, width, height, selector_string) {
+    var utils = CURE.utilities;
+    var green = "#1FA13A",
+    orange = "#D44413",
+    depth = json.max_depth-1;
+
+    var cluster = d3.layout.tree()
+      .size([width-40, height-40]),
+      diagonal = d3.svg.diagonal();
+
+    var vis = d3.select(selector_string).append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(20,20)");
+
+    var nodes = cluster.nodes(json.tree),
+        links = cluster.links(nodes),
+        color = d3.scale.linear().domain([0, depth]).range([orange, green]),
+        //Breaking out node types, uglyyyy
+        split_nodes = [], split_values = [], leaf_nodes = [];
+    _.each(nodes, function(node) {
+      if( utils.kind(node.kind) == 0) {
+        split_nodes.push(node);
+      } else if ( utils.kind(node.kind) == 1 ) {
+        split_values.push(node);
+      } else if ( utils.kind(node.kind) == 2 || utils.kind(node.kind) == 3 ) {
+        leaf_nodes.push(node);
+      }
+    });
+
+    //Draw the links first so they're behind the nodes
+    var link = vis.selectAll("path.link")
+      .data(links)
+      .enter().append("path")
+      .transition().delay(400).duration(200)
+      .attr("class", "link")
+      .attr("d", diagonal)
+      .style("stroke", function(d) { return color(d.source.depth) } )
+      .style("stroke-width", function(d) { return 1.3*(depth - d.source.depth+1) +"px" } );
+
+    var split_node = vis.selectAll("g.split_node")
+      .data(split_nodes)
+      .enter().append("g")
+      .attr("class", "split_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var split_value = vis.selectAll("g.split_value")
+      .data(split_values)
+      .enter().append("g")
+      .attr("class", "split_value")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var leaf_node = vis.selectAll("g.leaf_node")
+      .data(leaf_nodes)
+      .enter().append("g")
+      .attr("class", "leaf_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+
+    split_node.append("rect")
+      .transition()
+      .delay(10*depth)
+      .duration(100*depth)
+      .attr("height", "18")
+      .attr("width", function(d) { return $.trim(d.name).length*9  })
+      .attr("x", function(d) { return -( $.trim(d.name).length*4.5 ) } )
+      .attr("y", "-2")
+    split_node.append("text")
+      //move it down slightly
+      .attr("dy", 12)
+      .style("font-family", "Helvetica")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
+
+    split_value.append("circle")
+      .style("fill", function(d) { return color( d.depth ) })
+      .transition()
+      .delay(10*depth)
+      .duration(100*depth)
+      .attr("r", "8")
+    split_value.append("text")
+      //move it down slightly
+      .attr("dy", 4)
+      .attr("dx", 32)
+      .style("font-family", "Helvetica")
+      .style("font-size", "10px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
+
+    leaf_node.append("text")
+      //move it down slightly
+      .attr("dy", 12)
+      .style("font-family", "Helvetica")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
   }
 }
 
