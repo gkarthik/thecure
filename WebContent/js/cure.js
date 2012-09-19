@@ -2,6 +2,7 @@ var CURE = CURE || {};
 
 CURE.username = "x0xMaximus";
 CURE.user_id = "51";
+CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
 
 CURE.load = function() {
@@ -142,7 +143,6 @@ CURE.boardgame = {
 
       //== MAX NOTES;
       //game_meta_info set this up
-
 
     });
 
@@ -372,7 +372,8 @@ CURE.boardgame = {
     // %>
     // <strong>Pick <b><%=max_hand%></b> <%=fs %> mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...</strong>
     // <% }else if(dataset.equals("dream_breast_cancer")){ %>
-    // <strong>Pick <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
+    // <strong>Pic
+    // k <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
     // <% } %>
   },
   moveBarney : function(moveChoice) {
@@ -383,38 +384,46 @@ CURE.boardgame = {
   },
 
   saveHand : function() {
-    par_score = p1_score - par;
-    var win = "0";
-    if(p1_score > p2_score) {
-      win = "1";
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
+
+    var score_results = "0";
+    if( game.p1_score > game.p2_score ) {
+      score_results = "1";
+    } else if ( game.p1_score == game.p2_score ) {
+      score_results = "2";
     }
 
-    var saveurl;
-    if( CURE.dataset == 'dream_breast_cancer' ) {
-      geneids = "";
-      feature_names = "";
-    console.log(game.cads);
-      $.each(p1_hand, function(index, value) {
-        geneids += value.unique_id + ",";
-        feature_names +=  value.unique_id+":"+value.att_name + ":" + value.name + "|";
-      });
-      saveurl = 'MetaServer?dataset='+ CURE.dataset +'&command=savehand&geneids='
-        + geneids + '&player_name=' + CURE.username + '&score='
-        + par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-        + "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
-    } else {
-      features = "";
-      feature_names = "";
-      $.each(p1_hand, function(index, value) {
-        features+=value.att_index+",";
-        feature_names += value.unique_id+":"+value.att_name + ":"+value.name+"|";
-      });
-      saveurl = 'MetaServer?dataset='+ CURE.dataset +'&command=savehand&features='
-        + features + '&player_name=' + CURE.username + '&score='
-        + par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-        + "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
+    var args = {
+      dataset : CURE.dataset,
+      command : "savehand",
+      player_name : CURE.username,
+      //score : par_score,
+      cv_accuracy : game.p1_score,
+      board_id : game.level,
+      win : score_results,
+      game : "verse_barney",
     }
-    $.getJSON(saveurl, function(data) {
+
+    if( CURE.dataset == 'dream_breast_cancer' ) {
+
+      var geneids = [];
+      _( game.p1_hand ).each(function(v,i) {
+        geneids.push( v.unique_id );
+      })
+      args.geneids = geneids.split(",");
+
+    } else {
+
+      var features = [];
+      _( game.p1_hand ).each(function(v,i) {
+        features.push( v.att_index );
+      })
+      args.features = features.split(",")
+
+    }
+
+    $.getJSON("MetaServer", args, function(data) {
       //console.log("saved a hand");
     });
   },
