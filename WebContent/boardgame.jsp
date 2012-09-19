@@ -154,7 +154,6 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
   <script src="js/libs/jquery.sparkline.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
-  <script src="js/tree.js"></script>
   <script src="js/cure.js"></script>
   <jsp:include page="js/analytics.js" />
 
