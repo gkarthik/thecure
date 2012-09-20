@@ -93,7 +93,7 @@ public class Boardroom {
 		} 
 	
 		List<Board> boards = Board.getBoardsByDataset(dataset); //"dream_breast_cancer"
-		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get(dataset);
+		Map<Integer,Integer> player_board_scores = player.getDataset_board_scores().get(dataset);
 
 		int position = 0;
 		for(Board board : boards){
