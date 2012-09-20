@@ -2,6 +2,7 @@ package org.scripps.combo.model;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +21,12 @@ import org.scripps.util.MapFun;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.JdbcConnection;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A pre-computed set of features (e.g. genes) for building board games.
@@ -43,9 +50,102 @@ public class Board {
 	Timestamp updated;
 
 	public static void main(String args[]) throws Exception{
-		//setupCureV2();		
+		Board b = Board.getBoardById(101+"", true);	
+		String j = b.toJSON(false);
+		System.out.println(j);
 	}
 
+	
+	/**
+	 * {
+    "unique_id": "9338",
+    "power": 0.010211045,
+    "short_name": "ABC",
+    "long_name": "Aaa Bbb Ccc",
+    "metadata": {
+      "ontology": [
+        {
+          "type": "Biological Processes",
+          "values": [
+            {
+              "accession_id": 12345,
+              "term": "a"
+            }
+          ]
+        }
+      ],
+      "rifs": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ]
+    },
+    "board_index": 0
+  }
+	 * @return
+	 */
+	public String toJSON(boolean shuffle){
+		String json = "";
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root = mapper.createObjectNode();
+		root.put("board_id", getId());
+		root.put("dataset", getDataset());
+		root.put("room", getRoom());
+		ArrayNode cards = mapper.createArrayNode();
+		if(shuffle){
+			Collections.shuffle(features);
+		}
+		int loc = 0;
+		for(Feature feature : getFeatures()){
+			ObjectNode card = mapper.createObjectNode();
+			card.put("board_index", loc);
+			card.put("unique_id", feature.getUnique_id());
+			card.put("short_name", feature.getShort_name());
+			card.put("long_name", feature.getLong_name());
+			card.put("description", feature.getDescription());
+			ObjectNode metadata = mapper.createObjectNode();
+			ArrayNode ontology = mapper.createArrayNode();
+			Map<String, List<Annotation>> ont_annos = feature.getOntologyMap();
+			for(String ont : ont_annos.keySet()){
+				ObjectNode ont_terms = mapper.createObjectNode();
+				ont_terms.put("type", ont);
+				ArrayNode values = mapper.createArrayNode();
+				for(Annotation anno : ont_annos.get(ont)){
+					ObjectNode term = mapper.createObjectNode();
+					term.put("accession", anno.getAccession());
+					term.put("term", anno.getTerm());
+					term.put("evidence_type", anno.getEvidence_type());
+					term.put("source", anno.getSource());
+					values.add(term);
+				}
+				ont_terms.put("values",values);
+				ontology.add(ont_terms);
+			}
+			metadata.put("ontology", ontology);
+			card.put("metadata", metadata);
+			ArrayNode rifs = mapper.createArrayNode();
+			
+			cards.add(card);
+			loc++;
+		}
+		root.put("cards", cards);	
+		try {
+			json = mapper.writeValueAsString(root);
+		} catch (JsonGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return json;
+	}
+	
 	/**
 	 * For second iteration of the cure, build 100 boards with this
 	 */
@@ -137,7 +237,7 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecute(unique_ids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -165,7 +265,7 @@ public class Board {
 				unique_ids.add(gene_ids.get(i));
 				bfs.add(weka.getFeatures().get(gene_ids.get(i)));
 			}
-			execution base = weka.pruneAndExecute(unique_ids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.setFeatures(bfs);
@@ -187,7 +287,7 @@ public class Board {
 			f.getAllMetadataFromDb();
 			bfs.add(f);
 		}
-		execution base = weka.pruneAndExecute(feature_ids, null);
+		execution base = weka.pruneAndExecuteWithFeatureIds(feature_ids, null);
 		float base_score = (float)base.eval.pctCorrect();
 		board.setBase_score(base_score);
 		board.setFeatures(bfs);
@@ -358,32 +458,42 @@ public class Board {
 			return boards;
 		}
 	
-	//	public Board getBoardById(String id){
-	//		JdbcConnection conn = new JdbcConnection();
-	//		ResultSet rslt = conn.executeQuery("select * from board where id = '"+id+"'");
-	//		try {
-	//			if(rslt.next()){
-	//				Board board = new Board();
-	//				board.setAverage_score(rslt.getFloat("average_score"));
-	//				board.setEntrez_ids(string2list(rslt.getString("entrez_ids")));
-	//				board.setGene_symbols(string2list(rslt.getString("gene_symbols")));
-	//				board.setId(rslt.getInt("id"));
-	//				board.setMax_score(rslt.getFloat("max_score"));
-	//				board.setN_players(rslt.getInt("n_players"));
-	//				board.setN_wins(rslt.getInt("n_wins"));
-	//				board.setPhenotype(dataset);
-	//				board.setUpdated(rslt.getTimestamp("updated"));
-	//				board.setAttribute_names(string2list(rslt.getString("attribute_names")));
-	//				board.setBase_score(rslt.getFloat("base_score"));
-	//				return board;
-	//			}
-	//		} catch (SQLException e) {
-	//			// TODO Auto-generated catch block
-	//			e.printStackTrace();
-	//		}
-	//		return null;
-	//	}
-	//	
+		public static Board getBoardById(String id, boolean populate_metadata){
+			JdbcConnection conn = new JdbcConnection();
+			ResultSet rslt = conn.executeQuery("select * from board where id = '"+id+"'");
+			try {
+				if(rslt.next()){
+					Board board = new Board();
+					board.setAvg_score(rslt.getFloat("avg_score"));
+					board.setId(rslt.getInt("id"));
+					board.setMax_score(rslt.getFloat("max_score"));
+					board.setN_players(rslt.getInt("n_players"));
+					board.setN_wins(rslt.getInt("n_wins"));
+					board.setDataset(rslt.getString("dataset"));
+					board.setRoom(rslt.getString("room"));
+					board.setUpdated(rslt.getTimestamp("updated"));
+					board.setBase_score(rslt.getFloat("base_score"));
+					
+					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+					List<Feature> fs = new ArrayList<Feature>();
+					while(f_list.next()){
+						Feature f = Feature.getByDbId(f_list.getInt("feature_id"));
+						if(populate_metadata){
+							f.getAllMetadataFromDb();
+						}
+						fs.add(f);
+					}
+					board.setFeatures(fs);
+
+					return board;
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
 	
 	public List<String> getFeatureIds() {
 		if(getFeatures()!=null){
