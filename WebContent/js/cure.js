@@ -93,6 +93,12 @@ CURE.stats = {
 
 
 CURE.boardgame = {
+  complete_hand : {
+    metadata : {
+      game_started : (new Date).getTime(),
+      mouse_action : []
+    }
+  },
   cards : [],
   opponent_sort : [],
   p1_score : 0,
@@ -105,8 +111,6 @@ CURE.boardgame = {
   feature_names : "",
   barney_init : 0,
   board_state_clickable : true,
-
-  game_started : (new Date),
 
   init : function() {
     var game = CURE.boardgame,
@@ -143,6 +147,13 @@ CURE.boardgame = {
       //game_meta_info set this up
 
     });
+    var ma = game.complete_hand.metadata.mouse_action;
+    //-- watch user play
+    $(window).mousemove(
+      _.debounce(function(e) {
+        ma.push( { "x": e.pageX, "y": e.pageY, "timestamp": (new Date).getTime() } )
+      }, 20)
+    );
 
  },
   generateBoard : function() {
