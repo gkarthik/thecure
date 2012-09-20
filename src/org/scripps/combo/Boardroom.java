@@ -36,13 +36,7 @@ public class Boardroom {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Boardroom b = new Boardroom();
-		b.buildBoardView("gene", "dream_breast_cancer");
-//		String j = b.renderjsonBoardViews();
-//		System.out.println(j);
-		for(boardview board : b.getBoardviews()){
-			System.out.println(1+board.getPosition()+"\t"+board.getBoard().getId());
-		}
+		
 	}
 
 	public String renderjsonBoardViews(){
@@ -86,8 +80,8 @@ public class Boardroom {
 	 * @param player_name
 	 * @param phenotype
 	 */
-	public void buildBoardView(String player_name, String dataset){
-		Player player = Player.lookupPlayer(player_name);
+	public void buildBoardView(int player_id, String dataset){
+		Player player = Player.lookupPlayerById(player_id);
 		if (player == null) {
 			return;
 		} 
