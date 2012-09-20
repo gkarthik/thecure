@@ -105,8 +105,6 @@ CURE.boardgame = {
   feature_names : "",
   barney_init : 0,
   board_state_clickable : true,
-  replay : "<%=full_request%>",
-  multiplier : "<%=multiplier%>",
 
   game_started : (new Date),
 
@@ -176,13 +174,13 @@ CURE.boardgame = {
           var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
           var playedCard = game.returnCard(card_obj);
 
-          $("#player1_hand").append(playedCard);
+          $("#p1_hand").append(playedCard);
           game.p1_hand.push( card_obj );
           game.saveSelection( card_obj );
           game.evaluateHand(game.p1_hand, 1);
 
           //hide button from board
-          clicked_card.removeClass("active").addClass("selected").unbind("click");
+          clicked_card.removeClass("active").addClass("selected").unbind("click").html("");
           game.board_state_clickable = false;
           game.addCardToBarney();
         } else {  alert("Sorry, you can only have 5 cards in your hand in this game."); }
@@ -192,7 +190,7 @@ CURE.boardgame = {
   returnCard : function(obj) {
     var game = CURE.boardgame;
     var card = "\
-                <div id='playedcard_"+ obj.unique_id +"' class='gamecard'>\
+                <div id='playedcard_"+ obj.unique_id +"' class='gamecard active'>\
                 <span class='help_label'>i</span>\
                 <span class='gene_label'>"+ obj.display_name +"</span>\
                 </div>";
@@ -247,7 +245,7 @@ CURE.boardgame = {
       } else {
         game["p"+ player +"_score"] = data.evaluation.accuracy;
       }
-      $("strong#game_score_"+player).html( game["p"+ player +"_score"] );
+      $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
 
       if (player == "2") {
         game.board_state_clickable = true;
@@ -275,7 +273,7 @@ CURE.boardgame = {
       winnerEl.text("Sorry, you lost this hand. ");
       //$tabs.tabs('select', 4);
       game.moveBarney("win"); //incorrect win lose
-      winnerEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
+      winnerEl.append("<br><a href=\""+ game.replay +"\">Play Level Again?</a>");
 
     } else if ( game.p1_score > game.p2_score &&
                 CURE.dataset == 'mammal' &&
@@ -307,7 +305,6 @@ CURE.boardgame = {
       targetEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
 
     }
-    $("#board").hide();
     $("#endgame").show();
   },
   addCardToBarney : function() {
@@ -316,10 +313,10 @@ CURE.boardgame = {
 
     game.p2_hand.push(card_obj);
     var playedCard = game.returnCard(card_obj);
-    $("#player2_hand").append( playedCard );
+    $("#p2_hand").append( playedCard );
 
     var selected_card = $("#boardgame #game_area #board div#card_"+card_obj.unique_id);
-    selected_card.removeClass("active").addClass("selected").unbind("click");
+    selected_card.removeClass("active").addClass("selected").unbind("click").html("");
 
     game.evaluateHand( game.p2_hand, "2");
   },
@@ -364,23 +361,22 @@ CURE.boardgame = {
     });
   },
   setupGameMetaInfo : function() {
-    //   <% if(dataset.equals("mammal")){
-    //   String fs = "features that distinguish";
-    //   if(max_hand.equals("1")){
-    //     fs = "feature that distinguishes";
-    //   }
-    // %>
-    // <strong>Pick <b><%=max_hand%></b> <%=fs %> mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...</strong>
-    // <% }else if(dataset.equals("dream_breast_cancer")){ %>
-    // <strong>Pic
-    // k <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
-    // <% } %>
+    var game = CURE.boardgame,
+        msg = "";
+    if( CURE.dataset == "mammal" ) {
+      var fs = "features that distinguish";
+      if ( game.max_hand == "1" ) { fs = "feature that distinguishes"; }
+      msg = "Pick <strong>"+ game.max_hand +"</strong> "+ fs +" mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...";
+    } else if ( CURE.dataset == "dream_breast_cancer" ) {
+      msg = "Pick <b>"+ game.max_hand +"</b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.";
+    }
+  
   },
   moveBarney : function(moveChoice) {
-    $("#barney5").removeClass().hide().addClass(moveChoice).show();
+    $("img#barney5").removeClass("win lose correct").hide().addClass(moveChoice).show();
   },
   moveClayton : function(moveChoice) {
-    $("#clayton1").removeClass().hide().addClass(moveChoice).show();
+    $("img#clayton1").removeClass("win lose correct").hide().addClass(moveChoice).show();
   },
 
   saveHand : function() {

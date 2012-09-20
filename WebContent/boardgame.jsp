@@ -70,22 +70,12 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
   <div id="boardgame">
     <div id="game_meta_info"></div>
 
-    <div id="player_2_area">
-      <div id="player2_title_area">
-        <h3>Barney's hand</h3>
+    <div id="p2_area">
+      <div id="p2_scorebox">
+        <img id="barney5" class="avatar" src="images/barney.png"/>
+        <h2>Barney's score: <span id="p2_score">0</span></h2>
       </div>
-
-      <div id="player2">
-        <div id="player2_hand">
-        </div>
-      </div>
-
-      <div id="game_score_box_2">
-        <img id="barney5" src="images/barney.png"/>
-          <strong>Barney's score</strong>
-          <strong id="game_score_2">0</strong>
-      </div>
-
+      <div id="p2_hand"></div>
     </div>
 
     <div id="game_area">
@@ -129,22 +119,12 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
     </div>
 
-    <div id="player_1_area">
-
-      <div id="player1_title_area">
-        <h3>Your hand</h3>
+    <div id="p1_area">
+      <div id="p1_scorebox">
+        <img id="clayton1" class="avatar" src="images/200px-Clayton.png"/>
+        <h2>Your score: <span id="p2_score">0</span></h2>
       </div>
-
-      <div id="player1">
-        <div id="player1_hand">
-        </div>
-      </div>
-
-      <div id="game_score_box_1">
-        <img id="clayton1" src="images/200px-Clayton.png"/>
-        <strong>Your score</strong>
-        <strong id="game_score_1">0</strong>
-      </div>
+      <div id="p1_hand"></div>
     </div>
 
   </div>
