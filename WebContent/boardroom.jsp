@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.Config"%>
-<%@ page import="org.scripps.combo.Player"%>
-<%@ page import="org.scripps.combo.Board"%>
+<%@ page import="org.scripps.combo.model.Player"%>
+<%@ page import="org.scripps.combo.model.Board"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>

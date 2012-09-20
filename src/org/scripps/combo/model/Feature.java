@@ -18,15 +18,7 @@ import java.util.Map;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.model.Attribute;
-import org.scripps.util.Gene;
 import org.scripps.util.JdbcConnection;
-import org.scripps.util.MyGeneInfo;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import weka.attributeSelection.Ranker;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -58,38 +50,17 @@ public class Feature {
 	Timestamp updated;
 
 	public static void main(String args[]){
-		//updateEntrezGene();
-		//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
-		//		String dataset = "mammal";
-		//		try {
-		//			loadRawWeka(train_file, dataset);
-		//		} catch (FileNotFoundException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		} catch (Exception e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
-		ObjectMapper mapper = new ObjectMapper();
-		String dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
-		ObjectNode features = Feature.getMetaBricClinicalFeatures(mapper);
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
+		String dataset = "mammal";
 		try {
-			String json_features = mapper.writeValueAsString(features);
-			System.out.println(json_features);
-		} catch (JsonGenerationException e) {
+			loadRawWeka(train_file, dataset);
+		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		Feature f = new Feature();
-//		String id = "metabric_with_clinical_6";
-//		f = f.getByUniqueId(String.valueOf(id));
-//		System.out.println(f.getId());
 	}
 
 	public void getAllMetadataFromDb(){
@@ -118,18 +89,6 @@ public class Feature {
 		}
 	}
 
-	public Map<String, List<Annotation>> getOntologyMap(){
-		Map<String, List<Annotation>> ont_annos = new HashMap<String, List<Annotation>>();
-		for(Annotation anno : getAnnotations()){
-			List<Annotation> annos = ont_annos.get(anno.getVocabulary());
-			if(annos==null){
-				annos = new ArrayList<Annotation>();
-			}
-			annos.add(anno);
-			ont_annos.put(anno.getVocabulary(), annos);
-		}		
-		return ont_annos;
-	}
 
 	/**
 	 * Insert a new feature.
@@ -170,115 +129,33 @@ public class Feature {
 		return newid;
 	}
 
-	public int updateByUniqueId() throws SQLException{
-		int affectedRows  = 0;
-		JdbcConnection conn = new JdbcConnection();
-		PreparedStatement pst = null;
-		try {
-			pst = conn.connection.prepareStatement(
-					"update feature " +
-							"set short_name = ?, " +
-							" long_name = ?, " +
-							" description = ? " +
-					"where unique_id = ? ");
-			pst.clearParameters();
-			pst.setString(1,getShort_name());
-			pst.setString(2,getLong_name());
-			pst.setString(3,getDescription());
-			pst.setString(4, getUnique_id());
 
-			affectedRows = pst.executeUpdate();
-			if (affectedRows == 0) {
-				throw new SQLException("Creating feature failed, no rows affected.");
-			}
-
-		} finally {
-			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
-			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
-		}
-		return affectedRows;
-	}
-
-	public static Map<String, Feature> getByDataset(String dataset, boolean load_annotations_very_slowly){
+	public static Map<String, Feature> getByDataset(String dataset){
 		Map<String, Feature> features = new HashMap<String, Feature>();
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select feature.*, attribute.* from feature, attribute where attribute.dataset = '"+dataset+"' and feature.id = attribute.feature_id ";
+		String q = "select feature.* from feature, attribute where attribute.dataset = '"+dataset+"' and feature.id = attribute.feature_id ";
 
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){
-				String fid = rslt.getString("feature.unique_id");
-				Feature f = features.get(fid);//.get()						
-				if(f==null){
-					f = new Feature();
-					f.setCreated(rslt.getDate("feature.created"));
-					f.setUpdated(rslt.getTimestamp("feature.updated"));
-					f.setDescription(rslt.getString("feature.description"));
-					f.setId(rslt.getInt("feature.id"));
-					f.setLong_name(rslt.getString("feature.long_name"));
-					f.setShort_name(rslt.getString("feature.short_name"));
-					f.setUnique_id(rslt.getString("feature.unique_id"));
-				}
-				//this replaces
-				//	f.getMappedAttributesFromDb();
-				List<Attribute> atts = f.getDataset_attributes();
-				if(atts==null){ atts = new ArrayList<Attribute>();}
-				Attribute a = new Attribute();
-				a.setName(rslt.getString("attribute.name"));
-				a.setCol_index(rslt.getInt("attribute.col_index"));
-				a.setCreated(rslt.getDate("attribute.created"));
-				a.setFeature_id(rslt.getInt("attribute.feature_id"));
-				a.setId(rslt.getInt("attribute.id"));
-				a.setUpdated(rslt.getTimestamp("attribute.updated"));
-				a.setDataset(rslt.getString("attribute.dataset"));
-				a.setReliefF(rslt.getFloat("attribute.reliefF"));
-				if(!atts.contains(a)){
-					atts.add(a);
-					f.setDataset_attributes(atts);
-				}
+				Feature f = new Feature();
+				f.setCreated(rslt.getDate("created"));
+				f.setUpdated(rslt.getTimestamp("updated"));
+				f.setDescription(rslt.getString("description"));
+				f.setId(rslt.getInt("id"));
+				f.setLong_name(rslt.getString("long_name"));
+				f.setShort_name(rslt.getString("short_name"));
+				f.setUnique_id(rslt.getString("unique_id"));
 				//add the linked data
-				if(load_annotations_very_slowly){
-					f.getAnnotationsFromDb();
-					f.getTextAnnotationsFromDb();
-				}
+				f.getAllMetadataFromDb();
 				features.put(f.getUnique_id(), f);
 			}
-			rslt.close();
-			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return features;
 	}
-
-	public static ObjectNode getMetaBricClinicalFeatures(ObjectMapper mapper){
-		ObjectNode featureob = mapper.createObjectNode();
-		JdbcConnection conn = new JdbcConnection();
-		String q = "select feature.* from feature, attribute where attribute.dataset = 'metabric_with_clinical' and feature.id = attribute.feature_id and unique_id like 'metabric%'";
-		ResultSet rslt = conn.executeQuery(q);
-		try {
-			ArrayNode features = mapper.createArrayNode();
-			while(rslt.next()){
-				ObjectNode f = mapper.createObjectNode();
-				f.put("id", rslt.getInt("feature.id"));
-				f.put("unique_id", rslt.getString("feature.unique_id"));
-				f.put("long_name", rslt.getString("feature.long_name"));
-				f.put("short_name", rslt.getString("feature.short_name"));
-				f.put("description", rslt.getString("feature.description"));
-				features.add(f);
-			}
-			featureob.put("features", features);
-			rslt.close();
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return featureob;
-	}
-
 
 	public static Feature getByDbId(int id){
 		Feature f = null;
@@ -297,8 +174,6 @@ public class Feature {
 				f.setShort_name(rslt.getString("short_name"));
 				f.setUnique_id(rslt.getString("unique_id"));
 			}
-			rslt.close();
-			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -309,7 +184,7 @@ public class Feature {
 	public static Feature getByUniqueId(String unique_id){
 		Feature f = null;
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select * from feature where unique_id = '"+unique_id+"'";
+		String q = "select * from feature where unique_id = "+unique_id;
 
 		ResultSet rslt = conn.executeQuery(q);
 		try {
@@ -323,8 +198,6 @@ public class Feature {
 				f.setShort_name(rslt.getString("short_name"));
 				f.setUnique_id(unique_id);
 			}
-			rslt.close();
-			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -336,7 +209,7 @@ public class Feature {
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
 		Instances data = weka.getTrain();
-		Map<String, Float> index_relief = weka.getRelief();
+		Map<Integer, Float> index_relief = weka.getRelief();
 		for(int a=0; a<data.numAttributes(); a++){
 			weka.core.Attribute att = data.attribute(a);
 			if(att.index()!=data.classIndex()){
@@ -351,7 +224,7 @@ public class Feature {
 				combo_att.setDataset(dataset);
 				combo_att.setFeature_id(f_id);
 				combo_att.setName(att.name());
-				combo_att.setReliefF(index_relief.get(att.name()));
+				combo_att.setReliefF(index_relief.get(att.index()));
 				combo_att.insert();
 			}
 		}				
@@ -376,48 +249,6 @@ public class Feature {
 					//chromosome 6, map location 7
 					try {
 						gene.insert();
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				line = f.readLine(); 
-				System.out.println(c);
-			}
-			f.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void updateEntrezGene(){
-		String gene_info_file = "/Users/bgood/workspace/acure/database/gene/Homo_sapiens.gene_info"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
-		BufferedReader f;
-		try {			
-			f = new BufferedReader(new FileReader(gene_info_file));
-			String line = f.readLine(); 
-			int c = 0;
-			while(line!=null){
-				c++;
-				if(!line.startsWith("#")){
-					String[] items = line.split("\t");
-					Feature gene = new Feature();
-					gene.setUnique_id(items[1]);
-					gene.setShort_name(items[2]);
-					gene.setLong_name(items[11]);
-
-					if(gene.getUnique_id()!=null){
-						Gene g = MyGeneInfo.getGeneInfoByGeneid(gene.getUnique_id(), true);
-						if(g!=null){
-							gene.setDescription(g.getGeneDescription());
-						}
-					}
-					try {
-						gene.updateByUniqueId();
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

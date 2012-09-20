@@ -7,6 +7,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.scripps.combo.model.Card;
+
 /**
  * @author bgood
  *
@@ -31,6 +33,10 @@ public class TimeCounter {
 		System.out.println("total time\t"+tc.total_time+"\tavg_time_card\t"+tc.avg_time_per_card+"\tavg_time_board\t"+tc.avg_time_per_board);
 	}
 
+	/**
+	 * Calculate the time this user has spent playing the cure
+	 * @param user_id
+	 */
 	public void setForUser(String user_id){
 		List<Card> cards = Card.getAllPlayedCards(user_id);
 		Calendar t_prev = Calendar.getInstance();

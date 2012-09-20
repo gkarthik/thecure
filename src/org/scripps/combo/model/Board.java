@@ -1,10 +1,7 @@
 package org.scripps.combo.model;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,24 +11,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.scripps.util.MapFun;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.JdbcConnection;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A pre-computed set of features (e.g. genes) for building board games.
@@ -53,112 +41,20 @@ public class Board {
 	float base_score;
 	Date created;
 	Timestamp updated;
-
-	public static void main(String args[]) throws Exception{
-		//		Board b = Board.getBoardById(101+"", true);	
-		//		String j = b.toJSON(true);
-		//		System.out.println(j);
-		//		Board.setupCureV3();
-		//		setupCureV4_griffith_1();
-		//		setupCureV5_griffith_1();
-		setupCureEdu1(25, "edu1");
-	}
-
-
-	/**
-	 * {
-    "unique_id": "9338",
-    "power": 0.010211045,
-    "short_name": "ABC",
-    "long_name": "Aaa Bbb Ccc",
-    "metadata": {
-      "ontology": [
-        {
-          "type": "Biological Processes",
-          "values": [
-            {
-              "accession_id": 12345,
-              "term": "a"
-            }
-          ]
-        }
-      ],
-      "rifs": [
-        "a",
-        "b",
-        "c",
-        "d",
-        "e"
-      ]
-    },
-    "board_index": 0
-  }
-	 * @return
-	 */
-	public String toJSON(boolean shuffle){
-		String json = "";
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode root = mapper.createObjectNode();
-		root.put("board_id", getId());
-		root.put("dataset", getDataset());
-		root.put("room", getRoom());
-		ArrayNode cards = mapper.createArrayNode();
-		if(shuffle){
-			Collections.shuffle(features);
-		}
-		int loc = 0;
-		for(Feature feature : getFeatures()){
-			ObjectNode card = mapper.createObjectNode();
-			card.put("board_index", loc);
-			card.put("unique_id", feature.getUnique_id());
-			card.put("short_name", feature.getShort_name());
-			card.put("long_name", feature.getLong_name());
-			card.put("description", feature.getDescription());
-			ObjectNode metadata = mapper.createObjectNode();
-			ArrayNode ontology = mapper.createArrayNode();
-			Map<String, List<Annotation>> ont_annos = feature.getOntologyMap();
-			for(String ont : ont_annos.keySet()){
-				ObjectNode ont_terms = mapper.createObjectNode();
-				ont_terms.put("type", ont);
-				ArrayNode values = mapper.createArrayNode();
-				for(Annotation anno : ont_annos.get(ont)){
-					ObjectNode term = mapper.createObjectNode();
-					term.put("accession", anno.getAccession());
-					term.put("term", anno.getTerm());
-					term.put("evidence_type", anno.getEvidence_type());
-					term.put("source", anno.getSource());
-					values.add(term);
+	/*
+	 * 				if(board.equals("mammal_0")){
+					cards = weka.getCardsByIndices("1,10");
+				}else if(board.equals("mammal_1")){
+					cards = weka.getCardsByIndices("3,9");
+				}else if(board.equals("mammal_2")){
+					cards = weka.getCardsByIndices("9,7,6,14");
+				}else if(board.equals("mammal_3")){
+					cards = weka.getCardsByIndices("4,3,1,13");
 				}
-				ont_terms.put("values",values);
-				ontology.add(ont_terms);
-			}
-			metadata.put("ontology", ontology);	
-			ArrayNode rifs = mapper.createArrayNode();
-			for(TextAnnotation t : feature.getText_annotations()){
-				ObjectNode rif = mapper.createObjectNode();
-				rif.put("pubmed_id", t.getPubmed_id());
-				rif.put("text", t.getAnno_text());
-				rifs.add(rif);
-			}
-			metadata.put("rifs", rifs);
-			card.put("metadata", metadata);
-			cards.add(card);
-			loc++;
-		}
-		root.put("cards", cards);	
-		try {
-			json = mapper.writeValueAsString(root);
-		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return json;
+	 */
+	public static void main(String args[]) throws Exception{
+		//setupCureV2();
+		
 	}
 
 	/**
@@ -190,246 +86,7 @@ public class Board {
 			e.printStackTrace();
 		}
 	}
-
-	public static void setupCureV3(){
-		String dataset = "dream_breast_cancer_2";
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
-		int nper = 25; int nboards = 100; String room = "3";
-		try {
-			//for(int i=0; i<2; i++){
-			createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);
-			//}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void setupCureV4_griffith_1(){
-		String dataset = "griffith_breast_cancer_1";
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";
-		int nper = 25; int nboards = 100; String room = "4";
-		try {
-			//for(int i=0; i<2; i++){
-			createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);
-			//}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void setupCureV5_griffith_1(){
-		String dataset = "griffith_breast_cancer_1";
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
-		int nper = 25; int nboards = 100; String room = "5";
-		try {
-			//for(int i=0; i<2; i++){
-			createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);
-			//}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void setupCureEdu1(int n_per_board, String room) throws FileNotFoundException, Exception{
-		String dataset = "griffith_breast_cancer_1";
-		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
-		String pathfile = "/Users/bgood/genegames/cure_edu/cancer_pathways.txt";
-
-		HashMap<String, Set<Integer>> path_genes = new HashMap<String, Set<Integer>>();
-		try {
-			BufferedReader f = new BufferedReader(new FileReader(pathfile));
-			String line = f.readLine();
-			while(line!=null){
-				if(!line.startsWith("#")){
-					String[] item = line.split("\t");
-					if(item!=null&&item.length>1){
-						String pathway = item[8];
-						Set<String> paths = new HashSet<String>();
-						if(pathway.contains(";")){
-							String[] pathways = pathway.split(";");
-							for(String p : pathways){
-								paths.add(p.trim());
-							}
-						}else{
-							paths.add(pathway);
-						}
-						for(String p : paths){
-							Set<Integer> genes = path_genes.get(p);
-							if(genes==null){
-								genes = new HashSet<Integer>();
-							}
-							genes.add(Integer.parseInt(item[1]));
-							path_genes.put(p, genes);
-						}							
-					}
-				}
-				line = f.readLine();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//now we have the seed genes, make the boards
-		Weka weka = new Weka();
-		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-		//get the complete list of unique entrez gene ids for this dataset
-		List<String> gene_ids = new ArrayList<String>(weka.getFeatures().keySet());
-		System.out.println("N total possible gene ids: "+gene_ids.size());
-
-		List<String> kept_genes = new ArrayList<String>();
-		//randomize
-		Collections.shuffle(gene_ids);
-
-		//build the boards with random collections
-		//for(int board_id =1; board_id<=total; board_id++){
-		for(String path : path_genes.keySet()){	
-			if(path_genes.get(path).size()<2){
-				continue;
-			}
-			List<Integer> seedgenes = new ArrayList<Integer>(path_genes.get(path));
-			Board board = new Board();
-			board.setDataset(dataset);
-			board.setRoom(room);
-			List<Feature> bfs = new ArrayList<Feature>();
-			List<String> unique_ids = new ArrayList<String>();		
-			//add the genes
-			int n_seed_on_board = 0;
-			while(unique_ids.size()<n_per_board){
-				//first add all the seed genes (first 25 if more..)				
-				if(seedgenes!=null&&seedgenes.size()>0){
-					String seedgene = seedgenes.get(0).toString();
-					// in this dataset ?
-					if(weka.getFeatures().get(seedgene)!=null){
-						unique_ids.add(seedgene);
-						kept_genes.add(seedgene);
-						n_seed_on_board++;
-					}
-					seedgenes.remove(seedgenes.get(0));
-					gene_ids.remove(seedgene);	
-
-				}else{
-					unique_ids.add(gene_ids.get(0));
-					kept_genes.add(gene_ids.get(0));
-					gene_ids.remove(0);			
-				}
-			}
-			if(n_seed_on_board<1){
-				System.out.println("no seed genes for "+path+" in this dataset");
-			}else{
-				//add the features			
-				for(String gene : unique_ids){
-					bfs.add(weka.getFeatures().get(gene));
-				}
-				board.setFeatures(bfs);
-				//test it
-				execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
-				float base_score = (float)base.eval.pctCorrect();
-				board.setBase_score(base_score);
-				int bid = board.insert();
-				System.out.println(path+"\t"+n_seed_on_board+"\tboard_id:\t"+bid+base_score+"\t"+gene_ids.size()+"\t");
-			}
-		}			
-	/**
-N total possible gene ids: 1670
-no seed genes for TGF-b  in this dataset
-MAPK	2	board_id:	1679	60.669456	1620	
-no seed genes for HH in this dataset
-STAT	3	board_id:	1680	61.506275	1570	
-Apoptosis	2	board_id:	1681	58.577404	1546	
-Chromatin Modification	6	board_id:	1682	58.995815	1522	
-NOTCH	2	board_id:	1683	60.251045	1497	
-PI3K	9	board_id:	1684	57.322174	1477	
-RAS	8	board_id:	1685	61.087868	1460	
-TGF-b	1	board_id:	1686	58.995815	1436	
-Transcriptional Regulation	2	board_id:	1687	53.138077	1411	
-Cell Cycle	3	board_id:	1688	55.230125	1389	
-DNA Damage Control	1	board_id:	1689	59.414227	1364	
-APC	2	board_id:	1690	59.414227	1339
-	 */
 	
-	}
-
-	/**
-	 * For each of 'total' genes, generate two boards containing it.
-	 * @param train_file
-	 * @param n_per_board
-	 * @param dataset
-	 * @param room
-	 * @param total
-	 * @throws Exception
-	 */
-	public static void createAndSaveBoardsCoverGenesTwice(String train_file, int n_per_board, String dataset, String room, int total) throws Exception{	
-		Weka weka = new Weka();
-		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-
-		//produce the list of unique entrez gene ids
-
-		List<String> gene_ids = new ArrayList<String>(weka.getFeatures().keySet());
-		System.out.println("N gene ids: "+gene_ids.size());
-
-		List<String> kept_genes = new ArrayList<String>();
-		//randomize
-		Collections.shuffle(gene_ids);
-
-		//build the boards with random collections
-		for(int board_id =1; board_id<=total/2; board_id++){
-			Board board = new Board();
-			board.setDataset(dataset);
-			board.setRoom(room);
-			List<Feature> bfs = new ArrayList<Feature>();
-			List<String> unique_ids = new ArrayList<String>();		
-			//add the rest
-			for(int r=0; r<n_per_board;r++){
-				unique_ids.add(gene_ids.get(0));
-				kept_genes.add(gene_ids.get(0));
-				gene_ids.remove(0);				
-			}
-			//add the features			
-			for(String gene : unique_ids){
-				bfs.add(weka.getFeatures().get(gene));
-			}
-			board.setFeatures(bfs);
-			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
-			float base_score = (float)base.eval.pctCorrect();
-			board.setBase_score(base_score);
-			board.insert();
-			System.out.println(board_id+"\t"+base_score+"\t"+gene_ids.size()+"\t");
-		}
-		//build second batch 
-		//todo generalize
-		Collections.shuffle(kept_genes);
-		for(int board_id =1; board_id<=total/2; board_id++){
-			Board board = new Board();
-			board.setDataset(dataset);
-			board.setRoom(room);
-			List<Feature> bfs = new ArrayList<Feature>();
-			List<String> unique_ids = new ArrayList<String>();		
-			//add the rest
-			for(int r=0; r<n_per_board;r++){
-				unique_ids.add(kept_genes.get(0));
-				kept_genes.remove(kept_genes.get(0));
-			}
-			//add the features			
-			for(String gene : unique_ids){
-				bfs.add(weka.getFeatures().get(gene));
-			}
-			board.setFeatures(bfs);
-			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
-			float base_score = (float)base.eval.pctCorrect();
-			board.setBase_score(base_score);
-			board.insert();
-			System.out.println(board_id+"\t"+base_score+"\t"+gene_ids.size()+"\t");
-		}
-	}
-
 	/**
 	 * Use an attribute ranking system to generate hopefully useful boards..
 	 * @param train_file
@@ -464,7 +121,7 @@ APC	2	board_id:	1690	59.414227	1339
 		Collections.reverse(sorted_genes);
 		//randomize the other list
 		Collections.shuffle(gene_ids);
-
+				
 		//build the boards by sampling topper from the top, then the rest at random
 		for(int board_id =1; board_id<=total; board_id++){
 			Board board = new Board();
@@ -491,15 +148,15 @@ APC	2	board_id:	1690	59.414227	1339
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
+			execution base = weka.pruneAndExecute(unique_ids, null);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
 			System.out.println(board_id+"\t"+base_score+"\t"+gene_ids.size()+"\t"+sorted_genes.size()+"\t");
 		}
 	}
-
-
+	
+	
 	public static void createAndSaveRandomBoards(String train_file, int n_per_board, String dataset, String room, int n_boards) throws Exception{	
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
@@ -519,7 +176,7 @@ APC	2	board_id:	1690	59.414227	1339
 				unique_ids.add(gene_ids.get(i));
 				bfs.add(weka.getFeatures().get(gene_ids.get(i)));
 			}
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
+			execution base = weka.pruneAndExecute(unique_ids, null);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.setFeatures(bfs);
@@ -528,7 +185,7 @@ APC	2	board_id:	1690	59.414227	1339
 		}
 
 	}
-
+	
 	public static void createAndSaveSpecificBoard(String train_file, String dataset, String room, List<String> feature_ids) throws Exception{	
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);	
@@ -541,15 +198,15 @@ APC	2	board_id:	1690	59.414227	1339
 			f.getAllMetadataFromDb();
 			bfs.add(f);
 		}
-		execution base = weka.pruneAndExecuteWithUniqueIds(feature_ids, null, dataset, 1);
+		execution base = weka.pruneAndExecute(feature_ids, null);
 		float base_score = (float)base.eval.pctCorrect();
 		board.setBase_score(base_score);
 		board.setFeatures(bfs);
 		System.out.println(base_score+" \n "+base.model.getClassifier().toString());
 		board.insert();
-
+		
 	}
-
+	
 
 
 
@@ -563,18 +220,13 @@ APC	2	board_id:	1690	59.414227	1339
 		ResultSet generatedKeys = null; PreparedStatement pst = null;
 		try {
 			pst = conn.connection.prepareStatement(
-					"insert into board (id, dataset, room, base_score, created) values(?,?,?,?,?)",
+					"insert into board (id, dataset, room, base_score, created) values(null,?,?,?,?)",
 					Statement.RETURN_GENERATED_KEYS);
 			pst.clearParameters();
-			if(id>0){
-				pst.setInt(1,getId());
-			}else{
-				pst.setString(1, null);
-			}
-			pst.setString(2,getDataset());
-			pst.setString(3, getRoom());
-			pst.setFloat(4,getBase_score());
-			pst.setDate(5, getCreated());
+			pst.setString(1,getDataset());
+			pst.setString(2, getRoom());
+			pst.setFloat(3,getBase_score());
+			pst.setDate(4, getCreated());
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 0) {
@@ -620,146 +272,54 @@ APC	2	board_id:	1690	59.414227	1339
 		}
 	}
 
-	//	public List<Integer> getBoardpppScoresfromDb(int board_id){
-	//		List<Integer> board_scores = new ArrayList<Integer>();
-	//		String gethands = "select phenotype, game_type, board_id, score, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
-	//		JdbcConnection conn = new JdbcConnection();
-	//		try {
-	//			PreparedStatement p = conn.connection.prepareStatement(gethands);
-	//			ResultSet hands = p.executeQuery();
-	//			while(hands.next()){
-	//				int training = hands.getInt("training_accuracy");
-	//				int cv = hands.getInt("cv_accuracy");
-	//				int win = hands.getInt("win");				
-	//				if(win>0){
-	//					if(training<0){
-	//						training = cv;
-	//					}
-	//					board_scores.add(training);
-	//				}
-	//			}
-	//			conn.connection.close();
-	//		} catch (SQLException e) {
-	//			// TODO Auto-generated catch block
-	//			e.printStackTrace();
-	//		}
-	//		return board_scores;
-	//	}
-
-
-	public static List<Board> getAllBoards(boolean drop_mammal, boolean setfeatures){
-		List<Board> boards= new ArrayList<Board>();
-		String getboards = "select * from board order by dataset, base_score desc";
-		if(drop_mammal){
-			getboards = "select * from board where dataset !='mammal'  order by dataset, base_score desc";
-		}
-		JdbcConnection conn = new JdbcConnection();
-		try {
-			PreparedStatement p = conn.connection.prepareStatement(getboards);
-			ResultSet rslt = p.executeQuery();
-			while(rslt.next()){
-				Board board = new Board();				
-				board.setId(rslt.getInt("id"));
-				board.setDataset(rslt.getString("dataset"));
-				board.setRoom(rslt.getString("room"));
-				board.setUpdated(rslt.getTimestamp("updated"));
-				board.setBase_score(rslt.getFloat("base_score"));
-				if(setfeatures){
-					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-					List<Feature> fs = new ArrayList<Feature>();
-					while(f_list.next()){
-						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
-					}
-					board.setFeatures(fs);
-				}
-				boards.add(board);
-			}
-			rslt.close();
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return boards;
-	}
-
-	public static List<Board> getA(String dataset, String room){
-		List<Board> boards = new ArrayList<Board>();
-		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' and room = '"+room+"' order by base_score desc");
-		try {
-			while(rslt.next()){
-				Board board = new Board();
-				board.setAvg_score(rslt.getFloat("avg_score"));
-				board.setId(rslt.getInt("id"));
-				board.setMax_score(rslt.getFloat("max_score"));
-				board.setN_players(rslt.getInt("n_players"));
-				board.setN_wins(rslt.getInt("n_wins"));
-				board.setDataset(dataset);
-				board.setRoom(rslt.getString("room"));
-				board.setUpdated(rslt.getTimestamp("updated"));
-				board.setBase_score(rslt.getFloat("base_score"));
-
-				//				ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-				//				List<Feature> fs = new ArrayList<Feature>();
-				//				while(f_list.next()){
-				//					fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
-				//				}
-				//				board.setFeatures(fs);
-				boards.add(board);
-			}
-			rslt.close();
-			conn.connection.close();	
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return boards;
-	}
-
-
-	public static Set<Integer> getBoardsByPlayer(int player_id, String dataset){
-		Set<Integer> boards= new HashSet<Integer>();
-		String getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id";
-		if(dataset!=null){
-			getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id and board.dataset = '"+dataset+"'";
-		}
-		JdbcConnection conn = new JdbcConnection();
-		try {
-			PreparedStatement p = conn.connection.prepareStatement(getboards);
-			ResultSet bds = p.executeQuery();
-			while(bds.next()){
-				int id = bds.getInt("id");
-				boards.add(id);
-			}
-			bds.close();
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return boards;
-	}
-
-	public static Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
-		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
-		String gethands = "select * from game where win = 1 and board_id = '"+board_id+"' ";
+	public List<Integer> getBoardScoresfromDb(int board_id){
+		List<Integer> board_scores = new ArrayList<Integer>();
+		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(gethands);
 			ResultSet hands = p.executeQuery();
 			while(hands.next()){
-				int score = hands.getInt("p1_score");
-				String player_id = hands.getString("player1_id");
-				List<Integer> board_scores = player_board_scores.get(player_id);
+				int training = hands.getInt("training_accuracy");
+				int cv = hands.getInt("cv_accuracy");
+				int win = hands.getInt("win");				
+				if(win>0){
+					if(training<0){
+						training = cv;
+					}
+					board_scores.add(training);
+				}
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return board_scores;
+	}
+
+	public static Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
+		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
+		String gethands = "select player_name, phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where win > 0" +
+		" and board_id = '"+board_id+"' and player_name != 'anonymous_hero' ";
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(gethands);
+			ResultSet hands = p.executeQuery();
+			while(hands.next()){
+				int training = hands.getInt("training_accuracy");
+				int cv = hands.getInt("cv_accuracy");
+				String player_name = hands.getString("player_name");
+				if(training<0){
+					training = cv;
+				}
+				List<Integer> board_scores = player_board_scores.get(player_name);
 				if(board_scores==null){
 					board_scores = new ArrayList<Integer>();
 				}
-				board_scores.add(score);
-				player_board_scores.put(player_id, board_scores);
+				board_scores.add(training);
+				player_board_scores.put(player_name, board_scores);
 			}
-			hands.close();
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -768,80 +328,69 @@ APC	2	board_id:	1690	59.414227	1339
 		return player_board_scores;
 	}	
 
-
-	public static List<Board> getBoardsByDatasetRoom(String dataset, String room){
-		List<Board> boards = new ArrayList<Board>();
-		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' and room = '"+room+"' order by base_score desc");
-		try {
-			while(rslt.next()){
-				Board board = new Board();
-				board.setAvg_score(rslt.getFloat("avg_score"));
-				board.setId(rslt.getInt("id"));
-				board.setMax_score(rslt.getFloat("max_score"));
-				board.setN_players(rslt.getInt("n_players"));
-				board.setN_wins(rslt.getInt("n_wins"));
-				board.setDataset(dataset);
-				board.setRoom(rslt.getString("room"));
-				board.setUpdated(rslt.getTimestamp("updated"));
-				board.setBase_score(rslt.getFloat("base_score"));
-
-				//					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-				//					List<Feature> fs = new ArrayList<Feature>();
-				//					while(f_list.next()){
-				//						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
-				//					}
-				//					board.setFeatures(fs);
-				boards.add(board);
-			}
-			rslt.close();
-			conn.connection.close();	
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return boards;
-	}
-
-	public static Board getBoardById(String id, boolean populate_metadata){
-		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from board where id = '"+id+"'");
-		try {
-			if(rslt.next()){
-				Board board = new Board();
-				board.setAvg_score(rslt.getFloat("avg_score"));
-				board.setId(rslt.getInt("id"));
-				board.setMax_score(rslt.getFloat("max_score"));
-				board.setN_players(rslt.getInt("n_players"));
-				board.setN_wins(rslt.getInt("n_wins"));
-				board.setDataset(rslt.getString("dataset"));
-				board.setRoom(rslt.getString("room"));
-				board.setUpdated(rslt.getTimestamp("updated"));
-				board.setBase_score(rslt.getFloat("base_score"));
-
-				ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-				List<Feature> fs = new ArrayList<Feature>();
-				while(f_list.next()){
-					Feature f = Feature.getByDbId(f_list.getInt("feature_id"));
-					if(populate_metadata){
-						f.getAllMetadataFromDb();
+		
+		public static List<Board> getBoardsByDataset(String dataset){
+			List<Board> boards = new ArrayList<Board>();
+			JdbcConnection conn = new JdbcConnection();
+			ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' order by base_score desc");
+			try {
+				while(rslt.next()){
+					Board board = new Board();
+					board.setAvg_score(rslt.getFloat("avg_score"));
+					board.setId(rslt.getInt("id"));
+					board.setMax_score(rslt.getFloat("max_score"));
+					board.setN_players(rslt.getInt("n_players"));
+					board.setN_wins(rslt.getInt("n_wins"));
+					board.setDataset(dataset);
+					board.setRoom(rslt.getString("room"));
+					board.setUpdated(rslt.getTimestamp("updated"));
+					board.setBase_score(rslt.getFloat("base_score"));
+					
+					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+					List<Feature> fs = new ArrayList<Feature>();
+					while(f_list.next()){
+						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
 					}
-					fs.add(f);
+					board.setFeatures(fs);
+					boards.add(board);
 				}
-				board.setFeatures(fs);
 				rslt.close();
-				conn.connection.close();
-				return board;
+				conn.connection.close();	
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			return boards;
 		}
-		return null;
-	}
-
-
+	
+	//	public Board getBoardById(String id){
+	//		JdbcConnection conn = new JdbcConnection();
+	//		ResultSet rslt = conn.executeQuery("select * from board where id = '"+id+"'");
+	//		try {
+	//			if(rslt.next()){
+	//				Board board = new Board();
+	//				board.setAverage_score(rslt.getFloat("average_score"));
+	//				board.setEntrez_ids(string2list(rslt.getString("entrez_ids")));
+	//				board.setGene_symbols(string2list(rslt.getString("gene_symbols")));
+	//				board.setId(rslt.getInt("id"));
+	//				board.setMax_score(rslt.getFloat("max_score"));
+	//				board.setN_players(rslt.getInt("n_players"));
+	//				board.setN_wins(rslt.getInt("n_wins"));
+	//				board.setPhenotype(dataset);
+	//				board.setUpdated(rslt.getTimestamp("updated"));
+	//				board.setAttribute_names(string2list(rslt.getString("attribute_names")));
+	//				board.setBase_score(rslt.getFloat("base_score"));
+	//				return board;
+	//			}
+	//		} catch (SQLException e) {
+	//			// TODO Auto-generated catch block
+	//			e.printStackTrace();
+	//		}
+	//		return null;
+	//	}
+	//	
+	
 	public List<String> getFeatureIds() {
 		if(getFeatures()!=null){
 			List<String> ids = new ArrayList<String>();
@@ -851,7 +400,7 @@ APC	2	board_id:	1690	59.414227	1339
 		}
 		return null;
 	}
-
+	
 	public int getId() {
 		return id;
 	}

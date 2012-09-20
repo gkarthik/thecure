@@ -16,6 +16,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.json.JSONObject;
+import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Player;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 
@@ -61,7 +63,7 @@ public class GameLog {
 		List<Hand> whs = Hand.getTheFirstHandPerPlayerPerBoard(true);
 		
 		for(Hand hand : whs){
-			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_name()+"\t"+hand.getCv_accuracy());
+			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_id()+"\t"+hand.getCv_accuracy());
 		}
 		
 //		GameLog.high_score sb = log.getScoreBoard();
@@ -193,6 +195,8 @@ public class GameLog {
 	public high_score getScoreBoard(List<Hand> hands){
 		high_score scores = new high_score();
 		
+		Map<Integer, Player> id_player = Player.mapPlayersByDbId(Player.getAllPlayers());
+		
 		Map<String, Integer> player_global_points = new HashMap<String, Integer>();
 		Map<String, Integer> player_max = new HashMap<String, Integer>();
 		Map<String, List<Integer>> player_games = new HashMap<String, List<Integer>>();
@@ -202,8 +206,9 @@ public class GameLog {
 		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();
 		int games_won = 0;
 		for(Hand hand : hands){
-			String player = hand.getPlayer_name();
-			if(hand.getPhenotype()==null){
+			Integer player_id = hand.getPlayer_id();
+			String player = id_player.get(player_id).getName();
+			if(hand.getDataset()==null){
 				continue;
 			}
 			//points for hand
@@ -214,7 +219,7 @@ public class GameLog {
 			//if(hand.getPhenotype().equals("mammal")||hand.getPhenotype().equals("zoo")){
 			//	board_performance = hand.getTraining_accuracy();
 			//}
-			multiplier = pheno_multiplier.get(hand.getPhenotype());
+			multiplier = pheno_multiplier.get(hand.getDataset());
 			if(board_performance < 1){
 				continue;
 			}
@@ -239,7 +244,7 @@ public class GameLog {
 			}
 			player_max.put(player, max);
 			//board max
-			String board = hand.getPhenotype()+"_"+hand.getBoard_id();
+			String board = hand.getDataset()+"_"+hand.getBoard_id();
 			max = board_max.get(board);
 			if(max ==null){
 				max = score;

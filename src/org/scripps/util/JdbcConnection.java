@@ -19,7 +19,7 @@ public class JdbcConnection {
 	
 	public JdbcConnection(){
 		String serverLocation = "127.0.0.1";
-		String db = "cure";
+		String db = "cure2";
 		String user = "cure";
 		String password = "cure";
 		createConnection(serverLocation, db, user, password);
