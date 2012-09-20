@@ -584,6 +584,19 @@ div#footer iframe.twitter-share-button {
   box-shadow: inset 0px 0px 6px #666;
 }
 
+#endgame {
+  background-color: #fff;
+  padding: 18px;
+}
+
+#endgame h2 {
+
+}
+
+#endgame h3 {
+
+}
+
 #boardgame img.avatar {
   position: relative;
   width: 50px;
@@ -599,6 +612,7 @@ div#footer iframe.twitter-share-button {
     left: 0px;
     height:100%;
     width:100%;
-    background: #000;
+    background-color: #666;
+    background-color: rba(0,0,0,.2);
     display: none;
 }

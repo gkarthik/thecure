@@ -111,11 +111,7 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
         </div>
       </div>
 
-      <div id="endgame" style="display: none;">
-        <h1>Round Over</h1>
-        <div id="winner"></div><br>
-        <input class="save_hand" id="holdem_button" type="submit" value="Try another board" />
-      </div>
+      <div id="endgame" style="display: none;"></div>
 
     </div>
 

@@ -183,8 +183,9 @@ CURE.boardgame = {
           clicked_card.removeClass("active").addClass("selected").unbind("click").html("");
           game.board_state_clickable = false;
           game.addCardToBarney();
-        } else {  alert("Sorry, you can only have 5 cards in your hand in this game."); }
-      } else { alert("Wait your turn!"); }
+        } else {  
+          $("#endgame").html("").append("<p>Sorry, you can only have 5 cards in your hand in this game.</p>").leanModal(); }
+      } else { $("#endgame").html("").append("<p>Wait your turn!</p>"); }
     })
   },
   returnCard : function(obj) {
@@ -267,19 +268,22 @@ CURE.boardgame = {
   },
   showTheResults : function() {
     var game = CURE.boardgame,
-        winnerEl = $("#endgame #winner");
+        winnerEl = $("#endgame");
+    winnerEl.html("");
     if (  game.p1_score < game.p2_score &&
           game.p1_score > 0 ) {
-      winnerEl.text("Sorry, you lost this hand. ");
+      winnerEl.append("<h2>Sorry, you lost this hand.</h2>");
+      winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
       //$tabs.tabs('select', 4);
       game.moveBarney("win"); //incorrect win lose
-      winnerEl.append("<br><a href=\""+ game.replay +"\">Play Level Again?</a>");
+
 
     } else if ( game.p1_score > game.p2_score &&
                 CURE.dataset == 'mammal' &&
                 game.level == 3 ) {
-
-      winnerEl.html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
+      winnerEl.append("<h2>Congratulations! You finished your training!</h1>")
+      winnerEl.append("<h3>You have gained access to the challenge area.</h3>")
+      winnerEl.append("<h3><a href='boardroom.jsp'>Start the challenge!</a></h3>");
       $("#holdem_button").hide();
       //$tabs.tabs('select', 3);
       game.moveBarney("lose"); //incorrect win lose
@@ -287,25 +291,21 @@ CURE.boardgame = {
 
     } else if ( game.p1_score > game.p2_score ) {
 
-      winnerEl.html("<h1>You beat Barney!</h1>You earned "
-        + game.p1_score + " * " + game.multiplier
-        + "= </strong><span style=\"font-size:30px;\">"
-        + ( game.p1_score * game.multiplier )
-        + "</span> points!");
+      winnerEl.append("<h2>You beat Barney!</h2>")
+      winnerEl.append("<h3>You earned "+ game.p1_score +" points!</h3>");
       //$tabs.tabs('select', 3);
       game.moveBarney("lose"); //incorrect win lose
       game.moveClayton("win");
 
-    } else if (p1_score == p2_score) {
+    } else if ( game.p1_score == game.p2_score) {
 
-      winnerEl.text("You tied Barney! ");
+      winnerEl.append("<h2>You tied Barney!</h2>");
+      winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
       //$tabs.tabs('select', 3);
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
-      targetEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
-
     }
-    $("#endgame").show();
+    $("#endgame").leanModal();
   },
   addCardToBarney : function() {
     var game = CURE.boardgame;
