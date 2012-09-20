@@ -1,6 +1,7 @@
 package org.scripps.combo.model;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,7 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.scripps.combo.weka.Weka;
+import org.scripps.combo.model.Attribute;
 import org.scripps.util.JdbcConnection;
+
+import weka.attributeSelection.Ranker;
+import weka.attributeSelection.ReliefFAttributeEval;
+import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.supervised.attribute.AttributeSelection;
 
 /**
  * Selectable features for the cure/combo game.
@@ -36,13 +45,22 @@ public class Feature {
 	//linked annotation 
 	List<Annotation> annotations;
 	List<TextAnnotation> text_annotations;
-	
+
 	Date created;
 	Timestamp updated;
 
 	public static void main(String args[]){
-		Feature f = Feature.getByUniqueId("48");
-		System.out.println(f.id+" "+f.unique_id+" "+f.description);
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
+		String dataset = "mammal";
+		try {
+			loadRawWeka(train_file, dataset);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void getAllMetadataFromDb(){
@@ -50,7 +68,7 @@ public class Feature {
 		getTextAnnotationsFromDb();
 		getMappedAttributesFromDb();
 	}
-	
+
 	public void getAnnotationsFromDb(){
 		if(getId()!=0){
 			List<Annotation> annotations = Annotation.getByFeatureDbId(""+getId());
@@ -70,8 +88,8 @@ public class Feature {
 			setDataset_attributes(attributes);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Insert a new feature.
 	 * @throws SQLException 
@@ -111,7 +129,7 @@ public class Feature {
 		return newid;
 	}
 
-	
+
 	public static Map<String, Feature> getByDataset(String dataset){
 		Map<String, Feature> features = new HashMap<String, Feature>();
 		JdbcConnection conn = new JdbcConnection();
@@ -138,7 +156,7 @@ public class Feature {
 		}
 		return features;
 	}
-	
+
 	public static Feature getByDbId(int id){
 		Feature f = null;
 		JdbcConnection conn = new JdbcConnection();
@@ -187,6 +205,31 @@ public class Feature {
 		return f;
 	}
 
+	public static void loadRawWeka(String train_file, String dataset) throws FileNotFoundException, Exception{
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, dataset);
+		Instances data = weka.getTrain();
+		Map<Integer, Float> index_relief = weka.getRelief();
+		for(int a=0; a<data.numAttributes(); a++){
+			weka.core.Attribute att = data.attribute(a);
+			if(att.index()!=data.classIndex()){
+				Feature f = new Feature();
+				f.setUnique_id(dataset+"_"+att.index());
+				f.setShort_name(att.name());
+				f.setLong_name(att.name());
+				f.setDescription("");
+				int f_id = f.insert();
+				org.scripps.combo.model.Attribute combo_att = new org.scripps.combo.model.Attribute();
+				combo_att.setCol_index(att.index());
+				combo_att.setDataset(dataset);
+				combo_att.setFeature_id(f_id);
+				combo_att.setName(att.name());
+				combo_att.setReliefF(index_relief.get(att.index()));
+				combo_att.insert();
+			}
+		}				
+	}
+
 	public static void loadEntrezGene(){
 		String gene_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/gene/Homo_sapiens.gene_info"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
 		BufferedReader f;
@@ -223,6 +266,7 @@ public class Feature {
 			e.printStackTrace();
 		}
 	}
+
 	public int getId() {
 		return id;
 	}

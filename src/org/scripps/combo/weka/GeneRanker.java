@@ -30,7 +30,6 @@ import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Hand;
 import org.scripps.combo.model.Player;
-import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
@@ -46,9 +45,9 @@ public class GeneRanker {
 
 	/**
 	 * @param args
-	 * @throws FileNotFoundException 
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws Exception {
 		int n_genes = 10;		
 		List<String> gids = null;
 		gids = getRankedGenes_1();
@@ -70,17 +69,16 @@ public class GeneRanker {
 	//	Player.describePlayers(true);
 	}
 
-//todo next
-	public static void generateRandomBaseline(int n_genes, int n_sampled) throws FileNotFoundException{
+
+	public static void generateRandomBaseline(int n_genes, int n_sampled) throws Exception{
 		//get results vector ready
 		DescriptiveStatistics cvs = new DescriptiveStatistics();
 		
 		//get weka ready
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
-		String metadatafile = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map.txt"; 
-		Weka weka = new Weka(train_file);
-		weka.loadMetadata(new FileInputStream(metadatafile), false);
-		List<String> all_genes = new ArrayList<String>(weka.geneid_cards.keySet());
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
+		List<String> all_genes = new ArrayList<String>(weka.getFeatures().keySet());
 
 //      go through n_sampled random combos
 		for(int i = 0; i< n_sampled; i++) {
@@ -94,14 +92,14 @@ public class GeneRanker {
 				}
 				n++;
 			}
-			List<card> cards = new ArrayList<card>();
+			List<String> geneids = new ArrayList<String>();
 			String genes = "";
 			for(String gh : group){
-				cards.addAll(weka.geneid_cards.get(gh));
+				geneids.add(gh);
 				genes+=gh+",";
 			}
 			//test group
-			execution base = weka.pruneAndExecute(cards);
+			execution base = weka.pruneAndExecute(geneids, null);
 			double cv = base.eval.pctCorrect();
 			cvs.addValue(cv);
 			System.out.println(i+"\t"+cv);
@@ -113,32 +111,13 @@ public class GeneRanker {
 	/**
 	 * run a gene list through weka and see what comes out
 	 * @param gids
-	 * @throws FileNotFoundException
+	 * @throws Exception 
 	 */
-	public static void testGeneList(List<String> gids, int n_genes) throws FileNotFoundException {
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
-		String metadatafile = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map.txt"; 
-		Weka weka = new Weka(train_file);
-		weka.loadMetadata(new FileInputStream(metadatafile), false);
-		String features = "";
-		int l = 0;
-		for(String geneid : gids){		
-			List<card> cards = weka.getGeneid_cards().get(geneid);
-			String f = "";
-			if(cards!=null){
-				for(card c : cards){
-					f+=c.getAtt_index()+",";
-				}
-			}
-			System.out.println(geneid+"\t"+weka.getGeneid_cards().get(geneid).get(0).getName()+"\t"+f);
-			features+=f;
-			l++;
-			if(l>=n_genes){
-				break;
-			}
-		}
-		J48 wekamodel = new J48();
-		Weka.execution result = weka.pruneAndExecute(features, wekamodel);
+	public static void testGeneList(List<String> gids, int n_genes) throws Exception {
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
+		Weka.execution result = weka.pruneAndExecute(gids, null);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
 	}
@@ -162,12 +141,10 @@ public class GeneRanker {
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 
-
-		Board b = new Board();
 		int min_hands_per_board = 5;
 		int min_players_per_board = 5;
 		int n_finished_boards = 0;
-		List<Board> boards = b.getBoardsByPhenotype("dream_breast_cancer");
+		List<Board> boards = Board.getBoardsByDataset("dream_breast_cancer");
 		Map<Board, Map<String, Float>> board_gene_freq = new HashMap<Board, Map<String, Float>>();
 		Map<String, Integer> gene_views = new HashMap<String, Integer>();
 		Map<String, Integer> gene_votes = new HashMap<String, Integer>();
@@ -177,7 +154,7 @@ public class GeneRanker {
 			List<Hand> handsall = getTheFirstHandPerPlayerByBoard(board.getId());
 			List<Hand> hands = new ArrayList<Hand>();
 			for(Hand hand : handsall){
-				Player theplayer = name_player.get(hand.getPlayer_name());
+				Player theplayer = name_player.get(hand.getPlayer_id());
 				if(theplayer!=null&&theplayer.getCancer().equals("yes")&&
 						player_cardsboard.get(theplayer.getName())<13){
 					hands.add(hand);
@@ -186,16 +163,15 @@ public class GeneRanker {
 			//sort the genes			
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
 			float n_hands = hands.size();
-			Set<String> players = new HashSet<String>();
+			Set<Integer> players = new HashSet<Integer>();
 			if(n_hands>=min_hands_per_board){
 				for(Hand hand : hands){
-					players.add(hand.getPlayer_name());
-					String[] feature_names = hand.getFeature_names().split("\\|");
-					if(feature_names.length>4){
+					players.add(hand.getPlayer_id());
+					String[] features = hand.getFeatures().split(",");
+					if(features.length>4){
 						Set<String> distinct = new HashSet<String>();
 						float order = 5;
-						for(String feature : feature_names){
-							String gene = feature.split(":")[0];
+						for(String gene : features){
 							if(distinct.add(gene)){//only count once if the same gene gets into multiple hands
 								Float freq = gene_freq.get(gene);
 								if(freq==null){
@@ -292,12 +268,10 @@ public class GeneRanker {
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 
-
-		Board b = new Board();
 		int min_hands_per_board = 5;
 		int min_players_per_board = 5;
 		int n_finished_boards = 0;
-		List<Board> boards = b.getBoardsByPhenotype("dream_breast_cancer");
+		List<Board> boards = Board.getBoardsByDataset("dream_breast_cancer");
 		Map<Board, Map<String, Float>> board_gene_freq = new HashMap<Board, Map<String, Float>>();
 		Map<String, Integer> gene_views = new HashMap<String, Integer>();
 		Map<String, Integer> gene_votes = new HashMap<String, Integer>();
@@ -309,16 +283,15 @@ public class GeneRanker {
 			//sort the genes			
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
 			float n_hands = hands.size();
-			Set<String> players = new HashSet<String>();
+			Set<Integer> players = new HashSet<Integer>();
 			if(n_hands>=min_hands_per_board){
 				for(Hand hand : hands){
-					players.add(hand.getPlayer_name());
-					String[] feature_names = hand.getFeature_names().split("\\|");
-					if(feature_names.length>4){
+					players.add(hand.getPlayer_id());
+					String[] features = hand.getFeatures().split(",");
+					if(features.length>4){
 						Set<String> distinct = new HashSet<String>();
 						float order = 5;
-						for(String feature : feature_names){
-							String gene = feature.split(":")[0];
+						for(String gene : features){
 							if(distinct.add(gene)){//only count once if the same gene gets into multiple hands
 								Float freq = gene_freq.get(gene);
 								if(freq==null){
@@ -417,12 +390,10 @@ public class GeneRanker {
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 
-
-		Board b = new Board();
 		int min_hands_per_board = 5;
 		int min_players_per_board = 5;
 		int n_finished_boards = 0;
-		List<Board> boards = b.getBoardsByPhenotype("dream_breast_cancer");
+		List<Board> boards = Board.getBoardsByDataset("dream_breast_cancer");
 		Map<Board, Map<String, Float>> board_gene_freq = new HashMap<Board, Map<String, Float>>();
 		Map<String, Integer> gene_views = new HashMap<String, Integer>();
 		Map<String, Integer> gene_votes = new HashMap<String, Integer>();
@@ -432,7 +403,7 @@ public class GeneRanker {
 			List<Hand> handsall = getTheFirstHandPerPlayerByBoard(board.getId());
 			List<Hand> hands = new ArrayList<Hand>();
 			for(Hand hand : handsall){
-				Player theplayer = name_player.get(hand.getPlayer_name());
+				Player theplayer = name_player.get(hand.getPlayer_id());
 				if(theplayer!=null&&theplayer.getCancer().equals("yes")&&
 						player_cardsboard.get(theplayer.getName())<13){
 					hands.add(hand);
@@ -441,15 +412,14 @@ public class GeneRanker {
 			//sort the genes			
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
 			float n_hands = hands.size();
-			Set<String> players = new HashSet<String>();
+			Set<Integer> players = new HashSet<Integer>();
 			if(n_hands>=min_hands_per_board){
 				for(Hand hand : hands){
-					players.add(hand.getPlayer_name());
-					String[] feature_names = hand.getFeature_names().split("\\|");
-					if(feature_names.length>4){
+					players.add(hand.getPlayer_id());
+					String[] features = hand.getFeatures().split(",");
+					if(features.length>4){
 						Set<String> distinct = new HashSet<String>();
-						for(String feature : feature_names){
-							String gene = feature.split(":")[0];
+						for(String gene : features){
 							if(distinct.add(gene)){//only count once if the same gene gets into multiple hands
 								Float freq = gene_freq.get(gene);
 								if(freq==null){
@@ -532,11 +502,10 @@ public class GeneRanker {
 	 * @return a list of geneids sorted according to the frequency that they were selected - first is the most frequent
 	 */
 	public static List<String> getRankedGenes_1(){
-		Board b = new Board();
 		int min_hands_per_board = 5;
 		int min_players_per_board = 5;
 		int n_finished_boards = 0;
-		List<Board> boards = b.getBoardsByPhenotype("dream_breast_cancer");
+		List<Board> boards = Board.getBoardsByDataset("dream_breast_cancer");
 		Map<Board, Map<String, Float>> board_gene_freq = new HashMap<Board, Map<String, Float>>();
 		Map<String, Integer> gene_views = new HashMap<String, Integer>();
 		Map<String, Integer> gene_votes = new HashMap<String, Integer>();
@@ -545,15 +514,14 @@ public class GeneRanker {
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
 			List<Hand> hands = getTheFirstHandPerPlayerByBoard(board.getId());
 			float n_hands = hands.size();
-			Set<String> players = new HashSet<String>();
+			Set<Integer> players = new HashSet<Integer>();
 			if(n_hands>=min_hands_per_board){
 				for(Hand hand : hands){
-					players.add(hand.getPlayer_name());
-					String[] feature_names = hand.getFeature_names().split("\\|");
-					if(feature_names.length>4){
+					players.add(hand.getPlayer_id());
+					String[] features = hand.getFeatures().split(",");
+					if(features.length>4){
 						Set<String> distinct = new HashSet<String>();
-						for(String feature : feature_names){
-							String gene = feature.split(":")[0];
+						for(String gene : features){
 							if(distinct.add(gene)){//onlu count once if the same gene gets into multiple hands
 								Float freq = gene_freq.get(gene);
 								if(freq==null){
@@ -631,7 +599,7 @@ public class GeneRanker {
 
 	public static List<Hand> getTheFirstHandPerPlayerByBoard(int board_id){
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand where board_id = "+board_id+" and player_name != 'anonymous_hero' order by time asc");
+		ResultSet rslt = conn.executeQuery("select * from hand where board_id = "+board_id+" order by time asc");
 		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
 		try {
 			while(rslt.next()){
@@ -641,22 +609,20 @@ public class GeneRanker {
 				hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setPlayer_id(rslt.getInt("player_id"));
 				hand.setScore(rslt.getInt("score"));
-				hand.setFeature_names(rslt.getString("feature_names"));
-				hand.setGame_type(rslt.getString("game_type"));
-				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
 				Calendar t = Calendar.getInstance();
 				t.setTime(rslt.getTimestamp("time"));
 				hand.setTimestamp(t);
 
-				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_name())){
-					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_name(), hand);
-					//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_id())){
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_id(), hand);
+					//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_id()+"\t"+hand.getBoard_id());
 				}else{
-					//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+					//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_id()+"\t"+hand.getBoard_id());
 				}
 			}
 		} catch (SQLException e) {
@@ -670,7 +636,7 @@ public class GeneRanker {
 	public static List<Hand> getHandsByBoard(int board_id){
 		List<Hand> hands = new ArrayList<Hand>();
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand where board_id ='"+board_id+"' and player_name != 'anonymous_hero'");
+		ResultSet rslt = conn.executeQuery("select * from hand where board_id ='"+board_id+"'");
 		try {
 			while(rslt.next()){
 				Hand hand = new Hand();
@@ -679,11 +645,9 @@ public class GeneRanker {
 				hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setPlayer_id(rslt.getInt("player_id"));
 				hand.setScore(rslt.getInt("score"));
-				hand.setFeature_names(rslt.getString("feature_names"));
-				hand.setGame_type(rslt.getString("game_type"));
-				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
 				Calendar t = Calendar.getInstance();

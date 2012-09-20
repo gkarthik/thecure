@@ -15,7 +15,6 @@ import org.paukov.combinatorics.combination.simple.SimpleCombinationGenerator;
 import org.scripps.combo.Boardroom;
 import org.scripps.combo.Boardroom.boardview;
 import org.scripps.combo.model.Board;
-import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 
 /**
@@ -27,21 +26,21 @@ public class BarneyBot {
 
 	/**
 	 * @param args
-	 * @throws FileNotFoundException 
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws FileNotFoundException  {
+	public static void main(String[] args) throws Exception  {
 		getMaxTrainingSetScores();
 		//testComboGenerator();
 	}
 
-	public static void getMaxTrainingSetScores() throws FileNotFoundException{
+	public static void getMaxTrainingSetScores() throws Exception{
 		int hand_size = 3;
 		//get weka ready
 		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
 		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
-		Weka weka = new Weka(train_file);
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
 		weka.setEval_method("training_set");
-		weka.loadMetadata(new FileInputStream(metadatafile), true);
 		//lookup the boards
 		Boardroom b = new Boardroom();
 		b.buildBoardView("bgood", "dream_breast_cancer");
@@ -50,7 +49,7 @@ public class BarneyBot {
 		for(boardview v : bviews){
 			bn++;
 			Board board = v.getBoard();
-			List<String> genes = board.getEntrez_ids();
+			List<String> genes = board.getFeatureIds();
 
 			//run through all the combos..
 			// create combinatorics vector
@@ -66,9 +65,8 @@ public class BarneyBot {
 			while (itr.hasNext()) {
 				CombinatoricsVector<String> combination = itr.next();
 				for(String gh : combination.getVector()){
-					List<card> cards = weka.geneid_cards.get(gh);
 					//test it
-					execution base = weka.pruneAndExecute(cards);
+					execution base = weka.pruneAndExecute(gh, null);
 					if(base.eval.pctCorrect()>max){
 						max = (float)base.eval.pctCorrect();
 					}
