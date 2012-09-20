@@ -5,70 +5,73 @@
 .disabled=1)},getRegion:function(){return 1},getCurrentRegionFields:function(){var a=[{field:"lq",value:this.quartiles[0]},{field:"med",value:this.quartiles[1]},{field:"uq",value:this.quartiles[2]},{field:"lo",value:this.loutlier},{field:"ro",value:this.routlier}];return this.lwhisker!==undefined&&a.push({field:"lw",value:this.lwhisker}),this.rwhisker!==undefined&&a.push({field:"rw",value:this.rwhisker}),a},render:function(){var a=this.target,b=this.values,c=b.length,d=this.options,e=this.canvasWidth,f=this.canvasHeight,h=d.get("chartRangeMin")===undefined?Math.min.apply(Math,b):d.get("chartRangeMin"),i=d.get("chartRangeMax")===undefined?Math.max.apply(Math,b):d.get("chartRangeMax"),j=0,k,l,m,n,o,p,q,r,s,t,u;if(!A._super.render.call(this))return;if(d.get("raw"))d.get("showOutliers")&&b.length>5?(l=b[0],k=b[1],n=b[2],o=b[3],p=b[4],q=b[5],r=b[6]):(k=b[0],n=b[1],o=b[2],p=b[3],q=b[4]);else{b.sort(function(a,b){return a-b}),n=g(b,1),o=g(b,2),p=g(b,3),m=p-n;if(d.get("showOutliers")){k=q=undefined;for(s=0;s<c;s++)k===undefined&&b[s]>n-m*d.get("outlierIQR")&&(k=b[s]),b[s]<p+m*d.get("outlierIQR")&&(q=b[s]);l=b[0],r=b[c-1]}else k=b[0],q=b[c-1]}this.quartiles=[n,o,p],this.lwhisker=k,this.rwhisker=q,this.loutlier=l,this.routlier=r,u=e/(i-h+1),d.get("showOutliers")&&(j=Math.ceil(d.get("spotRadius")),e-=2*Math.ceil(d.get("spotRadius")),u=e/(i-h+1),l<k&&a.drawCircle((l-h)*u+j,f/2,d.get("spotRadius"),d.get("outlierLineColor"),d.get("outlierFillColor")).append(),r>q&&a.drawCircle((r-h)*u+j,f/2,d.get("spotRadius"),d.get("outlierLineColor"),d.get("outlierFillColor")).append()),a.drawRect(Math.round((n-h)*u+j),Math.round(f*.1),Math.round((p-n)*u),Math.round(f*.8),d.get("boxLineColor"),d.get("boxFillColor")).append(),a.drawLine(Math.round((k-h)*u+j),Math.round(f/2),Math.round((n-h)*u+j),Math.round(f/2),d.get("lineColor")).append(),a.drawLine(Math.round((k-h)*u+j),Math.round(f/4),Math.round((k-h)*u+j),Math.round(f-f/4),d.get("whiskerColor")).append(),a.drawLine(Math.round((q-h)*u+j),Math.round(f/2),Math.round((p-h)*u+j),Math.round(f/2),d.get("lineColor")).append(),a.drawLine(Math.round((q-h)*u+j),Math.round(f/4),Math.round((q-h)*u+j),Math.round(f-f/4),d.get("whiskerColor")).append(),a.drawLine(Math.round((o-h)*u+j),Math.round(f*.1),Math.round((o-h)*u+j),Math.round(f*.9),d.get("medianColor")).append(),d.get("target")&&(t=Math.ceil(d.get("spotRadius")),a.drawLine(Math.round((d.get("target")-h)*u+j),Math.round(f/2-t),Math.round((d.get("target")-h)*u+j),Math.round(f/2+t),d.get("targetColor")).append(),a.drawLine(Math.round((d.get("target")-h)*u+j-t),Math.round(f/2),Math.round((d.get("target")-h)*u+j+t),Math.round(f/2),d.get("targetColor")).append()),a.render()}}),a.browser.msie&&!document.namespaces.v&&document.namespaces.add("v","urn:schemas-microsoft-com:vml","#default#VML"),a.browser.hasCanvas===undefined&&(a.browser.hasCanvas=document.createElement("canvas").getContext!==undefined),D=d({init:function(a,b,c,d){this.target=a,this.id=b,this.type=c,this.args=d},append:function(){return this.target.appendShape(this),this}}),E=d({_pxregex:/(\d+)(px)?\s*$/i,init:function(b,c,d){if(!b)return;this.width=b,this.height=c,this.target=d,this.lastShapeId=null,d[0]&&(d=d[0]),a.data(d,"_jqs_vcanvas",this)},drawLine:function(a,b,c,d,e,f){return this.drawShape([[a,b],[c,d]],e,f)},drawShape:function(a,b,c,d){return this._genShape("Shape",[a,b,c,d])},drawCircle:function(a,b,c,d,e,f){return this._genShape("Circle",[a,b,c,d,e,f])},drawPieSlice:function(a,b,c,d,e,f,g){return this._genShape("PieSlice",[a,b,c,d,e,f,g])},drawRect:function(a,b,c,d,e,f){return this._genShape("Rect",[a,b,c,d,e,f])},getElement:function(){return this.canvas},getLastShapeId:function(){return this.lastShapeId},reset:function(){alert("reset not implemented")},_insert:function(b,c){a(c).html(b)},_calculatePixelDims:function(b,c,d){var e;e=this._pxregex.exec(c),e?this.pixelHeight=e[1]:this.pixelHeight=a(d).height(),e=this._pxregex.exec(b),e?this.pixelWidth=e[1]:this.pixelWidth=a(d).width()},_genShape:function(a,b){var c=I++;return b.unshift(c),new D(this,c,a,b)},appendShape:function(a){alert("appendShape not implemented")},replaceWithShape:function(a,b){alert("replaceWithShape not implemented")},insertAfterShape:function(a,b){alert("insertAfterShape not implemented")},removeShapeId:function(a){alert("removeShapeId not implemented")},getShapeAt:function(a,b,c){alert("getShapeAt not implemented")},render:function(){alert("render not implemented")}}),F=d(E,{init:function(b,c,d,e){F._super.init.call(this,b,c,d),this.canvas=document.createElement("canvas"),d[0]&&(d=d[0]),a.data(d,"_jqs_vcanvas",this),a(this.canvas).css({display:"inline-block",width:b,height:c,verticalAlign:"top"}),this._insert(this.canvas,d),this._calculatePixelDims(b,c,this.canvas),this.canvas.width=this.pixelWidth,this.canvas.height=this.pixelHeight,this.interact=e,this.shapes={},this.shapeseq=[],this.currentTargetShapeId=undefined,a(this.canvas).css({width:this.pixelWidth,height:this.pixelHeight})},_getContext:function(a,b,c){var d=this.canvas.getContext("2d");return a!==undefined&&(d.strokeStyle=a),d.lineWidth=c===undefined?1:c,b!==undefined&&(d.fillStyle=b),d},reset:function(){var a=this._getContext();a.clearRect(0,0,this.pixelWidth,this.pixelHeight),this.shapes={},this.shapeseq=[],this.currentTargetShapeId=undefined},_drawShape:function(a,b,c,d,e){var f=this._getContext(c,d,e),g,h;f.beginPath(),f.moveTo(b[0][0]+.5,b[0][1]+.5);for(g=1,h=b.length;g<h;g++)f.lineTo(b[g][0]+.5,b[g][1]+.5);c!==undefined&&f.stroke(),d!==undefined&&f.fill(),this.targetX!==undefined&&this.targetY!==undefined&&f.isPointInPath(this.targetX,this.targetY)&&(this.currentTargetShapeId=a)},_drawCircle:function(a,b,c,d,e,f,g){var h=this._getContext(e,f,g);h.beginPath(),h.arc(b,c,d,0,2*Math.PI,!1),this.targetX!==undefined&&this.targetY!==undefined&&h.isPointInPath(this.targetX,this.targetY)&&(this.currentTargetShapeId=a),e!==undefined&&h.stroke(),f!==undefined&&h.fill()},_drawPieSlice:function(a,b,c,d,e,f,g,h){var i=this._getContext(g,h);i.beginPath(),i.moveTo(b,c),i.arc(b,c,d,e,f,!1),i.lineTo(b,c),i.closePath(),g!==undefined&&i.stroke(),h&&i.fill(),this.targetX!==undefined&&this.targetY!==undefined&&i.isPointInPath(this.targetX,this.targetY)&&(this.currentTargetShapeId=a)},_drawRect:function(a,b,c,d,e,f,g){return this._drawShape(a,[[b,c],[b+d,c],[b+d,c+e],[b,c+e],[b,c]],f,g)},appendShape:function(a){return this.shapes[a.id]=a,this.shapeseq.push(a.id),this.lastShapeId=a.id,a.id},replaceWithShape:function(a,b){var c=this.shapeseq,d;this.shapes[b.id]=b;for(d=c.length;d--;)c[d]==a&&(c[d]=b.id);delete this.shapes[a]},replaceWithShapes:function(a,b){var c=this.shapeseq,d={},e,f,g;for(f=a.length;f--;)d[a[f]]=!0;for(f=c.length;f--;)e=c[f],d[e]&&(c.splice(f,1),delete this.shapes[e],g=f);for(f=b.length;f--;)c.splice(g,0,b[f].id),this.shapes[b[f].id]=b[f]},insertAfterShape:function(a,b){var c=this.shapeseq,d;for(d=c.length;d--;)if(c[d]===a){c.splice(d+1,0,b.id),this.shapes[b.id]=b;return}},removeShapeId:function(a){var b=this.shapeseq,c;for(c=b.length;c--;)if(b[c]===a){b.splice(c,1);break}delete this.shapes[a]},getShapeAt:function(a,b,c){return this.targetX=b,this.targetY=c,this.render(),this.currentTargetShapeId},render:function(){var a=this.shapeseq,b=this.shapes,c=a.length,d=this._getContext(),e,f,g;d.clearRect(0,0,this.pixelWidth,this.pixelHeight);for(g=0;g<c;g++)e=a[g],f=b[e],this["_draw"+f.type].apply(this,f.args);this.interact||(this.shapes={},this.shapeseq=[])}}),G=d(E,{init:function(b,c,d){var e;G._super.init.call(this,b,c,d),d[0]&&(d=d[0]),a.data(d,"_jqs_vcanvas",this),this.canvas=document.createElement("span"),a(this.canvas).css({display:"inline-block",position:"relative",overflow:"hidden",width:b,height:c,margin:"0px",padding:"0px",verticalAlign:"top"}),this._insert(this.canvas,d),this._calculatePixelDims(b,c,this.canvas),this.canvas.width=this.pixelWidth,this.canvas.height=this.pixelHeight,e='<v:group coordorigin="0 0" coordsize="'+this.pixelWidth+" "+this.pixelHeight+'"'+' style="position:absolute;top:0;left:0;width:'+this.pixelWidth+"px;height="+this.pixelHeight+'px;"></v:group>',this.canvas.insertAdjacentHTML("beforeEnd",e),this.group=a(this.canvas).children()[0],this.rendered=!1,this.prerender=""},_drawShape:function(a,b,c,d,e){var f=[],g,h,i,j,k,l,m;for(m=0,l=b.length;m<l;m++)f[m]=""+b[m][0]+","+b[m][1];return g=f.splice(0,1),e=e===undefined?1:e,h=c===undefined?' stroked="false" ':' strokeWeight="'+e+'px" strokeColor="'+c+'" ',i=d===undefined?' filled="false"':' fillColor="'+d+'" filled="true" ',j=f[0]===f[f.length-1]?"x ":"",k='<v:shape coordorigin="0 0" coordsize="'+this.pixelWidth+" "+this.pixelHeight+'" '+' id="jqsshape'+a+'" '+h+i+' style="position:absolute;left:0px;top:0px;height:'+this.pixelHeight+"px;width:"+this.pixelWidth+'px;padding:0px;margin:0px;" '+' path="m '+g+" l "+f.join(", ")+" "+j+'e">'+" </v:shape>",k},_drawCircle:function(a,b,c,d,e,f,g){var h,i,j;return b-=d,c-=d,h=e===undefined?' stroked="false" ':' strokeWeight="'+g+'px" strokeColor="'+e+'" ',i=f===undefined?' filled="false"':' fillColor="'+f+'" filled="true" ',j='<v:oval  id="jqsshape'+a+'" '+h+i+' style="position:absolute;top:'+c+"px; left:"+b+"px; width:"+d*2+"px; height:"+d*2+'px"></v:oval>',j},_drawPieSlice:function(a,b,c,d,e,f,g,h){var i,j,k,l,m,n,o,p;if(e===f)return;f-e===2*Math.PI&&(e=0,f=2*Math.PI),j=b+Math.round(Math.cos(e)*d),k=c+Math.round(Math.sin(e)*d),l=b+Math.round(Math.cos(f)*d),m=c+Math.round(Math.sin(f)*d);if(j===l&&k===m&&f-e<Math.PI)return;return i=[b-d,c-d,b+d,c+d,j,k,l,m],n=g===undefined?' stroked="false" ':' strokeWeight="1px" strokeColor="'+g+'" ',o=h===undefined?' filled="false"':' fillColor="'+h+'" filled="true" ',p='<v:shape coordorigin="0 0" coordsize="'+this.pixelWidth+" "+this.pixelHeight+'" '+' id="jqsshape'+a+'" '+n+o+' style="position:absolute;left:0px;top:0px;height:'+this.pixelHeight+"px;width:"+this.pixelWidth+'px;padding:0px;margin:0px;" '+' path="m '+b+","+c+" wa "+i.join(", ")+' x e">'+" </v:shape>",p},_drawRect:function(a,b,c,d,e,f,g){return this._drawShape(a,[[b,c],[b,c+e],[b+d,c+e],[b+d,c],[b,c]],f,g)},reset:function(){this.group.innerHTML=""},appendShape:function(a){var b=this["_draw"+a.type].apply(this,a.args);return this.rendered?this.group.insertAdjacentHTML("beforeEnd",b):this.prerender+=b,this.lastShapeId=a.id,a.id},replaceWithShape:function(b,c){var d=a("#jqsshape"+b),e=this["_draw"+c.type].apply(this,c.args);d[0].outerHTML=e},replaceWithShapes:function(b,c){var d=a("#jqsshape"+b[0]),e="",f=c.length,g;for(g=0;g<f;g++)e+=this["_draw"+c[g].type].apply(this,c[g].args);d[0].outerHTML=e;for(g=1;g<b.length;g++)a("#jqsshape"+b[g]).remove()},insertAfterShape:function(b,c){var d=a("#jqsshape"+b),e=this["_draw"+c.type].apply(this,c.args);d[0].insertAdjacentHTML("afterEnd",e)},removeShapeId:function(b){var c=a("#jqsshape"+b);this.group.removeChild(c[0])},getShapeAt:function(a,b,c){var d=a.id.substr(8);return d},render:function(){this.rendered||(this.group.innerHTML=this.prerender,this.rendered=!0)}})})(jQuery);
 
 (function($){
-  $.fn.extend({
-    leanModal: function(options) {
-      var defaults = {
-          top: 300,
-          overlay: 0.2,
-          closeButton: null
-      }
 
-      var overlay = $("<div id='lean_overlay'></div>");
+    $.fn.extend({ 
+        leanModal: function(options) {
+            var defaults = {
+                top: 100,
+                overlay: 0.5,
+                closeButton: null
+            }
 
-      $("body").append(overlay);
-      options =  $.extend(defaults, options);
+            var overlay = $("<div id='lean_overlay'></div>");
 
-      return this.each(function() {
-        var o = options;
-        var modal_id = $(this).attr("id");
-        $("#lean_overlay").click(function() {
-          close_modal("#"+modal_id);
-        });
-        var modal_height = $(modal_id).outerHeight();
-        var modal_width = $(modal_id).outerWidth();
+            $("body").append(overlay);
 
-        $('#lean_overlay').css({ 'display' : 'block', opacity : 0 });
-        $('#lean_overlay').fadeTo(200,o.overlay);
+            options =  $.extend(defaults, options);
 
-        $("#"+modal_id).css({
-          'display' : 'block',
-          'position' : 'fixed',
-          'opacity' : 0,
-          'z-index': 101,
-          'left' : '34%',
-          'margin-left' : -(modal_width/2) + "px",
-          'top' : o.top + "px"
-        });
-        $("#"+modal_id).fadeTo(200,1);
-      });
-      function close_modal(modal_id) {
-        $("#lean_overlay").fadeOut(200);
-        $(modal_id).css({ 'display' : 'none' });
-      }
-    }
-  });
-})(jQuery);
+            return this.each(function() {
 
-(function($){
-  $.fn.extend({
-    glowText: function(options) {
-      var defaults = {
-          speed: 60,
-          color: "#F69",
-          max_distance: 20
-      }
-      options =  $.extend(defaults, options);
-      return this.each(function(i, v) { glowThatText(v, options); });
+                var o = options;
 
-      function glowThatText(that, o) {
-        var i = 1,
-            up = true;
-        setInterval(function(){
-          $(that).css({'textShadow' : '0px 0px '+i+'px '+o.color });
-          if(i == o.max_distance) { up = false; } else if (i == 1) { up = true; }
-          (up) ? i++ : i--;
-        }, o.speed);
-      }
-    }
-  });
+                $(this).click(function(e) {
+
+                var modal_id = $(this).attr("href");
+
+          $("#lean_overlay").click(function() { 
+                     close_modal(modal_id);                    
+                });
+                
+                $(o.closeButton).click(function() { 
+                     close_modal(modal_id);                    
+                });
+                         	
+              	var modal_height = $(modal_id).outerHeight();
+        	  	var modal_width = $(modal_id).outerWidth();
+
+        		$('#lean_overlay').css({ 'display' : 'block', opacity : 0 });
+
+        		$('#lean_overlay').fadeTo(200,o.overlay);
+
+        		$(modal_id).css({ 
+        		
+        			'display' : 'block',
+        			'position' : 'fixed',
+        			'opacity' : 0,
+        			'z-index': 11000,
+        			'left' : 50 + '%',
+        			'margin-left' : -(modal_width/2) + "px",
+        			'top' : o.top + "px"
+        		
+        		});
+
+        		$(modal_id).fadeTo(200,1);
+
+                e.preventDefault();
+                		
+              	});
+             
+            });
+
+			function close_modal(modal_id){
+
+        		$("#lean_overlay").fadeOut(200);
+
+        		$(modal_id).css({ 'display' : 'none' });
+			
+			}
+    
+        }
+    });
+     
 })(jQuery);
