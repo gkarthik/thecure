@@ -30,7 +30,6 @@ import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Hand;
 import org.scripps.combo.model.Player;
-import org.scripps.combo.weka.Weka.card;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Mail;
@@ -64,102 +63,31 @@ public class MetaServer extends HttpServlet {
 		//training game data 
 		try { 
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
-			Weka mammal_weka = new Weka(train_loc);
+			Weka mammal_weka = new Weka();
+			String dataset = "mammal";
+			mammal_weka.buildWeka(context.getResourceAsStream("train_loc"), null, dataset);
 			mammal_weka.setEval_method("training_set");
-			name_dataset.put("mammal", mammal_weka);
+			name_dataset.put(dataset, mammal_weka);
 			train_loc.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		/*
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo.arff");
-			Weka zoo_weka = new Weka(train_loc);
-			zoo_weka.setEval_method("training_set");
-			name_dataset.put("zoo", zoo_weka);
-
-			train_loc.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//breast cancer
-		//vantveer data
+		//dream data
 		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train-filtered.arff");
-			Weka vantveer_weka = new Weka(train_loc);
-			vantveer_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/vantveer/breastCancer-train_meta.txt"));
-			name_dataset.put("vantveer", vantveer_weka);
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//griffith data
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/griffith/full_filtered_train.arff");
-			Weka griffith_weka = new Weka(train_loc);
-			griffith_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/griffith/griffith_meta.txt"));
-			name_dataset.put("griffith_full_filtered", griffith_weka);
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//Cunningham data	
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_coronal_control.arff");
-			Weka coronal_control_weka = new Weka(train_loc);
-			coronal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("coronal_case_control", coronal_control_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_case_control.arff");
-			Weka cranio_case_weka = new Weka(train_loc);
-			cranio_case_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("cranio_case_control", cranio_case_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_metopic_control.arff");
-			Weka metopic_control_weka = new Weka(train_loc);
-			metopic_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("metopic_case_control", metopic_control_weka);
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_sagittal_control.arff");
-			Weka sagittal_control_weka = new Weka(train_loc);
-			sagittal_control_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/cranio/craniosynostosis_1_meta.txt"));
-			name_dataset.put("sagittal_case_control", sagittal_control_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		 */
-
-		try {
+			String dataset = "dream_breast_cancer";
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-			Weka dream_weka = new Weka(train_loc);
-			dream_weka.loadMetadata(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"), true);			
+			Weka dream_weka = new Weka();
+			dream_weka.buildWeka(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"), null, dataset);			
 			name_dataset.put("dream_breast_cancer", dream_weka);	
 			train_loc.close();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

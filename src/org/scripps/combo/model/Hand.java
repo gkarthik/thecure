@@ -21,16 +21,14 @@ import org.scripps.util.JdbcConnection;
  **/
 public class Hand {
 	int id;
-	String player_name;
+	int player_id;
 	String ip;
 	String features; 
 	int score;
 	int cv_accuracy;
 	int training_accuracy;
-	String feature_names;
 	int board_id;
-	String phenotype;
-	String game_type;
+	String dataset;
 	int win;
 	Calendar timestamp;
 	
@@ -40,12 +38,7 @@ public class Hand {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getPlayer_name() {
-		return player_name;
-	}
-	public void setPlayer_name(String player_name) {
-		this.player_name = player_name;
-	}
+
 	public String getIp() {
 		return ip;
 	}
@@ -82,20 +75,18 @@ public class Hand {
 	public void save(){
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?)");
 			pst.clearParameters();
-			pst.setString(1,getPlayer_name());
+			pst.setInt(1,getPlayer_id());
 			pst.setString(2,getIp());
 			pst.setInt(3, getScore());
 			pst.setInt(4, getCv_accuracy());
 			pst.setString(5, getFeatures());
 			pst.setInt(6, getBoard_id());
-			pst.setString(7,getPhenotype());
-			pst.setString(8, getFeature_names());
-			pst.setInt(9, getTraining_accuracy());
-			pst.setString(10, getGame_type());
-			pst.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-			pst.setInt(12, getWin());
+			pst.setString(7,getDataset());
+			pst.setInt(8, getTraining_accuracy());
+			pst.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
+			pst.setInt(10, getWin());
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -125,19 +116,17 @@ public class Hand {
 				hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setPlayer_id(rslt.getInt("player_id"));
 				hand.setScore(rslt.getInt("score"));
-				hand.setFeature_names(rslt.getString("feature_names"));
-				hand.setGame_type(rslt.getString("game_type"));
-				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
 				Calendar t = Calendar.getInstance();
 				t.setTime(rslt.getTimestamp("time"));
 				hand.setTimestamp(t);
 				
-				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_name())){
-					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_name(), hand);
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_id())){
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_id(), hand);
 			//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
 				}else{
 			//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
@@ -171,11 +160,9 @@ public class Hand {
 				hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_name(rslt.getString("player_name"));
+				hand.setPlayer_id(rslt.getInt("player_id"));
 				hand.setScore(rslt.getInt("score"));
-				hand.setFeature_names(rslt.getString("feature_names"));
-				hand.setGame_type(rslt.getString("game_type"));
-				hand.setPhenotype(rslt.getString("phenotype"));
+				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
 				Calendar t = Calendar.getInstance();
@@ -195,24 +182,6 @@ public class Hand {
 	public void setTraining_accuracy(int training_accuracy) {
 		this.training_accuracy = training_accuracy;
 	}
-	public String getFeature_names() {
-		return feature_names;
-	}
-	public void setFeature_names(String feature_names) {
-		this.feature_names = feature_names;
-	}
-	public String getPhenotype() {
-		return phenotype;
-	}
-	public void setPhenotype(String phenotype) {
-		this.phenotype = phenotype;
-	}
-	public String getGame_type() {
-		return game_type;
-	}
-	public void setGame_type(String game_type) {
-		this.game_type = game_type;
-	}
 	public int getWin() {
 		return win;
 	}
@@ -224,6 +193,18 @@ public class Hand {
 	}
 	public void setTimestamp(Calendar timestamp) {
 		this.timestamp = timestamp;
+	}
+	public String getDataset() {
+		return dataset;
+	}
+	public void setDataset(String dataset) {
+		this.dataset = dataset;
+	}
+	public int getPlayer_id() {
+		return player_id;
+	}
+	public void setPlayer_id(int player_id) {
+		this.player_id = player_id;
 	}
 
 

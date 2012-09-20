@@ -166,6 +166,22 @@ public class Player {
 		return players;
 	}
 
+	public static Map<Integer, Player> mapPlayersByDbId(List<Player> players){
+		Map<Integer, Player> id_player = new HashMap<Integer, Player>();
+		for(Player player : players){
+			id_player.put(player.getId(), player);
+		}
+		return id_player;
+	}
+	
+	public static Map<String, Player> mapPlayersByName(List<Player> players){
+		Map<String, Player> name_player = new HashMap<String, Player>();
+		for(Player player : players){
+			name_player.put(player.getName(), player);
+		}
+		return name_player;
+	}
+	
 	public static List<Player> lookupByEmail(String email){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();

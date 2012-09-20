@@ -21,9 +21,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 
-import org.scripps.combo.model.Feature;
-import org.scripps.combo.weka.CopyOfWeka.card;
-import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.Gene;
 
 import weka.attributeSelection.ASEvaluation;
@@ -48,17 +45,53 @@ import weka.filters.supervised.attribute.AttributeSelection;
 import weka.filters.unsupervised.attribute.Remove;
 
 
-public class Weka {
+public class CopyOfWeka {
 
 	private Instances train = null;
 	Instances test = null;
 	Random rand;
 	String eval_method;
-	Map<String, Feature> features;
-	String dataset;
-	
-	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset) throws Exception{
-		setDataset(dataset);
+	public Map<String, CopyOfWeka.card> att_meta;
+	public Map<String, List<CopyOfWeka.card>> geneid_cards; //could be multiple cards per gene if multiple reporters
+
+	public CopyOfWeka(){
+	}
+
+	public CopyOfWeka(String train_file) throws FileNotFoundException{
+		InputStream train_stream = new FileInputStream(train_file);
+		buildWeka(train_stream);
+	}
+
+	public CopyOfWeka(InputStream train_stream) throws FileNotFoundException{
+		buildWeka(train_stream);
+	}
+
+	public void buildWeka(InputStream train_stream){
+		//get the data 
+		DataSource source;
+		try {
+			source = new DataSource(train_stream);
+			setTrain(source.getDataSet());
+			if (getTrain().classIndex() == -1){
+				getTrain().setClassIndex(getTrain().numAttributes() - 1);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rand = new Random(1);
+		//specify how hands evaluated {cross_validation, test_set, training_set}
+		eval_method = "cross_validation";//"training_set";
+	}
+
+	public CopyOfWeka(String train_file, String test_file, String meta_file) throws Exception{
+		InputStream train_stream = new FileInputStream(train_file);
+		InputStream test_stream = new FileInputStream(test_file);
+		InputStream meta_stream = new FileInputStream(meta_file);
+		buildWeka(train_stream, test_stream, meta_stream);
+	}
+
+	public void buildWeka(InputStream train_stream, InputStream test_stream, InputStream meta_stream) throws Exception{
 		//get the data 
 		DataSource source = new DataSource(train_stream);
 		setTrain(source.getDataSet());
@@ -77,48 +110,34 @@ public class Weka {
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
 		eval_method = "cross_validation";//"training_set";
-		//assumes that feature table has already been loaded
-		//get the features related to this weka dataset
-		setFeatures(Feature.getByDataset(dataset));
-	} 
-
-	
-	public Map<Integer, Float> getRelief(){
-		Map<Integer, Float> index_value = new HashMap<Integer, Float>();
-		//set the reliefF value for the attribute
-		AttributeSelection as = new AttributeSelection();
-		Ranker ranker = new Ranker();
-		//keep all
-		//	String[] options = {"-T","0.0","-N","-1"};
-		as.setEvaluator(new ReliefFAttributeEval());
-		as.setSearch(ranker);
-		try {
-			as.setInputFormat(getTrain());
-			//ranker.setOptions(options);
-			Instances filtered = Filter.useFilter(getTrain(), as); 			
-			double[][] ranked = ranker.rankedAttributes();
-			//add the scores to the gene cards
-			for(int att=0; att<ranked.length; att++){
-				int att_id = (int)ranked[att][0];
-				float att_value = (float)ranked[att][1];
-				index_value.put(att_id, att_value);
-//				Attribute tmp = getTrain().attribute(att_id);
-//				card c = att_meta.get(tmp.name());
-//				if(c==null){
-//					c = new card(tmp.index(), tmp.name(), tmp.name(), "_");
-//				}
-//				c.setPower(att_value);
-//				att_meta.put(tmp.name(), c);
-			}
-			setTrain(filtered);
-			//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(meta_stream!=null){
+			loadMetadata(meta_stream, true);
+			meta_stream.close();
 		}
-		return index_value;
 	}
-	
+
+	/**
+	 * This reads a three column file that maps probeset or other dataset ids to entrez gene ids and gene symbols
+	 * @param config
+	 * @param weka
+	 * @param metadatafile
+	 * @return
+	 */
+	public void loadMetadata(InputStream metadata, boolean add_power){
+		loadAttributeMetadata(metadata);
+		//add power
+		if(add_power){
+			ASEvaluation eval_method = new ReliefFAttributeEval();
+			setCardPower(eval_method);
+		}
+		//only use genes with metadata
+		filterForGeneIdMapping();
+		//map the names so the trees look right..
+		remapAttNames();
+		return;
+	}
+
+
 	public void exportArff(Instances dataset, String outfile){
 		ArffSaver saver = new ArffSaver();
 		saver.setInstances(dataset);
@@ -131,6 +150,370 @@ public class Weka {
 			e.printStackTrace();
 		}
 
+	}
+
+
+	public void filterTrainAndTestSetForNonZeroInfoGainAttsInTrain(){
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		InfoGainAttributeEval infogain = new InfoGainAttributeEval();
+		Ranker ranker = new Ranker();
+		String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(infogain);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(getTrain());
+			ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(getTrain(), as); 					
+			Instances filteredtest = new Instances(getTest());
+			Remove remove = new Remove();
+			Enumeration<Attribute> atts = filtered.enumerateAttributes();
+			List<Integer> keepers = new ArrayList<Integer>();
+			while(atts.hasMoreElements()){
+				Attribute f = atts.nextElement();
+				Attribute keep = filteredtest.attribute(f.name());
+				keepers.add(keep.index());
+			}
+			//keep the class index
+			keepers.add(getTest().classIndex());
+			setTrain(filtered);
+			remove.setInvertSelection(true);
+			int[] karray = new int[keepers.size()];
+			int c = 0;
+			for(Integer i : keepers){
+				karray[c] = i;
+				c++;
+			}
+			remove.setAttributeIndicesArray(karray);
+			try {
+				remove.setInputFormat(filteredtest);
+				setTest(Filter.useFilter(filteredtest, remove));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			//			System.out.println("launching with F "+getTrain().numAttributes()+" train attributes.");
+			//			System.out.println("launching with F "+getTest().numAttributes()+" test attributes.");
+			//			//test 
+			//			J48 j = new J48();
+			//			Evaluation eval = new Evaluation(getTrain());
+			//			j.buildClassifier(filtered);
+			//			eval.evaluateModel(j, filteredtest);
+			//			System.out.println(eval.toSummaryString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void filterForNonZeroInfoGain(){
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		InfoGainAttributeEval infogain = new InfoGainAttributeEval();
+		Ranker ranker = new Ranker();
+		String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(infogain);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(getTrain());
+			ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(getTrain(), as); 			
+			double[][] ranked = ranker.rankedAttributes();
+			//add the scores to the gene cards
+			for(int att=0; att<ranked.length; att++){
+				int att_id = (int)ranked[att][0];
+				float att_value = (float)ranked[att][1];
+				Attribute tmp = getTrain().attribute(att_id);
+				card c = att_meta.get(tmp.name());
+				if(c==null){
+					c = new card(0, tmp.name(), "_", "_");
+				}
+				c.setPower(att_value);
+				att_meta.put(tmp.name(), c);
+			}
+			setTrain(filtered);
+			System.out.println(ranked[0][0]+" "+ranked[0][1]);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void setCardPower(ASEvaluation eval_method){
+		if(att_meta==null){
+			att_meta = new HashMap<String, card>();
+		}
+		//weka.filters.Filter.
+		AttributeSelection as = new AttributeSelection();
+		Ranker ranker = new Ranker();
+		//keep all
+		//	String[] options = {"-T","0.0","-N","-1"};
+		as.setEvaluator(eval_method);
+		as.setSearch(ranker);
+		try {
+			as.setInputFormat(getTrain());
+			//ranker.setOptions(options);
+			Instances filtered = Filter.useFilter(getTrain(), as); 			
+			double[][] ranked = ranker.rankedAttributes();
+			//add the scores to the gene cards
+			for(int att=0; att<ranked.length; att++){
+				int att_id = (int)ranked[att][0];
+				float att_value = (float)ranked[att][1];
+				Attribute tmp = getTrain().attribute(att_id);
+				card c = att_meta.get(tmp.name());
+				if(c==null){
+					c = new card(tmp.index(), tmp.name(), tmp.name(), "_");
+				}
+				c.setPower(att_value);
+				att_meta.put(tmp.name(), c);
+			}
+			setTrain(filtered);
+			//	System.out.println(ranked[0][0]+" "+ranked[0][1]);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+	public void filterForGeneIdMapping(){
+		Enumeration<Attribute> atts = getTrain().enumerateAttributes();
+		String nodata = "";
+		while(atts.hasMoreElements()){
+			Attribute a = atts.nextElement();
+			if(getTrain().classIndex()!=a.index()){
+				String n = a.name();
+				card meta = att_meta.get(n);
+				if(meta==null||meta.unique_id==null||meta.unique_id.equals("_")||meta.unique_id.equals("NA")){
+					nodata+=(1+a.index())+",";				
+				}
+			}
+		}
+		Remove remove = new Remove();
+		remove.setAttributeIndices(nodata);
+		//    remove.setInvertSelection(new Boolean(args[2]).booleanValue());
+		try {
+			remove.setInputFormat(getTrain());
+			setTrain(Filter.useFilter(getTrain(), remove));
+			if(getTest()!=null){
+				setTest(Filter.useFilter(getTest(), remove));
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void remapAttNames(){
+		Enumeration<Attribute> input = getTrain().enumerateAttributes();
+		geneid_cards = new HashMap<String, List<card>>();
+		while(input.hasMoreElements()){
+			Attribute a = input.nextElement();
+			card c = att_meta.get(a.name());
+			//			if(c.getUnique_id().equals("1999")){
+			//				System.out.println("ELF3333 "+c.getName()+" "+c.getAtt_name());
+			//			}
+			if(c!=null){
+				//also sets index properly for the first time..
+				c.setAtt_index(a.index());
+				//put the card back in
+				if(c.getUnique_id()!=null){
+					List<card> gcards = geneid_cards.get(c.getUnique_id());
+					if(gcards==null){
+						gcards = new ArrayList<card>();
+					}					
+					gcards.add(c);
+					geneid_cards.put(c.getUnique_id(), gcards);
+				}
+				att_meta.put(a.name(),c);
+				String symbol = c.getName();
+				if(symbol!=null){
+					String treename = symbol;
+					if(a.name().startsWith("ILMN")){
+						treename+="_expr";
+					}else{
+						treename+="_cnv";
+					}
+					getTrain().renameAttribute(a, treename);
+					if(getTest()!=null){
+						getTest().renameAttribute(a, symbol);
+					}
+				}
+			}
+		}
+
+	}
+
+
+	public void loadAttributeMetadata(InputStream metadatastream) {
+		//int count = 0;
+		att_meta = new HashMap<String, card>();	
+		BufferedReader f;
+		try {
+			f = new BufferedReader(new InputStreamReader(metadatastream));
+			String line = f.readLine();
+			line = f.readLine(); //skip header
+			while(line!=null){
+				String[] item = line.split("\t");
+				String attribute = item[0];
+				String name = item[1];
+				String id = item[2];
+				if(item!=null&&item.length>1){
+					card genecard = new card(0, attribute, name, id);
+					att_meta.put(attribute, genecard);
+					if(name!=null){
+						att_meta.put(name,genecard);
+					}
+				}
+				line = f.readLine();
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * a card represents an attribute in a training set such as a gene in an array experiment
+	 * @author bgood
+	 *
+	 */
+	public class card{
+		public int att_index;
+		public String att_name;
+		public String name;
+		public String unique_id;
+		public float power;
+		public int display_loc;
+		//more to come here
+		public card(int att_index, String att_name, String name,
+				String unique_id) {
+			super();
+			this.att_index = att_index;
+			this.att_name = att_name;
+			this.name = name;
+			this.unique_id = unique_id;
+			//if we have name metadata use now
+			if(att_meta!=null){
+				if(name==""||unique_id.equals("_")){
+					card tmp = att_meta.get(att_name);
+					if(tmp!=null){
+						name = tmp.name;
+						unique_id = tmp.unique_id;
+					}
+				}
+			}
+		}
+		public int getAtt_index() {
+			return att_index;
+		}
+		public void setAtt_index(int att_index) {
+			this.att_index = att_index;
+		}
+		public String getAtt_name() {
+			return att_name;
+		}
+		public void setAtt_name(String att_name) {
+			this.att_name = att_name;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getUnique_id() {
+			return unique_id;
+		}
+		public void setUnique_id(String unique_id) {
+			this.unique_id = unique_id;
+		}
+		public float getPower() {
+			return power;
+		}
+		public void setPower(float power) {
+			this.power = power;
+		}
+		public int getDisplay_loc() {
+			return display_loc;
+		}
+		public void setDisplay_loc(int display_loc) {
+			this.display_loc = display_loc;
+		}
+
+
+	}
+	/**
+	 * Get cards (with names..) from a list of index numbers
+	 * @param indices
+	 * @return
+	 */
+	public List<card> getCardsByIndices(String indices){
+		List<card> cards = new ArrayList<card>();
+		String[] index = indices.split(",");
+		for(String i : index){
+			Attribute a = getTrain().attribute(Integer.parseInt(i));
+			if(a!=null){
+				card c = new card(a.index(),a.name(),"","");
+				cards.add(c);
+			}
+		}
+		return cards;
+	}
+	/**
+	 * Get a random selection of n attributes
+	 * @param n
+	 * @return
+	 */
+	public List<card> getRandomCards(int n, int ranseed){
+		if(n>train.numAttributes()){
+			List<card> cards = new ArrayList<card>();
+			for(int i=0;i<train.numAttributes()-1;i++){
+				Attribute a = getTrain().attribute(i);
+				card c = new card(a.index(),a.name(),"","");
+				if(att_meta!=null){
+					if(att_meta.get(a.name())!=null){
+						card tmp = att_meta.get(a.name());
+						c.name = tmp.name;
+						c.unique_id = tmp.unique_id;
+						c.setPower(tmp.getPower());
+					}
+				}
+				cards.add(c);
+			}
+			return cards;
+		}
+
+		rand.setSeed((long)ranseed);
+		Set<String> u = new HashSet<String>();
+		List<card> cards = new ArrayList<card>();
+		for(int i=0;i<n;i++){
+			int randomNum = rand.nextInt(getTrain().numAttributes()-1);
+			//internal attribute index starts at 0
+			Attribute a = getTrain().attribute(randomNum);
+			if(a.index()==getTrain().classIndex()||(u.contains(randomNum+""))){
+				i--;
+			}else{
+				card c = new card(a.index(),a.name(),"","");
+				if(att_meta!=null){
+					if(att_meta.get(a.name())!=null){
+						card tmp = att_meta.get(a.name());
+						c.name = tmp.name;
+						c.unique_id = tmp.unique_id;
+						c.setPower(tmp.getPower());
+					}
+				}
+				cards.add(c);
+				u.add(randomNum+"");
+			}
+		}
+		return cards;
 	}
 
 	/**
@@ -171,23 +554,66 @@ public class Weka {
 			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
-	
-	public execution pruneAndExecute(List<String> f_ids, Classifier wekamodel) {
+
+
+	/**
+	 * Trains a j48 decision tree using just the attributes specified in indices
+	 * @param indices for the attributes to use to train the model
+	 * @return
+	 */
+	public execution pruneAndExecute(String indicesoff1){
 		String indices = "";
-		for(String fid : f_ids){
-			Feature f = features.get(fid);
-			for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-				indices+=a.getCol_index()+",";
+		for(String a : indicesoff1.split(",")){
+			if(!a.equals("")){
+				int i = 1+Integer.parseInt(a);
+				indices += i+",";
 			}
 		}
-		return pruneAndExecute(indices, wekamodel);
+
+		//specify a classifier
+		// classifier
+		J48 j48 = new J48();
+		j48.setUnpruned(true);        // using an unpruned J48		
+		// set a specific set of attributes to use to train the model
+		Remove rm = new Remove();
+		//don't remove the class attribute
+		rm.setAttributeIndices(indices+"last");
+		rm.setInvertSelection(true);
+		// build a classifier using only these attributes
+		FilteredClassifier fc = new FilteredClassifier();
+		fc.setFilter(rm);
+		fc.setClassifier(j48);
+		// train and evaluate on the test set
+		Evaluation eval = null;
+		double avg_pct_correct = 0;
+		try {
+			fc.buildClassifier(getTrain());
+			// evaluate classifier and print some statistics
+			eval = new Evaluation(getTrain());
+			if(eval_method.equals("cross_validation")){
+				//	for(int r=0; r<10; r++){
+				int r = 0;
+				Random keep_same = new Random();
+				keep_same.setSeed(r);
+				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
+				avg_pct_correct += eval.pctCorrect();
+				//	}
+				avg_pct_correct = avg_pct_correct/10;
+			}else if(eval_method.equals("test_set")){
+				eval.evaluateModel(fc, test);
+			}else {
+				eval.evaluateModel(fc, getTrain());
+			}
+			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return new execution(fc,eval, avg_pct_correct);
 	}
 
 	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel){
-		if(wekamodel==null){
-			wekamodel = new J48();
-		}
-		
 		String indices = "";
 		for(String a : indicesoff1.split(",")){
 			if(!a.equals("")){
@@ -486,6 +912,18 @@ public class Weka {
 		return voter;
 	}
 
+	/***
+	 * convenience method for running learning algorithms on a set of 'cards'
+	 * @param cards
+	 * @return
+	 */
+	public execution pruneAndExecute(List<card> cards){
+		String indices = "";
+		for(card c : cards){
+			indices+=c.att_index+",";
+		}
+		return pruneAndExecute(indices);
+	}
 
 
 	/**
@@ -608,31 +1046,28 @@ public class Weka {
 	}
 
 
-	public String getDataset() {
-		return dataset;
-	}
 
-	public void setDataset(String dataset) {
-		this.dataset = dataset;
+	public Map<String, CopyOfWeka.card> getAtt_meta() {
+		return att_meta;
 	}
 
 
 
-
-	public Map<String, Feature> getFeatures() {
-		return features;
+	public void setAtt_meta(Map<String, CopyOfWeka.card> att_meta) {
+		this.att_meta = att_meta;
 	}
 
 
 
-
-	public void setFeatures(Map<String, Feature> features) {
-		this.features = features;
+	public Map<String, List<CopyOfWeka.card>> getGeneid_cards() {
+		return geneid_cards;
 	}
 
 
 
-
+	public void setGeneid_cards(Map<String, List<CopyOfWeka.card>> geneid_cards) {
+		this.geneid_cards = geneid_cards;
+	}
 
 
 

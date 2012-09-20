@@ -16,93 +16,45 @@ import java.util.List;
 import java.util.Map;
 
 import org.scripps.combo.weka.Weka;
-import org.scripps.combo.weka.Weka.card;
 import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
- * create table card (id int(10) NOT NULL AUTO_INCREMENT, username varchar(25), user_id int, phenotype varchar(50), board_id int, att_index int, att_name varchar(50), name varchar(50), geneid varchar(50), power float, display_loc int, timestamp timestamp, primary key (id));
+ * create table card (id int(10) NOT NULL AUTO_INCREMENT, user_id int, board_id int, unique_id varchar(50), display_loc int, timestamp timestamp, primary key (id));
  */
 public class Card {
-	String db_id;
-	String username;
+	String id;
 	String user_id;
-	String phenotype;
 	String board_id;
-	int att_index;
-	String att_name;
-	String name;
 	String unique_id;
-	float power;
 	int display_loc;
 	Timestamp timestamp;
 
-	
-	public Card(String username, String user_id, String phenotype,
-			String board_id, int att_index, String att_name, String name,
-			String unique_id, float power, int display_loc, Timestamp timestamp, String db_id) {
-		super();
-		this.username = username;
-		this.user_id = user_id;
-		this.phenotype = phenotype;
-		this.board_id = board_id;
-		this.att_index = att_index;
-		this.att_name = att_name;
-		this.name = name;
-		this.unique_id = unique_id;
-		this.power = power;
-		this.display_loc = display_loc;
-		this.timestamp = timestamp;
-		this.db_id = db_id;
-	}
 
-	public Card(card c, String username, String user_id, String phenotype,
-			String board_id){
+	public Card(String user_id, String board_id, String unique_id, int display_loc){
 		super();
-		this.username = username;
 		this.user_id = user_id+"";
-		this.phenotype = phenotype;
 		this.board_id = board_id+"";
-		this.att_index = c.att_index;
-		this.att_name = c.att_name;
-		this.name = c.name;
-		this.unique_id = c.unique_id;
-		this.power = c.power;
-		this.display_loc = c.display_loc;
+		this.unique_id = unique_id;
+		this.display_loc = display_loc;
 	}
 	/**
 	 * @param args
 	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
-		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
-		Weka weka = new Weka(train_file);
-		weka.loadMetadata(new FileInputStream(metadatafile), true);
-		List<card> cards = weka.getGeneid_cards().get("6505");
-		for(card c : cards){
-			Card tosave = new Card(c, "bgood", "1", "test_pheno", "567");
-			tosave.save();
-		}
+
 	}
 
-	public void save(){
-		//if no player exists make a new one
+	public void insert(){
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into card values(null,?,?,?,?,?,?,?,?,?,?,?)";
+		String insert = "insert into card values(null,?,?,?,?)";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
-			p.setString(1, username);
-			p.setString(2,user_id);
-			p.setString(3,phenotype);
-			p.setString(4,board_id);
-			p.setInt(5, att_index);
-			p.setString(6, att_name); //probe name
-			p.setString(7, name); //gene name
-			p.setString(8, unique_id); //gene id
-			p.setFloat(9, power);
-			p.setInt(10, display_loc); 
-			p.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+			p.setString(1, user_id);
+			p.setString(2,board_id);
+			p.setString(3,unique_id);
+			p.setInt(4,display_loc);
 			p.executeUpdate();
 			
 			conn.connection.close();
@@ -122,18 +74,12 @@ public class Card {
 		try {
 			while(rslt.next()){
 				Card card = new Card(
-						rslt.getString("username"), 
 						rslt.getString("user_id"),
-						rslt.getString("phenotype"),
 						rslt.getString("board_id"), 
-						rslt.getInt("att_index"),
-						rslt.getString("att_name"),
-						rslt.getString("name"),
-						rslt.getString("geneid"),
-						rslt.getFloat("power"),
-						rslt.getInt("display_loc"),
-						rslt.getTimestamp("timestamp"),
-						rslt.getString("id"));
+						rslt.getString("unique_id"),
+						rslt.getInt("display_loc"));
+				card.setTimestamp(rslt.getTimestamp("timestamp"));
+				card.setId(rslt.getString("id"));
 				cards.add(card);
 			}
 		} catch (SQLException e) {
@@ -146,24 +92,19 @@ public class Card {
 	public static List<Card> getAllPlayedCards(){
 		List<Card> cards = new ArrayList<Card>();
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select * from card where username != 'anonymous_hero' ";
+		String q = "select * from card ";
 
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){
 				Card card = new Card(
-						rslt.getString("username"), 
 						rslt.getString("user_id"),
-						rslt.getString("phenotype"),
 						rslt.getString("board_id"), 
-						rslt.getInt("att_index"),
-						rslt.getString("att_name"),
-						rslt.getString("name"),
-						rslt.getString("geneid"),
-						rslt.getFloat("power"),
-						rslt.getInt("display_loc"),
-						rslt.getTimestamp("timestamp"),
-						rslt.getString("id"));
+						rslt.getString("unique_id"),
+						rslt.getInt("display_loc"));
+				card.setTimestamp(rslt.getTimestamp("timestamp"));
+				card.setId(rslt.getString("id"));
+				cards.add(card);
 				cards.add(card);
 			}
 		} catch (SQLException e) {
@@ -190,16 +131,6 @@ public class Card {
 		}
 		return board_count;
 	}
-	
-	public String getUsername() {
-		return username;
-	}
-
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
 
 	public String getUser_id() {
 		return user_id;
@@ -210,17 +141,6 @@ public class Card {
 		this.user_id = user_id;
 	}
 
-
-	public String getPhenotype() {
-		return phenotype;
-	}
-
-
-	public void setPhenotype(String phenotype) {
-		this.phenotype = phenotype;
-	}
-
-
 	public String getBoard_id() {
 		return board_id;
 	}
@@ -230,37 +150,6 @@ public class Card {
 		this.board_id = board_id;
 	}
 
-
-	public int getAtt_index() {
-		return att_index;
-	}
-
-
-	public void setAtt_index(int att_index) {
-		this.att_index = att_index;
-	}
-
-
-	public String getAtt_name() {
-		return att_name;
-	}
-
-
-	public void setAtt_name(String att_name) {
-		this.att_name = att_name;
-	}
-
-
-	public String getName() {
-		return name;
-	}
-
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-
 	public String getUnique_id() {
 		return unique_id;
 	}
@@ -269,17 +158,6 @@ public class Card {
 	public void setUnique_id(String unique_id) {
 		this.unique_id = unique_id;
 	}
-
-
-	public float getPower() {
-		return power;
-	}
-
-
-	public void setPower(float power) {
-		this.power = power;
-	}
-
 
 	public int getDisplay_loc() {
 		return display_loc;
@@ -298,6 +176,12 @@ public class Card {
 
 	public void setTimestamp(Timestamp timestamp) {
 		this.timestamp = timestamp;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	

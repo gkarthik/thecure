@@ -4,6 +4,7 @@
 package org.scripps.combo.weka.viz;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -90,7 +91,8 @@ public class JsonTree {
 		 */
 
 		String train_file = "/Users/bgood/data/zoo.arff"; //_mammals
-		Weka weka = new Weka(train_file);
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, "mammal");
 		J48 classifier = new J48();
 		classifier.setUnpruned(false); 
 		Evaluation eval_train = new Evaluation(weka.getTrain());
