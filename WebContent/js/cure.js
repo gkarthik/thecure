@@ -2,6 +2,7 @@ var CURE = CURE || {};
 
 CURE.username = "x0xMaximus";
 CURE.user_id = "51";
+CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
 
 CURE.load = function() {
@@ -89,597 +90,339 @@ CURE.stats = {
   }
 }
 
-CURE.boardgame = {
-  init : function() {
-    var cards = new Array();
-        opponent_sort = new Array(),
-        nrows = CURE.utilities.getParameterByName("nrows"),
-        ncols = CURE.utilities.getParameterByName("ncols"),
-        level = CURE.utilities.getParameterByName("level"),
-        showgeneinfo = CURE.utilities.getParameterByName("geneinfo") || "1",
-        max_hand = CURE.utilities.getParameterByName("max_hand"),
-        p1_score = 0,
-        p2_score = 0,
-        par_score = 0,
-        par = 0,
-        p1_hand = new Array(),
-        p1_indexes = new Array(),
-        p2_hand = new Array(),
-        p2_indexes = new Array(),
-        features = "",
-        feature_names = "",
-        barney_init = 0,
-        board_state_clickable = true,
-        replay = "<%=full_request%>",
-        multiplier = "<%=multiplier%>";
 
-    //set up accordian for result viewer
-    // $("#cv_results").accordion({ collapsible: true });
-    $("#endgame").hide();
-    
+
+CURE.boardgame = {
+  cards : [],
+  opponent_sort : [],
+  p1_score : 0,
+  p2_score : 0,
+
+  p1_hand : [],
+  p2_hand : [],
+
+  features : "",
+  feature_names : "",
+  barney_init : 0,
+  board_state_clickable : true,
+
+  game_started : (new Date),
+
+  init : function() {
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
+    game.nrows = utils.getParameterByName("nrows");
+    game.ncols = utils.getParameterByName("ncols");
+    game.level = utils.getParameterByName("level");
+    game.showgeneinfo = utils.getParameterByName("geneinfo") || "1";
+    game.max_hand = utils.getParameterByName("max_hand");
+
     //set up the board
-    var args = { x : ncols, y : nrows }
-    if (level != null && CURE.dataset == "mammal") {
+    var args = { x : game.ncols, y : game.nrows }
+    if ( game.level != null && CURE.dataset == "mammal" ) {
       args.dataset = "mammal";
       args.command = "getspecificboard";
       args.board = "mammal_"+level;
     } else {
       args.dataset = CURE.dataset;
       args.command = "getboard";
-      args.ran = level;
+      args.ran = game.level;
     }
-    
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
-      cards = data;
-      CURE.boardgame.generateBoard();
-      //add to hand
-      CURE.boardgame.setupHandAddRemove();
-      
+      game.cards = data;
+      game.generateBoard();
+      game.addCardSelectionHandlers();
       //set up handlers
       //-- Mouse hover events for the info box
-      CURE.boardgame.setupShowInfoHandler();
+      game.setupInfoToggle();
 
       //save hand
-      CURE.boardgame.setupHoldem();
-      //set up opponent
-      CURE.boardgame.setupOpponent();
 
       //== MAX NOTES;
       //game_meta_info set this up
 
-
     });
 
  },
-  setupGameMetaInfo : function() {
-    //   <% if(dataset.equals("mammal")){
-    //   String fs = "features that distinguish";
-    //   if(max_hand.equals("1")){
-    //     fs = "feature that distinguishes";
-    //   }
-    // %>
-    // <strong>Pick <b><%=max_hand%></b> <%=fs %> mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...</strong>
-    // <% }else if(dataset.equals("dream_breast_cancer")){ %>
-    // <strong>Pick <b><%=max_hand%></b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.</strong>
-    // <% } %>
+  generateBoard : function() {
+    //-- Using the cards array, this draws the cards to the board div
+    var game = CURE.boardgame,
+        targetEl = $("#board");
+    _(game.cards).each(function(v, i) {
+      v.display_name = v.name || v.att_name || v.unique_id;
+      var card = targetEl.append("\
+        <div id='card_"+ v.unique_id +"' class='gamecard active'>\
+        <span class='help_label'>i</span>\
+        <span class='gene_label'>"+ v.display_name +"</span>\
+        </div>");
+    })
   },
-  moveBarney : function(moveChoice) {
-    $("#barney5").removeClass().hide().addClass(moveChoice).show();
-  },
-  moveClayton : function(moveChoice) {
-    $("#clayton1").removeClass().hide().addClass(moveChoice).show();
-  },
-  evaluateHand : function(cardsinhand, player) {
-    var url = 'MetaServer?dataset='+ CURE.dataset +'&command=getscore&features=';
-    if( CURE.dataset == 'dream_breast_cancer') {
-      url = 'MetaServer?dataset='+ CURE.dataset +'&command=getscore&geneids=';
-      geneids = "";
-      feature_names = "";
-      var chand = "cardsinhand_" + player;
-      $.each(cardsinhand, function(index, value) {
-        geneids += value.unique_id + ",";
-        feature_names += value.unique_id+":"+value.att_name + ":" + value.name + "|";
-      });
-      url += geneids;
-    } else {
-      features = "";
-      feature_names = "";
-      var chand = "cardsinhand_"+player;
+  addCardSelectionHandlers : function() {
+    //-- Adds click event listeners on the cards in the board,
+    //when clicked, add to hand/save/etc...
+    var game = CURE.boardgame;
 
-      $.each(cardsinhand, function(index, value) {
-        features+=value.att_index+",";
-        feature_names += value.unique_id+":"+value.att_name + ":"+value.name+"|";
-      });
-      url +=features;
+    $("#board div.gamecard").click(function(e) {
+      var clicked_card = $(this);
+      if( game.board_state_clickable ) {
+        var hand_size = 0;
+        if( game.p1_hand ) { hand_size = game.p1_hand.length; }
+
+        if(hand_size < game.max_hand) {
+          var unique_id  = clicked_card.attr('id').split('card_')[1];
+          var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
+          var playedCard = game.returnCard(card_obj);
+
+          $("#p1_hand").append(playedCard);
+          game.p1_hand.push( card_obj );
+          game.saveSelection( card_obj );
+          game.evaluateHand(game.p1_hand, 1);
+
+          //hide button from board
+          clicked_card.removeClass("active").addClass("selected").unbind("click").html("");
+          game.board_state_clickable = false;
+          game.addCardToBarney();
+        } else {  alert("Sorry, you can only have 5 cards in your hand in this game."); }
+      } else { alert("Wait your turn!"); }
+    })
+  },
+  returnCard : function(obj) {
+    var game = CURE.boardgame;
+    var card = "\
+                <div id='playedcard_"+ obj.unique_id +"' class='gamecard active'>\
+                <span class='help_label'>i</span>\
+                <span class='gene_label'>"+ obj.display_name +"</span>\
+                </div>";
+
+    return card;
+  },
+  saveSelection : function(card) {
+    var game = CURE.boardgame;
+    var geneid = card.unique_id;
+    var args = {
+      dataset : CURE.dataset,
+      command : "playedcard",
+      board_id : game.level,
+      player_name : CURE.username,
+      player_id : CURE.user_id,
+      geneid : card.unique_id
+    }
+    $.getJSON("MetaServer", args, function(data) { });
+  },
+  evaluateHand : function(cardsInHand, player) {
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
+    var args = {
+      dataset : CURE.dataset,
+      command : "getscore"
+    }
+    
+    if( CURE.dataset == 'dream_breast_cancer') {
+      var geneids = [];
+      _(cardsInHand).each( function(v) { geneids.push( v.unique_id ); });
+      args.geneids = geneids.join(",")
+    } else {
+      var features = [];
+      _(cardsInHand).each( function(v) { features.push( v.att_index ); });
+      args.features = features.join(",")
     }
 
     //goes to server, runs the default evaluation with a decision tree
-    $.getJSON(url, function(data) {
+    $.getJSON("MetaServer", args, function(data) {
+      console.log(data);
       var treeheight = 250,
           treewidth = 420;
-      //console.log(data.max_depth +" depth");
-      if (data.max_depth > 2) {
-        treeheight = 200 + 30*data.max_depth;
-      }
-      if (player == "1") {
-        //draw the current tree
-        $("#p1_current_tree").empty();
-        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p1_current_tree");
-        //sometimes randomness in cross-validation gets you a different score even without producing
-        //any tree at all.
-        if (data.max_depth < 2) {
-          p1_score = 50;
-        } else {
-          p1_score = data.evaluation.accuracy;
-        }
-        if (p1_hand.length == max_hand) {
-          $("#player1_j48_score").html('<strong> score ' + p1_score + '</strong>');
-        }
-        $("#game_score_1").text(p1_score);
-      } else if (player == "2") {
-        //draw the current tree
-        $("#p2_current_tree").empty();
-        CURE.boardgame.drawTree(data, treewidth, treeheight, "#p2_current_tree");
-        //same as above
-        if (data.max_depth < 2) {
-          p2_score = 50;
-        } else {
-          p2_score = data.evaluation.accuracy;
-        }
-        $("#player2_j48_score").html('<strong> score '+ p2_score +'</strong>');
-        if (p2_hand.length == max_hand) {
-          $("#player2_j48_score").html('<strong> score '+ p2_score +'</strong>');
-        }
-        $("#game_score_2").text(p2_score);
-        board_state_clickable = true;
-        if (p2_hand.length != max_hand && p1_score<p2_score&&p1_score>0) {
-          CURE.boardgame.moveBarney("correct"); //incorrect win lose
-        } else if (p1_score > p2_score) {
-          CURE.boardgame.moveClayton("correct"); //incorrect win lose
-        }
+      if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
 
+      //draw the current tree
+      $("#p"+ player +"_current_tree").empty();
+      utils.drawTree(data, treewidth, treeheight, "#p"+ player +"_current_tree");
+      //sometimes randomness in cross-validation gets you a different score even without producing
+      //any tree at all.
+      if (data.max_depth < 2) {
+        game["p"+ player +"_score"] = 50;
+      } else {
+        game["p"+ player +"_score"] = data.evaluation.accuracy;
       }
-      //if its the last hand, show the results
-      if (p2_hand.length == max_hand) {
-        saveHand();
-        //show
-        window.setTimeout(function() {
-          var $tabs = $("#tabs").tabs();
-          if (p1_score<p2_score&&p1_score>0) {
-            $("#winner").text("Sorry, you lost this hand. ");
-            $tabs.tabs('select', 4);
-            CURE.boardgame.moveBarney("win"); //incorrect win lose
-            $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
-          } else if (p1_score > p2_score && CURE.dataset=='mammal' && level==3) {
-            $("#winner").parent().parent().css('background-color', 'pink');
-            $("#winner").html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
-            $("#holdem_button").hide();
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("lose"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-          } else if (p1_score > p2_score) {
-            $("#winner").parent().parent().css('background-color', '#FFA500');
-            $("#winner").html("<h1>You beat Barney!</h1>You earned "
-              + p1_score+ " * "+ multiplier
-              + "= </strong><span style=\"font-size:30px;\">"
-              + (p1_score * multiplier)
-              + "</span> points!");
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("lose"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-          } else if (p1_score == p2_score) {
-            $("#winner").text("You tied Barney! ");
-            $tabs.tabs('select', 3);
-            CURE.boardgame.moveBarney("win"); //incorrect win lose
-            CURE.boardgame.moveClayton("win");
-            $("#winner").append("<br><a href=\""+replay+"\">Play Level Again?</a>");
-          }
-          $("#board").hide();
-          $("#endgame").show();
-        }, 1500);
-      }
-    });
-  },
-  getStyleByScore : function(power) {
-    var colors = [ "#F8F0DF", "#F7E6C1", "#F7DB9B", "#F5CC6C", "#F5BE3F", "#F26B10"];
-    var cellstyle = "width: 75px; position:relative; ";
-    //color by estimated individual predictive power
-    if (power == 0) {
-      //cellstyle+=" background-color:"+colors[0]+";";
-    } else if (power > 0 && power < 0.12) {
-      cellstyle += " background-color:" + colors[0] + ";";
-    } else if (power < 0.13) {
-      cellstyle += " background-color:" + colors[1] + ";";
-    } else if (power < 0.14) {
-      cellstyle += " background-color:" + colors[2] + ";";
-    } else if (power < 0.15) {
-      cellstyle += " background-color:" + colors[3] + ";";
-    } else if (power < 0.16) {
-      cellstyle += " background-color:" + colors[4] + ";";
-    } else if (power > 0.15) {
-      cellstyle += " background-color:" + colors[5] + ";";
-    }
-    return cellstyle;
-  },
-  getChessStyle : function(cell_index) {
-    return "width: 75px; position:relative; background-color:#F8F0DF;";
-  },
-  generateBoardCell : function(cardindex) {
-    var boardhtml = "";
-    var displayname = cards[cardindex].name;
-    var power = cards[cardindex].power;
-    var cellstyle = getChessStyle(cardindex);
-    if (displayname == null || displayname.length == 0) {
-      displayname = cards[cardindex].att_name;
-    }
-    cards[cardindex].displayname = displayname;
-    boardhtml += "<td><div style=\"margin:5px "+cellstyle+"\">";
-    //style=\"position:absolute; top:4; right:0;\"
-    if (showgeneinfo == "1") {
-      boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute;top:4px; right:0px;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-    }
-    //	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
-    boardhtml += "<div class=\"select_card_button btn btn-primary\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable small_level_button\" style=\"height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\" href=\"#\">"
-      + displayname + "</a></div></div></td>";
-    return boardhtml;
-  },
-  generateHandCell : function(cardindex, player) {
-    /**
-     * cardindex refers to the location on the board and the handle in the board card Map
-    **/
-    var boardhtml = "",
-        displayname = cards[cardindex].name,
-        power = cards[cardindex].power,
-        cellstyle = CURE.boardgame.getStyleByScore(power);
-    if (displayname == null || displayname.length == 0) {
-      displayname = cards[cardindex].att_name;
-    }
-    cards[cardindex].displayname = displayname;
-    boardhtml += "<td><div style=\"margin:5px "+cellstyle+"\">";
-    if (showgeneinfo == "1") {
-      boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\" style=\"position:absolute; top:4; right:0;\"><a href=\"#\"><img src=\"images/info-icon.png\"></a></div>";
-    }
-    //	boardhtml+="<div class=\"select_card_button\" id=\"card_index_"+cardindex+"\"><a title=\"add to hand\" class=\"selectable\" style=\"color:black;\" href=\"#\">"+displayname+"</a></div></td>";
-    boardhtml += "<div class=\"select_card_button btn btn-primary\" style=\"cursor:default;\" id=\"card_index_"+cardindex+"\"><span class=\"selectable small_level_button\" style=\"cursor:default; height:60px; line-height:60px; text-align:center; font-size:13; width:60px; text-decoration:none;\">"
-      + displayname + "</span></div></div></td>";
-    return boardhtml;
-  },
-  generateUsedBoardCell : function(cardindex) {
-    var boardhtml = "";
-    var displayname = cards[cardindex].name;
-    var power = cards[cardindex].power;
-    var cellstyle = CURE.boardgame.getStyleByScore(power);
-    if (displayname == null || displayname.length == 0) {
-      displayname = cards[cardindex].att_name;
-    }
-    cards[cardindex].displayname = displayname;
-    boardhtml += "<td style=\""+cellstyle+"\">";
-    boardhtml += "<div class=\"feature_name\" id=\""+cards[cardindex].unique_id+"\">"
-      + displayname + "<br/>Used..</div>";
-    return boardhtml;
-  },
-  setupOpponent : function() {
-    opponent_sort = cards.slice(0);
-    //maintain the indexes to the board
-    $.each(opponent_sort, function(index, value) {
-      opponent_sort[index].board_index = index;
-    });
-    //rank by the power value - now ascending
-    opponent_sort.sort(function(a, b) {
-      return a.power - b.power;
-    });
-  },
-  generateBoard : function() {
-    var cardindex = -1;
-    var boardhtml = "<table >"; //border=\"4\" bordercolor=\"orange\"
-    for ( var r = 0; r < nrows; r++) {
-      boardhtml += "<tr align=\"center\" style=\"height: 75px\";>";
-      for ( var c = 0; c < ncols; c++) {
-        cardindex++;
-        var boardcell = CURE.boardgame.generateBoardCell(cardindex);
-        boardhtml += boardcell;
-      }
-      boardhtml += "</tr>";
-    }
-    boardhtml += "</table>";
-    $("#board").empty();
-    $("#board").append(boardhtml);
+      $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
 
-    //set the par - use all the features on the board
-    var f = [];
-    $.each(cards, function(i, v) { f.push(v.att_index); });
+      if (player == "2") {
+        game.board_state_clickable = true;
+        if (  game.p2_hand.length != game.max_hand &&
+              game.p1_score < game.p2_score &&
+              game.p1_score > 0 ) {
+          game.moveBarney("correct"); //incorrect win lose
+        } else if ( game.p1_score > game.p2_score ) {
+          game.moveClayton("correct"); //incorrect win lose
+        }
+      }
+
+      //-- If it's the last hand-- save out & display the results
+      if ( game.p2_hand.length == game.max_hand) {
+        //game.saveHand();
+        window.setTimeout( game.showTheResults(), 1500 );
+      }
+    });
+  },
+  showTheResults : function() {
+    var game = CURE.boardgame,
+        winnerEl = $("#endgame #winner");
+    if (  game.p1_score < game.p2_score &&
+          game.p1_score > 0 ) {
+      winnerEl.text("Sorry, you lost this hand. ");
+      //$tabs.tabs('select', 4);
+      game.moveBarney("win"); //incorrect win lose
+      winnerEl.append("<br><a href=\""+ game.replay +"\">Play Level Again?</a>");
+
+    } else if ( game.p1_score > game.p2_score &&
+                CURE.dataset == 'mammal' &&
+                game.level == 3 ) {
+
+      winnerEl.html("<h1>Congratulations! You finished your training!</h1> <p>You have gained access to the challenge area.</p><h2><a href=\"boardroom.jsp\">Start the challenge!</a></h2>");
+      $("#holdem_button").hide();
+      //$tabs.tabs('select', 3);
+      game.moveBarney("lose"); //incorrect win lose
+      game.moveClayton("win");
+
+    } else if ( game.p1_score > game.p2_score ) {
+
+      winnerEl.html("<h1>You beat Barney!</h1>You earned "
+        + game.p1_score + " * " + game.multiplier
+        + "= </strong><span style=\"font-size:30px;\">"
+        + ( game.p1_score * game.multiplier )
+        + "</span> points!");
+      //$tabs.tabs('select', 3);
+      game.moveBarney("lose"); //incorrect win lose
+      game.moveClayton("win");
+
+    } else if (p1_score == p2_score) {
+
+      winnerEl.text("You tied Barney! ");
+      //$tabs.tabs('select', 3);
+      game.moveBarney("win"); //incorrect win lose
+      game.moveClayton("win");
+      targetEl.append("<br><a href=\""+replay+"\">Play Level Again?</a>");
+
+    }
+    $("#endgame").show();
+  },
+  addCardToBarney : function() {
+    var game = CURE.boardgame;
+    var card_obj = game.getBarneysNextCard();
+
+    game.p2_hand.push(card_obj);
+    var playedCard = game.returnCard(card_obj);
+    $("#p2_hand").append( playedCard );
+
+    var selected_card = $("#boardgame #game_area #board div#card_"+card_obj.unique_id);
+    selected_card.removeClass("active").addClass("selected").unbind("click").html("");
+
+    game.evaluateHand( game.p2_hand, "2");
+  },
+  getBarneysNextCard : function(){
+    var game = CURE.boardgame;
+    var index = Math.floor( Math.random() * game.cards.length )
+    //var card_obj = _.find(game.cards, function(obj){ return obj.board_index == index; });
+    var card_obj = game.cards[index];
+    //-- Check to see if the randomly selected card is already in 
+    //a player's hand
+    var used_cards = _.union( _(game.p1_hand).pluck('unique_id'), _(game.p2_hand).pluck('unique_id') )
+    
+    if( _(used_cards).include( card_obj.unique_id ) ) {
+      return game.getBarneysNextCard();
+    } else {
+      return card_obj;
+    }
+  },
+  setupInfoToggle : function() {
+    //-- Handles switching between tab views
+   $("#tabs ul li").click(function(e) {
+     $.each( $("div#help_area div#infoboxes div.infobox"), function(i, v) { $(v).hide() })
+      var selEl = $(this).attr('class').split(' ')[0];
+      $("#"+selEl).show();
+    })
+  },
+  activeInfoPanel : function() {
+    //-- Returns the ID of which info panel tab is currently being viewed
+    var active_panel = "";
+    $.each( $("div#help_area div#infoboxes div.infobox"), function(i, v) {
+      if( $(v).is(':visible') ) { active_panel = $(v).attr('id'); }
+    });
+    return active_panel;
+  },
+  setupInfoHandler : function() {
+    var game = CURE.boardgame;
+    //-- Handles updating the tabs with the gene of interest
+    $("#board div.gamecard span.help_label").click(function(e) {
+      var clicked_card = $(this);
+      var unique_id  = clicked_card.attr('id').split('card_')[1];
+      game.showgene(unique_id);
+    });
+  },
+  setupGameMetaInfo : function() {
+    var game = CURE.boardgame,
+        msg = "";
+    if( CURE.dataset == "mammal" ) {
+      var fs = "features that distinguish";
+      if ( game.max_hand == "1" ) { fs = "feature that distinguishes"; }
+      msg = "Pick <strong>"+ game.max_hand +"</strong> "+ fs +" mammals from other creatures.  Think of things that separate mammals from fish, insects, amphibians, reptiles...";
+    } else if ( CURE.dataset == "dream_breast_cancer" ) {
+      msg = "Pick <b>"+ game.max_hand +"</b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.";
+    }
+  
+  },
+  moveBarney : function(moveChoice) {
+    $("img#barney5").removeClass("win lose correct").hide().addClass(moveChoice).show();
+  },
+  moveClayton : function(moveChoice) {
+    $("img#clayton1").removeClass("win lose correct").hide().addClass(moveChoice).show();
+  },
+
+  saveHand : function() {
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
+
+    var score_results = "0";
+    if( game.p1_score > game.p2_score ) {
+      score_results = "1";
+    } else if ( game.p1_score == game.p2_score ) {
+      score_results = "2";
+    }
+
     var args = {
       dataset : CURE.dataset,
-      command : "getscore",
-      features : f.join(",")
+      command : "savehand",
+      player_name : CURE.username,
+      //score : par_score,
+      cv_accuracy : game.p1_score,
+      board_id : game.level,
+      win : score_results,
+      game : "verse_barney",
+    }
+
+    if( CURE.dataset == 'dream_breast_cancer' ) {
+
+      var geneids = [];
+      _( game.p1_hand ).each(function(v,i) {
+        geneids.push( v.unique_id );
+      })
+      args.geneids = geneids.split(",");
+
+    } else {
+
+      var features = [];
+      _( game.p1_hand ).each(function(v,i) {
+        features.push( v.att_index );
+      })
+      args.features = features.split(",")
+
     }
 
     $.getJSON("MetaServer", args, function(data) {
-      var par = data.evaluation.accuracy;
-      $("#par_score").html("<strong>"+par+"</strong>");
-    });
-  },
-  showgene : function(geneid, name) {
-    $("#infobox_header").empty();
-    var gene_url = 'http://mygene.info/gene/'+geneid+'?filter=name,symbol,summary,go,genomic_pos&jsoncallback=?';
-    if(geneid!="_"&&geneid!=""){
-      //mygene info
-      $.getJSON(gene_url, mygene_info_get_gene_callback);
-      //ncbi eutils
-      var args = {'apikey' : 'ba0b21611890b5bc23c8c57033001a47', 'db' : 'gene', 'id' : geneid};
-      $.getJSON('http://entrezajax.appspot.com/efetch?callback=?', args, entrezajax_callback);
-    } else {
-      $("#infobox").empty();
-      $("#infobox").append('<strong>'+name+'</strong><h1>Mystery Card!</h1><p>No data available</p>');
-    }
-  },
-  entrezajax_callback : function(data) {
-    $("#rifs").empty();
-    $("#ncbi_phenos").empty();
-    $.each(data.result, function(i, item) {
-      var generif_list = '<ul>';
-      var phenotypes = '<ul>';
-      var haspheno = false;
-      for(var i = 0; i < item.Entrezgene_comments.length; i ++) {
-        if( item.Entrezgene_comments[i]["Gene-commentary_type"] == 18 ) {
-          var pmid_obj = item.Entrezgene_comments[i]["Gene-commentary_refs"];
-          var pmid;
-          if(pmid_obj) {
-            pmid = pmid_obj[0].Pub_pmid.PubMedId;
-          }
-          var riftext = item.Entrezgene_comments[i]["Gene-commentary_text"];
-          if(riftext) {
-            generif_list += '<li><a target=\"blank\" href=\'http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '\'>' + riftext + '</a></li>';
-          }
-        } else if(item.Entrezgene_comments[i]["Gene-commentary_type"] == 254 ) {
-          var pheno_obj = item.Entrezgene_comments[i]["Gene-commentary_comment"];
-          if(pheno_obj){
-            for(var p=0; p<pheno_obj.length; p++) {
-              if(pheno_obj[p]["Gene-commentary_type"]==19) {
-                phenotypes += '<li>'+pheno_obj[p]["Gene-commentary_heading"]+"</li>";
-                haspheno = true;
-              }
-            }
-          }
-        }
-      }
-      generif_list += '</ul>'; phenotypes += '</ul>';
-      generif_list += '</ul>'; phenotypes += '</ul>';
-      $("#rifs").append(generif_list);
-      if(haspheno) {
-        $("#gene_description").append("<div id=\"ncbi_phenos\">Phenotypes<br>"+phenotypes+"</div>");
-      }
-    });
-  },
-  mygene_info_get_gene_callback : function(result) {
-    $("#gene_description").empty();
-    $("#ontology").empty();
-    $("#ncbi_phenos").empty();
-    if (result && result.name && result.symbol){
-      var chromosome = "";
-      if(result.genomic_pos) {
-        chromosome = result.genomic_pos.chr;
-      }
-      $("#gene_description").append('<a href=\"http://www.ncbi.nlm.nih.gov/gene/'+result._id+'\" target = "blank">'+result.symbol+' : '+result.name+' (chr '+chromosome+ ')</a><p>'+result.summary+'</p>');
-      if(result.go) {
-        if(result.go.BP) {
-          var ps_list = result.go.BP;
-          if (!$.isArray(ps_list)){
-            ps_list = [ps_list];
-          }
-          $("#ontology").append("<p><strong>Biological Processes</strong><br>");
-          $.each(ps_list, function(i, ps) {
-            $("#ontology").append(ps.term+', ');
-          });
-          $("#ontology").append("</p>");
-        }
-        if(result.go.CC) {
-          var ps_list = result.go.CC;
-          if (!$.isArray(ps_list)) {
-            ps_list = [ps_list];
-          }
-          $("#ontology").append("<p><strong>Cellular Component</strong><br>");
-          $.each(ps_list, function(i, ps){
-            $("#ontology").append(ps.term+', ');
-          });
-          $("#ontology").append("</p>");
-        }
-        if(result.go.MF) {
-          var ps_list = result.go.MF;
-          if (!$.isArray(ps_list)) {
-            ps_list = [ps_list];
-          }
-          $("#ontology").append("<p><strong>Molecular Functions</strong><br>");
-          $.each(ps_list, function(i, ps) {
-            $("#ontology").append(ps.term+', ');
-          });
-          $("#ontology").append("</p>");
-        }
-      }
-    } else {
-      $("#gene_description").append('<p>No description available for this gene.</p>');
-    }
-  },
-  setupShowInfoHandler : function() {
-    console.log("show info handler");
-    //-- Handles switching between tab views
-    $.each( $("#infoboxes #tabs ul li") , function(i,v) {
-      $(v).toggle(function() {
-        var selEl = $(this).attr('class').split(' ')[0];
-        $("#"+selEl).slideDown();
-      }, function() {
-        var selEl = $(this).attr('class').split(' ')[0];
-        $("#"+selEl).slideUp();
-      })
-    });
- 
-
-    //-- Handles updating the tabs with the gene of interest
-    $(".feature_name").unbind("click");
-    $(".feature_name").on("click", function () {
-      var cell_id = this.id;
-      var name = this.innerText;
-      CURE.boardgame.showgene(cell_id, name);
-      // $tabs.tabs('select', 0); //it always goes back to the gene description on an info request
-    });
-  },
-  saveHand : function() {
-    par_score = p1_score - par;
-    var win = "0";
-    if(p1_score > p2_score) {
-      win = "1";
-    }
-
-    var saveurl;
-    if( CURE.dataset == 'dream_breast_cancer' ) {
-      geneids = "";
-      feature_names = "";
-      $.each(p1_hand, function(index, value) {
-        geneids += value.unique_id + ",";
-        feature_names +=  value.unique_id+":"+value.att_name + ":" + value.name + "|";
-      });
-      saveurl = 'MetaServer?dataset='+ CURE.dataset +'&command=savehand&geneids='
-        + geneids + '&player_name=' + CURE.username + '&score='
-        + par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-        + "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
-    } else {
-      features = "";
-      feature_names = "";
-      $.each(p1_hand, function(index, value) {
-        features+=value.att_index+",";
-        feature_names += value.unique_id+":"+value.att_name + ":"+value.name+"|";
-      });
-      saveurl = 'MetaServer?dataset='+ CURE.dataset +'&command=savehand&features='
-        + features + '&player_name=' + CURE.username + '&score='
-        + par_score + '&cv_accuracy=' + p1_score + '&board_id=' + level
-        + "&win=" + win+'&game=verse_barney&feature_names=' + feature_names;
-    }
-    $.getJSON(saveurl, function(data) {
       //console.log("saved a hand");
     });
   },
-  setupHoldem : function(){
-    //add the save handler
-    $("#holdem_button").on("click", function () {
-      window.location.replace("<%=mosaic_url%>");
-    });
-  },
-  randomXToY : function(minVal,maxVal,floatVal) {
-    //function to get random number upto m
-    var randVal = minVal+(Math.random()*(maxVal-minVal));
-    return typeof floatVal=='undefined'?Math.round(randVal):randVal.toFixed(floatVal);
-  },
-  getBarneysNextCardGettingHarder : function() {
-    var lower = level;
-    if((lower+10)>=cards.length) {
-      lower = cards.length - 11;
-    }
-    var upper = lower+10;
-
-    sorted_index = CURE.boardgame.randomXToY(lower,upper);
-    //console.log("sorted index "+sorted_index);
-    card_index = opponent_sort[sorted_index].board_index+"";
-    if(
-        ( $.inArray(card_index, p1_indexes) == -1 ) &&
-        ( $.inArray(card_index, p2_indexes) == -1 )
-      ) {
-        return card_index;
-    } else{
-      return CURE.boardgame.getBarneysNextCard();
-    }
-  },
-  getBarneysNextCard : function(){
-    sorted_index = CURE.boardgame.randomXToY(0, cards.length - 1);
-    card_index = opponent_sort[sorted_index].board_index+"";
-    if(
-        ($.inArray(card_index, p1_indexes) == -1) &&
-        ($.inArray(card_index, p2_indexes) == -1)
-        ) {
-      return card_index;
-    } else {
-      //console.log(" iterated on "+card_index);
-      return CURE.boardgame.getBarneysNextCard();
-    }
-  },
-  addCardToBarney : function() {
-    card_index = CURE.boardgame.getBarneysNextCard();
-    p2_indexes.push(card_index);
-    var handcell = CURE.boardgame.generateHandCell(card_index);
-
-    window.setTimeout(function() {
-      $("#player2_hand").fadeTo(500, 1, function (){
-        $("#player2_hand").append(handcell);
-        setupShowInfoHandler();
-      });
-    }, 700);
-    p2_hand.push(cards[card_index]);
-    
-    //hide button from board
-    card_index = "#card_index_"+card_index;
-    $(card_index).parent().fadeTo(500, 0.75, function (){
-      $(card_index).parent().css('background-color', 'transparent');
-      $(card_index).parent().html("");
-    });
-    CURE.boardgame.evaluateHand(p2_hand, "2");
-    //console.log(board_state_clickable);
-  },
-  saveSelection : function(card) {
-    var geneid = card.unique_id;
-    var saveurl = "MetaServer?dataset="+ CURE.dataset +"&command=playedcard&board_id="+level+"&player_name="+ CURE.username +"&player_id="+ CURE.user_id +"&geneid="+geneid;
-    $.getJSON(saveurl, function(data) {
-      //console.log("saved a card");
-      //console.log(saveurl);
-    });
-  },
-  setupHandAddRemove : function() {
-    $(".select_card_button").on("click", function () {
-      if(board_state_clickable) {
-        if(p1_hand) {
-          hand_size = p1_hand.length;
-        } else {
-          hand_size = 0;
-        }
-        if(hand_size < max_hand) {
-          var cell_id = this.id.replace("card_index_", "");
-          p1_indexes.push(cell_id);
-          var handcell = CURE.boardgame.generateHandCell(cell_id);
-          $("#player1_hand").fadeTo(1000, 1, function () {
-            $("#player1_hand").append(handcell);
-            CURE.boardgame.setupShowInfoHandler();
-          });
-          p1_hand.push(cards[cell_id]);
-          CURE.boardgame.saveSelection(cards[cell_id]);
-          CURE.boardgame.evaluateHand(p1_hand, 1);
-          //hide button from board
-          $(this).parent().fadeTo(500, 0.75, function () {
-            $(this).css('background-color', 'transparent');
-            $(this).html("");
-            //add a card to barney's hand
-            board_state_clickable = false;
-            CURE.boardgame.addCardToBarney();
-          });
-      } else {
-        alert("Sorry, you can only have 5 cards in your hand in this game.");
-      }
-      } else {
-        alert("Wait your turn!");
-      }
-    });
-  },
-  createTooltip : function(event) {
-    $('body').append('<div class="tooltippy"><p>Click a gene to add it to your hand</p></div>');
-    CURE.boardgame.positionTooltip(event);
-  },
-  positionTooltip : function(event) {
-    var tPosX = event.pageX - 10;
-    var tPosY = event.pageY - 100;
-    $('div.tooltippy').css({'position': 'absolute', 'top': tPosY, 'left': tPosX, 'background-color': 'white' });
-  },
-  hideTooltip : function(event){
-    $('div.tooltippy').hide();
-    CURE.boardgame.positionTooltip(event);
-  }
 }
 
 CURE.login = {
@@ -989,6 +732,240 @@ CURE.utilities = {
       return "";
     else
       return decodeURIComponent(results[1].replace(/\+/g, " "));
+  },
+  getScore : function(cards) {
+    //set the par - use all the features on the board
+    var f = [];
+    $.each( cards, function(i, v) { f.push(v.att_index); });
+    var args = {
+      dataset : CURE.dataset,
+      command : "getscore",
+      features : f.join(",")
+    }
+    $.getJSON("MetaServer", args, function(data) {
+      return data.evaluation.accuracy;
+    });
+  },
+///////////////////////////////
+  kind : function(kind_text) {
+    switch(kind_text)
+    {
+      case "split_node":
+        return 0;
+      case "split_value":
+        return 1;
+      case "leaf_node":
+        return 2;
+      default:
+        return 3;
+    }
+    return 3;
+  },
+  drawTree : function(json, width, height, selector_string) {
+    var utils = CURE.utilities;
+    if(json.max_depth<2){
+      $(selector_string).append("Could not build a useful tree with the selected features...");
+      return;
+    }
+    var green = "#1FA13A",
+        orange = "#D44413",
+        depth = json.max_depth-1;
+    var cluster = d3.layout.tree()
+      .size([width-40, height-40]),
+      diagonal = d3.svg.diagonal();
+
+    var vis = d3.select(selector_string).append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(0,8)");
+
+    //Deeeebugging
+    var nodes = cluster.nodes(json.tree),
+        links = cluster.links(nodes),
+        color = d3.scale.linear().domain([0, depth]).range([orange, green]),
+        //Breaking out node types, uglyyyy
+        split_nodes = [], split_values = [], leaf_nodes = [];
+    _.each(nodes, function(node) {
+      if( utils.kind(node.kind) == 0) {
+        split_nodes.push(node);
+      } else if ( utils.kind(node.kind) == 1 ) {
+        split_values.push(node);
+      } else if ( utils.kind(node.kind) == 2 || utils.kind(node.kind) == 3 ) {
+        leaf_nodes.push(node);
+      }
+    });
+
+    //Draw the links first so they're behind the nodes
+    var link = vis.selectAll("path.link")
+    .data(links)
+    .enter().append("path")
+    .transition().delay(400).duration(200)
+    .attr("class", "link")
+    .attr("d", diagonal)
+    .style("stroke", function(d) { return color(d.source.depth) } )
+    .style("stroke-width", function(d) { return 1.3*(depth - d.source.depth+1) +"px" } );
+
+    //Drawing the groups to dom
+    var split_node = vis.selectAll("g.split_node")
+      .data(split_nodes)
+      .enter().append("g")
+      .attr("class", "split_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var split_value = vis.selectAll("g.split_value")
+      .data(split_values)
+      .enter().append("g")
+      .attr("class", "split_value")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var leaf_node = vis.selectAll("g.leaf_node")
+      .data(leaf_nodes)
+      .enter().append("g")
+      .attr("class", "leaf_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+
+    //Adding to the groups for that node type
+    split_node.append("rect")
+      .transition().delay(100).duration(400)
+      .attr("height", "18")
+      .attr("width", function(d) { return $.trim(d.name).length*9  })
+      .attr("x", function(d) { return -( $.trim(d.name).length*4.5 ) } )
+      .attr("y", "-2")
+    split_node.append("text")
+      //move it down slightly
+      .transition().delay(100).duration(400)
+      .attr("dy", 12)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    split_value.append("circle")
+      .transition().delay(100).duration(400)
+      .style("fill", function(d) { return color( d.depth ) })
+      .attr("r", "8")
+    split_value.append("text")
+      .transition().delay(100).duration(400)
+      //move it down slightly
+      .attr("dy", 4)
+      .attr("dx", 22)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    //Left node text
+    leaf_node.append("text")
+      .transition().delay(100).duration(400)
+      //move it down slightly
+      .attr("dy", 12)
+      .text(function(d) { return d.name.toUpperCase() });
+
+    //Adding the bar graphs
+    //  _.each(leaf_nodes, function(d) {
+    //    $(selector_string).append("<div id='sprkln"+d.bin_size+""+d.errors+"' style='display:none;position:absolute;top:"+(d.y+30)+"px;left:"+(d.x +  $.trim(d.name).length*1.5   )+"px'></div>");
+    //    $("#sprkln"+d.bin_size+""+d.errors).sparkline([d.bin_size,d.errors], {
+    //      type: 'pie',
+    //      width: '20',
+    //      height: '20',
+    //      sliceColors: ['#1FA13A','#D44413']
+    //      }).fadeIn(1200);
+    //    });
+  },
+  drawTreeNoLeaf : function(json, width, height, selector_string) {
+    var utils = CURE.utilities;
+    var green = "#1FA13A",
+    orange = "#D44413",
+    depth = json.max_depth-1;
+
+    var cluster = d3.layout.tree()
+      .size([width-40, height-40]),
+      diagonal = d3.svg.diagonal();
+
+    var vis = d3.select(selector_string).append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(20,20)");
+
+    var nodes = cluster.nodes(json.tree),
+        links = cluster.links(nodes),
+        color = d3.scale.linear().domain([0, depth]).range([orange, green]),
+        //Breaking out node types, uglyyyy
+        split_nodes = [], split_values = [], leaf_nodes = [];
+    _.each(nodes, function(node) {
+      if( utils.kind(node.kind) == 0) {
+        split_nodes.push(node);
+      } else if ( utils.kind(node.kind) == 1 ) {
+        split_values.push(node);
+      } else if ( utils.kind(node.kind) == 2 || utils.kind(node.kind) == 3 ) {
+        leaf_nodes.push(node);
+      }
+    });
+
+    //Draw the links first so they're behind the nodes
+    var link = vis.selectAll("path.link")
+      .data(links)
+      .enter().append("path")
+      .transition().delay(400).duration(200)
+      .attr("class", "link")
+      .attr("d", diagonal)
+      .style("stroke", function(d) { return color(d.source.depth) } )
+      .style("stroke-width", function(d) { return 1.3*(depth - d.source.depth+1) +"px" } );
+
+    var split_node = vis.selectAll("g.split_node")
+      .data(split_nodes)
+      .enter().append("g")
+      .attr("class", "split_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var split_value = vis.selectAll("g.split_value")
+      .data(split_values)
+      .enter().append("g")
+      .attr("class", "split_value")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    var leaf_node = vis.selectAll("g.leaf_node")
+      .data(leaf_nodes)
+      .enter().append("g")
+      .attr("class", "leaf_node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+
+    split_node.append("rect")
+      .transition()
+      .delay(10*depth)
+      .duration(100*depth)
+      .attr("height", "18")
+      .attr("width", function(d) { return $.trim(d.name).length*9  })
+      .attr("x", function(d) { return -( $.trim(d.name).length*4.5 ) } )
+      .attr("y", "-2")
+    split_node.append("text")
+      //move it down slightly
+      .attr("dy", 12)
+      .style("font-family", "Helvetica")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
+
+    split_value.append("circle")
+      .style("fill", function(d) { return color( d.depth ) })
+      .transition()
+      .delay(10*depth)
+      .duration(100*depth)
+      .attr("r", "8")
+    split_value.append("text")
+      //move it down slightly
+      .attr("dy", 4)
+      .attr("dx", 32)
+      .style("font-family", "Helvetica")
+      .style("font-size", "10px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
+
+    leaf_node.append("text")
+      //move it down slightly
+      .attr("dy", 12)
+      .style("font-family", "Helvetica")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .style("fill", "#000")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.toUpperCase() });
   }
 }
 

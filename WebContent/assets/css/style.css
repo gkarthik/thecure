@@ -443,4 +443,152 @@ div#footer iframe.twitter-share-button {
   fill: none;
 }
 
+#boardgame {
+  margin: 60px auto;
+  width: 960px;
+}
 
+#boardgame #game_area {
+  overflow: hidden
+}
+
+#boardgame #game_area #board {
+  position: relative;
+  overflow: hidden;
+  width: 500px;
+  float: left;
+}
+
+#boardgame div.gamecard {
+  position: relative;
+  float: left;
+  margin: 6px;
+  width: 80px;
+  height: 80px;
+
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  color: #8C8C8C;
+  text-align: center;
+  text-shadow: 0px 0px 2px rbga(255,255,255,.2);
+  letter-spacing: 1px;
+}
+
+
+
+#boardgame div.gamecard.active {
+  background-color: #c7f1ff;
+  -webkit-box-shadow: 0px 0px 6px 0px #666;
+  box-shadow: 0px 0px 6px 0px #666;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+#boardgame #game_area #board div.gamecard.active:hover {
+  -webkit-box-shadow: 0px 0px 12px 0px #666;
+  box-shadow: 0px 0px 12px 0px #666;
+}
+
+#boardgame div.gamecard.selected {
+  background-color: #fff;
+  cursor: default;
+}
+
+#boardgame div.gamecard span.help_label {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+
+  width: 20px;
+  height: 20px;
+  background-color: #20282B;
+  color: #F69;
+
+  font-weight: normal;
+
+  -webkit-box-shadow: 0px 0px 8px 0px #F69;
+  box-shadow: 0px 0px 8px 0px #F69;
+  text-shadow: 0px 0px 2px #000;
+
+}
+
+#boardgame div.gamecard span.gene_label {
+  position: relative;
+  top: 30px;
+  text-shadow: 0px 0px 2px #fff;
+}
+
+#boardgame #game_area #help_area {
+  float: left;
+}
+
+#boardgame #game_area #help_area #tabs {
+  position: relative;
+  overflow: hidden;
+}
+
+#boardgame #game_area #help_area #tabs ul {
+  position: relative;
+  overflow: hidden;
+  margin: 0px;
+  padding: 0px;
+}
+
+#boardgame #game_area #help_area #tabs ul li {
+  list-style: none;
+  float: left;
+  cursor: pointer;
+
+  padding: 6px 16px 6px 16px;
+  margin: 0px 8px 0px 8px;
+
+  background-color: #20282B;
+
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  color: #B2365F;
+  text-align: center;
+}
+
+#boardgame #game_area #help_area #infoboxes {
+  height: 396px;
+  
+  margin: 12px;
+  padding: 8px;
+  
+  -webkit-box-shadow: 0px 0px 8px #666;
+  box-shadow: 0px 0px 8px #666;
+}
+
+#boardgame #p2_area #p2_scorebox,
+#boardgame #p1_area #p1_scorebox {
+  overflow: hidden;
+}
+
+#boardgame #p2_area #p2_scorebox h2,
+#boardgame #p1_area #p1_scorebox h2 {
+  position: relative;
+  left: 48px;
+  top: 12px;
+  color: #20282B;
+}
+
+#boardgame #p2_area #p2_hand,
+#boardgame #p1_area #p1_hand {
+  overflow: hidden;
+  height: 92px;
+  width: 460px;
+  padding: 4px;
+
+  margin: 6px 0px 6px 0px;
+  -webkit-box-shadow: inset 0px 0px 6px #666;
+  box-shadow: inset 0px 0px 6px #666;
+}
+
+#boardgame img.avatar {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  float: left;
+  padding: 6px;
+}

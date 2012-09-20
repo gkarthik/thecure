@@ -70,34 +70,18 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
   <div id="boardgame">
     <div id="game_meta_info"></div>
 
-    <div id="player_2_area">
-      <div id="player2_title_area">
-        <h3>Barney's hand</h3>
+    <div id="p2_area">
+      <div id="p2_scorebox">
+        <img id="barney5" class="avatar" src="images/barney.png"/>
+        <h2>Barney's score: <span id="p2_score">0</span></h2>
       </div>
-
-      <div id="player2">
-        <div id="hand_info_box_2">
-          <div id="player_box_2">
-            <table>
-              <tr id="player2_hand"></tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div id="game_score_box_2">
-        <img id="barney5" src="images/barney.png"/>
-          <strong>Barney's score</strong>
-          <strong id="game_score_2">0</strong>
-      </div>
-
+      <div id="p2_hand"></div>
     </div>
 
     <div id="game_area">
-      <h2>Pick a feature</h2>
       <div id="board"></div>
 
-      <div id="infoboxes">
+      <div id="help_area">
         <div id="tabs">
           <ul>
             <li class="gene_description">Gene</li>
@@ -107,24 +91,27 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
             <li class="p2_current_tree">Barney's</li>
           </ul>
         </div>
-        <div class="infobox" id="gene_description">
-          <p>Gene description</p>
-        </div>
-        <div class="infobox" id="ontology" style="display: none;">
-          <p>Gene Ontology terms</p>
-        </div>
-        <div class="infobox" id="rifs" style="display: none;">
-          <p>Gene References into Function</p>
-        </div>
-        <div class="infobox" id="p1_current_tree" style="display: none;">
-          <p>Your decision tree will be displayed here.</p>
-        </div>
-        <div class="infobox" id="p2_current_tree" style="display: none;">
-          <p>Barney's decision tree will be displayed here.</p>
+
+        <div id="infoboxes">
+           <div class="infobox" id="gene_description">
+            <p>Gene description</p>
+          </div>
+          <div class="infobox" id="ontology" style="display: none;">
+            <p>Gene Ontology terms</p>
+          </div>
+          <div class="infobox" id="rifs" style="display: none;">
+            <p>Gene References into Function</p>
+          </div>
+          <div class="infobox" id="p1_current_tree" style="display: none;">
+            <p>Your decision tree will be displayed here.</p>
+          </div>
+          <div class="infobox" id="p2_current_tree" style="display: none;">
+            <p>Barney's decision tree will be displayed here.</p>
+          </div>
         </div>
       </div>
 
-      <div id="endgame">
+      <div id="endgame" style="display: none;">
         <h1>Round Over</h1>
         <div id="winner"></div><br>
         <input class="save_hand" id="holdem_button" type="submit" value="Try another board" />
@@ -132,28 +119,14 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
 
     </div>
 
-    <div id="player_1_area">
-
-      <div id="player1_title_area">
-        <h3>Your hand</h3>
+    <div id="p1_area">
+      <div id="p1_scorebox">
+        <img id="clayton1" class="avatar" src="images/200px-Clayton.png"/>
+        <h2>Your score: <span id="p2_score">0</span></h2>
       </div>
-
-      <div id="player1">
-        <div id="hand_info_box_1">
-          <div id="player_box_1">
-            <table>
-              <tr id="player1_hand"></tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div id="game_score_box_1">
-        <img id="clayton1" src="images/200px-Clayton.png"/>
-        <h4>Your score</h4>
-        <h1 id="game_score_1">0</h1>
-      </div>
+      <div id="p1_hand"></div>
     </div>
+
   </div>
 
   <jsp:include page="footer.jsp" />
@@ -161,7 +134,6 @@ Integer multiplier = glog.getPheno_multiplier().get(dataset);
   <script src="js/libs/jquery.sparkline.min.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
-  <script src="js/tree.js"></script>
   <script src="js/cure.js"></script>
   <jsp:include page="js/analytics.js" />
 
