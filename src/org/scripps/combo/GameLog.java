@@ -224,7 +224,7 @@ public class GameLog {
 				continue;
 			}
 			games_won++;
-			date_games.put(hand.getTimestamp().getTimeInMillis(), games_won);
+			date_games.put(hand.getUpdated().getTime(), games_won);
 			
 			points = multiplier*board_performance;
 			Integer gpoints = player_global_points.get(player);

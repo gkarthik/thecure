@@ -3,6 +3,7 @@
  */
 package org.scripps.combo.model;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,20 +18,25 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
- * create table board (id int(10) NOT NULL AUTO_INCREMENT, dataset varchar(50) not null, n_players int default 0, n_wins int default 0, avg_score float default 0, max_score float default 0, base_score float default 0, created Date, updated timestamp, primary key (id));
+ * create table hand (id int(10) NOT NULL AUTO_INCREMENT, player_id int, board_id int, dataset varchar(50), ip varchar(25), 
+   score int, cv_accuracy int, training_accuracy int, win int, 
+   created Date, updated timestamp, primary key (id));
+   
+   create table hand_feature (hand_id int, feature_id int);
  **/
 public class Hand {
 	int id;
 	int player_id;
 	String ip;
-	String features; 
+	List<String> features; 
 	int score;
 	int cv_accuracy;
 	int training_accuracy;
 	int board_id;
 	String dataset;
 	int win;
-	Calendar timestamp;
+	Date created;
+	Timestamp updated;
 	
 	public int getId() {
 		return id;
@@ -57,12 +63,6 @@ public class Hand {
 	public void setCv_accuracy(int cv_accuracy) {
 		this.cv_accuracy = cv_accuracy;
 	}
-	public String getFeatures() {
-		return features;
-	}
-	public void setFeatures(String features) {
-		this.features = features;
-	}
 	public int getBoard_id() {
 		return board_id;
 	}
@@ -72,21 +72,38 @@ public class Hand {
 	/**
 	 * Save this hand.
 	 */
-	public void save(){
+	public void insert(){
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			PreparedStatement pst = conn.connection.prepareStatement("insert into hand values(null, ?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement pst = conn.connection.prepareStatement("insert into hand " +
+					"(id, player_id, board_id, dataset, ip, score, cv_accuracy, training_accuracy, win, created, updated)" +
+					"values(?,?,?,?,?,?,?,?,?,?, ?)");
 			pst.clearParameters();
-			pst.setInt(1,getPlayer_id());
-			pst.setString(2,getIp());
-			pst.setInt(3, getScore());
-			pst.setInt(4, getCv_accuracy());
-			pst.setString(5, getFeatures());
-			pst.setInt(6, getBoard_id());
-			pst.setString(7,getDataset());
+			if(id>0){
+				pst.setInt(1,getId());
+			}else{
+				pst.setString(1, null);
+			}
+			pst.setInt(2,getPlayer_id());
+			pst.setInt(3, getBoard_id());
+			pst.setString(4, getDataset());
+			pst.setString(5, getIp());
+			pst.setInt(6,getScore());
+			pst.setInt(7, getCv_accuracy());
 			pst.setInt(8, getTraining_accuracy());
-			pst.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
-			pst.setInt(10, getWin());
+			pst.setInt(9, getWin());
+			
+			if(created==null){
+				pst.setDate(10, new Date(System.currentTimeMillis()));
+			}else{
+				pst.setDate(10, created);
+			}
+			if(updated==null){
+				pst.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
+			}else{
+				pst.setTimestamp(11, updated);
+			}
+			
 			pst.executeUpdate();
 			pst.close();
 			conn.connection.close();
@@ -102,9 +119,9 @@ public class Hand {
 	 */
 	public static List<Hand> getTheFirstHandPerPlayerPerBoard(boolean only_winning){
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select * from hand where player_name != 'anonymous_hero' order by time asc";
+		String q = "select * from hand order by time asc";
 		if(only_winning){
-			q = "select * from hand where win > 0 and player_name != 'anonymous_hero' order by time asc";
+			q = "select * from hand where win > 0 order by updated asc";
 		}
 		ResultSet rslt = conn.executeQuery(q);
 		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
@@ -113,7 +130,7 @@ public class Hand {
 				Hand hand = new Hand();
 				hand.setBoard_id(rslt.getInt("board_id"));
 				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
-				hand.setFeatures(rslt.getString("features"));
+			//	hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
 				hand.setPlayer_id(rslt.getInt("player_id"));
@@ -121,9 +138,8 @@ public class Hand {
 				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
-				Calendar t = Calendar.getInstance();
-				t.setTime(rslt.getTimestamp("time"));
-				hand.setTimestamp(t);
+				hand.setCreated(rslt.getDate("created"));
+				hand.setUpdated(rslt.getTimestamp("updated"));
 				
 				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_id())){
 					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_id(), hand);
@@ -147,7 +163,7 @@ public class Hand {
 	public static List<Hand> getAllHands(boolean only_winning){
 		List<Hand> hands = new ArrayList<Hand>();
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select * from hand where player_name != 'anonymous_hero' ";
+		String q = "select * from hand ";
 		if(only_winning){
 			q+=" and win > 0 "; 
 		}
@@ -157,7 +173,7 @@ public class Hand {
 				Hand hand = new Hand();
 				hand.setBoard_id(rslt.getInt("board_id"));
 				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
-				hand.setFeatures(rslt.getString("features"));
+			//	hand.setFeatures(rslt.getString("features"));
 				hand.setId(rslt.getInt("id"));
 				hand.setIp(rslt.getString("ip"));
 				hand.setPlayer_id(rslt.getInt("player_id"));
@@ -165,9 +181,8 @@ public class Hand {
 				hand.setDataset(rslt.getString("dataset"));
 				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
 				hand.setWin(rslt.getInt("win"));
-				Calendar t = Calendar.getInstance();
-				t.setTime(rslt.getTimestamp("time"));
-				hand.setTimestamp(t);
+				hand.setCreated(rslt.getDate("created"));
+				hand.setUpdated(rslt.getTimestamp("updated"));
 				hands.add(hand);
 			}
 		} catch (SQLException e) {
@@ -188,12 +203,6 @@ public class Hand {
 	public void setWin(int win) {
 		this.win = win;
 	}
-	public Calendar getTimestamp() {
-		return timestamp;
-	}
-	public void setTimestamp(Calendar timestamp) {
-		this.timestamp = timestamp;
-	}
 	public String getDataset() {
 		return dataset;
 	}
@@ -205,6 +214,24 @@ public class Hand {
 	}
 	public void setPlayer_id(int player_id) {
 		this.player_id = player_id;
+	}
+	public Date getCreated() {
+		return created;
+	}
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+	public Timestamp getUpdated() {
+		return updated;
+	}
+	public void setUpdated(Timestamp updated) {
+		this.updated = updated;
+	}
+	public List<String> getFeatures() {
+		return features;
+	}
+	public void setFeatures(List<String> features) {
+		this.features = features;
 	}
 
 
