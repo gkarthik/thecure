@@ -124,12 +124,16 @@ public class MetaServer extends HttpServlet {
 		}
 		//route to appropriate functions
 		if(command.equals("getscore")){
+			//works
 			getScore(request, response, weka);
 		}else if(command.equals("getboard")){
+			//works
 			getBoard(request, response, weka);
 		}else if(command.equals("savehand")){
+			//does not work
 			saveHand(request, response, weka);
 		}else if(command.equals("playedcard")){
+			//does not work
 			playedCard(request, response, weka);
 		}
 	}
@@ -148,17 +152,11 @@ public class MetaServer extends HttpServlet {
 		String board_id = request.getParameter("board_id");
 		boolean getmeta = true;
 		Board board = Board.getBoardById(board_id, getmeta);
-		List<Feature> features = board.getFeatures();
-		Collections.shuffle(features);
-		int location = 1; //0 is db default.  1 is top left corner.
-		//Todo this is the big one for the new board display view
-		for(Feature feature : features){			
-			location++;
-		}
-		JSONArray r = new JSONArray((Collection<Feature>)features);
+		boolean shuffle = true;
+		String json = board.toJSON(shuffle);
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
-		out.write(r.toString());
+		out.write(json);
 		out.close();
 	}
 

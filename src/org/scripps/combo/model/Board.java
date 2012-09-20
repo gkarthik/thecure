@@ -51,7 +51,7 @@ public class Board {
 
 	public static void main(String args[]) throws Exception{
 		Board b = Board.getBoardById(101+"", true);	
-		String j = b.toJSON(false);
+		String j = b.toJSON(true);
 		System.out.println(j);
 	}
 
@@ -123,10 +123,16 @@ public class Board {
 				ont_terms.put("values",values);
 				ontology.add(ont_terms);
 			}
-			metadata.put("ontology", ontology);
-			card.put("metadata", metadata);
+			metadata.put("ontology", ontology);	
 			ArrayNode rifs = mapper.createArrayNode();
-			
+			for(TextAnnotation t : feature.getText_annotations()){
+				ObjectNode rif = mapper.createObjectNode();
+				rif.put("pubmed_id", t.getPubmed_id());
+				rif.put("text", t.getAnno_text());
+				rifs.add(rif);
+			}
+			metadata.put("rifs", rifs);
+			card.put("metadata", metadata);
 			cards.add(card);
 			loc++;
 		}
