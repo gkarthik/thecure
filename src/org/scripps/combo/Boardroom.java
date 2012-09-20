@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.scripps.combo.model.Board;
+import org.scripps.combo.model.Player;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,14 +86,14 @@ public class Boardroom {
 	 * @param player_name
 	 * @param phenotype
 	 */
-	public void buildBoardView(String player_name, String phenotype){
+	public void buildBoardView(String player_name, String dataset){
 		Player player = Player.lookupPlayer(player_name);
 		if (player == null) {
 			return;
 		} 
-		Board control = new Board();
-		List<Board> boards = control.getBoardsByPhenotype(phenotype); //"dream_breast_cancer"
-		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get(phenotype);
+	
+		List<Board> boards = Board.getBoardsByDataset(dataset); //"dream_breast_cancer"
+		Map<Integer,Integer> player_board_scores = player.getPhenotype_board_scores().get(dataset);
 
 		int position = 0;
 		for(Board board : boards){
@@ -111,7 +114,7 @@ public class Boardroom {
 			int max_score = 0;
 			boolean beat_base = false;
 
-			Map<String, List<Integer>> all_player_board_scores = control.getPlayerBoardScoresForWins(b_id);
+			Map<String, List<Integer>> all_player_board_scores = Board.getPlayerBoardScoresForWins(b_id);
 			//			List<Integer> all_scores = control.getBoardScoresfromDb(b_id);
 			float avg_score = 0;
 			int unique_player_wins = 0;

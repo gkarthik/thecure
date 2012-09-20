@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.GameLog"%>
-<%@ page import="org.scripps.combo.Player"%>
-<%@ page import="org.scripps.combo.Hand"%>
+<%@ page import="org.scripps.combo.model.Player"%>
+<%@ page import="org.scripps.combo.model.Hand"%>
 <%@ page import="java.util.List"%>
 <%
   GameLog log = new GameLog();

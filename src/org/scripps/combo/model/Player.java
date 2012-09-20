@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo;
+package org.scripps.combo.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.scripps.combo.GameLog;
+import org.scripps.combo.TimeCounter;
+import org.scripps.combo.GameLog.high_score;
 import org.scripps.util.JdbcConnection;
 
 /**
@@ -44,12 +47,17 @@ public class Player {
 	}
 
 	
-	public static void describePlayers(){
+	public static void describePlayers(boolean all_hands){
 		List<Player> players = Player.getAllPlayers();
 		Map<String, Player> name_player = Player.playerListToMap(players);
 		GameLog log = new GameLog();
-		List<Hand> wm = Hand.getAllHands(false); //Hand.getTheFirstHandPerPlayerPerBoard(false); //
-		//remove mammal
+		List<Hand> wm = null;
+		if(all_hands){
+			wm = Hand.getAllHands(false); // //
+		}else{//just get the first hand per player per board
+			wm = Hand.getTheFirstHandPerPlayerPerBoard(false);
+		}
+			//remove mammal
 		List<Hand> hands = new ArrayList<Hand>();
 		for(Hand hand : wm){
 			if(hand.getBoard_id()>4){
@@ -158,6 +166,22 @@ public class Player {
 		return players;
 	}
 
+	public static Map<Integer, Player> mapPlayersByDbId(List<Player> players){
+		Map<Integer, Player> id_player = new HashMap<Integer, Player>();
+		for(Player player : players){
+			id_player.put(player.getId(), player);
+		}
+		return id_player;
+	}
+	
+	public static Map<String, Player> mapPlayersByName(List<Player> players){
+		Map<String, Player> name_player = new HashMap<String, Player>();
+		for(Player player : players){
+			name_player.put(player.getName(), player);
+		}
+		return name_player;
+	}
+	
 	public static List<Player> lookupByEmail(String email){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();
