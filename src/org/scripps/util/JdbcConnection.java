@@ -24,6 +24,10 @@ public class JdbcConnection {
 		String password = "cure";
 		createConnection(serverLocation, db, user, password);
 	}
+	
+	public JdbcConnection(String serverLocation, String db, String user, String password){
+		createConnection(serverLocation, db, user, password);
+	}
 	/**
 	 * @param args
 	 */

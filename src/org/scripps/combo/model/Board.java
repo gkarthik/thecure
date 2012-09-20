@@ -41,20 +41,9 @@ public class Board {
 	float base_score;
 	Date created;
 	Timestamp updated;
-	/*
-	 * 				if(board.equals("mammal_0")){
-					cards = weka.getCardsByIndices("1,10");
-				}else if(board.equals("mammal_1")){
-					cards = weka.getCardsByIndices("3,9");
-				}else if(board.equals("mammal_2")){
-					cards = weka.getCardsByIndices("9,7,6,14");
-				}else if(board.equals("mammal_3")){
-					cards = weka.getCardsByIndices("4,3,1,13");
-				}
-	 */
+
 	public static void main(String args[]) throws Exception{
-		//setupCureV2();
-		
+		//setupCureV2();		
 	}
 
 	/**
@@ -220,13 +209,18 @@ public class Board {
 		ResultSet generatedKeys = null; PreparedStatement pst = null;
 		try {
 			pst = conn.connection.prepareStatement(
-					"insert into board (id, dataset, room, base_score, created) values(null,?,?,?,?)",
+					"insert into board (id, dataset, room, base_score, created) values(?,?,?,?,?)",
 					Statement.RETURN_GENERATED_KEYS);
 			pst.clearParameters();
-			pst.setString(1,getDataset());
-			pst.setString(2, getRoom());
-			pst.setFloat(3,getBase_score());
-			pst.setDate(4, getCreated());
+			if(id>0){
+				pst.setInt(1,getId());
+			}else{
+				pst.setString(1, null);
+			}
+			pst.setString(2,getDataset());
+			pst.setString(3, getRoom());
+			pst.setFloat(4,getBase_score());
+			pst.setDate(5, getCreated());
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 0) {

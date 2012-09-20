@@ -3,9 +3,11 @@
  */
 package org.scripps.combo.model;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +22,7 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
- *create table player (id int(10) NOT NULL AUTO_INCREMENT, 
- *name varchar(50), password varchar(50), top_score int, games_played int) primary key (id), unique key a1 (name, password); 
+create table player (id int(10) NOT NULL AUTO_INCREMENT, name varchar(50), password varchar(50), ip varchar(25), top_score int, games_played int, email varchar(100), created date, updated timestamp, degree varchar(12), cancer varchar(5), biologist varchar(5), primary key (id), unique key a1 (name, password)); 
  */
 public class Player {
 	int id;
@@ -38,14 +39,13 @@ public class Player {
 
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
-	Map<String, Map<Integer,Integer>> phenotype_board_scores; 
+	Map<String, Map<Integer,Integer>> dataset_board_scores; 
 	List<Integer> barney_levels;	
 
 
 	public Player() {
-		phenotype_board_scores = new HashMap<String, Map<Integer,Integer>>();
+		dataset_board_scores = new HashMap<String, Map<Integer,Integer>>();
 	}
-
 	
 	public static void describePlayers(boolean all_hands){
 		List<Player> players = Player.getAllPlayers();
@@ -282,6 +282,49 @@ public class Player {
 		return player;
 	}
 
+	public int insert() throws SQLException{
+		int newid = 0;
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet generatedKeys = null; PreparedStatement p = null;
+		
+		String insert = "insert into player (id,name, ip, password, email, created, degree, cancer, biologist) " +
+				"values(?,?,?,?,?,?,?,?,?)";
+		try {
+			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
+			if(id>0){
+				p.setInt(1, id);
+			}else{
+				p.setString(1, null);
+			}					
+			p.setString(2, name);
+			p.setString(3,ip);
+			p.setString(4,password);
+			p.setString(5,email);
+			p.setDate(6, new Date(System.currentTimeMillis()));
+			p.setString(7, degree);
+			p.setString(8,cancer);
+			p.setString(9, biologist);
+
+			int affectedRows = p.executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Creating player failed, no rows affected.");
+			}
+			generatedKeys = p.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				newid = generatedKeys.getInt(1);
+				//use to link up the feature to the attribute ids
+
+			} else {
+				throw new SQLException("Creating player failed, no generated key obtained.");
+			}
+		} finally {
+			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
+			if (p != null) try { p.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}
+		return newid;
+	}
+	
 	public void updateBarneyLevelsInDatabase(){
 		//if no player exists make a new one
 		JdbcConnection conn = new JdbcConnection();
@@ -315,15 +358,14 @@ public class Player {
 		if(name.equals("anonymous_hero")){
 			return;
 		}
-		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where player_name = ?";
+		String gethands = "select dataset, board_id, score, training_accuracy, cv_accuracy, win from hand where player_id = ?";
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(gethands);
-			p.setString(1, name);
+			p.setInt(1, id);
 			ResultSet hands = p.executeQuery();
 			while(hands.next()){
-				String phenotype = hands.getString("phenotype");
-				String game_type = hands.getString("game_type");
+				String dataset = hands.getString("dataset");
 				int board_id = hands.getInt("board_id");
 				int score = hands.getInt("score");
 				int training = hands.getInt("training_accuracy");
@@ -331,7 +373,7 @@ public class Player {
 				int win = hands.getInt("win");
 
 				if(win>0){
-					Map<Integer,Integer> tile_scores = phenotype_board_scores.get(phenotype);
+					Map<Integer,Integer> tile_scores = dataset_board_scores.get(dataset);
 					if(tile_scores==null){
 						tile_scores = new HashMap<Integer,Integer>();
 					}
@@ -339,7 +381,7 @@ public class Player {
 						training = cv;
 					}
 					tile_scores.put(board_id, training);
-					phenotype_board_scores.put(phenotype, tile_scores);
+					dataset_board_scores.put(dataset, tile_scores);
 				}
 			}
 			conn.connection.close();
@@ -433,15 +475,6 @@ public class Player {
 	}
 
 
-	public Map<String, Map<Integer, Integer>> getPhenotype_board_scores() {
-		return phenotype_board_scores;
-	}
-
-
-	public void setPhenotype_board_scores(
-			Map<String, Map<Integer, Integer>> phenotype_board_scores) {
-		this.phenotype_board_scores = phenotype_board_scores;
-	}
 
 
 	public float getAvg_cards_per_hand() {
@@ -451,6 +484,17 @@ public class Player {
 
 	public void setAvg_cards_per_hand(float avg_cards_per_hand) {
 		this.avg_cards_per_hand = avg_cards_per_hand;
+	}
+
+
+	public Map<String, Map<Integer, Integer>> getDataset_board_scores() {
+		return dataset_board_scores;
+	}
+
+
+	public void setDataset_board_scores(
+			Map<String, Map<Integer, Integer>> dataset_board_scores) {
+		this.dataset_board_scores = dataset_board_scores;
 	}
 
 

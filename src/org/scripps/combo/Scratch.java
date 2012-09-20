@@ -74,6 +74,9 @@ public class Scratch {
 		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
 
 	}
+	
+	
+	
 //
 //	public static void buildrankedListofGenesForEnrichmentTesting() throws Exception {
 //		String train_data = "/usr/local/data/vantveer/breastCancer-train-filtered.arff";
