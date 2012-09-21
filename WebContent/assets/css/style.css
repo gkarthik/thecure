@@ -480,18 +480,23 @@ div#footer iframe.twitter-share-button {
   background-color: #c7f1ff;
   -webkit-box-shadow: 0px 0px 6px 0px #666;
   box-shadow: 0px 0px 6px 0px #666;
-  cursor: pointer;
   overflow: hidden;
 }
+
 
 #boardgame #game_area #board div.gamecard.active:hover {
   -webkit-box-shadow: 0px 0px 12px 0px #666;
   box-shadow: 0px 0px 12px 0px #666;
+  cursor: pointer;
 }
 
-#boardgame div.gamecard.selected {
+#boardgame #board div.gamecard.selected {
   background-color: #fff;
   cursor: default;
+}
+
+span.help_label:hover {
+  cursor: pointer;
 }
 
 #boardgame div.gamecard span.help_label {
@@ -552,9 +557,10 @@ div#footer iframe.twitter-share-button {
 
 #boardgame #game_area #help_area #infoboxes {
   height: 396px;
-  
+  width: 406px;
   margin: 12px;
   padding: 8px;
+  overflow: scroll;
   -webkit-box-shadow: 0px 0px 8px #666;
   box-shadow: 0px 0px 8px #666;
 }

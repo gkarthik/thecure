@@ -6,7 +6,7 @@ CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
 
 CURE.load = function() {
-  var page = window.location.href.split("/cure/")[1];
+  var page = window.location.href.split("/cure2/")[1];
   if ( page.indexOf('?') > 0 ) {
     page = page.substring(0, page.indexOf('?'));
   }
@@ -62,7 +62,7 @@ CURE.forgot = {
   },
   submitEmail : function(email) {
 
-    $.get("/cure/SocialServer", { command: "iforgot", mail: email } )
+    $.get("SocialServer", { command: "iforgot", mail: email } )
       .success(function(d) {
         $("#emailAlert").html("Thank you, your password request has been sent to the provided email address.").fadeIn();
         return true;
@@ -227,12 +227,13 @@ CURE.boardgame = {
   p2_score : 0,
 
   board_state_clickable : true,
+  cached_info_panel_unique_id : 0,
 
   init : function() {
     var game = CURE.boardgame,
         utils = CURE.utilities;
     game.board_id = utils.getParameterByName("board_id");
-    game.max_hand = utils.max_id;
+    game.max_hand = 5;
 
     //set up the board
     var args = {
@@ -241,7 +242,12 @@ CURE.boardgame = {
     }
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
-      game.cards = data;
+      game.cards = data.cards;
+      //-- Inject the ux info object
+      _.each(game.cards, function(v) {
+        v.metadata.ux = []
+      })
+
       game.generateBoard();
       game.addCardSelectionHandlers();
       //set up handlers
@@ -251,7 +257,7 @@ CURE.boardgame = {
       //save hand
 
       //== MAX NOTES;
-      //game_meta_info set this up
+      game.setupHelpDisplay();
 
     });
     var ma = game.metadata.mouse_action;
@@ -295,7 +301,7 @@ CURE.boardgame = {
           $("#p1_hand").append(playedCard);
           game.p1_hand.push( card_obj );
           game.saveSelection( card_obj );
-          game.evaluateHand(game.p1_hand, 1);
+          game.evaluateHand(game.p1_hand, "1");
 
           //hide button from board
           clicked_card.removeClass("active").addClass("selected").unbind("click").html("");
@@ -331,20 +337,24 @@ CURE.boardgame = {
   evaluateHand : function(cardsInHand, player) {
     var game = CURE.boardgame,
         utils = CURE.utilities;
+
     var args = {
-      board_id : CURE.board_id,
+      board_id : game.board_id,
       command : "getscore",
       unique_ids : []
     }
 
     _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
+    console.log( args );
 
     //-- Goes to server, runs the default evaluation with a decision tree
     $.getJSON("MetaServer", args, function(data) {
-      console.log(data);
       var treeheight = 250,
           treewidth = 420;
-      if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
+    
+    console.log(data);
+
+    if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
 
       //draw the current tree
       $("#p"+ player +"_current_tree").empty();
@@ -446,11 +456,22 @@ CURE.boardgame = {
     }
   },
   setupInfoToggle : function() {
+    var game = CURE.boardgame;
     //-- Handles switching between tab views
    $("#tabs ul li").click(function(e) {
      $.each( $("div#help_area div#infoboxes div.infobox"), function(i, v) { $(v).hide() })
       var selEl = $(this).attr('class').split(' ')[0];
       $("#"+selEl).show();
+
+      //-- Log this out
+      if ( game.cached_info_panel_unique_id != 0 ) {
+        var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == game.cached_info_panel_unique_id; });
+        card_obj.metadata.ux.push({
+          timestamp : (new Date).getTime(),
+          panel : game.activeInfoPanel(),
+          new_card : false
+        });
+      };
     })
   },
   activeInfoPanel : function() {
@@ -480,7 +501,46 @@ CURE.boardgame = {
     } else if ( CURE.dataset == "dream_breast_cancer" ) {
       msg = "Pick <b>"+ game.max_hand +"</b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.";
     }
-  
+  },
+  setupHelpDisplay : function() {
+    var game = CURE.boardgame;
+    $("span.help_label").hover(function(e) {
+      var unique_id = $(this).parent().attr('id').split("_")[1];
+      game.cached_info_panel_unique_id = unique_id;
+      var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
+      var card_metadata = card_obj.metadata;
+
+      var scope = $("#game_area #help_area #infoboxes")
+      //gene
+      var geneEl = $("div#gene_description", scope).html("");
+
+      //ontology
+      var ontologyEl = $("div#ontology", scope).html("");
+      _.each(card_metadata.ontology, function(v,i) {
+        ontologyEl.append("<h2>"+ v.type +"</h2>")
+        var values = [];
+        _.each(v.values, function(v,i) {
+          values.push(v.term)
+        })
+        ontologyEl.append("<p>"+ values.join(", ") +"</p>")
+      })
+
+      //rifs
+      var rifsEl = $("div#rifs", scope).html("");
+      _.each(card_metadata.rifs, function(v,i) {
+        rifsEl.append("<p>"+ v.text +"</p>");
+      })
+
+      //-- Log this out
+      card_metadata.ux.push({
+        timestamp : (new Date).getTime(),
+        panel : game.activeInfoPanel(),
+        new_card : true
+      });
+
+      //dont play this card
+      e.stopPropagation()
+    })
   },
   moveBarney : function(moveChoice) {
     $("img#barney5").removeClass("win lose correct").hide().addClass(moveChoice).show();
@@ -495,7 +555,6 @@ CURE.boardgame = {
 
     game.metadata.game_finished = (new Date).getTime();
     var x = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
-    console.log(x)
 
     var score_results = "0";
     if( game.p1_score > game.p2_score ) {
@@ -556,9 +615,10 @@ CURE.boardroom = {
     var args = {
       command : "boardroom",
       user_id : CURE.user_id,
-      dataset : CURE.dataset
+      dataset : CURE.dataset,
+      room : "1" //cure dataset room
     }
-    $.getJSON("/cure/SocialServer", args, function(data) {
+    $.getJSON("SocialServer", args, function(data) {
       CURE.boardroom.drawGrid("#boards", data, 45);
     });
   },
@@ -642,7 +702,7 @@ CURE.landing = {
       var args = {
         command : "gamelogs"
       }
-      $.getJSON("/cure/SocialServer", args, function(data) {
+      $.getJSON("SocialServer", args, function(data) {
         //drawGraph(data, "#chart");
         var listItems = CURE.utilities.listOfLeaderBoard(data, 6);
         var olEl = $("div#leaderboard ol").append(listItems);
