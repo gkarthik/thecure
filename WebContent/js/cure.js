@@ -76,61 +76,168 @@ CURE.forgot = {
 }
 
 CURE.stats = {
-  init : function() {
-  
-    var data = CURE.utilities.seedData();
 
+  heat_map : [
+    { "board_id": 0,
+      "hits": 877
+    },{
+      "board_id": 1,
+      "hits": 733
+    },{
+      "board_id": 2,
+      "hits": 713
+    },{
+      "board_id": 3,
+      "hits": 702
+    },{
+      "board_id": 4,
+      "hits": 607
+    },{
+      "board_id": 5,
+      "hits": 597
+    },{
+      "board_id": 6,
+      "hits": 649
+    },{
+      "board_id": 7,
+      "hits": 673
+    },{
+      "board_id": 8,
+      "hits":593
+    }, {
+      "board_id": 9,
+      "hits": 708
+    },{
+      "board_id": 10,
+      "hits": 560
+    },{
+      "board_id": 11,
+      "hits": 606
+    },{
+      "board_id": 12,
+      "hits": 697
+    },{
+      "board_id": 13,
+      "hits": 606
+    },{
+      "board_id": 14,
+      "hits": 613
+    },{
+      "board_id": 15,
+      "hits": 520
+    },{
+      "board_id": 16,
+      "hits": 645
+    },{
+      "board_id": 17,
+      "hits": 577
+    },{
+      "board_id": 18,
+      "hits": 613
+    },{
+      "board_id": 19,
+      "hits": 626
+    },{
+      "board_id": 20,
+      "hits": 595
+    },{
+      "board_id": 21,
+      "hits": 515
+    },{
+      "board_id": 22,
+      "hits": 546
+    },{
+      "board_id": 23,
+      "hits": 621
+    },{
+      "board_id": 24,
+      "hits": 655
+    }],
+
+  init : function() {
+
+
+
+    var data = CURE.utilities.seedData();
 //
 //     var url = "/cure/SocialServer?command=stats";
 //     $.getJSON(url, function(data) {
 //       CURE.utilities.drawLineGraph(data, "chart1");
 //     });
     CURE.utilities.drawLineGraph(data.chart1, "#chart1", 600);
+    CURE.stats.heatmap();
 
+  },
+  heatmap : function() {
+    var data = CURE.stats.heat_map;
+
+    var grid_size = 5;
+    var padding = 80;
+    //var attempt = d3.scale.linear()
+    //  .domain([0, 10])
+    //  .range([0, 100]);
+
+    var hits = _(data).pluck("hits");
+
+    var color = d3.scale.linear()
+      .domain([_.min(hits), _.max(hits)])
+      .range(["#00FF00", "#FF0000"]);
+
+    var hits = d3.scale.linear()
+      .domain([_.min(hits), _.max(hits)])
+      .range([1, 2]);
+
+
+    var vis = d3.select("#heatmap").append("svg");
+
+    var circles = vis.selectAll("circle")
+    .data(data);
+
+    circles.enter().append("circle")
+      .attr("cy", function(d,i) {
+
+        return padding+Math.floor( i / grid_size )*40;
+      })
+      .attr("cx", function(d,i) {
+        var level = Math.floor( i / grid_size )
+
+
+        return padding+((i / grid_size) * 400) - (level*400);
+      })
+      .attr("r", function(d) {
+        return 10*hits(d.hits);
+      })
+      .attr("fill", function(d) { return color(d.hits) });
+  
   }
 }
 
 
 
 CURE.boardgame = {
-  complete_hand : {
-    metadata : {
-      game_started : (new Date).getTime(),
-      mouse_action : []
-    }
+  metadata : {
+    game_started : (new Date).getTime(),
+    mouse_action : []
   },
   cards : [],
-  opponent_sort : [],
-  p1_score : 0,
-  p2_score : 0,
-
   p1_hand : [],
   p2_hand : [],
 
-  features : "",
-  feature_names : "",
-  barney_init : 0,
+  p1_score : 0,
+  p2_score : 0,
+
   board_state_clickable : true,
 
   init : function() {
     var game = CURE.boardgame,
         utils = CURE.utilities;
-    game.nrows = utils.getParameterByName("nrows");
-    game.ncols = utils.getParameterByName("ncols");
-    game.level = utils.getParameterByName("level");
-    game.showgeneinfo = utils.getParameterByName("geneinfo") || "1";
-    game.max_hand = utils.getParameterByName("max_hand");
+    game.board_id = utils.getParameterByName("board_id");
+    game.max_hand = utils.max_id;
 
     //set up the board
-    var args = { x : game.ncols, y : game.nrows }
-    if ( game.level != null && CURE.dataset == "mammal" ) {
-      args.dataset = "mammal";
-      args.command = "getspecificboard";
-      args.board = "mammal_"+level;
-    } else {
-      args.dataset = CURE.dataset;
-      args.command = "getboard";
-      args.ran = game.level;
+    var args = {
+      command : "getboard",
+      board_id : game.board_id,
     }
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
@@ -147,7 +254,7 @@ CURE.boardgame = {
       //game_meta_info set this up
 
     });
-    var ma = game.complete_hand.metadata.mouse_action;
+    var ma = game.metadata.mouse_action;
     //-- watch user play
     $(window).mousemove(
       _.debounce(function(e) {
@@ -161,7 +268,7 @@ CURE.boardgame = {
     var game = CURE.boardgame,
         targetEl = $("#board");
     _(game.cards).each(function(v, i) {
-      v.display_name = v.name || v.att_name || v.unique_id;
+      v.display_name = v.short_name || v.unique_id;
       var card = targetEl.append("\
         <div id='card_"+ v.unique_id +"' class='gamecard active'>\
         <span class='help_label'>i</span>\
@@ -209,16 +316,15 @@ CURE.boardgame = {
 
     return card;
   },
-  saveSelection : function(card) {
+  saveSelection : function(card_obj) {
     var game = CURE.boardgame;
-    var geneid = card.unique_id;
+
     var args = {
-      dataset : CURE.dataset,
       command : "playedcard",
-      board_id : game.level,
-      player_name : CURE.username,
+      board_id : game.board_id,
       player_id : CURE.user_id,
-      geneid : card.unique_id
+      card : card_obj,
+      timestamp : (new Date).getTime()
     }
     $.getJSON("MetaServer", args, function(data) { });
   },
@@ -226,21 +332,14 @@ CURE.boardgame = {
     var game = CURE.boardgame,
         utils = CURE.utilities;
     var args = {
-      dataset : CURE.dataset,
-      command : "getscore"
-    }
-    
-    if( CURE.dataset == 'dream_breast_cancer') {
-      var geneids = [];
-      _(cardsInHand).each( function(v) { geneids.push( v.unique_id ); });
-      args.geneids = geneids.join(",")
-    } else {
-      var features = [];
-      _(cardsInHand).each( function(v) { features.push( v.att_index ); });
-      args.features = features.join(",")
+      board_id : CURE.board_id,
+      command : "getscore",
+      unique_ids : []
     }
 
-    //goes to server, runs the default evaluation with a decision tree
+    _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
+
+    //-- Goes to server, runs the default evaluation with a decision tree
     $.getJSON("MetaServer", args, function(data) {
       console.log(data);
       var treeheight = 250,
@@ -291,7 +390,7 @@ CURE.boardgame = {
 
     } else if ( game.p1_score > game.p2_score &&
                 CURE.dataset == 'mammal' &&
-                game.level == 3 ) {
+                game.board_id == 3 ) {
       winnerEl.append("<h2>Congratulations! You finished your training!</h1>")
       winnerEl.append("<h3>You have gained access to the challenge area.</h3>")
       winnerEl.append("<h3><a href='boardroom.jsp'>Start the challenge!</a></h3>");
@@ -394,6 +493,10 @@ CURE.boardgame = {
     var game = CURE.boardgame,
         utils = CURE.utilities;
 
+    game.metadata.game_finished = (new Date).getTime();
+    var x = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
+    console.log(x)
+
     var score_results = "0";
     if( game.p1_score > game.p2_score ) {
       score_results = "1";
@@ -402,38 +505,18 @@ CURE.boardgame = {
     }
 
     var args = {
-      dataset : CURE.dataset,
       command : "savehand",
-      player_name : CURE.username,
-      //score : par_score,
-      cv_accuracy : game.p1_score,
+      player_id : CURE.user_id,
       board_id : game.level,
       win : score_results,
-      game : "verse_barney",
-    }
-
-    if( CURE.dataset == 'dream_breast_cancer' ) {
-
-      var geneids = [];
-      _( game.p1_hand ).each(function(v,i) {
-        geneids.push( v.unique_id );
-      })
-      args.geneids = geneids.split(",");
-
-    } else {
-
-      var features = [];
-      _( game.p1_hand ).each(function(v,i) {
-        features.push( v.att_index );
-      })
-      args.features = features.split(",")
-
+      game : x
     }
 
     $.getJSON("MetaServer", args, function(data) {
       //console.log("saved a hand");
     });
   },
+  //replay_hand
 }
 
 CURE.login = {
@@ -472,9 +555,8 @@ CURE.boardroom = {
   init: function() {
     var args = {
       command : "boardroom",
-      username : CURE.username,
-      //this will become datatype when serverside is fixed
-      phenotype : CURE.dataset
+      user_id : CURE.user_id,
+      dataset : CURE.dataset
     }
     $.getJSON("/cure/SocialServer", args, function(data) {
       CURE.boardroom.drawGrid("#boards", data, 45);
@@ -543,7 +625,7 @@ CURE.boardroom = {
     $.each( $("div.board.enabled"), function(i, v) {
       var board_id = $(this).attr('id').split('_')[1];
         $(this).click(function(e) {
-          var url = "boardgame.jsp?level="+board_id+"&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
+          var url = "boardgame.jsp?board_id="+board_id;
           window.location.href = url;
         })
       })
@@ -557,8 +639,10 @@ CURE.landing = {
     // $('#twitter-widget-1').ready(function() {
     //   CURE.landing.getTwitterTimeline();
     // });
-      var url = "/cure/SocialServer?command=gamelogs";
-      $.getJSON(url, function(data) {
+      var args = {
+        command : "gamelogs"
+      }
+      $.getJSON("/cure/SocialServer", args, function(data) {
         //drawGraph(data, "#chart");
         var listItems = CURE.utilities.listOfLeaderBoard(data, 6);
         var olEl = $("div#leaderboard ol").append(listItems);
@@ -743,19 +827,6 @@ CURE.utilities = {
       return "";
     else
       return decodeURIComponent(results[1].replace(/\+/g, " "));
-  },
-  getScore : function(cards) {
-    //set the par - use all the features on the board
-    var f = [];
-    $.each( cards, function(i, v) { f.push(v.att_index); });
-    var args = {
-      dataset : CURE.dataset,
-      command : "getscore",
-      features : f.join(",")
-    }
-    $.getJSON("MetaServer", args, function(data) {
-      return data.evaluation.accuracy;
-    });
   },
 ///////////////////////////////
   kind : function(kind_text) {

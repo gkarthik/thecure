@@ -8,8 +8,6 @@
 
 <%
 String full_request = request.getRequestURI()+"?"+request.getQueryString();
-String mosaic_url = request.getParameter("mosaic_url"); //"cranio_coronal_mosaic.jsp";
-String dataset = request.getParameter("dataset"); // "coronal_case_control";
 String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
 
 String username = (String)session.getAttribute("username");
@@ -19,9 +17,6 @@ String player_id = ""+p.getId();
 if(username==null){
 	username = "anonymous_hero";
 }
-GameLog glog = new GameLog();
-Integer multiplier = glog.getPheno_multiplier().get(dataset);
-
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
