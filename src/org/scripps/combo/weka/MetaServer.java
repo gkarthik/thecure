@@ -28,11 +28,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
+import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Hand;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Mail;
+import org.scripps.util.MapFun;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -104,7 +106,7 @@ public class MetaServer extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//System.out.println("hello wekaserver");
+		//make sure we have a command and a dataset
 		String command = request.getParameter("command");
 		if(command==null){
 			handleBadRequest(request, response, "no command");
@@ -120,263 +122,202 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
 			return;
 		}
-		String game = request.getParameter("game");
-		// handle request to score feature set
+		//route to appropriate functions
 		if(command.equals("getscore")){
-			String features=request.getParameter("features");
-			String geneids=request.getParameter("geneids");
-			if(features==null&&geneids==null){
-				handleBadRequest(request, response, "no features");
-			}else if(features==null){
-				features = "";
-				String[] gids = geneids.split(",");
-				for(String geneid : gids){
-					List<card> cards = weka.getGeneid_cards().get(geneid);
-					if(cards!=null){
-						for(card c : cards){
-							features+=c.getAtt_index()+",";
-						}
-					}
-				}
-			}
-			if(features!=null){
-				//String model = request.getParameter("wekamodel");
-				J48 wekamodel = new J48();
-				Weka.execution result = weka.pruneAndExecute(features, wekamodel);
-				ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-				//serialize and return the result
-				JSONObject r = new JSONObject(short_result);
-				response.setContentType("text/json");
-				PrintWriter out = response.getWriter();
-				String eval_json = r.toString();
-				String tree_json = "";
-				JsonTree jtree = new JsonTree();
-				try {
-					tree_json = jtree.getJsonTreeString(wekamodel);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				String treeoutput = "{\"evaluation\" : "+eval_json+", " +
-				"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
-				"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
-				"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
-				"\"tree\":"+tree_json+"}";
-				//		System.out.println(treeoutput);
-				out.write(treeoutput);
-				out.close();
-			}
-			// initialize a random gene 'board' - a list of attributes from the training set of specified size
+			getScore(request, response, weka);
 		}else if(command.equals("getboard")){
-			if(dataset_name.equals("dream_breast_cancer")){
-				String board_id = request.getParameter("ran");
-				Board board = new Board();
-				board = board.getBoardById(board_id);
-				List<card> cards = new ArrayList<card>();
-				List<String> genes = board.getEntrez_ids();
-				Collections.shuffle(genes);
-				int location = 1; //0 is db default.  1 is top left corner.
-				for(String gene : genes){
-					List<card> related = weka.geneid_cards.get(gene);
-					for(card c : related){
-						//captures where its going to be shown to the player
-						c.setDisplay_loc(location);
-					}
-					location++;
-					cards.add(related.get(0)); //right now we only use the card to show the gene_id..  so only need one.  on the way back, this id is remapped to all the related attributes
-				}
-				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
-				response.setContentType("text/json");
-				PrintWriter out = response.getWriter();
-				out.write(r.toString());
-				out.close();
-			}else{ 
-				String raninput = request.getParameter("ran");
-				int ran = 1;
-				if(raninput!=null){
-					ran = Integer.parseInt(raninput);
-				}else{			
-					ran = (int)Math.rint(Math.random()*1000);
-				}
-				int nrows = Integer.parseInt(request.getParameter("y"));
-				int ncols = Integer.parseInt(request.getParameter("x"));
-				List<Weka.card> cards = weka.getRandomCards(nrows * ncols, ran);
-				JSONArray r = new JSONArray((Collection<Weka.card>)cards);
-				response.setContentType("text/json");
-				PrintWriter out = response.getWriter();
-				out.write(r.toString());
-				out.close();
-			}
-		}else if(command.equals("getspecificboard")){
-			String board = request.getParameter("board");
-			List<Weka.card> cards = new ArrayList<Weka.card>();
-			if(board!=null){
-				if(board.equals("mammal_0")){
-					cards = weka.getCardsByIndices("1,10");
-				}else if(board.equals("mammal_1")){
-					cards = weka.getCardsByIndices("3,9");
-				}else if(board.equals("mammal_2")){
-					cards = weka.getCardsByIndices("9,7,6,14");
-				}else if(board.equals("mammal_3")){
-					cards = weka.getCardsByIndices("4,3,1,13");
-				}
-				/*}else if(board.equals("mammal_3")){
-					cards = weka.getCardsByIndices("8,11");
-				}else if(board.equals("mammal_4")){
-					cards = weka.getCardsByIndices("2,16,1,12");
-				}*/else if(board.equals("mammal_5")){
-					cards = weka.getCardsByIndices("9,7,6,14");
-				}else if(board.equals("mammal_6")){
-					cards = weka.getCardsByIndices("6,11,2,15");
-				}else if(board.equals("mammal_7")){
-					cards = weka.getCardsByIndices("4,3,1,13");
-				}else if(board.equals("zoo_0")){
-					cards = weka.getCardsByIndices("4,3,1,13,6,11,2,15,9");
-				}else if(board.equals("zoo_1")){
-					cards = weka.getCardsByIndices("5,4,2,14,7,12,3,16,10");
-				}else if(board.equals("zoo_2")){
-					cards = weka.getCardsByIndices("3,2,16,12,5,10,1,14,8");
-				}else if(board.equals("zoo_3")){
-					cards = weka.getCardsByIndices("2,1,15,11,4,9,16,14,7");
-				}else if(board.equals("zoo_4")){
-					cards = weka.getCardsByIndices("1,16,14,10,3,8,15,13,6");
-				}else if(board.equals("zoo_5")){
-					cards = weka.getCardsByIndices("15,1,12,9,2,7,14,11,8");
-				}else if(board.equals("zoo_6")){
-					cards = weka.getCardsByIndices("14,16,11,8,1,6,13,10,7");
-				}else if(board.equals("zoo_7")){
-					cards = weka.getCardsByIndices("13,15,10,7,16,5,12,9,6");
-				}else if(board.equals("zoo_8")){
-					cards = weka.getCardsByIndices("12,16,9,6,15,4,11,8,5e of");
-				}
-			}else{
-				int nrows = Integer.parseInt(request.getParameter("y"));
-				int ncols = Integer.parseInt(request.getParameter("x"));
-				cards = weka.getRandomCards(nrows * ncols, 0);
-			}
-			JSONArray r = new JSONArray((Collection<Weka.card>)cards);
-			response.setContentType("text/json");
-			PrintWriter out = response.getWriter();
-			out.write(r.toString());
-			out.close();
-		}
-		else if(command.equals("savehand")){
-			String features=request.getParameter("features");
-			String geneids=request.getParameter("geneids");
-			if(features==null&&geneids==null){
-				handleBadRequest(request, response, "no features");
-			}else if(features==null){
-				features = "";
-				String[] gids = geneids.split(",");
-				for(String geneid : gids){
-					List<card> cards = weka.getGeneid_cards().get(geneid);
-					if(cards!=null){
-						for(card c : cards){
-							features+=c.getAtt_index()+",";
-						}
-					}
-				}
-			}			
-			String player_name = request.getParameter("player_name");
-			String ip = request.getRemoteAddr();
-			String feature_names = request.getParameter("feature_names");
-			String phenotype = dataset_name;
-			String score_s = request.getParameter("score");
-			int score = -1;
-			if(score_s!=null){
-				score = Integer.parseInt(score_s);
-			}
-			String cv_accuracy_s = request.getParameter("cv_accuracy");
-			String training_accuracy_s = request.getParameter("training_accuracy");
-			int training_accuracy = -1;
-			int cv_accuracy = -1000;
-			if(cv_accuracy_s!=null){
-				cv_accuracy = Integer.parseInt(cv_accuracy_s);
-			}
-			if(training_accuracy_s != null){
-				training_accuracy = Integer.parseInt(training_accuracy_s);
-			}
-			String board_id_s = request.getParameter("board_id");
-			int board_id = -1000;
-			if(board_id_s!=null){
-				board_id = Integer.parseInt(board_id_s);
-			}
-			String win = request.getParameter("win");
-			int win_ = 0;
-			if(win!=null&&win.equals("1")){
-				win_ = 1;
-			}
-			Hand hand = new Hand();
-			hand.setBoard_id(board_id);
-			hand.setCv_accuracy(cv_accuracy);
-			hand.setFeatures(features);
-			hand.setIp(ip);
-			hand.setPlayer_name(player_name);
-			hand.setScore(score);
-			hand.setPhenotype(phenotype);
-			hand.setFeature_names(feature_names);
-			hand.setTraining_accuracy(training_accuracy);
-			hand.setGame_type(game);
-			hand.setWin(win_);
-			hand.save();
-			//update player info
-
-			if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
-				//update stars
-				//Player player = Player.lookupPlayer(player_name);
-				HttpSession s = request.getSession();
-				Player player = (Player)s.getAttribute("player");
-				//check if they passed the level
-				if(win!=null&&win.equals("1")){
-					//update session
-					Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
-					if(scores==null){
-						scores = new HashMap<Integer,Integer>();
-					}
-					if(game.equals("verse_barney")){
-						scores.put(board_id, cv_accuracy);
-					}else{
-						scores.put(board_id, training_accuracy);
-					}
-					player.getPhenotype_board_scores().put(dataset_name, scores);
-					s.setAttribute("player", player);
-				}
-			}else if(game!=null&&game.equals("barney")){
-				//update stars
-				Player player = Player.lookupPlayer(player_name);
-				//check if they passed the level
-				if(win!=null&&win.equals("1")){
-					//if(score>0){
-					int stars = 1;
-					if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
-						stars += player.getBarney_levels().get(board_id);
-						player.getBarney_levels().set(board_id, stars);
-					}else{
-						player.getBarney_levels().add(stars);
-					}
-					player.updateBarneyLevelsInDatabase();
-				}
-
-			}
-			System.out.println("saved a hand "+player_name+" "+score);
+			getBoard(request, response, weka);
+		}else if(command.equals("savehand")){
+			saveHand(request, response, weka);
 		}else if(command.equals("playedcard")){
-			String player_name = request.getParameter("player_name");
-			String player_id = request.getParameter("player_id");
-			String geneid = request.getParameter("geneid");	
-			String board_id = request.getParameter("board_id");
-			String phenotype = request.getParameter("dataset");
-			if(geneid!=null&&weka.getGeneid_cards()!=null){
-				List<card> cards = weka.getGeneid_cards().get(geneid);
-				if(cards!=null){
-					for(card c : cards){
-						Card tosave = new Card(c, player_name, player_id, phenotype, board_id);
-						tosave.save();
-					}
-				}
-			}
-		}//else we don't need to keep it fpr now.
+			playedCard(request, response, weka);
+		}
 	}
 
+
+
+	/**
+	 * Get a board for the game from the database
+	 * Send it a valid board_id
+	 * @param request
+	 * @param response
+	 * @param weka
+	 * @throws IOException 
+	 */
+	private void getBoard(HttpServletRequest request, HttpServletResponse response, Weka weka) throws IOException {
+		String board_id = request.getParameter("board_id");
+		boolean getmeta = true;
+		Board board = Board.getBoardById(board_id, getmeta);
+		List<Feature> features = board.getFeatures();
+		Collections.shuffle(features);
+		int location = 1; //0 is db default.  1 is top left corner.
+		//Todo this is the big one for the new board display view
+		for(Feature feature : features){			
+			location++;
+		}
+		JSONArray r = new JSONArray((Collection<Feature>)features);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(r.toString());
+		out.close();
+	}
+
+	/**
+	 * Score a collection of features, a full or partial hand in a game
+	 * Send it a comma delimited list of unique ids that match up with the unique ids of features in the database
+	 * @param request
+	 * @param response
+	 * @param weka
+	 * @throws IOException 
+	 */
+	private void getScore(HttpServletRequest request, HttpServletResponse response, Weka weka) throws IOException {
+		String unique_ids = request.getParameter("unique_ids");
+		//TODO parse them out of json array unique_ids
+		List<String> uniques = MapFun.string2list(unique_ids, ",");
+		J48 wekamodel = new J48();
+		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(uniques, wekamodel);
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		//serialize and return the result
+		JSONObject r = new JSONObject(short_result);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String eval_json = r.toString();
+		String tree_json = "";
+		JsonTree jtree = new JsonTree();
+		try {
+			tree_json = jtree.getJsonTreeString(wekamodel);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
+		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
+		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
+		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
+		"\"tree\":"+tree_json+"}";
+		//		System.out.println(treeoutput);
+		out.write(treeoutput);
+		out.close();
+
+	}
+	
+
+	private void saveHand(HttpServletRequest request, HttpServletResponse response, Weka weka) {
+//		String features=request.getParameter("features");
+//		String geneids=request.getParameter("geneids");
+//		if(features==null&&geneids==null){
+//			handleBadRequest(request, response, "no features");
+//		}else if(features==null){
+//			features = "";
+//			String[] gids = geneids.split(",");
+//			for(String geneid : gids){
+//				List<card> cards = weka.getGeneid_cards().get(geneid);
+//				if(cards!=null){
+//					for(card c : cards){
+//						features+=c.getAtt_index()+",";
+//					}
+//				}
+//			}
+//		}			
+//		String player_name = request.getParameter("player_name");
+//		String ip = request.getRemoteAddr();
+//		String feature_names = request.getParameter("feature_names");
+//		String phenotype = dataset_name;
+//		String score_s = request.getParameter("score");
+//		int score = -1;
+//		if(score_s!=null){
+//			score = Integer.parseInt(score_s);
+//		}
+//		String cv_accuracy_s = request.getParameter("cv_accuracy");
+//		String training_accuracy_s = request.getParameter("training_accuracy");
+//		int training_accuracy = -1;
+//		int cv_accuracy = -1000;
+//		if(cv_accuracy_s!=null){
+//			cv_accuracy = Integer.parseInt(cv_accuracy_s);
+//		}
+//		if(training_accuracy_s != null){
+//			training_accuracy = Integer.parseInt(training_accuracy_s);
+//		}
+//		String board_id_s = request.getParameter("board_id");
+//		int board_id = -1000;
+//		if(board_id_s!=null){
+//			board_id = Integer.parseInt(board_id_s);
+//		}
+//		String win = request.getParameter("win");
+//		int win_ = 0;
+//		if(win!=null&&win.equals("1")){
+//			win_ = 1;
+//		}
+//		Hand hand = new Hand();
+//		hand.setBoard_id(board_id);
+//		hand.setCv_accuracy(cv_accuracy);
+//		hand.setFeatures(features);
+//		hand.setIp(ip);
+//		hand.setPlayer_name(player_name);
+//		hand.setScore(score);
+//		hand.setPhenotype(phenotype);
+//		hand.setFeature_names(feature_names);
+//		hand.setTraining_accuracy(training_accuracy);
+//		hand.setGame_type(game);
+//		hand.setWin(win_);
+//		hand.save();
+//		//update player info
+//
+//		if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
+//			//update stars
+//			//Player player = Player.lookupPlayer(player_name);
+//			HttpSession s = request.getSession();
+//			Player player = (Player)s.getAttribute("player");
+//			//check if they passed the level
+//			if(win!=null&&win.equals("1")){
+//				//update session
+//				Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
+//				if(scores==null){
+//					scores = new HashMap<Integer,Integer>();
+//				}
+//				if(game.equals("verse_barney")){
+//					scores.put(board_id, cv_accuracy);
+//				}else{
+//					scores.put(board_id, training_accuracy);
+//				}
+//				player.getPhenotype_board_scores().put(dataset_name, scores);
+//				s.setAttribute("player", player);
+//			}
+//		}else if(game!=null&&game.equals("barney")){
+//			//update stars
+//			Player player = Player.lookupPlayer(player_name);
+//			//check if they passed the level
+//			if(win!=null&&win.equals("1")){
+//				//if(score>0){
+//				int stars = 1;
+//				if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
+//					stars += player.getBarney_levels().get(board_id);
+//					player.getBarney_levels().set(board_id, stars);
+//				}else{
+//					player.getBarney_levels().add(stars);
+//				}
+//				player.updateBarneyLevelsInDatabase();
+//			}
+//
+//		}
+//		System.out.println("saved a hand "+player_name+" "+score);
+
+	}
+
+	private void playedCard(HttpServletRequest request, HttpServletResponse response, Weka weka) {
+		String player_id = request.getParameter("player_id");
+//		String unique_id = request.getParameter("unique_id");	
+		String cardjson = request.getParameter("card");
+		String board_id = request.getParameter("board_id");
+		int display_loc = Integer.parseInt(request.getParameter("display_loc"));
+		//todo use their time.
+		String timestamp = request.getParameter("timestamp");
+//		if(unique_id!=null){			
+//			Card tosave = new Card(player_id, board_id, unique_id, display_loc);
+//			tosave.insert();
+//		}
+
+	}
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
 		System.out.println("Bad request: "+problem);

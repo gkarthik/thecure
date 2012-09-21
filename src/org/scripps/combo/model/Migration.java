@@ -89,7 +89,7 @@ public class Migration {
 				hand.setWin(rslt.getInt("win"));
 				//diffs
 				String name = rslt.getString("player_name");
-				Player p = Player.lookupPlayer(name);
+				Player p = Player.lookupPlayerByName(name);
 				hand.setPlayer_id(p.getId());			
 				
 				Timestamp time = rslt.getTimestamp("time");

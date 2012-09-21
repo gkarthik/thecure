@@ -89,7 +89,19 @@ public class Feature {
 		}
 	}
 
-
+	public Map<String, List<Annotation>> getOntologyMap(){
+		Map<String, List<Annotation>> ont_annos = new HashMap<String, List<Annotation>>();
+		for(Annotation anno : getAnnotations()){
+			List<Annotation> annos = ont_annos.get(anno.getVocabulary());
+			if(annos==null){
+				annos = new ArrayList<Annotation>();
+			}
+			annos.add(anno);
+			ont_annos.put(anno.getVocabulary(), annos);
+		}		
+		return ont_annos;
+	}
+	
 	/**
 	 * Insert a new feature.
 	 * @throws SQLException 
