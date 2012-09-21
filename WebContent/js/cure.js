@@ -332,7 +332,7 @@ CURE.boardgame = {
       command : "saveplayedcard",
       board_id : game.board_id,
       player_id : CURE.user_id,
-      card : card_obj.unique_id,
+      unique_id : card_obj.unique_id,
       timestamp : (new Date).getTime()
     }
     $.ajax({
