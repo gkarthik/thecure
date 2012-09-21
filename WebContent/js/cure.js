@@ -5,7 +5,7 @@ CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
 
 CURE.load = function() {
-  var page = window.location.href.split("/cure2/")[1];
+  var page = window.location.href.split("/cure/")[1];
   if ( page.indexOf('?') > 0 ) {
     page = page.substring(0, page.indexOf('?'));
   }

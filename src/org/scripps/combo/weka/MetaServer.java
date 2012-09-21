@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -35,6 +36,10 @@ import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Mail;
 import org.scripps.util.MapFun;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -122,9 +127,8 @@ public class MetaServer extends HttpServlet {
 		}else if(command.equals("savehand")){
 			//does not work
 			saveHand(request, response);
-		}else if(command.equals("playedcard")){
-			//does not work
-			playedCard(request, response);
+		}else if(command.equals("saveplayedcard")){
+			savePlayedCard(request, response);
 		}
 	}
 
@@ -159,21 +163,28 @@ public class MetaServer extends HttpServlet {
 	 * @throws IOException 
 	 */
 	private void getScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String dataset_name = request.getParameter("dataset");
-		if(dataset_name==null){
-			handleBadRequest(request, response, "no dataset");
-			return;
-		}
-		Weka weka = name_dataset.get(dataset_name);
+		String board_id = request.getParameter("board_id");
+		boolean getmeta = false;
+		Board board = Board.getBoardById(board_id, getmeta);		
+		Weka weka = name_dataset.get(board.getDataset());
 		if(weka==null){
-			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
+			handleBadRequest(request, response, "no dataset loaded for name: "+board.getDataset());
 			return;
 		}		
-		String unique_ids = request.getParameter("unique_ids");
+		String cards_json = request.getParameter("unique_ids");
+		System.out.println("get score "+cards_json);
 		//TODO parse them out of json array unique_ids
-		List<String> uniques = MapFun.string2list(unique_ids, ",");
+		List<String> unique_ids = new ArrayList<String>();
+		String user_id = "";
+		if(cards_json!=null){
+			//parse out the array of played cards and the user
+			ObjectMapper mapper = new ObjectMapper();
+			LinkedHashMap userData = mapper.readValue(cards_json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);		
+		//	System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
+			unique_ids = (List<String>)userData.get("unique_ids");
+		}
 		J48 wekamodel = new J48();
-		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(uniques, wekamodel);
+		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		//serialize and return the result
 		JSONObject r = new JSONObject(short_result);
@@ -302,18 +313,32 @@ public class MetaServer extends HttpServlet {
 
 	}
 
-	private void playedCard(HttpServletRequest request, HttpServletResponse response) {
-		String player_id = request.getParameter("player_id");
-//		String unique_id = request.getParameter("unique_id");	
-		String cardjson = request.getParameter("card");
-		String board_id = request.getParameter("board_id");
-		int display_loc = Integer.parseInt(request.getParameter("display_loc"));
-		//todo use their time.
-		String timestamp = request.getParameter("timestamp");
-//		if(unique_id!=null){			
-//			Card tosave = new Card(player_id, board_id, unique_id, display_loc);
-//			tosave.insert();
-//		}
+	private void savePlayedCard(HttpServletRequest request, HttpServletResponse response) {
+		String json = request.getQueryString();
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			LinkedHashMap card = mapper.readValue(json, LinkedHashMap.class);
+			//		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
+			String player_id = (String)card.get("player_id");
+			String timestamp = (String)card.get("timestamp");
+			String board_id = (String)card.get("board_id");
+			String unique_id = (String)card.get("unique_id");
+			int display_loc = -1; //request.getParameter("");
+			if(unique_id!=null){			
+				Card tosave = new Card(player_id, board_id, unique_id, display_loc);
+				//tosave.setTimestamp(timestamp);
+				tosave.insert();
+			}
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//mapper.readValue(new File("user.json"), Map.class);
 
 	}
 
