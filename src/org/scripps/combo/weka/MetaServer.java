@@ -67,7 +67,7 @@ public class MetaServer extends HttpServlet {
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
 			Weka mammal_weka = new Weka();
 			String dataset = "mammal";
-			mammal_weka.buildWeka(context.getResourceAsStream("train_loc"), null, dataset);
+			mammal_weka.buildWeka(train_loc, null, dataset);
 			mammal_weka.setEval_method("training_set");
 			name_dataset.put(dataset, mammal_weka);
 			train_loc.close();
@@ -83,7 +83,7 @@ public class MetaServer extends HttpServlet {
 			String dataset = "dream_breast_cancer";
 			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
 			Weka dream_weka = new Weka();
-			dream_weka.buildWeka(context.getResourceAsStream("/WEB-INF/data/dream/id_map.txt"), null, dataset);			
+			dream_weka.buildWeka(train_loc, null, dataset);			
 			name_dataset.put("dream_breast_cancer", dream_weka);	
 			train_loc.close();
 		} catch (IOException e) {
@@ -112,29 +112,19 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request, response, "no command");
 			return;
 		}
-		String dataset_name = request.getParameter("dataset");
-		if(dataset_name==null){
-			handleBadRequest(request, response, "no dataset");
-			return;
-		}
-		Weka weka = name_dataset.get(dataset_name);
-		if(weka==null){
-			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
-			return;
-		}
 		//route to appropriate functions
 		if(command.equals("getscore")){
 			//works
-			getScore(request, response, weka);
+			getScore(request, response);
 		}else if(command.equals("getboard")){
 			//works
-			getBoard(request, response, weka);
+			getBoard(request, response);
 		}else if(command.equals("savehand")){
 			//does not work
-			saveHand(request, response, weka);
+			saveHand(request, response);
 		}else if(command.equals("playedcard")){
 			//does not work
-			playedCard(request, response, weka);
+			playedCard(request, response);
 		}
 	}
 
@@ -148,7 +138,7 @@ public class MetaServer extends HttpServlet {
 	 * @param weka
 	 * @throws IOException 
 	 */
-	private void getBoard(HttpServletRequest request, HttpServletResponse response, Weka weka) throws IOException {
+	private void getBoard(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String board_id = request.getParameter("board_id");
 		boolean getmeta = true;
 		Board board = Board.getBoardById(board_id, getmeta);
@@ -168,7 +158,17 @@ public class MetaServer extends HttpServlet {
 	 * @param weka
 	 * @throws IOException 
 	 */
-	private void getScore(HttpServletRequest request, HttpServletResponse response, Weka weka) throws IOException {
+	private void getScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String dataset_name = request.getParameter("dataset");
+		if(dataset_name==null){
+			handleBadRequest(request, response, "no dataset");
+			return;
+		}
+		Weka weka = name_dataset.get(dataset_name);
+		if(weka==null){
+			handleBadRequest(request, response, "no dataset loaded for name: "+dataset_name);
+			return;
+		}		
 		String unique_ids = request.getParameter("unique_ids");
 		//TODO parse them out of json array unique_ids
 		List<String> uniques = MapFun.string2list(unique_ids, ",");
@@ -200,7 +200,7 @@ public class MetaServer extends HttpServlet {
 	}
 	
 
-	private void saveHand(HttpServletRequest request, HttpServletResponse response, Weka weka) {
+	private void saveHand(HttpServletRequest request, HttpServletResponse response) {
 //		String features=request.getParameter("features");
 //		String geneids=request.getParameter("geneids");
 //		if(features==null&&geneids==null){
@@ -302,7 +302,7 @@ public class MetaServer extends HttpServlet {
 
 	}
 
-	private void playedCard(HttpServletRequest request, HttpServletResponse response, Weka weka) {
+	private void playedCard(HttpServletRequest request, HttpServletResponse response) {
 		String player_id = request.getParameter("player_id");
 //		String unique_id = request.getParameter("unique_id");	
 		String cardjson = request.getParameter("card");

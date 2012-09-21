@@ -550,13 +550,14 @@ CURE.login = {
     });
   }
 }
-
+//not sure where to set this but need to add that room parameter- this enables multiple boardrooms
 CURE.boardroom = {
   init: function() {
     var args = {
       command : "boardroom",
       user_id : CURE.user_id,
-      dataset : CURE.dataset
+      dataset : CURE.dataset,
+      room : "1"
     }
     $.getJSON("/cure/SocialServer", args, function(data) {
       CURE.boardroom.drawGrid("#boards", data, 45);
