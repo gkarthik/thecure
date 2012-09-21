@@ -77,16 +77,16 @@ public class Boardroom {
 
 	/**
 	 * Produce the data to generate a player-specific view of the board collection
-	 * @param player_name
+	 * @param player_id
 	 * @param phenotype
 	 */
-	public void buildBoardView(int player_id, String dataset){
+	public void buildBoardView(int player_id, String dataset, String room){
 		Player player = Player.lookupPlayerById(player_id);
 		if (player == null) {
 			return;
 		} 
 	
-		List<Board> boards = Board.getBoardsByDataset(dataset); //"dream_breast_cancer"
+		List<Board> boards = Board.getBoardsByDatasetRoom(dataset, room); //"dream_breast_cancer"
 		Map<Integer,Integer> player_board_scores = player.getDataset_board_scores().get(dataset);
 
 		int position = 0;
