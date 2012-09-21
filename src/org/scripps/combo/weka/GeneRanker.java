@@ -99,7 +99,7 @@ public class GeneRanker {
 				genes+=gh+",";
 			}
 			//test group
-			execution base = weka.pruneAndExecute(geneids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(geneids, null);
 			double cv = base.eval.pctCorrect();
 			cvs.addValue(cv);
 			System.out.println(i+"\t"+cv);
@@ -117,7 +117,7 @@ public class GeneRanker {
 		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
-		Weka.execution result = weka.pruneAndExecute(gids, null);
+		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(gids, null);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
 	}

@@ -172,7 +172,7 @@ public class Weka {
 		}
 	}
 	
-	public execution pruneAndExecute(List<String> f_ids, Classifier wekamodel) {
+	public execution pruneAndExecuteWithFeatureIds(List<String> f_ids, Classifier wekamodel) {
 		String indices = "";
 		for(String fid : f_ids){
 			Feature f = features.get(fid);

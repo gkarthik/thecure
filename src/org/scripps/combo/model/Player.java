@@ -105,13 +105,38 @@ public class Player {
 		return str.matches("-?\\d+(.\\d+)?");
 	}
 
-	public static Player lookupPlayer(String name){
+	public static Player lookupPlayerByName(String name){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
 		String insert = "select * from player where name = ?";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, name);
+			ResultSet r = p.executeQuery();
+			if(r.next()){
+				player = new Player();
+				player.setName(r.getString("name"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
+				//for boardroom
+				player.setBoardScoresWithDb();
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return player;
+	}
+	
+	public static Player lookupPlayerById(int id){
+		Player player = null;
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "select * from player where id = ?";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setInt(1, id);
 			ResultSet r = p.executeQuery();
 			if(r.next()){
 				player = new Player();
@@ -253,7 +278,7 @@ public class Player {
 
 	public static Player create(String name, String ip, String password, String email, String degree, String cancer, String biologist){
 		//first check if username taken
-		Player player =  lookupPlayer(name);
+		Player player =  lookupPlayerByName(name);
 		if(player!=null){
 			return null;
 		}
@@ -278,7 +303,7 @@ public class Player {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		player = lookupPlayer(name);
+		player = lookupPlayerByName(name);
 		return player;
 	}
 
