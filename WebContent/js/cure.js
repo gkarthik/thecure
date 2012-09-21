@@ -241,18 +241,19 @@ CURE.boardgame = {
     }
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
+      //-- Update thecure cards with the rooms cards
       game.cards = data.cards;
       //-- Inject the ux info object
-      _.each(game.cards, function(v) {
-        v.metadata.ux = []
-      })
+      _.each(game.cards, function(v) { v.metadata.ux = []; })
 
+      //-- Draw the boards to the display
       game.generateBoard();
-      game.addCardSelectionHandlers();
-      //-- Mouse hover events for the info box
-      game.setupInfoToggle();
 
-      //== MAX NOTES;
+      //-- Handle how cards are selected / moved into the respective player hand
+      game.addCardSelectionEventHandlers();
+
+      //-- Mouse hover events for the info boxes & Gene more info help areas
+      game.setupInfoToggle();
       game.setupHelpDisplay();
 
       //-- Show help info if first time CURE player that passed training
@@ -260,48 +261,50 @@ CURE.boardgame = {
         game.setupGameMetaInfo();
       }
     });
-    var ma = game.metadata.mouse_action;
-    //-- watch user play
-    $(window).mousemove(
-      _.debounce(function(e) {
-        ma.push( { "x": e.pageX, "y": e.pageY, "timestamp": (new Date).getTime() } )
-      }, 20)
-    );
 
- },
+    //-- Record the user mousemouse actions
+    var ma = game.metadata.mouse_action;
+      $(window).mousemove(
+        _.debounce(function(e) {
+          ma.push( { "x": e.pageX, "y": e.pageY, "timestamp": (new Date).getTime() } )
+        }, 20)
+      );
+  },
   generateBoard : function() {
     //-- Using the cards array, this draws the cards to the board div
     var game = CURE.boardgame,
-        targetEl = $("#board");
-    _(game.cards).each(function(v, i) {
-      v.display_name = v.short_name || v.unique_id;
-      var card = targetEl.append("\
+        boardEl = $("#board");
+    //-- Clear out the board and unbind all events just incase
+    boardEl.html("").unbind();
+    _(game.cards).each(function(v) {
+      var display_name = v.short_name || v.unique_id;
+      boardEl.append("\
         <div id='card_"+ v.unique_id +"' class='gamecard active'>\
-        <span class='help_label'>i</span>\
-        <span class='gene_label'>"+ v.display_name +"</span>\
+          <span class='help_label'>i</span>\
+          <span class='gene_label'>"+ display_name +"</span>\
         </div>");
     })
   },
-  addCardSelectionHandlers : function() {
-    //-- Adds click event listeners on the cards in the board,
-    //when clicked, add to hand/save/etc...
+  addCardSelectionEventHandlers : function() {
+    //-- Adds click event listeners on the cards in the board, when clicked, add to hand/save/etc...
     var game = CURE.boardgame;
 
     $("#board div.gamecard").click(function(e) {
       var clicked_card = $(this);
       if( game.board_state_clickable ) {
+        //-- Get the current size of the player's hand
         var hand_size = 0;
         if( game.p1_hand ) { hand_size = game.p1_hand.length; }
 
         if(hand_size < game.max_hand) {
           var unique_id  = clicked_card.attr('id').split('card_')[1];
           var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
-          var playedCard = game.returnCard(card_obj);
+          var playedCardHtml = game.returnCard(card_obj);
 
-          $("#p1_hand").append(playedCard);
+          $("#p1_hand").append(playedCardHtml);
           game.p1_hand.push( card_obj );
-          game.saveSelection( card_obj );
-          game.evaluateHand(game.p1_hand, "1");
+          game.savePlayedCard( card_obj, 1 );
+          game.getScore(game.p1_hand, 1);
 
           //hide button from board
           clicked_card.removeClass("active").addClass("selected").unbind("click").html("");
@@ -322,67 +325,82 @@ CURE.boardgame = {
 
     return card;
   },
-  saveSelection : function(card_obj) {
+  savePlayedCard : function(card_obj) {
     var game = CURE.boardgame;
 
     var args = {
-      command : "playedcard",
+      command : "saveplayedcard",
       board_id : game.board_id,
       player_id : CURE.user_id,
-      card : card_obj,
+      card : card_obj.unique_id,
       timestamp : (new Date).getTime()
     }
-    $.getJSON("MetaServer", args, function(data) { });
+    $.ajax({
+      type: 'POST',
+      url: 'MetaServer',
+      data: args,
+    });
   },
-  evaluateHand : function(cardsInHand, player) {
+  getScore : function(cardsInHand, player) {
     var game = CURE.boardgame,
         utils = CURE.utilities;
 
+    var reported_player = 0;
+    if(player == 1) {
+      reported_player = CURE.user_id;
+    } else if (player == 2) {
+      reported_player = "215"
+    }
+
     var args = {
       board_id : game.board_id,
+      player_id : reported_player,
       command : "getscore",
       unique_ids : []
     }
 
     _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
-    //console.log( args );
-
-    //-- Goes to server, runs the default evaluation with a decision tree
-    $.getJSON("MetaServer", args, function(data) {
-      var treeheight = 250,
-          treewidth = 420;
     
-    //console.log(data);
+    console.log( args );
+    console.log( JSON.stringify( args ) );
+    //-- Goes to server, runs the default evaluation with a decision tree
+    $.ajax({
+      type: 'POST',
+      url: 'MetaServer',
+      data: args,
+      success: function(data) {
+        var treeheight = 250,
+            treewidth = 420;
 
-    if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
-
-      //draw the current tree
-      $("#p"+ player +"_current_tree").empty();
-      utils.drawTree(data, treewidth, treeheight, "#p"+ player +"_current_tree");
-      //sometimes randomness in cross-validation gets you a different score even without producing
-      //any tree at all.
-      if (data.max_depth < 2) {
-        game["p"+ player +"_score"] = 50;
-      } else {
-        game["p"+ player +"_score"] = data.evaluation.accuracy;
-      }
-      $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
-
-      if (player == "2") {
-        game.board_state_clickable = true;
-        if (  game.p2_hand.length != game.max_hand &&
-              game.p1_score < game.p2_score &&
-              game.p1_score > 0 ) {
-          game.moveBarney("correct"); //incorrect win lose
-        } else if ( game.p1_score > game.p2_score ) {
-          game.moveClayton("correct"); //incorrect win lose
+        if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
+        //draw the current tree
+        $("#p"+ player +"_current_tree").empty();
+        utils.drawTree(data, treewidth, treeheight, "#p"+ player +"_current_tree");
+        //sometimes randomness in cross-validation gets you a different score even without producing
+        //any tree at all.
+        if (data.max_depth < 2) {
+          game["p"+ player +"_score"] = 50;
+        } else {
+          game["p"+ player +"_score"] = data.evaluation.accuracy;
         }
-      }
+        $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
 
-      //-- If it's the last hand-- save out & display the results
-      if ( game.p2_hand.length == game.max_hand) {
-        //game.saveHand();
-        window.setTimeout( game.showTheResults(), 1500 );
+        if (player == "2") {
+          game.board_state_clickable = true;
+          if (  game.p2_hand.length != game.max_hand &&
+                game.p1_score < game.p2_score &&
+                game.p1_score > 0 ) {
+            game.moveBarney("correct"); //incorrect win lose
+          } else if ( game.p1_score > game.p2_score ) {
+            game.moveClayton("correct"); //incorrect win lose
+          }
+        }
+
+        //-- If it's the last hand-- save out & display the results
+        if ( game.p2_hand.length == game.max_hand) {
+          //game.saveHand();
+          window.setTimeout( game.showTheResults(), 1500 );
+        }
       }
     });
   },
@@ -438,7 +456,7 @@ CURE.boardgame = {
     var selected_card = $("#boardgame #game_area #board div#card_"+card_obj.unique_id);
     selected_card.removeClass("active").addClass("selected").unbind("click").html("");
 
-    game.evaluateHand( game.p2_hand, "2");
+    game.getScore( game.p2_hand, 2);
   },
   getBarneysNextCard : function(){
     var game = CURE.boardgame;
@@ -458,12 +476,12 @@ CURE.boardgame = {
   setupInfoToggle : function() {
     var game = CURE.boardgame;
     //-- Handles switching between tab views
-   $("#tabs ul li").click(function(e) {
-     $.each( $("div#help_area div#infoboxes div.infobox"), function(i, v) { $(v).hide() })
+    $("#tabs ul li").click(function(e) {
       var selEl = $(this).attr('class').split(' ')[0];
+      game.closeAllInfoTabs();
       $("#"+selEl).show();
 
-      //-- Log this out
+      //-- Save the tab change to the card's metadata
       if ( game.cached_info_panel_unique_id != 0 ) {
         var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == game.cached_info_panel_unique_id; });
         card_obj.metadata.ux.push({
@@ -482,6 +500,7 @@ CURE.boardgame = {
     });
     return active_panel;
   },
+  closeAllInfoTabs : function() { _.each( $("div#help_area div#infoboxes div.infobox"), function(v) { $(v).hide() }) },
   setupInfoHandler : function() {
     var game = CURE.boardgame;
     //-- Handles updating the tabs with the gene of interest
@@ -506,7 +525,7 @@ CURE.boardgame = {
   setupHelpDisplay : function() {
     var game = CURE.boardgame;
     $("span.help_label").hover(function(e) {
-      var unique_id = $(this).parent().attr('id').split("_")[1];
+      var unique_id = $(this).parent().attr('id').split("card_")[1];
       game.cached_info_panel_unique_id = unique_id;
       var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
       var card_metadata = card_obj.metadata;
@@ -517,6 +536,7 @@ CURE.boardgame = {
 
       //ontology
       var ontologyEl = $("div#ontology", scope).html("");
+      ontologyEl.append("<h1>")
       _.each(card_metadata.ontology, function(v,i) {
         ontologyEl.append("<h2>"+ v.type +"</h2>")
         var values = [];

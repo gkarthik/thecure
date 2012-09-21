@@ -35,7 +35,7 @@
           'position' : 'fixed',
           'opacity' : 0,
           'z-index': 101,
-          'left' : 50 + '%',
+          'left' : '34%',
           'margin-left' : -(modal_width/2) + "px",
           'top' : o.top + "px"
         });
