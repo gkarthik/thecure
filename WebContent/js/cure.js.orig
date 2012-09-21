@@ -1,5 +1,6 @@
 var CURE = CURE || {};
 
+CURE.username = "x0xMaximus";
 CURE.user_id = "51";
 CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
@@ -249,16 +250,15 @@ CURE.boardgame = {
 
       game.generateBoard();
       game.addCardSelectionHandlers();
+      //set up handlers
       //-- Mouse hover events for the info box
       game.setupInfoToggle();
+
+      //save hand
 
       //== MAX NOTES;
       game.setupHelpDisplay();
 
-      //-- Show help info if first time CURE player that passed training
-      if( CURE.user_experience == 0 ) {
-        game.setupGameMetaInfo();
-      }
     });
     var ma = game.metadata.mouse_action;
     //-- watch user play
@@ -501,7 +501,6 @@ CURE.boardgame = {
     } else if ( CURE.dataset == "dream_breast_cancer" ) {
       msg = "Pick <b>"+ game.max_hand +"</b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.";
     }
-    $("#endgame").html("<p>"+ msg +"</p>").leanModal();
   },
   setupHelpDisplay : function() {
     var game = CURE.boardgame;
@@ -610,7 +609,7 @@ CURE.login = {
     });
   }
 }
-//not sure where to set this but need to add that room parameter- this enables multiple boardrooms
+
 CURE.boardroom = {
   init: function() {
     var args = {

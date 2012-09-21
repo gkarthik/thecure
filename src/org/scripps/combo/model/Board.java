@@ -51,7 +51,7 @@ public class Board {
 
 	public static void main(String args[]) throws Exception{
 		Board b = Board.getBoardById(101+"", true);	
-		String j = b.toJSON(false);
+		String j = b.toJSON(true);
 		System.out.println(j);
 	}
 
@@ -123,10 +123,16 @@ public class Board {
 				ont_terms.put("values",values);
 				ontology.add(ont_terms);
 			}
-			metadata.put("ontology", ontology);
-			card.put("metadata", metadata);
+			metadata.put("ontology", ontology);	
 			ArrayNode rifs = mapper.createArrayNode();
-			
+			for(TextAnnotation t : feature.getText_annotations()){
+				ObjectNode rif = mapper.createObjectNode();
+				rif.put("pubmed_id", t.getPubmed_id());
+				rif.put("text", t.getAnno_text());
+				rifs.add(rif);
+			}
+			metadata.put("rifs", rifs);
+			card.put("metadata", metadata);
 			cards.add(card);
 			loc++;
 		}
@@ -394,8 +400,7 @@ public class Board {
 
 	public static Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
 		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
-		String gethands = "select player_name, phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where win > 0" +
-		" and board_id = '"+board_id+"' and player_name != 'anonymous_hero' ";
+		String gethands = "select * from hand where win > 0 and board_id = '"+board_id+"' ";
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(gethands);
@@ -403,16 +408,16 @@ public class Board {
 			while(hands.next()){
 				int training = hands.getInt("training_accuracy");
 				int cv = hands.getInt("cv_accuracy");
-				String player_name = hands.getString("player_name");
+				String player_id = hands.getString("player_id");
 				if(training<0){
 					training = cv;
 				}
-				List<Integer> board_scores = player_board_scores.get(player_name);
+				List<Integer> board_scores = player_board_scores.get(player_id);
 				if(board_scores==null){
 					board_scores = new ArrayList<Integer>();
 				}
 				board_scores.add(training);
-				player_board_scores.put(player_name, board_scores);
+				player_board_scores.put(player_id, board_scores);
 			}
 			conn.connection.close();
 		} catch (SQLException e) {
@@ -423,10 +428,10 @@ public class Board {
 	}	
 
 		
-		public static List<Board> getBoardsByDataset(String dataset){
+		public static List<Board> getBoardsByDatasetRoom(String dataset, String room){
 			List<Board> boards = new ArrayList<Board>();
 			JdbcConnection conn = new JdbcConnection();
-			ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' order by base_score desc");
+			ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' and room = '"+room+"' order by base_score desc");
 			try {
 				while(rslt.next()){
 					Board board = new Board();
@@ -440,12 +445,12 @@ public class Board {
 					board.setUpdated(rslt.getTimestamp("updated"));
 					board.setBase_score(rslt.getFloat("base_score"));
 					
-					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-					List<Feature> fs = new ArrayList<Feature>();
-					while(f_list.next()){
-						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
-					}
-					board.setFeatures(fs);
+//					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+//					List<Feature> fs = new ArrayList<Feature>();
+//					while(f_list.next()){
+//						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
+//					}
+//					board.setFeatures(fs);
 					boards.add(board);
 				}
 				rslt.close();

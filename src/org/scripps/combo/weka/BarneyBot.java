@@ -43,7 +43,7 @@ public class BarneyBot {
 		weka.setEval_method("training_set");
 		//lookup the boards
 		Boardroom b = new Boardroom();
-		b.buildBoardView(21, "dream_breast_cancer");
+		b.buildBoardView(21, "dream_breast_cancer", "1");
 		List<boardview> bviews = b.getBoardviews();
 		int bn = 0; 
 		for(boardview v : bviews){

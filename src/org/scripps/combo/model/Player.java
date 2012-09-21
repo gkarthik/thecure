@@ -40,7 +40,7 @@ public class Player {
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
 	Map<String, Map<Integer,Integer>> dataset_board_scores; 
-	List<Integer> barney_levels;	
+//	List<Integer> barney_levels;	
 
 
 	public Player() {
@@ -252,17 +252,17 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
-				//storing as a comma delimited string in db for now.
-				String levels_ = r.getString("barney_levels");
-				List<Integer> barney_levels = new ArrayList<Integer>();
-				if(levels_!=null){
-					String[] levels = levels_.split(",");
-					for(String level : levels){
-						if(isNumeric(level)){
-							barney_levels.add(Integer.parseInt(level));
-						}
-					}
-				}
+//				//storing as a comma delimited string in db for now.
+//				String levels_ = r.getString("barney_levels");
+//				List<Integer> barney_levels = new ArrayList<Integer>();
+//				if(levels_!=null){
+//					String[] levels = levels_.split(",");
+//					for(String level : levels){
+//						if(isNumeric(level)){
+//							barney_levels.add(Integer.parseInt(level));
+//						}
+//					}
+//				}
 				//need to get rid of barney level idea..
 				//player.setBarney_levels(barney_levels);
 				player.setBoardScoresWithDb();
@@ -350,34 +350,6 @@ public class Player {
 		return newid;
 	}
 	
-	public void updateBarneyLevelsInDatabase(){
-		//if no player exists make a new one
-		JdbcConnection conn = new JdbcConnection();
-		String insert = "update player set barney_levels = ?, updated = ? where name = ?";
-		try {
-			PreparedStatement p = conn.connection.prepareStatement(insert);
-			p.setString(1, barneyLevels2string());
-			p.setString(2, name);
-			p.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-			p.executeUpdate();
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public String barneyLevels2string(){
-		String levels = "";
-		if(barney_levels!=null&&barney_levels.size()>0){
-			for(Integer i : barney_levels){
-				levels+=i.toString()+",";
-			}
-			levels = levels.substring(0,levels.lastIndexOf(","));
-		}
-		return levels;
-	}
-
 	public void setBoardScoresWithDb(){
 		//anonymous players don't get to track their scores..
 		if(name.equals("anonymous_hero")){
@@ -460,15 +432,6 @@ public class Player {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
-	public List<Integer> getBarney_levels() {
-		return barney_levels;
-	}
-
-	public void setBarney_levels(List<Integer> barney_levels) {
-		this.barney_levels = barney_levels;
-	}
-
 
 	public String getDegree() {
 		return degree;
