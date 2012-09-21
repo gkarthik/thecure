@@ -44,6 +44,7 @@
           </div>
 
           <div class="row">
+            <div id="heatmap"></div>
           </div>
         </div>
       </div>
