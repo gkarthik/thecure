@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
-<%@ page import="org.scripps.combo.Config"%>
 <%@ page import="org.scripps.combo.model.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
@@ -19,7 +18,7 @@
 	if (player != null) {
 		int levels_passed = 0;
 		Map<Integer, Integer> player_board_scores = player
-				.getPhenotype_board_scores().get("mammal");
+				.getDataset_board_scores().get("mammal");
 		List<Integer> zoo_scores = new ArrayList<Integer>();
 		if (player_board_scores != null
 				&& player_board_scores.values() != null) {
