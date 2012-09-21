@@ -345,14 +345,14 @@ CURE.boardgame = {
     }
 
     _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
-    console.log( args );
+    //console.log( args );
 
     //-- Goes to server, runs the default evaluation with a decision tree
     $.getJSON("MetaServer", args, function(data) {
       var treeheight = 250,
           treewidth = 420;
     
-    console.log(data);
+    //console.log(data);
 
     if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
 
