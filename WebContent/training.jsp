@@ -6,7 +6,7 @@
 <%@ page import="java.util.ArrayList"%>
 
 <%
-	String game_params = "&mosaic_url=training.jsp&dataset=mammal&title=Training: Mammal Challenge&geneinfo=0";
+	String game_params = "&dataset=mammal&title=Training: Mammal Challenge";
 
 	String username = "";
 	Player player = (Player) session.getAttribute("player");
@@ -17,11 +17,9 @@
 	}
 	if (player != null) {
 		int levels_passed = 0;
-		Map<Integer, Integer> player_board_scores = player
-				.getDataset_board_scores().get("mammal");
+		Map<Integer, Integer> player_board_scores = player.getDataset_board_scores().get("mammal");
 		List<Integer> zoo_scores = new ArrayList<Integer>();
-		if (player_board_scores != null
-				&& player_board_scores.values() != null) {
+		if (player_board_scores != null && player_board_scores.values() != null) {
 			zoo_scores = new ArrayList<Integer>(
 					player_board_scores.values());
 		}
@@ -103,7 +101,7 @@
 				<div id="shrew" class="span3 offset3">
 					<table>
 						<%
-							int level = -1;
+							int level = -1; int board_id = 200;
 								int num_tile_rows = 2;
 								int num_tile_cols = 2;
 
@@ -118,7 +116,8 @@
 						<tr>
 							<%
 								for (int j = 0; j < num_tile_cols; j++) {
-											level++;
+									board_id++;		
+									level++;
 											int score = 0;
 											if (zoo_scores.size() > level) {
 												score = zoo_scores.get(level);
@@ -128,7 +127,7 @@
 									<%
 										if (levels_passed == level) {
 									%>
-									<a href="boardgame.jsp?level=<%=level%><%=gps%>"
+									<a href="boardgame.jsp?board_id=<%=board_id%><%=gps%>"
 										class="btn btn-large btn-primary "><div
 											class="big_level_button"><%=level + 1%></div>
 									</a>
