@@ -79,7 +79,6 @@ if(username==null){
       <div id="help_area">
         <div id="tabs">
           <ul>
-            <li class="gene_description">Gene</li>
             <li class="ontology">Ontology</li>
             <li class="rifs">Rifs</li>
             <li class="p1_current_tree">Yours</li>
@@ -88,10 +87,7 @@ if(username==null){
         </div>
 
         <div id="infoboxes">
-           <div class="infobox" id="gene_description">
-            <p>Gene description</p>
-          </div>
-          <div class="infobox" id="ontology" style="display: none;">
+          <div class="infobox" id="ontology">
             <p>Gene Ontology terms</p>
           </div>
           <div class="infobox" id="rifs" style="display: none;">
