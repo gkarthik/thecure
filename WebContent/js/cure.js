@@ -5,7 +5,7 @@ CURE.user_experience = 0;
 CURE.dataset = "dream_breast_cancer";
 
 CURE.load = function() {
-  var page = window.location.href.split("/cure2/")[1];
+  var page = window.location.href.split("/cure/")[1];
   if ( page.indexOf('?') > 0 ) {
     page = page.substring(0, page.indexOf('?'));
   }
@@ -255,6 +255,7 @@ CURE.boardgame = {
       //-- Mouse hover events for the info boxes & Gene more info help areas
       game.setupInfoToggle();
       game.setupHelpDisplay();
+      game.termCalculations();
 
       //-- Show help info if first time CURE player that passed training
       if( CURE.user_experience == 0 ) {
@@ -269,6 +270,9 @@ CURE.boardgame = {
           ma.push( { "x": e.pageX, "y": e.pageY, "timestamp": (new Date).getTime() } )
         }, 20)
       );
+  },
+  termCalculations : function() {
+  
   },
   generateBoard : function() {
     //-- Using the cards array, this draws the cards to the board div
@@ -316,11 +320,11 @@ CURE.boardgame = {
     })
   },
   returnCard : function(obj) {
-    var game = CURE.boardgame;
+    var display_name = obj.short_name || obj.unique_id;
     var card = "\
                 <div id='playedcard_"+ obj.unique_id +"' class='gamecard active'>\
                 <span class='help_label'>i</span>\
-                <span class='gene_label'>"+ obj.display_name +"</span>\
+                <span class='gene_label'>"+ display_name +"</span>\
                 </div>";
 
     return card;
@@ -355,14 +359,14 @@ CURE.boardgame = {
     var args = {
       board_id : game.board_id,
       player_id : reported_player,
-      command : "getscore",
-      unique_ids : []
+      command : "getscore"
     }
 
-    _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
+    var uniz = [];
+    _(cardsInHand).each( function(v) { uniz.push( v.unique_id ); });
+    args.unique_ids = uniz.join(",");
     
     console.log( args );
-    console.log( JSON.stringify( args ) );
     //-- Goes to server, runs the default evaluation with a decision tree
     $.ajax({
       type: 'POST',
@@ -531,25 +535,26 @@ CURE.boardgame = {
       var card_metadata = card_obj.metadata;
 
       var scope = $("#game_area #help_area #infoboxes")
-      //gene
-      var geneEl = $("div#gene_description", scope).html("");
-
       //ontology
       var ontologyEl = $("div#ontology", scope).html("");
-      ontologyEl.append("<h1>")
+      ontologyEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
+      ontologyEl.append("<p>"+ card_obj.description +"</p>");
+
       _.each(card_metadata.ontology, function(v,i) {
         ontologyEl.append("<h2>"+ v.type +"</h2>")
         var values = [];
         _.each(v.values, function(v,i) {
-          values.push(v.term)
+          values.push("<a target='_blank' href='http://www.ebi.ac.uk/QuickGO/GTerm?id="+ v.accession +"'>"+ v.term +"</a>")
         })
         ontologyEl.append("<p>"+ values.join(", ") +"</p>")
       })
 
       //rifs
       var rifsEl = $("div#rifs", scope).html("");
+      rifsEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
+      rifsEl.append("<p>"+ card_obj.description +"</p>");
       _.each(card_metadata.rifs, function(v,i) {
-        rifsEl.append("<p>"+ v.text +"</p>");
+        rifsEl.append("<p><a target='_blank' href='http://www.ncbi.nlm.nih.gov/pubmed/"+ v.pubmed_id +"'>"+ v.text +"</a></p>");
       })
 
       //-- Log this out
@@ -597,6 +602,24 @@ CURE.boardgame = {
     });
   },
   //replay_hand
+  replayHand : function() {
+    var game = CURE.boardgame;
+    //-- Empty DIVs
+
+    //-- Emtpy vars
+    game.cards = [];
+    game.p1_hand = [];
+    game.p2_hand = [];
+    game.p1_score = 0;
+    game.p2_score = 0;
+    game.metadata : {
+      game_started : (new Date).getTime(),
+      mouse_action : []
+    };
+    game.board_state_clickable : true;
+    game.cached_info_panel_unique_id : 0;
+
+  }
 }
 
 CURE.login = {
