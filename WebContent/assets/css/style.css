@@ -565,6 +565,36 @@ span.help_label:hover {
   box-shadow: 0px 0px 8px #666;
 }
 
+#boardgame #game_area #help_area #infoboxes h1 {
+  text-align: center;
+  letter-spacing: 6px;
+  color: #000;
+}
+
+#boardgame #game_area #help_area #infoboxes h1 a {
+  text-decoration: none;
+  color: #B2365F;
+}
+
+#boardgame #game_area #help_area #infoboxes h2 {
+  padding: 0px 12px 0px 12px;
+  color: #B2365F;
+}
+
+#boardgame #game_area #help_area #infoboxes p {
+  padding: 4px 16px 4px 16px;
+  /* font-family: "adobe-garamond-pro", Georgia, serif; */
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  font-size: 14px;
+  color: #20282B;
+}
+
+#boardgame #game_area #help_area #infoboxes p a {
+  text-decoration: none;
+  color: #20282B;
+}
+
 #boardgame #p2_area #p2_scorebox,
 #boardgame #p1_area #p1_scorebox {
   overflow: hidden;
