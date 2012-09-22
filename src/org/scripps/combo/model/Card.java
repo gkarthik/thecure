@@ -48,11 +48,11 @@ public class Card {
 
 	public void insert(){
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into card values(null,?,?,?,?)";
+		String insert = "insert into card (id, user_id, board_id, unique_id, display_loc) values(null,?,?,?,?)";
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(insert);
 			p.setString(1, user_id);
-			p.setString(2,board_id);
+			p.setString(2, board_id);
 			p.setString(3,unique_id);
 			p.setInt(4,display_loc);
 			p.executeUpdate();

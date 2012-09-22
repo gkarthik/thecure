@@ -1,14 +1,18 @@
 package org.scripps.combo.weka;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,20 +88,20 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 		//dream data
-		try {
-			String dataset = "dream_breast_cancer";
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-			Weka dream_weka = new Weka();
-			dream_weka.buildWeka(train_loc, null, dataset);			
-			name_dataset.put("dream_breast_cancer", dream_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				try {
+					String dataset = "dream_breast_cancer";
+					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
+					Weka dream_weka = new Weka();
+					dream_weka.buildWeka(train_loc, null, dataset);			
+					name_dataset.put("dream_breast_cancer", dream_weka);	
+					train_loc.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 	}
 
 	/**
@@ -111,28 +115,50 @@ public class MetaServer extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//make sure we have a command and a dataset
-		String command = request.getParameter("command");
-		if(command==null){
-			handleBadRequest(request, response, "no command");
-			return;
-		}
-		//route to appropriate functions
-		if(command.equals("getscore")){
-			//works
-			getScore(request, response);
-		}else if(command.equals("getboard")){
-			//works
-			getBoard(request, response);
-		}else if(command.equals("savehand")){
-			//does not work
-			saveHand(request, response);
-		}else if(command.equals("saveplayedcard")){
-			savePlayedCard(request, response);
+		String t = request.getContentType();
+		System.out.println("content type "+t);
+		if(t!=null&&t.equals("application/json")){
+			String json = extractJson(request);
+			System.out.println(json);
+			//getScore(request, response); 
+		}else{
+			//make sure we have a command and a dataset
+			String command = request.getParameter("command");
+			if(command==null){
+				handleBadRequest(request, response, "no command");
+				return;
+			}
+			//route to appropriate functions
+			if(command.equals("getboard")){
+				//works
+				getBoard(request, response);
+			}else if(command.equals("getscore")){
+				//does not work
+				getScore(request, response);
+			}else if(command.equals("savehand")){
+				//does not work
+				saveHand(request, response);
+			}else if(command.equals("saveplayedcard")){
+				savePlayedCard(request, response);
+			}
 		}
 	}
 
-
+	private String extractJson(HttpServletRequest request) throws UnsupportedEncodingException{
+		  StringBuffer jb = new StringBuffer();
+		  String line = null;
+		  try {
+		    BufferedReader reader = request.getReader();
+		    while ((line = reader.readLine()) != null)
+		      jb.append(line);
+		  } catch (Exception e) { /*report an error*/ }
+		  
+		  String json = jb.toString();
+		  System.out.println("undecoded: "+json);
+		  json = URLDecoder.decode(json,"UTF-8");
+		  System.out.println("decoded: "+json);
+		  return json;
+	}
 
 	/**
 	 * Get a board for the game from the database
@@ -163,6 +189,8 @@ public class MetaServer extends HttpServlet {
 	 * @throws IOException 
 	 */
 	private void getScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		System.out.println("contente type "+request.getContentType());
+
 		String board_id = request.getParameter("board_id");
 		boolean getmeta = false;
 		Board board = Board.getBoardById(board_id, getmeta);		
@@ -171,18 +199,27 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request, response, "no dataset loaded for name: "+board.getDataset());
 			return;
 		}		
-		String cards_json = request.getParameter("unique_ids");
-		System.out.println("get score "+cards_json);
-		//TODO parse them out of json array unique_ids
-		List<String> unique_ids = new ArrayList<String>();
-		String user_id = "";
-		if(cards_json!=null){
-			//parse out the array of played cards and the user
-			ObjectMapper mapper = new ObjectMapper();
-			LinkedHashMap userData = mapper.readValue(cards_json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);		
-		//	System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
-			unique_ids = (List<String>)userData.get("unique_ids");
+		Enumeration<String> params = request.getParameterNames();
+		while(params.hasMoreElements()){
+			String p = params.nextElement();
+			System.out.println(p);
+			System.out.println(request.getParameterValues(p));
+
 		}
+//		String[] cards = request.getParameterValues("unique_ids[]");
+		List<String> unique_ids = new ArrayList<String>();
+		String cards = request.getParameter("unique_ids");
+		if(cards!=null){
+			unique_ids = MapFun.string2list(cards, ",");
+		}
+		String user_id = "";
+//		if(cards_json!=null){
+//			//parse out the array of played cards and the user
+//			ObjectMapper mapper = new ObjectMapper();
+//			LinkedHashMap userData = mapper.readValue(cards_json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);		
+//			//	System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
+//			unique_ids = (List<String>)userData.get("unique_ids");
+//		}
 		J48 wekamodel = new J48();
 		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
@@ -209,136 +246,155 @@ public class MetaServer extends HttpServlet {
 		out.close();
 
 	}
-	
+
 
 	private void saveHand(HttpServletRequest request, HttpServletResponse response) {
-//		String features=request.getParameter("features");
-//		String geneids=request.getParameter("geneids");
-//		if(features==null&&geneids==null){
-//			handleBadRequest(request, response, "no features");
-//		}else if(features==null){
-//			features = "";
-//			String[] gids = geneids.split(",");
-//			for(String geneid : gids){
-//				List<card> cards = weka.getGeneid_cards().get(geneid);
-//				if(cards!=null){
-//					for(card c : cards){
-//						features+=c.getAtt_index()+",";
-//					}
-//				}
-//			}
-//		}			
-//		String player_name = request.getParameter("player_name");
-//		String ip = request.getRemoteAddr();
-//		String feature_names = request.getParameter("feature_names");
-//		String phenotype = dataset_name;
-//		String score_s = request.getParameter("score");
-//		int score = -1;
-//		if(score_s!=null){
-//			score = Integer.parseInt(score_s);
-//		}
-//		String cv_accuracy_s = request.getParameter("cv_accuracy");
-//		String training_accuracy_s = request.getParameter("training_accuracy");
-//		int training_accuracy = -1;
-//		int cv_accuracy = -1000;
-//		if(cv_accuracy_s!=null){
-//			cv_accuracy = Integer.parseInt(cv_accuracy_s);
-//		}
-//		if(training_accuracy_s != null){
-//			training_accuracy = Integer.parseInt(training_accuracy_s);
-//		}
-//		String board_id_s = request.getParameter("board_id");
-//		int board_id = -1000;
-//		if(board_id_s!=null){
-//			board_id = Integer.parseInt(board_id_s);
-//		}
-//		String win = request.getParameter("win");
-//		int win_ = 0;
-//		if(win!=null&&win.equals("1")){
-//			win_ = 1;
-//		}
-//		Hand hand = new Hand();
-//		hand.setBoard_id(board_id);
-//		hand.setCv_accuracy(cv_accuracy);
-//		hand.setFeatures(features);
-//		hand.setIp(ip);
-//		hand.setPlayer_name(player_name);
-//		hand.setScore(score);
-//		hand.setPhenotype(phenotype);
-//		hand.setFeature_names(feature_names);
-//		hand.setTraining_accuracy(training_accuracy);
-//		hand.setGame_type(game);
-//		hand.setWin(win_);
-//		hand.save();
-//		//update player info
-//
-//		if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
-//			//update stars
-//			//Player player = Player.lookupPlayer(player_name);
-//			HttpSession s = request.getSession();
-//			Player player = (Player)s.getAttribute("player");
-//			//check if they passed the level
-//			if(win!=null&&win.equals("1")){
-//				//update session
-//				Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
-//				if(scores==null){
-//					scores = new HashMap<Integer,Integer>();
-//				}
-//				if(game.equals("verse_barney")){
-//					scores.put(board_id, cv_accuracy);
-//				}else{
-//					scores.put(board_id, training_accuracy);
-//				}
-//				player.getPhenotype_board_scores().put(dataset_name, scores);
-//				s.setAttribute("player", player);
-//			}
-//		}else if(game!=null&&game.equals("barney")){
-//			//update stars
-//			Player player = Player.lookupPlayer(player_name);
-//			//check if they passed the level
-//			if(win!=null&&win.equals("1")){
-//				//if(score>0){
-//				int stars = 1;
-//				if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
-//					stars += player.getBarney_levels().get(board_id);
-//					player.getBarney_levels().set(board_id, stars);
-//				}else{
-//					player.getBarney_levels().add(stars);
-//				}
-//				player.updateBarneyLevelsInDatabase();
-//			}
-//
-//		}
-//		System.out.println("saved a hand "+player_name+" "+score);
+		//		String features=request.getParameter("features");
+		//		String geneids=request.getParameter("geneids");
+		//		if(features==null&&geneids==null){
+		//			handleBadRequest(request, response, "no features");
+		//		}else if(features==null){
+		//			features = "";
+		//			String[] gids = geneids.split(",");
+		//			for(String geneid : gids){
+		//				List<card> cards = weka.getGeneid_cards().get(geneid);
+		//				if(cards!=null){
+		//					for(card c : cards){
+		//						features+=c.getAtt_index()+",";
+		//					}
+		//				}
+		//			}
+		//		}			
+		//		String player_name = request.getParameter("player_name");
+		//		String ip = request.getRemoteAddr();
+		//		String feature_names = request.getParameter("feature_names");
+		//		String phenotype = dataset_name;
+		//		String score_s = request.getParameter("score");
+		//		int score = -1;
+		//		if(score_s!=null){
+		//			score = Integer.parseInt(score_s);
+		//		}
+		//		String cv_accuracy_s = request.getParameter("cv_accuracy");
+		//		String training_accuracy_s = request.getParameter("training_accuracy");
+		//		int training_accuracy = -1;
+		//		int cv_accuracy = -1000;
+		//		if(cv_accuracy_s!=null){
+		//			cv_accuracy = Integer.parseInt(cv_accuracy_s);
+		//		}
+		//		if(training_accuracy_s != null){
+		//			training_accuracy = Integer.parseInt(training_accuracy_s);
+		//		}
+		//		String board_id_s = request.getParameter("board_id");
+		//		int board_id = -1000;
+		//		if(board_id_s!=null){
+		//			board_id = Integer.parseInt(board_id_s);
+		//		}
+		//		String win = request.getParameter("win");
+		//		int win_ = 0;
+		//		if(win!=null&&win.equals("1")){
+		//			win_ = 1;
+		//		}
+		//		Hand hand = new Hand();
+		//		hand.setBoard_id(board_id);
+		//		hand.setCv_accuracy(cv_accuracy);
+		//		hand.setFeatures(features);
+		//		hand.setIp(ip);
+		//		hand.setPlayer_name(player_name);
+		//		hand.setScore(score);
+		//		hand.setPhenotype(phenotype);
+		//		hand.setFeature_names(feature_names);
+		//		hand.setTraining_accuracy(training_accuracy);
+		//		hand.setGame_type(game);
+		//		hand.setWin(win_);
+		//		hand.save();
+		//		//update player info
+		//
+		//		if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
+		//			//update stars
+		//			//Player player = Player.lookupPlayer(player_name);
+		//			HttpSession s = request.getSession();
+		//			Player player = (Player)s.getAttribute("player");
+		//			//check if they passed the level
+		//			if(win!=null&&win.equals("1")){
+		//				//update session
+		//				Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
+		//				if(scores==null){
+		//					scores = new HashMap<Integer,Integer>();
+		//				}
+		//				if(game.equals("verse_barney")){
+		//					scores.put(board_id, cv_accuracy);
+		//				}else{
+		//					scores.put(board_id, training_accuracy);
+		//				}
+		//				player.getPhenotype_board_scores().put(dataset_name, scores);
+		//				s.setAttribute("player", player);
+		//			}
+		//		}else if(game!=null&&game.equals("barney")){
+		//			//update stars
+		//			Player player = Player.lookupPlayer(player_name);
+		//			//check if they passed the level
+		//			if(win!=null&&win.equals("1")){
+		//				//if(score>0){
+		//				int stars = 1;
+		//				if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
+		//					stars += player.getBarney_levels().get(board_id);
+		//					player.getBarney_levels().set(board_id, stars);
+		//				}else{
+		//					player.getBarney_levels().add(stars);
+		//				}
+		//				player.updateBarneyLevelsInDatabase();
+		//			}
+		//
+		//		}
+		//		System.out.println("saved a hand "+player_name+" "+score);
 
 	}
 
 	private void savePlayedCard(HttpServletRequest request, HttpServletResponse response) {
-		String json = request.getQueryString();
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			LinkedHashMap card = mapper.readValue(json, LinkedHashMap.class);
-			//		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
-			String player_id = (String)card.get("player_id");
-			String timestamp = (String)card.get("timestamp");
-			String board_id = (String)card.get("board_id");
-			String unique_id = (String)card.get("unique_id");
-			int display_loc = -1; //request.getParameter("");
-			if(unique_id!=null){			
-				Card tosave = new Card(player_id, board_id, unique_id, display_loc);
-				//tosave.setTimestamp(timestamp);
-				tosave.insert();
-			}
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}//mapper.readValue(new File("user.json"), Map.class);
+		/*
+		 *       command : "saveplayedcard",
+      board_id : game.board_id,
+      player_id : CURE.user_id,
+      unique_id : card_obj.unique_id,
+      timestamp : (new Date).getTime()
+		 */
+
+		String player_id = request.getParameter("player_id");
+		//		String timestamp = (String)card.get("timestamp");
+		String board_id =  request.getParameter("board_id");
+		String unique_id = request.getParameter("unique_id");
+		int display_loc = -1; //request.getParameter("");
+		if(unique_id!=null){			
+			Card tosave = new Card(player_id, board_id, unique_id, display_loc);
+			//			//tosave.setTimestamp(timestamp);
+			tosave.insert();
+		}
+
+
+		//		ObjectMapper mapper = new ObjectMapper();
+		//		try {
+		//			LinkedHashMap card = mapper.readValue(json, LinkedHashMap.class);
+		//			//		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
+		//			String player_id = (String)card.get("player_id");
+		//			String timestamp = (String)card.get("timestamp");
+		//			String board_id = (String)card.get("board_id");
+		//			String unique_id = (String)card.get("unique_id");
+		//			int display_loc = -1; //request.getParameter("");
+		//			if(unique_id!=null){			
+		//				Card tosave = new Card(player_id, board_id, unique_id, display_loc);
+		//				//tosave.setTimestamp(timestamp);
+		//				tosave.insert();
+		//			}
+		//		} catch (JsonParseException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		} catch (JsonMappingException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		} catch (IOException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}//mapper.readValue(new File("user.json"), Map.class);
 
 	}
 
