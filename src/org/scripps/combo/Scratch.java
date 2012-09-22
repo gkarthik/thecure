@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,8 @@ import org.scripps.ontologies.go.GOterm;
 import org.scripps.util.Gene;
 import org.scripps.util.MapFun;
 import org.scripps.util.MyGeneInfo;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import weka.attributeSelection.AttributeEvaluator;
 import weka.attributeSelection.ChiSquaredAttributeEval;
@@ -68,12 +71,39 @@ public class Scratch {
 		//makeAndTest70geneClassifier();
 		//crossvalidateTest();
 		//geneSetSearch();
-		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
-		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
-		Weka weka = new Weka();
-		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
+//		String train_file = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff" ;
+//		String metadatafile = "/Users/bgood/workspace/athecure/WebContent/WEB-INF/data/dream/id_map.txt"; 
+//		Weka weka = new Weka();
+//		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
 
+		String file = "/Users/bgood/workspace/acure/database/test.json"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
+		BufferedReader f;
+		String json = "";
+		try {			
+			f = new BufferedReader(new FileReader(file));
+			String line = f.readLine(); 
+			while(line!=null){
+				json+=line;
+				line = f.readLine(); 
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		LinkedHashMap userData = mapper.readValue(json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);
+		
+		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
+//		List<String> ids = (List<String>)userData.get("unique_ids");
+//		for(String id : ids){
+//			System.out.println(id);
+//		}
 	}
+	
 	
 	
 	

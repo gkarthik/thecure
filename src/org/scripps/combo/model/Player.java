@@ -283,27 +283,47 @@ public class Player {
 			return null;
 		}
 		//if no player exists make a new one
+		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
-		String insert = "insert into player values(null,?,?,?,0,0,?,'',?,?,?,?,?)";
+		ResultSet generatedKeys = null; PreparedStatement p = null;		
+		String insert = "insert into player (id,name, ip, password, email, created, degree, cancer, biologist) " +
+				"values(null,?,?,?,?,?,?,?,?)";
 		try {
-			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);					
 			p.setString(1, name);
 			p.setString(2,ip);
 			p.setString(3,password);
 			p.setString(4,email);
-			p.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-			p.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-			p.setString(7, degree);
-			p.setString(8,cancer);
-			p.setString(9, biologist);
-			p.executeUpdate();
+			p.setDate(5, new Date(System.currentTimeMillis()));
+			p.setString(6, degree);
+			p.setString(7,cancer);
+			p.setString(8, biologist);
 
-			conn.connection.close();
+			int affectedRows = p.executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Creating player failed, no rows affected.");
+			}
+			generatedKeys = p.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				newid = generatedKeys.getInt(1);
+				player = new Player();
+				player.setBiologist(biologist);
+				player.setCancer(cancer);
+				player.setDegree(degree);
+				player.setEmail(email);
+				player.setId(newid);
+				player.setName(name);
+			} else {
+				throw new SQLException("Creating player failed, no generated key obtained.");
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		player = lookupPlayerByName(name);
+		} finally {
+			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
+			if (p != null) try { p.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}		
 		return player;
 	}
 
