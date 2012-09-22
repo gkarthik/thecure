@@ -113,6 +113,29 @@ public class Hand {
 		}
 	}
 	
+	public void setFeaturesForHandToUniqueIds(){
+		if(id==0){
+			return;
+		}
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select feature.unique_id from hand_feature, feature " +
+				"where feature.id = hand_feature.feature_id and " +
+				"hand_id = "+id;
+
+		ResultSet rslt = conn.executeQuery(q);
+		List<String> unique_ids = new ArrayList<String>();
+		try {
+			while(rslt.next()){
+				unique_ids.add(rslt.getString(1));
+			}
+			setFeatures(unique_ids);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return;
+	}
+	
 	/**
 	 * Limit the hand list to the first hand per player per board that was won.
 	 * @return
