@@ -272,7 +272,26 @@ CURE.boardgame = {
       );
   },
   termCalculations : function() {
-  
+    //-- Show the top X Rifs/ontology
+    var game = CURE.boardgame;
+    //var rifs = _.pluck( _.flatten( _.map( game.cards, function(card_obj) { return card_obj.metadata.rifs } ) ) , "text")
+
+    $("#search").keyup(function(e) {
+      var needle = $(this).val();
+      game.performOntologySearch(needle)
+    })
+
+  },
+  performOntologySearch : function(term) {
+    var game = CURE.boardgame;
+    $("#board .gamecard").removeClass("highlight");
+     var needle = term.toLowerCase().trim();
+    _.each( game.cards , function(v,i) {
+      var haystack = _.pluck(_.flatten( _.pluck( v.metadata.ontology , "values" ) ), "term").join(" ").toLowerCase().trim()
+      if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
+        $("#card_"+v.unique_id).addClass("highlight")
+      }
+    })
   },
   generateBoard : function() {
     //-- Using the cards array, this draws the cards to the board div
@@ -612,12 +631,12 @@ CURE.boardgame = {
     game.p2_hand = [];
     game.p1_score = 0;
     game.p2_score = 0;
-    game.metadata : {
+    game.metadata = {
       game_started : (new Date).getTime(),
       mouse_action : []
     };
-    game.board_state_clickable : true;
-    game.cached_info_panel_unique_id : 0;
+    game.board_state_clickable = true;
+    game.cached_info_panel_unique_id = 0;
 
   }
 }

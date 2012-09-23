@@ -483,6 +483,11 @@ div#footer iframe.twitter-share-button {
   overflow: hidden;
 }
 
+#boardgame div.gamecard.highlight {
+  -webkit-box-shadow: 0px 0px 12px 0px #F69;
+  box-shadow: 0px 0px 12px 0px #F69;
+
+}
 
 #boardgame #game_area #board div.gamecard.active:hover {
   -webkit-box-shadow: 0px 0px 12px 0px #666;

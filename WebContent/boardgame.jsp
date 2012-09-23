@@ -77,6 +77,7 @@ if(username==null){
       <div id="board"></div>
 
       <div id="help_area">
+        <input id="search" />
         <div id="tabs">
           <ul>
             <li class="ontology">Ontology</li>
