@@ -58,13 +58,14 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
-
+	ObjectMapper mapper;
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public MetaServer() {
 		super();
 		name_dataset = new HashMap<String, Weka>();
+		mapper = new ObjectMapper();
 	}
 
 	public void init(ServletConfig config){		
@@ -88,20 +89,20 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 		//dream data
-				try {
-					String dataset = "dream_breast_cancer";
-					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-					Weka dream_weka = new Weka();
-					dream_weka.buildWeka(train_loc, null, dataset);			
-					name_dataset.put("dream_breast_cancer", dream_weka);	
-					train_loc.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		//				try {
+		//					String dataset = "dream_breast_cancer";
+		//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
+		//					Weka dream_weka = new Weka();
+		//					dream_weka.buildWeka(train_loc, null, dataset);			
+		//					name_dataset.put("dream_breast_cancer", dream_weka);	
+		//					train_loc.close();
+		//				} catch (IOException e) {
+		//					// TODO Auto-generated catch block
+		//					e.printStackTrace();
+		//				} catch (Exception e) {
+		//					// TODO Auto-generated catch block
+		//					e.printStackTrace();
+		//				}
 	}
 
 	/**
@@ -119,8 +120,24 @@ public class MetaServer extends HttpServlet {
 		System.out.println("content type "+t);
 		if(t!=null&&t.equals("application/json")){
 			String json = extractJson(request);
-			System.out.println(json);
-			//getScore(request, response); 
+			if(json!=null){
+				System.out.println(json);
+				LinkedHashMap postData = mapper.readValue(json, LinkedHashMap.class);	
+				String command = null;
+				if(postData!=null){
+					Object command_ = postData.get("command");
+					if(command_!=null){
+						command = (String)command_;
+						route(command, postData, request, response);
+					}else{
+						handleBadRequest(request, response, "No command found in json request");
+					}
+				}else{
+					handleBadRequest(request, response, "Posted data could not be parsed to a LinkedHashMap");
+				}
+			}else{
+				handleBadRequest(request, response, "Posted data null or could not be parsed");
+			}
 		}else{
 			//make sure we have a command and a dataset
 			String command = request.getParameter("command");
@@ -132,9 +149,6 @@ public class MetaServer extends HttpServlet {
 			if(command.equals("getboard")){
 				//works
 				getBoard(request, response);
-			}else if(command.equals("getscore")){
-				//does not work
-				getScore(request, response);
 			}else if(command.equals("savehand")){
 				//does not work
 				saveHand(request, response);
@@ -144,20 +158,35 @@ public class MetaServer extends HttpServlet {
 		}
 	}
 
+
+	
+	private void route(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		//route to appropriate functions
+		if(command.equals("getboard")){
+			//works
+			//getBoard(request, response);
+		}else if(command.equals("getscore")){
+			//does not work
+			getScore(postData, request, response);
+		}else if(command.equals("savehand")){
+			//does not work
+			//saveHand(request, response);
+		}else if(command.equals("saveplayedcard")){
+			//savePlayedCard(request, response);
+		}
+		
+	}
+
 	private String extractJson(HttpServletRequest request) throws UnsupportedEncodingException{
-		  StringBuffer jb = new StringBuffer();
-		  String line = null;
-		  try {
-		    BufferedReader reader = request.getReader();
-		    while ((line = reader.readLine()) != null)
-		      jb.append(line);
-		  } catch (Exception e) { /*report an error*/ }
-		  
-		  String json = jb.toString();
-		  System.out.println("undecoded: "+json);
-		  json = URLDecoder.decode(json,"UTF-8");
-		  System.out.println("decoded: "+json);
-		  return json;
+		StringBuffer jb = new StringBuffer();
+		String line = null;
+		try {
+			BufferedReader reader = request.getReader();
+			while ((line = reader.readLine()) != null)
+				jb.append(line);
+		} catch (Exception e) { /*report an error*/ }
+		String json = jb.toString();
+		return json;
 	}
 
 	/**
@@ -188,38 +217,30 @@ public class MetaServer extends HttpServlet {
 	 * @param weka
 	 * @throws IOException 
 	 */
-	private void getScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		System.out.println("contente type "+request.getContentType());
+	private void getScore(LinkedHashMap data, HttpServletRequest request_, HttpServletResponse response) throws IOException {
 
-		String board_id = request.getParameter("board_id");
+		String board_id = (String)data.get("board_id");
 		boolean getmeta = false;
 		Board board = Board.getBoardById(board_id, getmeta);		
 		Weka weka = name_dataset.get(board.getDataset());
 		if(weka==null){
-			handleBadRequest(request, response, "no dataset loaded for name: "+board.getDataset());
+			handleBadRequest(request_, response, "no dataset loaded for name: "+board.getDataset());
 			return;
 		}		
-		Enumeration<String> params = request.getParameterNames();
-		while(params.hasMoreElements()){
-			String p = params.nextElement();
-			System.out.println(p);
-			System.out.println(request.getParameterValues(p));
-
-		}
-//		String[] cards = request.getParameterValues("unique_ids[]");
-		List<String> unique_ids = new ArrayList<String>();
-		String cards = request.getParameter("unique_ids");
-		if(cards!=null){
-			unique_ids = MapFun.string2list(cards, ",");
-		}
-		String user_id = "";
-//		if(cards_json!=null){
-//			//parse out the array of played cards and the user
-//			ObjectMapper mapper = new ObjectMapper();
-//			LinkedHashMap userData = mapper.readValue(cards_json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);		
-//			//	System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
-//			unique_ids = (List<String>)userData.get("unique_ids");
+//		Enumeration<String> params = request_.getParameterNames();
+//		while(params.hasMoreElements()){
+//			String p = params.nextElement();
+//			System.out.println(p);
+//			System.out.println(request_.getParameterValues(p));
+//
 //		}
+		List<String> unique_ids = new ArrayList<String>();
+		//		String cards = request.getParameter("unique_ids");
+		//		if(cards!=null){
+		//			unique_ids = MapFun.string2list(cards, ",");
+		//		}
+		unique_ids = (List<String>)data.get("unique_ids");
+	
 		J48 wekamodel = new J48();
 		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
@@ -398,8 +419,20 @@ public class MetaServer extends HttpServlet {
 
 	}
 
-	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){
-		System.out.println("Bad request: "+problem);
+	/**
+	 * Respond with an error message if something went wrong
+	 * @param request
+	 * @param response
+	 * @param problem
+	 * @throws IOException
+	 */
+	private void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem) throws IOException{
+		String msg = "{\"error\":\""+problem+"\"}";
+		System.out.println("Bad request:\n"+msg);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(msg);
+		out.close();
 	}
 
 }
