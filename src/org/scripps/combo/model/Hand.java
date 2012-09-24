@@ -37,6 +37,10 @@ public class Hand {
 	int win;
 	Date created;
 	Timestamp updated;
+	Timestamp game_started;
+	Timestamp game_finished;
+
+	
 	
 	public int getId() {
 		return id;
