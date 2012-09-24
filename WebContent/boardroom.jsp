@@ -81,8 +81,7 @@ Player player = (Player) session.getAttribute("player");
 
   <jsp:include page="footer.jsp" />
   <script>
-    var cure_dataset = "dream_breast_cancer",
-        cure_user_experience = "<%=player_experience%>", 
+    var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>";
   </script>
   <script src="js/libs/jquery-1.8.0.min.js"></script> 
