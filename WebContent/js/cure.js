@@ -1,8 +1,6 @@
 var CURE = CURE || {};
 
-CURE.user_id = cure_user_id;
-CURE.user_experience = cure_user_experience;
-CURE.dataset = cure_dataset;
+
 
 CURE.load = function() {
   var page = window.location.href.split("/cure/")[1];
@@ -29,9 +27,17 @@ CURE.load = function() {
       CURE.login.init();
       break;
     case "boardroom":
+      CURE.user_id = cure_user_id;
+      CURE.user_experience = cure_user_experience;
+      CURE.dataset = cure_dataset;
+
       CURE.boardroom.init();
       break;
     case "boardgame":
+      CURE.user_id = cure_user_id;
+      CURE.user_experience = cure_user_experience;
+      CURE.dataset = cure_dataset;
+
       CURE.boardgame.init();
       break;
     case "stats":
@@ -409,7 +415,6 @@ CURE.boardgame = {
         } else {
           game["p"+ player +"_score"] = data.evaluation.accuracy;
         }
-        
         $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
 
         if (player == "2") {
@@ -603,7 +608,7 @@ CURE.boardgame = {
         utils = CURE.utilities;
 
     game.metadata.game_finished = (new Date).getTime();
-    var x = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
+    var app_state = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
 
     var score_results = "0";
     if( game.p1_score > game.p2_score ) {
@@ -615,9 +620,8 @@ CURE.boardgame = {
     var args = {
       command : "savehand",
       player_id : CURE.user_id,
-      board_id : game.level,
       win : score_results,
-      game : x
+      game : app_state
     }
 
     $.ajax({
