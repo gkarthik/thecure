@@ -606,6 +606,9 @@ CURE.boardgame = {
   saveHand : function(player) {
     var game = CURE.boardgame,
         utils = CURE.utilities;
+    if (player == 2) {
+      return false;
+    }
 
     game.metadata.game_finished = (new Date).getTime();
     //-- So this is a hack, but before submitting the cards, go through each one and delete all the non-gameplay metadata
@@ -623,20 +626,12 @@ CURE.boardgame = {
       score_results = 2;
     }
 
-    var reported_player = "0";
-    if(player == 1) {
-      reported_player = CURE.user_id;
-    } else if (player == 2) {
-      reported_player = "215";
-    }
-
     var args = {
       command : "savehand",
-      player_id : reported_player,
+      player_id : CURE.user_id,
       win : score_results,
       game : app_state
     }
-
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -644,7 +639,7 @@ CURE.boardgame = {
       dataType: 'json',
       contentType: "application/json; charset=utf-8",
     });
-  
+
   },
   replayHand : function() {
     var game = CURE.boardgame;
