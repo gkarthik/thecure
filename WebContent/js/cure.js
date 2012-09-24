@@ -236,6 +236,11 @@ CURE.boardgame = {
     game.board_id = utils.getParameterByName("board_id");
     game.max_hand = 5;
 
+    //-- Adding other metadata
+    game.metadata.board_id = game.board_id; //int
+    game.metadata.player1_id = CURE.user_id; //string
+    game.metadata.player2_id = "215";
+
     //set up the board
     var args = {
       command : "getboard",
@@ -281,21 +286,35 @@ CURE.boardgame = {
     //var rifs = _.pluck( _.flatten( _.map( game.cards, function(card_obj) { return card_obj.metadata.rifs } ) ) , "text")
 
     $("#search").keyup(function(e) {
+      $("#board .gamecard").removeClass("highlight");
       var needle = $(this).val();
-      game.performOntologySearch(needle)
+      game.performOntologySearch(needle);
+      game.performRifSearch(needle);
     })
 
   },
   performOntologySearch : function(term) {
     var game = CURE.boardgame;
-    $("#board .gamecard").removeClass("highlight");
-     var needle = term.toLowerCase().trim();
+
+    var needle = term.toLowerCase().trim();
     _.each( game.cards , function(v,i) {
       var haystack = _.pluck(_.flatten( _.pluck( v.metadata.ontology , "values" ) ), "term").join(" ").toLowerCase().trim()
       if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
         $("#card_"+v.unique_id).addClass("highlight")
       }
     })
+  },
+  performRifSearch : function(term) {
+    var game = CURE.boardgame;
+
+    var needle = term.toLowerCase().trim();
+    _.each( game.cards , function(v,i) {
+      var haystack = _.flatten( _.pluck( v.metadata.rifs , "text" ) ).join(" ").toLowerCase().trim()
+      if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
+        $("#card_"+v.unique_id).addClass("highlight")
+      }
+    })
+
   },
   generateBoard : function() {
     //-- Using the cards array, this draws the cards to the board div
@@ -380,7 +399,7 @@ CURE.boardgame = {
     if(player == 1) {
       reported_player = CURE.user_id;
     } else if (player == 2) {
-      reported_player = "215"
+      reported_player = "215";
     }
 
     var args = {
@@ -401,7 +420,6 @@ CURE.boardgame = {
       success: function(data) {
         var treeheight = 250,
             treewidth = 420;
-
 
 
         if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
@@ -430,7 +448,7 @@ CURE.boardgame = {
 
         //-- If it's the last hand-- save out & display the results
         if ( game.p2_hand.length == game.max_hand) {
-          game.saveHand();
+          game.saveHand(player);
           window.setTimeout( game.showTheResults(), 1500 );
         }
       }
@@ -520,7 +538,7 @@ CURE.boardgame = {
         card_obj.metadata.ux.push({
           timestamp : (new Date).getTime(),
           panel : game.activeInfoPanel(),
-          new_card : false
+          board_hover : false
         });
       };
     })
@@ -590,7 +608,7 @@ CURE.boardgame = {
       card_metadata.ux.push({
         timestamp : (new Date).getTime(),
         panel : game.activeInfoPanel(),
-        new_card : true
+        board_hover : true
       });
 
       //dont play this card
@@ -604,28 +622,36 @@ CURE.boardgame = {
     $("img#clayton1").removeClass("win lose correct").hide().addClass(moveChoice).show();
   },
 
-  saveHand : function() {
+  saveHand : function(player) {
     var game = CURE.boardgame,
         utils = CURE.utilities;
+    if (player == 2) {
+      return false;
+    }
 
     game.metadata.game_finished = (new Date).getTime();
+    //-- So this is a hack, but before submitting the cards, go through each one and delete all the non-gameplay metadata
+    game.cards = _.map(game.cards, function(obj){
+      delete obj.metadata.ontology;
+      delete obj.metadata.rifs;
+      return obj;
+    });
     var app_state = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
 
-    var score_results = "0";
+    var score_results = 0;
     if( game.p1_score > game.p2_score ) {
-      score_results = "1";
+      score_results = 1;
     } else if ( game.p1_score == game.p2_score ) {
-      score_results = "2";
+      score_results = 2;
     }
 
     var args = {
       command : "savehand",
-      player_id : CURE.user_id,
+      player1_id : CURE.user_id,
+      player2_id : "215",
       win : score_results,
       game : app_state
     }
-
-    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -633,7 +659,7 @@ CURE.boardgame = {
       dataType: 'json',
       contentType: "application/json; charset=utf-8",
     });
-  
+
   },
   replayHand : function() {
     var game = CURE.boardgame;
