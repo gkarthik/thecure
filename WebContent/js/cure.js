@@ -236,6 +236,11 @@ CURE.boardgame = {
     game.board_id = utils.getParameterByName("board_id");
     game.max_hand = 5;
 
+    //-- Adding other metadata
+    game.metadata.board_id = game.board_id; //int
+    game.metadata.player1_id = CURE.user_id; //string
+    game.metadata.player2_id = "215";
+
     //set up the board
     var args = {
       command : "getboard",
@@ -281,21 +286,35 @@ CURE.boardgame = {
     //var rifs = _.pluck( _.flatten( _.map( game.cards, function(card_obj) { return card_obj.metadata.rifs } ) ) , "text")
 
     $("#search").keyup(function(e) {
+      $("#board .gamecard").removeClass("highlight");
       var needle = $(this).val();
-      game.performOntologySearch(needle)
+      game.performOntologySearch(needle);
+      game.performRifSearch(needle);
     })
 
   },
   performOntologySearch : function(term) {
     var game = CURE.boardgame;
-    $("#board .gamecard").removeClass("highlight");
-     var needle = term.toLowerCase().trim();
+
+    var needle = term.toLowerCase().trim();
     _.each( game.cards , function(v,i) {
       var haystack = _.pluck(_.flatten( _.pluck( v.metadata.ontology , "values" ) ), "term").join(" ").toLowerCase().trim()
       if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
         $("#card_"+v.unique_id).addClass("highlight")
       }
     })
+  },
+  performRifSearch : function(term) {
+    var game = CURE.boardgame;
+
+    var needle = term.toLowerCase().trim();
+    _.each( game.cards , function(v,i) {
+      var haystack = _.flatten( _.pluck( v.metadata.rifs , "text" ) ).join(" ").toLowerCase().trim()
+      if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
+        $("#card_"+v.unique_id).addClass("highlight")
+      }
+    })
+
   },
   generateBoard : function() {
     //-- Using the cards array, this draws the cards to the board div
