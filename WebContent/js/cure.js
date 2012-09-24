@@ -360,8 +360,10 @@ CURE.boardgame = {
       board_id : game.board_id,
       player_id : CURE.user_id,
       unique_id : card_obj.unique_id,
+      display_loc : (card_obj.board_index+1),
       timestamp : (new Date).getTime()
     }
+    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -401,7 +403,6 @@ CURE.boardgame = {
             treewidth = 420;
 
 
-      console.log( cure_dataset );
         if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
         //draw the current tree
         $("#p"+ player +"_current_tree").empty();
@@ -428,7 +429,7 @@ CURE.boardgame = {
 
         //-- If it's the last hand-- save out & display the results
         if ( game.p2_hand.length == game.max_hand) {
-          //game.saveHand();
+          game.saveHand();
           window.setTimeout( game.showTheResults(), 1500 );
         }
       }
@@ -473,6 +474,7 @@ CURE.boardgame = {
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
     }
+    $("span.replay_level").click(function() { game.replayHand(); })
     $("#endgame").leanModal();
   },
   addCardToBarney : function() {
@@ -622,6 +624,7 @@ CURE.boardgame = {
       game : app_state
     }
 
+    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -631,10 +634,17 @@ CURE.boardgame = {
     });
   
   },
-  //replay_hand
   replayHand : function() {
     var game = CURE.boardgame;
     //-- Empty DIVs
+    _.each([1,2], function(v) {
+      $("span#p"+ v +"_score").html("0");
+      $("div#p"+ v +"_hand").html("").unbind();
+    })
+    //-- This doesn't show the default text for now...
+    $("#infoboxes div.infobox").html("");
+    $("div#game_area div#board").html("");
+    $("input#search").val("");
 
     //-- Emtpy vars
     game.cards = [];
@@ -648,7 +658,7 @@ CURE.boardgame = {
     };
     game.board_state_clickable = true;
     game.cached_info_panel_unique_id = 0;
-
+    game.init();
   }
 }
 
