@@ -43,10 +43,11 @@ public class MyGeneInfo {
 //		id.iterator().next();
 //		Gene g = getGeneInfoByGeneid("2989", true);
 //		Gene g = getGeneInfoByGeneid("730415", true);
+//		System.out.println(g.toString());
 		
 		List<String> ids = new ArrayList<String>();
 		ids.add("2989"); ids.add("1017");
-		Map<String, Gene> id_gene = getBatchGeneInfo(ids, false);
+		Map<String, Gene> id_gene = getBatchGeneInfo(ids, true);
 		for(String id : id_gene.keySet()){
 			Gene g = id_gene.get(id);
 			System.out.println(g.toString());
@@ -83,7 +84,7 @@ public class MyGeneInfo {
 	public static Gene getGeneInfoByGeneid(String id, boolean external) throws UnsupportedEncodingException{
 		Gene g = null;
 		String symbol = "";
-		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot,entrezgene");
+		String jsonr = getGeneInfo(id, external,"name,symbol,type_of_gene,uniprot,entrezgene,summary");
 		if(jsonr==null||jsonr.length()==0||jsonr.startsWith("<html><title>404")){
 			return null;
 		}
@@ -97,7 +98,9 @@ public class MyGeneInfo {
 				symbol = r.getString("symbol");
 				g.setGeneSymbol(symbol);
 			}
-			g.setGeneDescription(r.getString("name"));
+			if(r.has("summary")){
+				g.setGeneDescription(r.getString("summary"));
+			}
 			g.setUniprot("none");
 			if(r.has("uniprot")){
 				JSONObject u = new JSONObject(r.getString("uniprot"));
@@ -276,14 +279,14 @@ public class MyGeneInfo {
 				batch = batch.substring(0, batch.length()-1);
 			}
 			//prepare the request for this set
-			String u = "http://cwudev/gene";
+			String u = "http://cwudev/query";
 			if(external){
-				u = "http://mygene.info/gene";
+				u = "http://mygene.info/query";
 			}
 			PostMethod post = new PostMethod(u);
-			post.addParameter("ids", batch);
-			post.addParameter("filter","name,id,symbol,type_of_gene,summary");
-
+			post.addParameter("q", batch);
+			post.addParameter("scope","entrezgene");
+			post.addParameter("filter","name,id,symbol,summary");
 			// Get HTTP client
 			HttpClient httpclient = new HttpClient();
 			// Execute request
@@ -292,26 +295,24 @@ public class MyGeneInfo {
 				int result = httpclient.executeMethod(post);				
 				out = post.getResponseBodyAsString();
 				if(result==200&&out!=null&&(!out.startsWith("<html"))){
-					JSONArray r = new JSONArray(out);
+					
+					JSONObject obj = new JSONObject(out);
+					JSONArray r = obj.getJSONArray("rows");
 
 					for(int j=0; j<r.length(); j++){
 						JSONObject o = r.getJSONObject(j);
-						String name = o.getString("name");
-						String entrezgene = o.getString("_id");
-						String symbol = o.getString("symbol");
-						String t = o.getString("type_of_gene");
-						String summary = o.getString("summary");
 						Gene gene = new Gene();
+						//String name = o.getString("name");
+						String entrezgene = o.getString("id");
+						String symbol = o.getString("symbol");
+						String summary = "";
+						if(o.has("summary")){
+							summary = o.getString("summary");
+							gene.setGeneDescription(summary);
+						}
 						gene.setGeneID(entrezgene);
 						gene.setGeneSymbol(symbol);
-						gene.setGeneDescription(summary);
-						gene.setGenetype(t);
-						if(t!=null){
-							if(t.equals("pseudo")){
-								gene.setPseudo(true);
-							}
-							gene.setGenetype(t);
-						}
+
 						genes.put(entrezgene, gene);
 						response_set.add(entrezgene);
 					}
