@@ -7,16 +7,11 @@
 <%@ page import="java.util.ArrayList"%>
 
 <%
-String full_request = request.getRequestURI()+"?"+request.getQueryString();
-String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
+  String full_request = request.getRequestURI()+"?"+request.getQueryString();
+  String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
 
-String username = (String)session.getAttribute("username");
-Player p = (Player)session.getAttribute("player");
-String player_id = ""+p.getId();
-
-if(username==null){
-	username = "anonymous_hero";
-}
+  Player p = (Player)session.getAttribute("player");
+  String player_id = ""+p.getId();
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -110,7 +105,7 @@ if(username==null){
     <div id="p1_area">
       <div id="p1_scorebox">
         <img id="clayton1" class="avatar" src="images/200px-Clayton.png"/>
-        <h2>Your score: <span id="p2_score">0</span></h2>
+        <h2>Your score: <span id="p1_score">☒</span></h2>
       </div>
       <div id="p1_hand"></div>
     </div>
@@ -118,6 +113,11 @@ if(username==null){
   </div>
 
   <jsp:include page="footer.jsp" />
+  <script>
+    var cure_dataset = "<%=dataset%>",
+        cure_user_experience = "<%=player_experience%>",
+        cure_user_id = "<%=player_id%>";
+  </script>
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/jquery.plugins.js"></script>
   <script src="js/libs/underscore-min.js"></script>
