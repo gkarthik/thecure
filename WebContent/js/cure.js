@@ -363,8 +363,7 @@ CURE.boardgame = {
       url: 'MetaServer',
       data: JSON.stringify(args),
       dataType: 'json',
-      contentType: 'application/json',
-
+      contentType: "application/json; charset=utf-8"
     });
   },
   getScore : function(cardsInHand, player) {
@@ -393,7 +392,7 @@ CURE.boardgame = {
       url: 'MetaServer',
       data: JSON.stringify(args),
       dataType: 'json',
-      contentType: 'application/json',
+      contentType: "application/json; charset=utf-8",
       success: function(data) {
         var treeheight = 250,
             treewidth = 420;
@@ -624,8 +623,7 @@ CURE.boardgame = {
       url: 'MetaServer',
       data: JSON.stringify(args),
       dataType: 'json',
-      contentType: 'application/json',
-
+      contentType: "application/json; charset=utf-8",
     });
   
   },
