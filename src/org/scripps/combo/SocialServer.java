@@ -31,25 +31,15 @@ public class SocialServer extends HttpServlet {
 	}
 
 	public void init(ServletConfig config){		
-		//ServletContext context = config.getServletContext();	
 		//load up a mail client
 		mail = new Mail("/props/EmailCredentials.properties");
-//		String messageText ="hello one more time again ben"; String subject = "testing 123"; String addrFrom = "bgood@scripps.edu"; String nameFrom = "Ben Good";
-//		String nameto = "Benjamin"; String addrto = "ben.mcgee.good@gmail.com";
-//		m.sendMail(messageText, subject, addrFrom, nameFrom, nameto, addrto);
+
 	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPost(request,response);
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String command = request.getParameter("command");
 		if(command==null){
 			handleBadRequest(request, response, "no command");
@@ -100,6 +90,13 @@ public class SocialServer extends HttpServlet {
 			mail.sendMail(message, "The Cure Game password", "bgood@scripps.edu", "The Cure Game", "", email);
 			response.sendRedirect("/cure/");
 		}
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
 	}
 
 	public void handleBadRequest(HttpServletRequest request, HttpServletResponse response, String problem){

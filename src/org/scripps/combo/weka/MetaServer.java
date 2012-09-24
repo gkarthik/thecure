@@ -90,27 +90,36 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 		//dream data
-		//				try {
-		//					String dataset = "dream_breast_cancer";
-		//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-		//					Weka dream_weka = new Weka();
-		//					dream_weka.buildWeka(train_loc, null, dataset);			
-		//					name_dataset.put("dream_breast_cancer", dream_weka);	
-		//					train_loc.close();
-		//				} catch (IOException e) {
-		//					// TODO Auto-generated catch block
-		//					e.printStackTrace();
-		//				} catch (Exception e) {
-		//					// TODO Auto-generated catch block
-		//					e.printStackTrace();
-		//				}
+		try {
+			String dataset = "dream_breast_cancer";
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
+			Weka dream_weka = new Weka();
+			dream_weka.buildWeka(train_loc, null, dataset);			
+			name_dataset.put("dream_breast_cancer", dream_weka);	
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPost(request,response);
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+//		Enumeration e = request.getParameterNames();
+//		while(e.hasMoreElements()){
+//			System.out.println(e.nextElement());
+//		}		
+		String command = request.getParameter("command");
+		if(command!=null){
+			routeGet(command, request, response);
+		}else{
+			handleBadRequest(request, response, "no command sent as GET");
+		}
 	}
 
 	/**
@@ -119,7 +128,7 @@ public class MetaServer extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String t = request.getContentType();
 		System.out.println("content type "+t);
-		if(t!=null&&t.equals("application/json")){
+		if(t!=null&&t.startsWith("application/json")){
 			String json = extractJson(request);
 			if(json!=null){
 				System.out.println(json);
@@ -129,7 +138,7 @@ public class MetaServer extends HttpServlet {
 					Object command_ = postData.get("command");
 					if(command_!=null){
 						command = (String)command_;
-						route(command, postData, request, response);
+						routePost(command, postData, request, response);
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
 					}
@@ -153,12 +162,9 @@ public class MetaServer extends HttpServlet {
  * @param response
  * @throws IOException
  */
-	private void route(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	private void routePost(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//route to appropriate functions
-		if(command.equals("getboard")){
-			//works
-			getBoard(postData, request, response);
-		}else if(command.equals("getscore")){
+		if(command.equals("getscore")){
 			//does not work
 			getScore(postData, request, response);
 		}else if(command.equals("savehand")){
@@ -170,6 +176,15 @@ public class MetaServer extends HttpServlet {
 		
 	}
 
+	private void routeGet(String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		//route to appropriate functions
+		if(command.equals("getboard")){
+			//works
+			getBoard(request, response);
+		}
+		
+	}
+	
 	private String extractJson(HttpServletRequest request) throws UnsupportedEncodingException{
 		StringBuffer jb = new StringBuffer();
 		String line = null;
@@ -190,8 +205,8 @@ public class MetaServer extends HttpServlet {
 	 * @param weka
 	 * @throws IOException 
 	 */
-	private void getBoard(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String board_id = (String)data.get("board_id");
+	private void getBoard(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String board_id = request.getParameter("board_id");
 		boolean getmeta = true;
 		Board board = Board.getBoardById(board_id, getmeta);
 		boolean shuffle = true;
@@ -360,12 +375,11 @@ public class MetaServer extends HttpServlet {
 	 * @param response
 	 */
 	private void savePlayedCard(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
-
 		String player_id = (String)data.get("player_id");
-		String timestamp = (String)data.get("timestamp");
+		Long timestamp = (Long)data.get("timestamp");
 		long t = 0;
 		if(timestamp!=null){
-			t = Long.parseLong(timestamp);
+			t = timestamp;
 		}
 		String board_id =  (String)data.get("board_id");
 		String unique_id = (String)data.get("unique_id");
