@@ -15,7 +15,7 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
-create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, player1_id int, player2_id int, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, updated timestamp, primary key (id));
+create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, ip varchar(30), player1_id int, player2_id int, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, updated timestamp, primary key (id));
 create table game_player_feature (game_id int, player_id int, feature_id int);
 create table game_card_ux(game_id int, feature_id int, time timestamp, panel varchar(50), board_hover boolean);
 create table game_mouse_action(game_id int, x int, y int, time timestamp);
@@ -24,6 +24,7 @@ create table game_mouse_action(game_id int, x int, y int, time timestamp);
 public class Game {
 
 	int id;
+	String ip;
 	int player1_id;
 	int player2_id;
 	Timestamp game_started;
@@ -39,14 +40,21 @@ public class Game {
 	List<ux> feature_ux;
 	List<mouse> mouse_actions;
 	
-	class ux{
+	public class ux{
+		public ux(String feature_id) {
+			super();
+			this.feature_id = feature_id;
+		}
 		String feature_id;
 		Timestamp timestamp;
 		String panel;
 		boolean board_hover;
 	}
 	
-	class mouse{
+	public class mouse{
+		public mouse() {
+			super();
+		}
 		Timestamp timestamp;
 		int x;
 		int y;
@@ -71,8 +79,8 @@ public class Game {
 		ResultSet generatedKeys = null; PreparedStatement pst = null;
 		try {
 			pst = conn.connection.prepareStatement(
-					"insert into game (id, board_id, player1_id, player2_id, game_started, game_finished, p1_score, p2_score, win, created)" +
-					"values (?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+					"insert into game (id, board_id, player1_id, player2_id, game_started, game_finished, p1_score, p2_score, win, created, ip)" +
+					"values (?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			pst.clearParameters();
 			if(id>0){
 				pst.setInt(1,getId());
@@ -88,6 +96,7 @@ public class Game {
 			pst.setInt(8, getP2_score());
 			pst.setInt(9, getWin());
 			pst.setDate(10, new Date(System.currentTimeMillis()));
+			pst.setString(11, getIp());
 			
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 0) {
@@ -220,6 +229,56 @@ public class Game {
 
 	public void setBoard_id(int board_id) {
 		this.board_id = board_id;
+	}
+
+
+	public String getIp() {
+		return ip;
+	}
+
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+
+	public List<String> getPlayer1_features() {
+		return player1_features;
+	}
+
+
+	public void setPlayer1_features(List<String> player1_features) {
+		this.player1_features = player1_features;
+	}
+
+
+	public List<String> getPlayer2_features() {
+		return player2_features;
+	}
+
+
+	public void setPlayer2_features(List<String> player2_features) {
+		this.player2_features = player2_features;
+	}
+
+
+	public List<ux> getFeature_ux() {
+		return feature_ux;
+	}
+
+
+	public void setFeature_ux(List<ux> feature_ux) {
+		this.feature_ux = feature_ux;
+	}
+
+
+	public List<mouse> getMouse_actions() {
+		return mouse_actions;
+	}
+
+
+	public void setMouse_actions(List<mouse> mouse_actions) {
+		this.mouse_actions = mouse_actions;
 	}
 
 	
