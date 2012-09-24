@@ -361,7 +361,10 @@ CURE.boardgame = {
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
-      data: args,
+      data: JSON.stringify(args),
+      dataType: 'json',
+      contentType: 'application/json',
+
     });
   },
   getScore : function(cardsInHand, player) {
@@ -390,7 +393,9 @@ CURE.boardgame = {
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
-      data: args,
+      data: JSON.stringify(args),
+      dataType: 'json',
+      contentType: 'application/json',
       success: function(data) {
         var treeheight = 250,
             treewidth = 420;
@@ -616,9 +621,15 @@ CURE.boardgame = {
       game : x
     }
 
-    $.getJSON("MetaServer", args, function(data) {
-      //console.log("saved a hand");
+    $.ajax({
+      type: 'POST',
+      url: 'MetaServer',
+      data: JSON.stringify(args),
+      dataType: 'json',
+      contentType: 'application/json',
+
     });
+  
   },
   //replay_hand
   replayHand : function() {
