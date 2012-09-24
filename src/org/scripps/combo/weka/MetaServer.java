@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
+import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Hand;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
@@ -267,105 +268,35 @@ public class MetaServer extends HttpServlet {
 
 
 	private void saveHand(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
-		//		String features=request.getParameter("features");
-		//		String geneids=request.getParameter("geneids");
-		//		if(features==null&&geneids==null){
-		//			handleBadRequest(request, response, "no features");
-		//		}else if(features==null){
-		//			features = "";
-		//			String[] gids = geneids.split(",");
-		//			for(String geneid : gids){
-		//				List<card> cards = weka.getGeneid_cards().get(geneid);
-		//				if(cards!=null){
-		//					for(card c : cards){
-		//						features+=c.getAtt_index()+",";
-		//					}
-		//				}
-		//			}
-		//		}			
-		//		String player_name = request.getParameter("player_name");
-		//		String ip = request.getRemoteAddr();
-		//		String feature_names = request.getParameter("feature_names");
-		//		String phenotype = dataset_name;
-		//		String score_s = request.getParameter("score");
-		//		int score = -1;
-		//		if(score_s!=null){
-		//			score = Integer.parseInt(score_s);
-		//		}
-		//		String cv_accuracy_s = request.getParameter("cv_accuracy");
-		//		String training_accuracy_s = request.getParameter("training_accuracy");
-		//		int training_accuracy = -1;
-		//		int cv_accuracy = -1000;
-		//		if(cv_accuracy_s!=null){
-		//			cv_accuracy = Integer.parseInt(cv_accuracy_s);
-		//		}
-		//		if(training_accuracy_s != null){
-		//			training_accuracy = Integer.parseInt(training_accuracy_s);
-		//		}
-		//		String board_id_s = request.getParameter("board_id");
-		//		int board_id = -1000;
-		//		if(board_id_s!=null){
-		//			board_id = Integer.parseInt(board_id_s);
-		//		}
-		//		String win = request.getParameter("win");
-		//		int win_ = 0;
-		//		if(win!=null&&win.equals("1")){
-		//			win_ = 1;
-		//		}
-		//		Hand hand = new Hand();
-		//		hand.setBoard_id(board_id);
-		//		hand.setCv_accuracy(cv_accuracy);
-		//		hand.setFeatures(features);
-		//		hand.setIp(ip);
-		//		hand.setPlayer_name(player_name);
-		//		hand.setScore(score);
-		//		hand.setPhenotype(phenotype);
-		//		hand.setFeature_names(feature_names);
-		//		hand.setTraining_accuracy(training_accuracy);
-		//		hand.setGame_type(game);
-		//		hand.setWin(win_);
-		//		hand.save();
-		//		//update player info
-		//
-		//		if(game!=null&&(game.equals("training_verse_barney")||game.equals("verse_barney"))){
-		//			//update stars
-		//			//Player player = Player.lookupPlayer(player_name);
-		//			HttpSession s = request.getSession();
-		//			Player player = (Player)s.getAttribute("player");
-		//			//check if they passed the level
-		//			if(win!=null&&win.equals("1")){
-		//				//update session
-		//				Map<Integer,Integer> scores = player.getPhenotype_board_scores().get(dataset_name);
-		//				if(scores==null){
-		//					scores = new HashMap<Integer,Integer>();
-		//				}
-		//				if(game.equals("verse_barney")){
-		//					scores.put(board_id, cv_accuracy);
-		//				}else{
-		//					scores.put(board_id, training_accuracy);
-		//				}
-		//				player.getPhenotype_board_scores().put(dataset_name, scores);
-		//				s.setAttribute("player", player);
-		//			}
-		//		}else if(game!=null&&game.equals("barney")){
-		//			//update stars
-		//			Player player = Player.lookupPlayer(player_name);
-		//			//check if they passed the level
-		//			if(win!=null&&win.equals("1")){
-		//				//if(score>0){
-		//				int stars = 1;
-		//				if(player.getBarney_levels()!=null&&player.getBarney_levels().size()>board_id){
-		//					stars += player.getBarney_levels().get(board_id);
-		//					player.getBarney_levels().set(board_id, stars);
-		//				}else{
-		//					player.getBarney_levels().add(stars);
-		//				}
-		//				player.updateBarneyLevelsInDatabase();
-		//			}
-		//
-		//		}
-		//		System.out.println("saved a hand "+player_name+" "+score);
-
+		Game game = new Game();
+		game.setWin((Integer)data.get("win"));
+		LinkedHashMap gdata = (LinkedHashMap)data.get("game");
+		game.setP1_score((Integer)gdata.get("p1_score"));
+		game.setP2_score((Integer)gdata.get("p2_score"));
+		LinkedHashMap gmetadata = (LinkedHashMap)gdata.get("metadata");
+		game.setGame_started((Timestamp)gmetadata.get("game_started"));
+		game.setGame_finished((Timestamp)gmetadata.get("game_finished"));
+		game.setBoard_id((Integer)gmetadata.get("board_id"));
+		game.setPlayer1_id((Integer)gmetadata.get("player1_id"));
+		game.setPlayer2_id((Integer)gmetadata.get("player2_id"));
+		game.setIp(request.getRemoteAddr());
+		List<String> p1_features = new ArrayList<String>();
+		List<LinkedHashMap> p1_hand = (List<LinkedHashMap>)gdata.get("p1_hand");
+		for(LinkedHashMap obj : p1_hand){
+			p1_features.add((String)obj.get("unique_id"));
+		}
+		List<String> p2_features = new ArrayList<String>();
+		game.setPlayer1_features(p1_features);
+		List<LinkedHashMap> p2_hand = (List<LinkedHashMap>)gdata.get("p2_hand");
+		for(LinkedHashMap obj : p2_hand){
+			p2_features.add((String)obj.get("unique_id"));
+		}
+		game.setPlayer2_features(p2_features);
+		List<LinkedHashMap> cards = (List<LinkedHashMap>)gdata.get("cards");
+		for(LinkedHashMap card : cards){
+			//Game.ux ux = 
+		}
+		
 	}
 
 	/**
