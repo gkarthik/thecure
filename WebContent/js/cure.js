@@ -1,8 +1,8 @@
 var CURE = CURE || {};
 
-CURE.user_id = "51";
-CURE.user_experience = 0;
-CURE.dataset = "dream_breast_cancer";
+CURE.user_id = cure_user_id;
+CURE.user_experience = cure_user_experience;
+CURE.dataset = cure_dataset;
 
 CURE.load = function() {
   var page = window.location.href.split("/cure/")[1];
@@ -385,7 +385,6 @@ CURE.boardgame = {
     }
     _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
 
-    console.log( args );
     //-- Goes to server, runs the default evaluation with a decision tree
     $.ajax({
       type: 'POST',
@@ -397,6 +396,8 @@ CURE.boardgame = {
         var treeheight = 250,
             treewidth = 420;
 
+
+      console.log( cure_dataset );
         if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
         //draw the current tree
         $("#p"+ player +"_current_tree").empty();
@@ -408,6 +409,7 @@ CURE.boardgame = {
         } else {
           game["p"+ player +"_score"] = data.evaluation.accuracy;
         }
+        
         $("span#p"+ player +"_score").html( game["p"+ player +"_score"] );
 
         if (player == "2") {
