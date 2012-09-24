@@ -628,7 +628,8 @@ CURE.boardgame = {
 
     var args = {
       command : "savehand",
-      player_id : CURE.user_id,
+      player1_id : CURE.user_id,
+      player2_id : "215",
       win : score_results,
       game : app_state
     }
