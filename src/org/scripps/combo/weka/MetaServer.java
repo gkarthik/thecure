@@ -383,10 +383,10 @@ public class MetaServer extends HttpServlet {
 		}
 		String board_id =  (String)data.get("board_id");
 		String unique_id = (String)data.get("unique_id");
-		String display_loc_ = (String)data.get("display_loc");
+		Integer display_loc_ = (Integer)data.get("display_loc");
 		int display_loc = -1;
 		if(display_loc_!=null){
-			display_loc = Integer.parseInt(display_loc_);
+			display_loc = display_loc_;
 		}
 		if(unique_id!=null){			
 			Card tosave = new Card(player_id, board_id, unique_id, display_loc);

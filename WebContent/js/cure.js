@@ -400,8 +400,6 @@ CURE.boardgame = {
         var treeheight = 250,
             treewidth = 420;
 
-
-      console.log( cure_dataset );
         if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
         //draw the current tree
         $("#p"+ player +"_current_tree").empty();
