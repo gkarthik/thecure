@@ -381,13 +381,11 @@ CURE.boardgame = {
     var args = {
       board_id : game.board_id,
       player_id : reported_player,
-      command : "getscore"
+      command : "getscore",
+      unique_ids : []
     }
+    _(cardsInHand).each( function(v) { args.unique_ids.push( v.unique_id ); });
 
-    var uniz = [];
-    _(cardsInHand).each( function(v) { uniz.push( v.unique_id ); });
-    args.unique_ids = uniz.join(",");
-    
     console.log( args );
     //-- Goes to server, runs the default evaluation with a decision tree
     $.ajax({
