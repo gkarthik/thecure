@@ -1,7 +1,5 @@
 var CURE = CURE || {};
 
-
-
 CURE.load = function() {
   var page = window.location.href.split("/cure/")[1];
   if ( page.indexOf('?') > 0 ) {
@@ -29,14 +27,12 @@ CURE.load = function() {
     case "boardroom":
       CURE.user_id = cure_user_id;
       CURE.user_experience = cure_user_experience;
-      CURE.dataset = cure_dataset;
 
       CURE.boardroom.init();
       break;
     case "boardgame":
       CURE.user_id = cure_user_id;
       CURE.user_experience = cure_user_experience;
-      CURE.dataset = cure_dataset;
 
       CURE.boardgame.init();
       break;
@@ -247,6 +243,8 @@ CURE.boardgame = {
     }
     //data will contain the array of cards used to build the board for this game
     $.getJSON("MetaServer", args, function(data) {
+      CURE.dataset = data.dataset;
+
       //-- Update thecure cards with the rooms cards
       game.cards = data.cards;
       //-- Inject the ux info object
