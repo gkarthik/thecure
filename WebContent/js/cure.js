@@ -380,7 +380,7 @@ CURE.boardgame = {
     if(player == 1) {
       reported_player = CURE.user_id;
     } else if (player == 2) {
-      reported_player = "215"
+      reported_player = "215";
     }
 
     var args = {
@@ -429,7 +429,7 @@ CURE.boardgame = {
 
         //-- If it's the last hand-- save out & display the results
         if ( game.p2_hand.length == game.max_hand) {
-          game.saveHand();
+          game.saveHand(player);
           window.setTimeout( game.showTheResults(), 1500 );
         }
       }
@@ -519,7 +519,7 @@ CURE.boardgame = {
         card_obj.metadata.ux.push({
           timestamp : (new Date).getTime(),
           panel : game.activeInfoPanel(),
-          new_card : false
+          board_hover : false
         });
       };
     })
@@ -589,7 +589,7 @@ CURE.boardgame = {
       card_metadata.ux.push({
         timestamp : (new Date).getTime(),
         panel : game.activeInfoPanel(),
-        new_card : true
+        board_hover : true
       });
 
       //dont play this card
@@ -603,28 +603,40 @@ CURE.boardgame = {
     $("img#clayton1").removeClass("win lose correct").hide().addClass(moveChoice).show();
   },
 
-  saveHand : function() {
+  saveHand : function(player) {
     var game = CURE.boardgame,
         utils = CURE.utilities;
 
     game.metadata.game_finished = (new Date).getTime();
+    //-- So this is a hack, but before submitting the cards, go through each one and delete all the non-gameplay metadata
+    game.cards = _.map(game.cards, function(obj){
+      delete obj.metadata.ontology;
+      delete obj.metadata.rifs;
+      return obj;
+    });
     var app_state = _.pick(game, 'cards', 'p1_hand', 'p2_hand', 'p1_score', 'p2_score', 'metadata');
 
-    var score_results = "0";
+    var score_results = 0;
     if( game.p1_score > game.p2_score ) {
-      score_results = "1";
+      score_results = 1;
     } else if ( game.p1_score == game.p2_score ) {
-      score_results = "2";
+      score_results = 2;
+    }
+
+    var reported_player = "0";
+    if(player == 1) {
+      reported_player = CURE.user_id;
+    } else if (player == 2) {
+      reported_player = "215";
     }
 
     var args = {
       command : "savehand",
-      player_id : CURE.user_id,
+      player_id : reported_player,
       win : score_results,
       game : app_state
     }
 
-    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
