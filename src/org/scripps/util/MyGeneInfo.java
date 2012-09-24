@@ -42,8 +42,16 @@ public class MyGeneInfo {
 //		Set<String> id = mapGeneSymbol2NCBIGene("RPS17P5");
 //		id.iterator().next();
 //		Gene g = getGeneInfoByGeneid("2989", true);
-		Gene g = getGeneInfoByGeneid("730415", true);
-		System.out.println(g.toString());
+//		Gene g = getGeneInfoByGeneid("730415", true);
+		
+		List<String> ids = new ArrayList<String>();
+		ids.add("2989"); ids.add("1017");
+		Map<String, Gene> id_gene = getBatchGeneInfo(ids, false);
+		for(String id : id_gene.keySet()){
+			Gene g = id_gene.get(id);
+			System.out.println(g.toString());
+		}
+		
 
 	}
 
@@ -274,7 +282,7 @@ public class MyGeneInfo {
 			}
 			PostMethod post = new PostMethod(u);
 			post.addParameter("ids", batch);
-			post.addParameter("filter","name,id,symbol,type_of_gene");
+			post.addParameter("filter","name,id,symbol,type_of_gene,summary");
 
 			// Get HTTP client
 			HttpClient httpclient = new HttpClient();
@@ -292,10 +300,11 @@ public class MyGeneInfo {
 						String entrezgene = o.getString("_id");
 						String symbol = o.getString("symbol");
 						String t = o.getString("type_of_gene");
+						String summary = o.getString("summary");
 						Gene gene = new Gene();
 						gene.setGeneID(entrezgene);
 						gene.setGeneSymbol(symbol);
-						gene.setGeneDescription(name);
+						gene.setGeneDescription(summary);
 						gene.setGenetype(t);
 						if(t!=null){
 							if(t.equals("pseudo")){
