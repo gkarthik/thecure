@@ -18,7 +18,9 @@ import java.util.Map;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.model.Attribute;
+import org.scripps.util.Gene;
 import org.scripps.util.JdbcConnection;
+import org.scripps.util.MyGeneInfo;
 
 import weka.attributeSelection.Ranker;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -50,17 +52,18 @@ public class Feature {
 	Timestamp updated;
 
 	public static void main(String args[]){
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
-		String dataset = "mammal";
-		try {
-			loadRawWeka(train_file, dataset);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		updateEntrezGene();
+//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
+//		String dataset = "mammal";
+//		try {
+//			loadRawWeka(train_file, dataset);
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	public void getAllMetadataFromDb(){
@@ -141,7 +144,35 @@ public class Feature {
 		return newid;
 	}
 
+	public int updateByUniqueId() throws SQLException{
+		int affectedRows  = 0;
+		JdbcConnection conn = new JdbcConnection();
+		PreparedStatement pst = null;
+		try {
+			pst = conn.connection.prepareStatement(
+					"update feature " +
+					"set short_name = ?, " +
+					" long_name = ?, " +
+					" description = ? " +
+					"where unique_id = ? ");
+			pst.clearParameters();
+			pst.setString(1,getShort_name());
+			pst.setString(2,getLong_name());
+			pst.setString(3,getDescription());
+			pst.setString(4, getUnique_id());
 
+			affectedRows = pst.executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Creating feature failed, no rows affected.");
+			}
+			
+		} finally {
+			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}
+		return affectedRows;
+	}
+	
 	public static Map<String, Feature> getByDataset(String dataset){
 		Map<String, Feature> features = new HashMap<String, Feature>();
 		JdbcConnection conn = new JdbcConnection();
@@ -261,6 +292,48 @@ public class Feature {
 					//chromosome 6, map location 7
 					try {
 						gene.insert();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				line = f.readLine(); 
+				System.out.println(c);
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void updateEntrezGene(){
+		String gene_info_file = "/Users/bgood/workspace/acure/database/gene/Homo_sapiens.gene_info"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
+		BufferedReader f;
+		try {			
+			f = new BufferedReader(new FileReader(gene_info_file));
+			String line = f.readLine(); 
+			int c = 0;
+			while(line!=null){
+				c++;
+				if(!line.startsWith("#")){
+					String[] items = line.split("\t");
+					Feature gene = new Feature();
+					gene.setUnique_id(items[1]);
+					gene.setShort_name(items[2]);
+					gene.setLong_name(items[11]);
+					
+					if(gene.getUnique_id()!=null){
+						Gene g = MyGeneInfo.getGeneInfoByGeneid(gene.getUnique_id(), true);
+						if(g!=null){
+							gene.setDescription(g.getGeneDescription());
+						}
+					}
+					try {
+						gene.updateByUniqueId();
 					} catch (SQLException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
