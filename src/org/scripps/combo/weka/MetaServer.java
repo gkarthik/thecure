@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,40 +140,32 @@ public class MetaServer extends HttpServlet {
 				handleBadRequest(request, response, "Posted data null or could not be parsed");
 			}
 		}else{
-			//make sure we have a command and a dataset
-			String command = request.getParameter("command");
-			if(command==null){
-				handleBadRequest(request, response, "no command");
-				return;
-			}
-			//route to appropriate functions
-			if(command.equals("getboard")){
-				//works
-				getBoard(request, response);
-			}else if(command.equals("savehand")){
-				//does not work
-				saveHand(request, response);
-			}else if(command.equals("saveplayedcard")){
-				savePlayedCard(request, response);
-			}
+			handleBadRequest(request, response, "no json data received");
 		}
 	}
 
 
-	
+/**
+ * Send the json request to the appropriate handler based on the command parameter	
+ * @param command
+ * @param postData
+ * @param request
+ * @param response
+ * @throws IOException
+ */
 	private void route(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//route to appropriate functions
 		if(command.equals("getboard")){
 			//works
-			//getBoard(request, response);
+			getBoard(postData, request, response);
 		}else if(command.equals("getscore")){
 			//does not work
 			getScore(postData, request, response);
 		}else if(command.equals("savehand")){
 			//does not work
-			//saveHand(request, response);
+			saveHand(postData, request, response);
 		}else if(command.equals("saveplayedcard")){
-			//savePlayedCard(request, response);
+			savePlayedCard(postData, request, response);
 		}
 		
 	}
@@ -197,8 +190,8 @@ public class MetaServer extends HttpServlet {
 	 * @param weka
 	 * @throws IOException 
 	 */
-	private void getBoard(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String board_id = request.getParameter("board_id");
+	private void getBoard(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String board_id = (String)data.get("board_id");
 		boolean getmeta = true;
 		Board board = Board.getBoardById(board_id, getmeta);
 		boolean shuffle = true;
@@ -227,18 +220,7 @@ public class MetaServer extends HttpServlet {
 			handleBadRequest(request_, response, "no dataset loaded for name: "+board.getDataset());
 			return;
 		}		
-//		Enumeration<String> params = request_.getParameterNames();
-//		while(params.hasMoreElements()){
-//			String p = params.nextElement();
-//			System.out.println(p);
-//			System.out.println(request_.getParameterValues(p));
-//
-//		}
 		List<String> unique_ids = new ArrayList<String>();
-		//		String cards = request.getParameter("unique_ids");
-		//		if(cards!=null){
-		//			unique_ids = MapFun.string2list(cards, ",");
-		//		}
 		unique_ids = (List<String>)data.get("unique_ids");
 	
 		J48 wekamodel = new J48();
@@ -269,7 +251,7 @@ public class MetaServer extends HttpServlet {
 	}
 
 
-	private void saveHand(HttpServletRequest request, HttpServletResponse response) {
+	private void saveHand(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
 		//		String features=request.getParameter("features");
 		//		String geneids=request.getParameter("geneids");
 		//		if(features==null&&geneids==null){
@@ -371,52 +353,34 @@ public class MetaServer extends HttpServlet {
 
 	}
 
-	private void savePlayedCard(HttpServletRequest request, HttpServletResponse response) {
-		/*
-		 *       command : "saveplayedcard",
-      board_id : game.board_id,
-      player_id : CURE.user_id,
-      unique_id : card_obj.unique_id,
-      timestamp : (new Date).getTime()
-		 */
+	/**
+	 * Every time a player clicks on a card to add it to their hand, record.
+	 * @param data
+	 * @param request
+	 * @param response
+	 */
+	private void savePlayedCard(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
 
-		String player_id = request.getParameter("player_id");
-		//		String timestamp = (String)card.get("timestamp");
-		String board_id =  request.getParameter("board_id");
-		String unique_id = request.getParameter("unique_id");
-		int display_loc = -1; //request.getParameter("");
+		String player_id = (String)data.get("player_id");
+		String timestamp = (String)data.get("timestamp");
+		long t = 0;
+		if(timestamp!=null){
+			t = Long.parseLong(timestamp);
+		}
+		String board_id =  (String)data.get("board_id");
+		String unique_id = (String)data.get("unique_id");
+		String display_loc_ = (String)data.get("display_loc");
+		int display_loc = -1;
+		if(display_loc_!=null){
+			display_loc = Integer.parseInt(display_loc_);
+		}
 		if(unique_id!=null){			
 			Card tosave = new Card(player_id, board_id, unique_id, display_loc);
-			//			//tosave.setTimestamp(timestamp);
+			if(t!=0){
+				tosave.setTimestamp(new Timestamp(t));
+			}
 			tosave.insert();
 		}
-
-
-		//		ObjectMapper mapper = new ObjectMapper();
-		//		try {
-		//			LinkedHashMap card = mapper.readValue(json, LinkedHashMap.class);
-		//			//		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
-		//			String player_id = (String)card.get("player_id");
-		//			String timestamp = (String)card.get("timestamp");
-		//			String board_id = (String)card.get("board_id");
-		//			String unique_id = (String)card.get("unique_id");
-		//			int display_loc = -1; //request.getParameter("");
-		//			if(unique_id!=null){			
-		//				Card tosave = new Card(player_id, board_id, unique_id, display_loc);
-		//				//tosave.setTimestamp(timestamp);
-		//				tosave.insert();
-		//			}
-		//		} catch (JsonParseException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		} catch (JsonMappingException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		} catch (IOException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}//mapper.readValue(new File("user.json"), Map.class);
-
 	}
 
 	/**

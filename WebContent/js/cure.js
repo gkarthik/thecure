@@ -233,7 +233,7 @@ CURE.boardgame = {
         utils = CURE.utilities;
     game.board_id = utils.getParameterByName("board_id");
     game.max_hand = 5;
-
+    
     //set up the board
     var args = {
       command : "getboard",
@@ -364,7 +364,6 @@ CURE.boardgame = {
       data: JSON.stringify(args),
       dataType: 'json',
       contentType: 'application/json',
-
     });
   },
   getScore : function(cardsInHand, player) {
@@ -386,7 +385,7 @@ CURE.boardgame = {
 
     var uniz = [];
     _(cardsInHand).each( function(v) { uniz.push( v.unique_id ); });
-    args.unique_ids = uniz.join(",");
+    args.unique_ids = uniz; //uniz.join(",");
     
     console.log( args );
     //-- Goes to server, runs the default evaluation with a decision tree
