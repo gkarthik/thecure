@@ -10,8 +10,16 @@
   String full_request = request.getRequestURI()+"?"+request.getQueryString();
   String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
 
-  Player p = (Player)session.getAttribute("player");
-  String player_id = ""+p.getId();
+  int player_id = 0;
+  int player_experience = 0;
+  Player player = (Player) session.getAttribute("player");
+  	if (player == null) {
+  		response.sendRedirect("login.jsp");
+  	} else {
+  		player_id = player.getId();
+  		player_experience = 0;
+  	} 
+  	if (player != null) {
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -114,8 +122,7 @@
 
   <jsp:include page="footer.jsp" />
   <script>
-    var cure_dataset = "<%=dataset%>",
-        cure_user_experience = "<%=player_experience%>",
+    var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>";
   </script>
   <script src="js/libs/jquery-1.8.0.min.js"></script>
@@ -127,3 +134,4 @@
 
 </body>
 </html>
+<%} %>

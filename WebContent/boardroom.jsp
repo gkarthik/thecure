@@ -13,12 +13,14 @@ int num_tile_rows = 10;
 int num_tile_cols = 10;
 
 boolean all_levels_open = true;
-	String username = "";
-	Player player = (Player) session.getAttribute("player");
+int player_id = 0;
+int player_experience = 0;
+Player player = (Player) session.getAttribute("player");
 	if (player == null) {
 		response.sendRedirect("login.jsp");
 	} else {
-		username = player.getName();
+		player_id = player.getId();
+		player_experience = 0;
 	} 
 	if (player != null) {
 %>
@@ -79,11 +81,11 @@ boolean all_levels_open = true;
 
   <jsp:include page="footer.jsp" />
   <script>
-    var cure_dataset = "<%=dataset%>",
-        cure_user_experience = "<%=player_experience%>",
+    var cure_dataset = "dream_breast_cancer",
+        cure_user_experience = "<%=player_experience%>", 
         cure_user_id = "<%=player_id%>";
   </script>
-  <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/jquery-1.8.0.min.js"></script> 
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
   <script src="js/cure.js"></script>
