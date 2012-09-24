@@ -13,13 +13,13 @@
   int player_id = 0;
   int player_experience = 0;
   Player player = (Player) session.getAttribute("player");
-  	if (player == null) {
-  		response.sendRedirect("login.jsp");
-  	} else {
-  		player_id = player.getId();
-  		player_experience = 0;
-  	} 
-  	if (player != null) {
+    if (player == null) {
+      response.sendRedirect("login.jsp");
+    } else {
+      player_id = player.getId();
+      player_experience = 1;
+    }
+    if (player != null) {
 %>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -113,7 +113,7 @@
     <div id="p1_area">
       <div id="p1_scorebox">
         <img id="clayton1" class="avatar" src="images/200px-Clayton.png"/>
-        <h2>Your score: <span id="p1_score">☒</span></h2>
+        <h2>Your score: <span id="p1_score">0</span></h2>
       </div>
       <div id="p1_hand"></div>
     </div>
