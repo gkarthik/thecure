@@ -374,6 +374,9 @@ body div.container div#email.forgot input#loginSubmit:active {
 span.pink {
   color: #B2365F;
 }
+span.pink a {
+  color: #B2365F;
+}
 
 /* Footer Specific Styles */
 
@@ -542,6 +545,7 @@ span.help_label:hover {
   overflow: hidden;
   margin: 0px;
   padding: 0px;
+  float: left;
 }
 
 #boardgame #game_area #help_area #tabs ul li {
@@ -549,8 +553,8 @@ span.help_label:hover {
   float: left;
   cursor: pointer;
 
-  padding: 6px 16px 6px 16px;
-  margin: 0px 8px 0px 8px;
+  padding: 6px 12px 6px 12px;
+  margin: 0px 4px 2px 4px;
 
   background-color: #20282B;
 
@@ -558,6 +562,13 @@ span.help_label:hover {
   font-weight: bold;
   color: #B2365F;
   text-align: center;
+}
+
+input#search {
+  float: left;
+  width: 120px;
+  padding: 6px;
+  margin: 0px 0px 0px 4px;
 }
 
 #boardgame #game_area #help_area #infoboxes {
