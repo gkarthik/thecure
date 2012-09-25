@@ -12,8 +12,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.scripps.combo.model.Attribute;
+import org.scripps.combo.model.Feature;
 import org.scripps.combo.weka.Weka;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -104,13 +108,121 @@ public class JsonTree {
 
 		//System.out.println(classifier.graph());
 		//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
-		JsonTree t = new JsonTree();
-		String json = t.getJsonTreeString(classifier);
-		System.out.println(json);
-		System.out.println(t.max_depth);
+//		JsonTree t = new JsonTree();
+//		String json = t.getJsonTreeString(classifier);
+//		System.out.println(json);
+//		System.out.println(t.max_depth);
 
 	}
 
+	public String getJsonTreeString(J48 classifier, Weka weka) throws Exception {
+		//get map from attributes to desired output name
+		Map<String, String> att_dname = new HashMap<String, String>();
+		for(Feature f : weka.getFeatures().values()){
+			for(Attribute att : f.getDataset_attributes()){
+				att_dname.put(att.getName(), f.getShort_name());
+			}
+		}
+		
+		num_leaves = (int) classifier.measureNumLeaves();
+		tree_size = (int) classifier.measureTreeSize();
+		TreeBuild builder = new TreeBuild();
+		Node top = builder.create(new StringReader(classifier.graph()));   	
+		json_root.put("name", att_dname.get(top.getLabel()));
+		json_root.put("kind", "split_node");
+		outputJsonTreeNode(top, json_root, 1, att_dname);
+		String json = mapper.writeValueAsString(json_root);
+		return json;
+	}
+	
+
+
+
+	/**
+	 * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+	 * @param root
+	 * @param jroot
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	public void outputJsonTreeNode(Node root, ObjectNode jroot, int depth, Map<String, String> att_dname) throws JsonGenerationException, JsonMappingException, IOException {
+		Edge edge;
+		//handle the leaves
+		if(root.getChild(0)==null){
+			String leaf = root.getLabel();
+			String label = leaf.substring(0,leaf.indexOf("(")).trim();
+//			if(label.contains("non")){
+//				label = "NR";
+//			}else if(label.contains("relapse")){
+//				label = "R";
+//			}
+			String count = leaf.substring(leaf.indexOf("("));
+			float bin_size = 0; float errors = 0;
+			if(count.contains("/")){
+				String e = count.split("/")[1];
+				e = e.substring(0,e.length()-1);
+				errors = Float.parseFloat(e);
+				String b = count.substring(1,count.indexOf("/"));
+				bin_size = Float.parseFloat(b);
+			}else{
+				String b = count.substring(1,count.indexOf(")"));
+				bin_size = Float.parseFloat(b);
+			}
+//			label += " :"+(int)bin_size+"/"+(int)errors;
+			jroot.put("name", label);
+			jroot.put("kind", "leaf_node");
+			
+			jroot.put("bin_size",bin_size);
+			jroot.put("errors", errors);
+			if(depth>max_depth){
+				max_depth = depth;
+			}
+		}else{
+			depth++;
+			jroot.put("name", att_dname.get(root.getLabel()));
+			jroot.put("kind", "split_node");
+			//build the edge children
+			ArrayNode edge_children = mapper.createArrayNode();
+			for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
+				ObjectNode edgenode = mapper.createObjectNode();
+				String edgename = edge.getLabel();
+				if(edgename.contains("<")){
+					edgename = "low";
+				}else if(edgename.contains(">")){
+					edgename = "high";
+				}
+				edgenode.put("name", edgename);
+				edgenode.put("kind", "split_value");
+				outputJsonTreeEdge(edge, edgenode, depth, att_dname);	
+				edge_children.add(edgenode);
+			}
+			if(edge_children.size()>0){
+				jroot.put("children", edge_children);
+			}
+		}
+	}
+
+	/**
+	 * Works with outputJsonTreeNode to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+	 * @param root
+	 * @param jroot
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */	
+	public void outputJsonTreeEdge(Edge root, ObjectNode jroot, int depth, Map<String, String> att_dname) throws JsonGenerationException, JsonMappingException, IOException {		
+		ArrayNode node_children = mapper.createArrayNode();
+		Node target = root.getTarget();
+		ObjectNode targetnode = mapper.createObjectNode();
+		depth++;
+		outputJsonTreeNode(target, targetnode, depth, att_dname);	
+		node_children.add(targetnode);
+		jroot.put("children", node_children);
+	}
+	
+	
+	
 	public String getJsonTreeString(J48 classifier) throws Exception{
 		num_leaves = (int) classifier.measureNumLeaves();
 		tree_size = (int) classifier.measureTreeSize();
@@ -122,16 +234,16 @@ public class JsonTree {
 		String json = mapper.writeValueAsString(json_root);
 		return json;
 	}
-
-
-	/**
-	 * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
-	 * @param root
-	 * @param jroot
-	 * @throws JsonGenerationException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 */
+//
+//
+//	/**
+//	 * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
+//	 * @param root
+//	 * @param jroot
+//	 * @throws JsonGenerationException
+//	 * @throws JsonMappingException
+//	 * @throws IOException
+//	 */
 	public void outputJsonTreeNode(Node root, ObjectNode jroot, int depth) throws JsonGenerationException, JsonMappingException, IOException {
 		Edge edge;
 		//handle the leaves
@@ -291,5 +403,7 @@ public class JsonTree {
 	public void setTree_size(int tree_size) {
 		this.tree_size = tree_size;
 	}
+
+
 
 }
