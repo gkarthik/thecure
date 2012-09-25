@@ -76,14 +76,14 @@
       <div id="board"></div>
 
       <div id="help_area">
-        <input id="search" />
-        <div id="tabs">
+      <div id="tabs">
           <ul>
             <li class="ontology">Ontology</li>
             <li class="rifs">Rifs</li>
             <li class="p1_current_tree">Yours</li>
             <li class="p2_current_tree">Barney's</li>
           </ul>
+          <input id="search" placeholder="Search..." />
         </div>
 
         <div id="infoboxes">
