@@ -471,7 +471,7 @@ CURE.boardgame = {
 
     } else if ( game.p1_score > game.p2_score &&
                 CURE.dataset == 'mammal' &&
-                game.board_id == 203 ) {
+                game.board_id == 204 ) {
       winnerEl.append("<h2>Congratulations! You finished your training!</h1>")
       winnerEl.append("<h3>You have gained access to the challenge area.</h3>")
       winnerEl.append("<h3><span class='pink'><a href='boardroom.jsp'>Start the challenge!</a><></h3>");
