@@ -51,16 +51,16 @@ public class Player {
 		List<Player> players = Player.getAllPlayers();
 		Map<String, Player> name_player = Player.playerListToMap(players);
 		GameLog log = new GameLog();
-		List<Hand> wm = null;
+		List<Game> wm = null;
 		if(all_hands){
-			wm = Hand.getAllHands(false); // //
+			wm = Game.getAllGames(false); // //
 		}else{//just get the first hand per player per board
-			wm = Hand.getTheFirstHandPerPlayerPerBoard(false);
+			wm = Game.getTheFirstGamePerPlayerPerBoard(false);
 		}
 			//remove mammal
-		List<Hand> hands = new ArrayList<Hand>();
-		for(Hand hand : wm){
-			if(hand.getBoard_id()>4){
+		List<Game> hands = new ArrayList<Game>();
+		for(Game hand : wm){
+			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
 				hands.add(hand);
 			}
 		}
@@ -252,19 +252,7 @@ public class Player {
 				player.setGames_played(r.getInt("games_played"));
 				player.setId(r.getInt("id"));
 				player.setTop_score(r.getInt("top_score"));
-//				//storing as a comma delimited string in db for now.
-//				String levels_ = r.getString("barney_levels");
-//				List<Integer> barney_levels = new ArrayList<Integer>();
-//				if(levels_!=null){
-//					String[] levels = levels_.split(",");
-//					for(String level : levels){
-//						if(isNumeric(level)){
-//							barney_levels.add(Integer.parseInt(level));
-//						}
-//					}
-//				}
-				//need to get rid of barney level idea..
-				//player.setBarney_levels(barney_levels);
+
 				player.setBoardScoresWithDb();
 			}
 			conn.connection.close();
@@ -375,7 +363,7 @@ public class Player {
 		if(name.equals("anonymous_hero")){
 			return;
 		}
-		String gethands = "select dataset, board_id, score, training_accuracy, cv_accuracy, win from hand where player_id = ?";
+		String gethands = "select dataset, board_id, p1_score, win from game,board where game.player1_id = ? and game.board_id = board.id";
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(gethands);
@@ -384,20 +372,15 @@ public class Player {
 			while(hands.next()){
 				String dataset = hands.getString("dataset");
 				int board_id = hands.getInt("board_id");
-				int score = hands.getInt("score");
-				int training = hands.getInt("training_accuracy");
-				int cv = hands.getInt("cv_accuracy");
+				int score = hands.getInt("p1_score");
 				int win = hands.getInt("win");
 
-				if(win>0){
+				if(win==1){
 					Map<Integer,Integer> tile_scores = dataset_board_scores.get(dataset);
 					if(tile_scores==null){
 						tile_scores = new HashMap<Integer,Integer>();
 					}
-					if(training<0){
-						training = cv;
-					}
-					tile_scores.put(board_id, training);
+					tile_scores.put(board_id, score);
 					dataset_board_scores.put(dataset, tile_scores);
 				}
 			}

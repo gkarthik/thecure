@@ -372,51 +372,47 @@ public class Board {
 		}
 	}
 
-	public List<Integer> getBoardScoresfromDb(int board_id){
-		List<Integer> board_scores = new ArrayList<Integer>();
-		String gethands = "select phenotype, game_type, board_id, score, training_accuracy, cv_accuracy, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
-		JdbcConnection conn = new JdbcConnection();
-		try {
-			PreparedStatement p = conn.connection.prepareStatement(gethands);
-			ResultSet hands = p.executeQuery();
-			while(hands.next()){
-				int training = hands.getInt("training_accuracy");
-				int cv = hands.getInt("cv_accuracy");
-				int win = hands.getInt("win");				
-				if(win>0){
-					if(training<0){
-						training = cv;
-					}
-					board_scores.add(training);
-				}
-			}
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return board_scores;
-	}
+//	public List<Integer> getBoardpppScoresfromDb(int board_id){
+//		List<Integer> board_scores = new ArrayList<Integer>();
+//		String gethands = "select phenotype, game_type, board_id, score, win from hand where board_id = '"+board_id+"' and player_name != 'anonymous_hero'";
+//		JdbcConnection conn = new JdbcConnection();
+//		try {
+//			PreparedStatement p = conn.connection.prepareStatement(gethands);
+//			ResultSet hands = p.executeQuery();
+//			while(hands.next()){
+//				int training = hands.getInt("training_accuracy");
+//				int cv = hands.getInt("cv_accuracy");
+//				int win = hands.getInt("win");				
+//				if(win>0){
+//					if(training<0){
+//						training = cv;
+//					}
+//					board_scores.add(training);
+//				}
+//			}
+//			conn.connection.close();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return board_scores;
+//	}
 
 	public static Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
 		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
-		String gethands = "select * from hand where win > 0 and board_id = '"+board_id+"' ";
+		String gethands = "select * from game where win = 1 and board_id = '"+board_id+"' ";
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(gethands);
 			ResultSet hands = p.executeQuery();
 			while(hands.next()){
-				int training = hands.getInt("training_accuracy");
-				int cv = hands.getInt("cv_accuracy");
-				String player_id = hands.getString("player_id");
-				if(training<0){
-					training = cv;
-				}
+				int score = hands.getInt("p1_score");
+				String player_id = hands.getString("player1_id");
 				List<Integer> board_scores = player_board_scores.get(player_id);
 				if(board_scores==null){
 					board_scores = new ArrayList<Integer>();
 				}
-				board_scores.add(training);
+				board_scores.add(score);
 				player_board_scores.put(player_id, board_scores);
 			}
 			conn.connection.close();

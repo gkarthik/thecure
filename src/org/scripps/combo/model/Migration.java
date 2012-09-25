@@ -30,6 +30,10 @@ public class Migration {
 	public static void migrateCardsCure1Cure2(){	
 		//insert into cure2.card select id,user_id,board_id,geneid,display_loc,timestamp from cure.card;
 	}
+	public static void migrateHandToGame(){
+		//insert into game (id, board_id, ip, player1_id, updated, game_finished, p1_score, win, created) select id, board_id, ip, player_id, updated, updated, cv_accuracy,win,created from hand;
+		//insert into game_player_feature (game_id, player_id, feature_id) select hand_feature.hand_id, hand.player_id, hand_feature.feature_id from hand_feature, hand where hand.id = hand_feature.hand_id;
+	}
 		
 	public static void migrateBoardsCure1Cure2(){	
 		
@@ -71,53 +75,53 @@ public class Migration {
 
 }
 	
-	public static void migrateHandsCure1Cure2(){	
-		JdbcConnection conn = new JdbcConnection("127.0.0.1","cure","cure","cure");
-		String dataset = "dream_breast_cancer"; //"mammal";
-		String q= "select * from hand where phenotype = '"+dataset+"'";
-		try {
-			ResultSet rslt = conn.executeQuery(q);
-			while(rslt.next()){
-				Hand hand = new Hand();
-				hand.setBoard_id(rslt.getInt("board_id"));
-				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));				
-				hand.setId(rslt.getInt("id"));
-				hand.setIp(rslt.getString("ip"));
-				hand.setScore(rslt.getInt("score"));
-				hand.setDataset(rslt.getString("phenotype"));
-				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
-				hand.setWin(rslt.getInt("win"));
-				//diffs
-				String name = rslt.getString("player_name");
-				Player p = Player.lookupPlayerByName(name);
-				hand.setPlayer_id(p.getId());			
-				
-				Timestamp time = rslt.getTimestamp("time");
-				java.sql.Date cdate = new java.sql.Date(time.getTime());
-				
-				hand.setCreated(cdate);
-				hand.setUpdated(time);			
-				
-				String atts = rslt.getString("features");
-				List<String> att_list = MapFun.string2list(atts,",");
-				JdbcConnection conn_current = new JdbcConnection();
-				for(String col : att_list){
-					ResultSet fs = conn_current.executeQuery("select feature_id from attribute where dataset = '"+dataset+"' and col_index = "+col);
-					if(fs.next()){
-						int f_id = fs.getInt("feature_id");
-						conn_current.executeUpdate("insert into hand_feature values("+hand.getId()+", "+f_id+")");
-					}
-				}
-//				//insert in current default db
-				hand.insert();
-			}
-			rslt.close();
-			conn.connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+//	public static void migrateHandsCure1Cure2(){	
+//		JdbcConnection conn = new JdbcConnection("127.0.0.1","cure","cure","cure");
+//		String dataset = "dream_breast_cancer"; //"mammal";
+//		String q= "select * from hand where phenotype = '"+dataset+"'";
+//		try {
+//			ResultSet rslt = conn.executeQuery(q);
+//			while(rslt.next()){
+//				Hand hand = new Hand();
+//				hand.setBoard_id(rslt.getInt("board_id"));
+//				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));				
+//				hand.setId(rslt.getInt("id"));
+//				hand.setIp(rslt.getString("ip"));
+//				hand.setScore(rslt.getInt("score"));
+//				hand.setDataset(rslt.getString("phenotype"));
+//				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
+//				hand.setWin(rslt.getInt("win"));
+//				//diffs
+//				String name = rslt.getString("player_name");
+//				Player p = Player.lookupPlayerByName(name);
+//				hand.setPlayer_id(p.getId());			
+//				
+//				Timestamp time = rslt.getTimestamp("time");
+//				java.sql.Date cdate = new java.sql.Date(time.getTime());
+//				
+//				hand.setCreated(cdate);
+//				hand.setUpdated(time);			
+//				
+//				String atts = rslt.getString("features");
+//				List<String> att_list = MapFun.string2list(atts,",");
+//				JdbcConnection conn_current = new JdbcConnection();
+//				for(String col : att_list){
+//					ResultSet fs = conn_current.executeQuery("select feature_id from attribute where dataset = '"+dataset+"' and col_index = "+col);
+//					if(fs.next()){
+//						int f_id = fs.getInt("feature_id");
+//						conn_current.executeUpdate("insert into hand_feature values("+hand.getId()+", "+f_id+")");
+//					}
+//				}
+////				//insert in current default db
+//				hand.insert();
+//			}
+//			rslt.close();
+//			conn.connection.close();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
 		/**
 		 mysql> update hand set board_id = 201 where board_id = 0;
 Query OK, 194 rows affected (0.02 sec)
@@ -138,7 +142,7 @@ Rows matched: 178  Changed: 178  Warnings: 0
 
 		 */
 
-}
+//}
 	
 	public static void migratePlayersCure1Cure2(){	
 			JdbcConnection conn = new JdbcConnection("127.0.0.1","cure","cure","cure");
