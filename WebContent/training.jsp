@@ -6,8 +6,6 @@
 <%@ page import="java.util.ArrayList"%>
 
 <%
-	String game_params = "&dataset=mammal&title=Training: Mammal Challenge";
-
 	String username = "";
 	Player player = (Player) session.getAttribute("player");
 	if (player == null) {
@@ -38,7 +36,6 @@
 			response.sendRedirect("boardroom.jsp");
 		}
 %>
-
 
 <!DOCTYPE html>
 <html>
@@ -79,24 +76,18 @@
       </div>
     </div>
 
-	<div class="container">
-		<div class="hero-unit">
-			<div class="row">
-			<div class="span8">
-				<h2>Training Summary</h2>
-				<p> Before you get started with The Cure, please take a moment to play through a few simple examples.  
-				These will help to get you familiar with the game interface and give you some points to get you started.</p>
-				
-				<p>In this training stage, your objective is to identify characteristics (e.g. number of legs, breathes air, etc.) that can be used to classify any animal into 
-				one of two groups: mammals and not mammals.  To win, you must pick the right characteristic before your opponent Barney <img width="25" src="images/barney.png">!
-				
-				<p>
-					Click on the numbered tiles below to play. Defeat Barney at each level to advance to the Breast Cancer challenge.
-				</p>
-				<br>
-				</div>
-			</div>
-			<div class="row">
+  <div class="container">
+    <div class="hero-unit">
+      <div class="row">
+      <div class="span8">
+        <h2>Training Summary</h2>
+          <p>Before you get started with The Cure, please take a moment to play through a few simple examples. These will help to get you familiar with the game interface and give you some points to get you started.</p>
+          <p>In this training stage, your objective is to identify characteristics (e.g. number of legs, breathes air, etc.) that can be used to classify any animal into one of two groups: mammals and not mammals.  To win, you must pick the right characteristic before your opponent Barney <img width="25" src="images/barney.png">!</p>
+          <p>Click on the numbered tiles below to play. Defeat Barney at each level to advance to the Breast Cancer challenge.</p>
+          <br>
+      </div>
+      </div>
+      <div class="row">
 			<br/>
 				<div id="shrew" class="span3 offset3">
 					<table>
@@ -106,12 +97,11 @@
 								int num_tile_cols = 2;
 
 								for (int i = 0; i < num_tile_rows; i++) {
-									String gps = game_params;
-									String board_size = "&nrows=1&ncols=2&max_hand=1";
+									String board_size = "&h=1";
 									if (i > 0) {
-										board_size = "&nrows=2&ncols=2&max_hand=2";
+										board_size = "&h=2";
 									}
-									gps = game_params + board_size;
+									String gps = "&t=Training: Mammal Challenge" + board_size;
 						%>
 						<tr>
 							<%
@@ -127,7 +117,7 @@
 									<%
 										if (levels_passed == level) {
 									%>
-									<a href="boardgame.jsp?board_id=<%=board_id%><%=gps%>"
+									<a href="boardgame.jsp?b=<%=board_id%><%=gps%>"
 										class="btn btn-large btn-primary "><div
 											class="big_level_button"><%=level + 1%></div>
 									</a>
