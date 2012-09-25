@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,30 +92,30 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 		//dream data
-		try {
-			String dataset = "dream_breast_cancer";
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-			Weka dream_weka = new Weka();
-			dream_weka.buildWeka(train_loc, null, dataset);			
-			name_dataset.put("dream_breast_cancer", dream_weka);	
-			train_loc.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//		try {
+		//			String dataset = "dream_breast_cancer";
+		//			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
+		//			Weka dream_weka = new Weka();
+		//			dream_weka.buildWeka(train_loc, null, dataset);			
+		//			name_dataset.put("dream_breast_cancer", dream_weka);	
+		//			train_loc.close();
+		//		} catch (IOException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		} catch (Exception e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-//		Enumeration e = request.getParameterNames();
-//		while(e.hasMoreElements()){
-//			System.out.println(e.nextElement());
-//		}		
+		//		Enumeration e = request.getParameterNames();
+		//		while(e.hasMoreElements()){
+		//			System.out.println(e.nextElement());
+		//		}		
 		String command = request.getParameter("command");
 		if(command!=null){
 			routeGet(command, request, response);
@@ -155,14 +156,14 @@ public class MetaServer extends HttpServlet {
 	}
 
 
-/**
- * Send the json request to the appropriate handler based on the command parameter	
- * @param command
- * @param postData
- * @param request
- * @param response
- * @throws IOException
- */
+	/**
+	 * Send the json request to the appropriate handler based on the command parameter	
+	 * @param command
+	 * @param postData
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	private void routePost(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//route to appropriate functions
 		if(command.equals("getscore")){
@@ -174,7 +175,7 @@ public class MetaServer extends HttpServlet {
 		}else if(command.equals("saveplayedcard")){
 			savePlayedCard(postData, request, response);
 		}
-		
+
 	}
 
 	private void routeGet(String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -183,9 +184,9 @@ public class MetaServer extends HttpServlet {
 			//works
 			getBoard(request, response);
 		}
-		
+
 	}
-	
+
 	private String extractJson(HttpServletRequest request) throws UnsupportedEncodingException{
 		StringBuffer jb = new StringBuffer();
 		String line = null;
@@ -238,7 +239,7 @@ public class MetaServer extends HttpServlet {
 		}		
 		List<String> unique_ids = new ArrayList<String>();
 		unique_ids = (List<String>)data.get("unique_ids");
-	
+
 		J48 wekamodel = new J48();
 		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
@@ -274,11 +275,11 @@ public class MetaServer extends HttpServlet {
 		game.setP1_score((Integer)gdata.get("p1_score"));
 		game.setP2_score((Integer)gdata.get("p2_score"));
 		LinkedHashMap gmetadata = (LinkedHashMap)gdata.get("metadata");
-		game.setGame_started((Timestamp)gmetadata.get("game_started"));
-		game.setGame_finished((Timestamp)gmetadata.get("game_finished"));
-		game.setBoard_id((Integer)gmetadata.get("board_id"));
-		game.setPlayer1_id((Integer)gmetadata.get("player1_id"));
-		game.setPlayer2_id((Integer)gmetadata.get("player2_id"));
+		game.setGame_started(new Timestamp((Long)gmetadata.get("game_started")));
+		game.setGame_finished(new Timestamp((Long)gmetadata.get("game_finished")));
+		game.setBoard_id(Integer.parseInt((String)gmetadata.get("board_id")));
+		game.setPlayer1_id(Integer.parseInt((String)gmetadata.get("player1_id")));
+		game.setPlayer2_id(Integer.parseInt((String)gmetadata.get("player2_id")));
 		game.setIp(request.getRemoteAddr());
 		List<String> p1_features = new ArrayList<String>();
 		List<LinkedHashMap> p1_hand = (List<LinkedHashMap>)gdata.get("p1_hand");
@@ -296,11 +297,15 @@ public class MetaServer extends HttpServlet {
 		List<Game.ux> ux_list = new ArrayList<Game.ux>();
 		for(LinkedHashMap card : cards){
 			String uid = (String) card.get("unique_id");
-			long t = (Long) card.get("timestamp");
-			String panel = (String) card.get("panel");
-			boolean hover_board = (Boolean) card.get("hover_board");
-			Game.ux ux = game.makeUx(uid, t, panel, hover_board);
-			ux_list.add(ux);
+			LinkedHashMap ux_meta = (LinkedHashMap)card.get("metadata");
+			List<LinkedHashMap> uxes = (List<LinkedHashMap>)ux_meta.get("ux");
+			for(LinkedHashMap uxe : uxes){
+				long t = (Long) uxe.get("timestamp");
+				String panel = (String) uxe.get("panel");
+				boolean hover_board = (Boolean) uxe.get("board_hover");
+				Game.ux ux = game.makeUx(uid, t, panel, hover_board);
+				ux_list.add(ux);
+			}
 		}
 		game.setFeature_ux(ux_list);
 		//mouse
@@ -314,7 +319,13 @@ public class MetaServer extends HttpServlet {
 			mouses.add(m);
 		}
 		game.setMouse_actions(mouses);
-		
+		System.out.println("about to save game");
+		try {
+			game.insert();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
