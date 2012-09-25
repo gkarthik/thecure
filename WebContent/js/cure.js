@@ -233,8 +233,11 @@ CURE.boardgame = {
   init : function() {
     var game = CURE.boardgame,
         utils = CURE.utilities;
-    game.board_id = utils.getParameterByName("board_id");
-    game.max_hand = 5;
+    game.board_id = utils.getParameterByName("b");
+    game.max_hand = utils.getParameterByName("h"); //error check for 1 / 2 / 5
+    var t = utils.getParameterByName("t");
+     //-- Set the title
+    document.title = t+" : The Cure"
 
     //-- Adding other metadata
     game.metadata.board_id = game.board_id; //int
@@ -382,7 +385,6 @@ CURE.boardgame = {
       display_loc : (card_obj.board_index+1),
       timestamp : (new Date).getTime()
     }
-    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -493,10 +495,15 @@ CURE.boardgame = {
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
     }
-    $("span.replay_level").click(function() { game.replayHand(); })
+
     $("#endgame").leanModal();
+    $("span.replay_level").click(function() {
+        game.replayHand();
+        $("#lean_overlay").fadeOut(200);
+        $("#endgame").css({ 'display' : 'none' });
+    })
   },
-  addCardToBarney : function() {
+  addCardToBarney : function() { 
     var game = CURE.boardgame;
     var card_obj = game.getBarneysNextCard();
 
@@ -652,6 +659,7 @@ CURE.boardgame = {
       win : score_results,
       game : app_state
     }
+    console.log(args);
     $.ajax({
       type: 'POST',
       url: 'MetaServer',
@@ -796,12 +804,13 @@ CURE.boardroom = {
     $.each( $("div.board.enabled"), function(i, v) {
       var board_id = $(this).attr('id').split('_')[1];
         $(this).click(function(e) {
-          var url = "boardgame.jsp?board_id="+board_id;
+          //params for game board
+          var l = $(this).find(".symbol").html();
+          var url = "boardgame.jsp?b="+ board_id +"&t=Level "+ l +" Breast Cancer Survival&h=5";
           window.location.href = url;
         })
       })
   }
-
 }
 
 CURE.landing = {
