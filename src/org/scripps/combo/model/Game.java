@@ -41,9 +41,12 @@ public class Game {
 	List<mouse> mouse_actions;
 	
 	public class ux{
-		public ux(String feature_id) {
+		public ux(String feature_id, long t, String panel, boolean board_hover) {
 			super();
 			this.feature_id = feature_id;
+			this.timestamp = new Timestamp(t);
+			this.panel = panel;
+			this.board_hover = board_hover;
 		}
 		String feature_id;
 		Timestamp timestamp;
@@ -51,13 +54,21 @@ public class Game {
 		boolean board_hover;
 	}
 	
+	public ux makeUx(String unique_id, long t, String panel, boolean board_hover){
+		return new ux(unique_id, t, panel, board_hover);
+	}
+	
 	public class mouse{
-		public mouse() {
+		public mouse(long t, int x, int y) {
 			super();
 		}
 		Timestamp timestamp;
 		int x;
 		int y;
+	}
+	
+	public mouse makeMouse(long t, int x, int y){
+		return new mouse(t, x, y);
 	}
 	
 	/**

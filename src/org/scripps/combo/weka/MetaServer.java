@@ -293,9 +293,27 @@ public class MetaServer extends HttpServlet {
 		}
 		game.setPlayer2_features(p2_features);
 		List<LinkedHashMap> cards = (List<LinkedHashMap>)gdata.get("cards");
+		List<Game.ux> ux_list = new ArrayList<Game.ux>();
 		for(LinkedHashMap card : cards){
-			//Game.ux ux = 
+			String uid = (String) card.get("unique_id");
+			long t = (Long) card.get("timestamp");
+			String panel = (String) card.get("panel");
+			boolean hover_board = (Boolean) card.get("hover_board");
+			Game.ux ux = game.makeUx(uid, t, panel, hover_board);
+			ux_list.add(ux);
 		}
+		game.setFeature_ux(ux_list);
+		//mouse
+		List<LinkedHashMap> mice = (List<LinkedHashMap>)gmetadata.get("mouse_action");
+		List<Game.mouse> mouses = new ArrayList<Game.mouse>();
+		for(LinkedHashMap mouse : mice){
+			long t = (Long)mouse.get("timestamp");
+			int x = (Integer)mouse.get("x");
+			int y = (Integer)mouse.get("y");
+			Game.mouse m = game.makeMouse(t,x,y);
+			mouses.add(m);
+		}
+		game.setMouse_actions(mouses);
 		
 	}
 
