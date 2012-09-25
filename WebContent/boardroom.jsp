@@ -6,23 +6,16 @@
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
 <%
-//params for game board
-String game_params = "&mosaic_url=boardroom.jsp&dataset=dream_breast_cancer&title=Breast Cancer Survival&nrows=5&ncols=5&max_hand=5";
-int level = 0;
-int num_tile_rows = 10;
-int num_tile_cols = 10;
-
-boolean all_levels_open = true;
 int player_id = 0;
 int player_experience = 0;
 Player player = (Player) session.getAttribute("player");
-	if (player == null) {
-		response.sendRedirect("login.jsp");
-	} else {
-		player_id = player.getId();
-		player_experience = 0;
-	} 
-	if (player != null) {
+  if (player == null) {
+    response.sendRedirect("login.jsp");
+  } else {
+    player_id = player.getId();
+    player_experience = 0;
+  }
+  if (player != null) {
 %>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
