@@ -5,11 +5,7 @@
 <%@ page import="org.scripps.combo.model.Player"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.ArrayList"%>
-
 <%
-  String full_request = request.getRequestURI()+"?"+request.getQueryString();
-  String title = request.getParameter("title"); // "Craniostenososis - coronal verse control";
-
   int player_id = 0;
   int player_experience = 0;
   Player player = (Player) session.getAttribute("player");
@@ -36,12 +32,12 @@
     <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
     <link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
 
-    <title>The Cure: <%=title %></title>
+    <title>The Cure: ...</title>
 <%
-	String ran = request.getParameter("level");
-	if (ran == null) {		
-		ran = ""+(int)Math.rint(Math.random()*1000);
-	}
+  String ran = request.getParameter("level");
+  if (ran == null) {
+    ran = ""+(int)Math.rint(Math.random()*1000);
+  }
 %>
 </head>
 <body>
@@ -70,7 +66,7 @@
 
     <div id="p2_area">
       <div id="p2_scorebox">
-        <img id="barney5" class="avatar" src="images/barney.png"/>
+        <img id="barney5" class="avatar" src="images/barney.png" />
         <h2>Barney's score: <span id="p2_score">0</span></h2>
       </div>
       <div id="p2_hand"></div>
@@ -107,7 +103,6 @@
       </div>
 
       <div id="endgame" style="display: none;"></div>
-
     </div>
 
     <div id="p1_area">
@@ -123,7 +118,7 @@
   <jsp:include page="footer.jsp" />
   <script>
     var cure_user_experience = "<%=player_experience%>",
-        cure_user_id = "<%=player_id%>";
+    cure_user_id = "<%=player_id%>";
   </script>
   <script src="js/libs/jquery-1.8.0.min.js"></script>
   <script src="js/libs/jquery.plugins.js"></script>

@@ -647,6 +647,11 @@ span.help_label:hover {
   padding: 6px;
 }
 
+span.replay_level {
+  cursor: pointer;
+  color: #B2365F;
+}
+
 #lean_overlay {
     position: fixed;
     z-index:100;

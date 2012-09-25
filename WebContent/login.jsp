@@ -52,7 +52,7 @@
 
             <div id="newuser" style="display: none;">
               <h2>Sign Up</h2>
-						  <p>You must have an account to play so that we can reward you properly.</p>
+              <p>You must have an account to play so that we can reward you properly.</p>
               <p class="sub">Don’t worry, we won’t spam you.</p>
 
               <form id="newuser" action="./checkuser.jsp">
@@ -64,7 +64,7 @@
 
                 <label for="email">Email:</label>
                 <input id="refEmail" class="email" type="email" name="email" placeholder="email" />
-                  
+
                 <p id="emailAlert" style="display: none;" ></p>
 
                 <label for="degree">Most recently awarded academic degree:</label>
