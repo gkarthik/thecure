@@ -3,8 +3,12 @@
  */
 package org.scripps.combo.model;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,11 +16,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.util.JdbcConnection;
+
+import weka.core.Instances;
 
 /**
  * Maps to a column in a weka data model.
@@ -34,59 +42,95 @@ public class Attribute {
 	float reliefF;
 	Timestamp updated;
 	int feature_id;
-	
+
 	/**
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
-		// Attribute.load();
-
+	public static void main(String[] args) throws Exception {
+		//load();
+		//No feature 1 for ILMN_1777971
+		//No feature 1 for ILMN_1715947
 	}
-	
-	
+
+
 	/**
 	 *Load up attributes from a weka dataset - make sure they map to rows in the feature table
 	 * One feature >> multiple attributes
 	 * @param args
+	 * @throws Exception 
 	 */
-//	public static void load() {
-//		
-//		//somewhere there needs to be a mapping between the attribute id and the feature id
-//		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
-//		//there also needs to be a weka-structured dataset so we can pull out the column index
-//		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";		
-//		//declare what dataset this is
-//		String dataset = "dream_breast_cancer";
-//		try {	
-//			Weka weka = new Weka(weka_data);
-//			weka.loadMetadata(new FileInputStream(att_info_file), true);
-//			for(Entry<String, List<card>> gcard : weka.geneid_cards.entrySet()){
-//				String unique_id = gcard.getKey();
-//				Feature f = Feature.getByUniqueId(unique_id);
-//				if(f!=null){
-//					int feature_id = f.getId();
-//					for(card c : gcard.getValue()){
-//						Attribute a = new Attribute();
-//						a.setCol_index(c.att_index);
-//						a.setDataset(dataset);
-//						a.setName(c.att_name);
-//						a.setReliefF(c.getPower());
-//						a.setFeature_id(feature_id);
-//						a.insert();
-//					}
-//				}else{
-//					System.out.println("No feature found with unique_id: "+unique_id);
-//				}
-//			}
-//		} catch (FileNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} 
-//
-//	}
+	public static void load() throws Exception {
+
+		//somewhere there needs to be a mapping between the attribute id and the feature id
+		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
+		//Att_name	Gene_symbol	Entrez
+		Map<String, String> att_uni = new HashMap<String, String>();
+		BufferedReader f;
+		try {			
+			f = new BufferedReader(new FileReader(att_info_file));
+			String line = f.readLine(); line = f.readLine(); 
+			int c = 0;
+			while(line!=null){
+				c++;
+				String[] items = line.split("\t");
+				String uid = items[2]; String att = items[0];
+				att_uni.put(att, uid);
+				line = f.readLine(); 
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		//there also needs to be a weka-structured dataset so we can pull out the column index
+		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";		
+		//declare what dataset this is
+		String dataset = "dream_breast_cancer";
+		try {	
+			Weka weka = new Weka();
+			weka.buildWeka(new FileInputStream(weka_data), null, dataset);
+
+			//get the col index...
+			Instances data = weka.getTrain();
+			for(int i=0; i<data.numAttributes();i++){
+				weka.core.Attribute att = data.attribute(i);
+				String name = att.name();
+				int col = att.index();
+				String unique_id = att_uni.get(name);
+				if(att.index()!=data.classIndex()){
+					if(unique_id!=null){
+						Feature feat = Feature.getByUniqueId(unique_id);
+						if(feat!=null){
+							Attribute a = new Attribute();
+							a.setCol_index(col);
+							a.setDataset(dataset);
+							a.setName(name);
+							//					a.setReliefF(c.getPower());
+							a.setFeature_id(feat.getId());
+							a.insert();
+						}else{
+							System.out.println("No feature 1 for "+name);
+						}
+					}else{
+						System.out.println("No feature 2 for "+name);
+					}
+				}
+			}
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+
+	}
 	public static List<Attribute> getByFeatureUniqueId(String unique_id){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();
@@ -112,7 +156,7 @@ public class Attribute {
 		}
 		return atts;
 	}
-	
+
 	public static List<Attribute> getByFeatureDbId(String db_id){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();
@@ -138,7 +182,7 @@ public class Attribute {
 		}
 		return atts;
 	}
-	
+
 	public int insert() throws SQLException{
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
@@ -146,7 +190,7 @@ public class Attribute {
 		try {
 			pst = conn.connection.prepareStatement(
 					"insert into attribute (id, col_index, name, dataset, reliefF, created, feature_id) values(null,?,?,?,?,?,?)",
-					 Statement.RETURN_GENERATED_KEYS);
+					Statement.RETURN_GENERATED_KEYS);
 			pst.clearParameters();
 			pst.setInt(1, getCol_index());
 			pst.setString(2,getName());
@@ -154,25 +198,25 @@ public class Attribute {
 			pst.setFloat(4, getReliefF());
 			pst.setDate(5, new Date(System.currentTimeMillis()));
 			pst.setInt(6, getFeature_id());
-			
+
 			int affectedRows = pst.executeUpdate();
-	        if (affectedRows == 0) {
-	            throw new SQLException("Creating attribute failed, no rows affected.");
-	        }
-	        generatedKeys = pst.getGeneratedKeys();
-	        if (generatedKeys.next()) {
-	            newid = generatedKeys.getInt(1);	            
-	        } else {
-	            throw new SQLException("Creating attribute failed, no generated key obtained.");
-	        }
-	    } finally {
-	        if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
-	        if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
-	        if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
-	    }
-	    return newid;
+			if (affectedRows == 0) {
+				throw new SQLException("Creating attribute failed, no rows affected.");
+			}
+			generatedKeys = pst.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				newid = generatedKeys.getInt(1);	            
+			} else {
+				throw new SQLException("Creating attribute failed, no generated key obtained.");
+			}
+		} finally {
+			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
+			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}
+		return newid;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -240,5 +284,5 @@ public class Attribute {
 
 
 
-	
+
 }
