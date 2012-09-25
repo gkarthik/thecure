@@ -15,6 +15,7 @@
 	}
 	if (player != null) {
 		int levels_passed = 0;
+		player.setBoardScoresWithDb();
 		Map<Integer, Integer> player_board_scores = player.getDataset_board_scores().get("mammal");
 		List<Integer> zoo_scores = new ArrayList<Integer>();
 		if (player_board_scores != null && player_board_scores.values() != null) {

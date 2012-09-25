@@ -28,7 +28,7 @@ import org.scripps.combo.TimeCounter;
 import org.scripps.combo.Boardroom.boardview;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
-import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.JdbcConnection;
@@ -133,12 +133,12 @@ public class GeneRanker {
 		Map<String, Integer> gene_board = new HashMap<String, Integer>();
 		for(Board board : boards){
 			Map<String, Float> gene_freq = new HashMap<String, Float>();
-			List<Hand> hands = new ArrayList<Hand>();
-			List<Hand> handsall = getTheFirstHandPerPlayerByBoard(board.getId());
+			List<Game> hands = new ArrayList<Game>();
+			List<Game> handsall = Game.getTheFirstGamePerPlayerByBoard(board.getId());
 			if(only_cancer_people){
 				//filter hands by player attributes	
-				for(Hand hand : handsall){
-					Player theplayer = name_player.get(hand.getPlayer_id());
+				for(Game hand : handsall){
+					Player theplayer = name_player.get(hand.getPlayer1_id());
 					if(theplayer!=null&&theplayer.getCancer().equals("yes")&&
 							player_cardsboard.get(theplayer.getName())<13){
 						hands.add(hand);
@@ -150,9 +150,9 @@ public class GeneRanker {
 			Set<Integer> players = new HashSet<Integer>();
 			if(n_hands>=min_hands_per_board){
 				
-				for(Hand hand : hands){
-					players.add(hand.getPlayer_id());
-					List<String> features = hand.getFeatures();
+				for(Game hand : hands){
+					players.add(hand.getPlayer1_id());
+					List<String> features = hand.getPlayer1_features();
 					if(features.size()>4){
 						Set<String> distinct = new HashSet<String>();
 						float order = 5;
@@ -237,36 +237,6 @@ public class GeneRanker {
 		return ranked;
 	}
 
-	public static List<Hand> getTheFirstHandPerPlayerByBoard(int board_id){
-		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from hand where board_id = "+board_id+" order by updated asc");
-		Map<String, Hand> bpw_hand = new HashMap<String, Hand>();
-		try {
-			while(rslt.next()){
-				Hand hand = new Hand();
-				hand.setBoard_id(rslt.getInt("board_id"));
-				hand.setCv_accuracy(rslt.getInt("cv_accuracy"));
-				hand.setId(rslt.getInt("id"));
-				hand.setIp(rslt.getString("ip"));
-				hand.setPlayer_id(rslt.getInt("player_id"));
-				hand.setScore(rslt.getInt("score"));
-				hand.setDataset(rslt.getString("dataset"));
-				hand.setTraining_accuracy(rslt.getInt("training_accuracy"));
-				hand.setWin(rslt.getInt("win"));
-				hand.setCreated(rslt.getDate("created"));
-				hand.setUpdated(rslt.getTimestamp("updated"));
-						
-				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer_id())){
-					hand.setFeaturesForHandToUniqueIds();
-					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer_id(), hand);
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		List<Hand> hands = new ArrayList<Hand>(bpw_hand.values());
-		return hands;
-	}	
+
 
 }

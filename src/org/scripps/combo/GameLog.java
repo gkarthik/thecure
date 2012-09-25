@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.json.JSONObject;
-import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
@@ -60,10 +60,10 @@ public class GameLog {
 	 */
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
-		List<Hand> whs = Hand.getTheFirstHandPerPlayerPerBoard(true);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true);
 		
-		for(Hand hand : whs){
-			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer_id()+"\t"+hand.getCv_accuracy());
+		for(Game hand : whs){
+			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer1_id()+"\t"+hand.getP1_score());
 		}
 		
 //		GameLog.high_score sb = log.getScoreBoard();
@@ -192,7 +192,7 @@ public class GameLog {
 	
 
 	
-	public high_score getScoreBoard(List<Hand> hands){
+	public high_score getScoreBoard(List<Game> hands){
 		high_score scores = new high_score();
 		
 		Map<Integer, Player> id_player = Player.mapPlayersByDbId(Player.getAllPlayers());
@@ -205,21 +205,19 @@ public class GameLog {
 		Map<String, List<Integer>> board_games = new HashMap<String, List<Integer>>();		
 		Map<Long, Integer> date_games = new TreeMap<Long, Integer>();
 		int games_won = 0;
-		for(Hand hand : hands){
-			Integer player_id = hand.getPlayer_id();
+		for(Game hand : hands){
+			Integer player_id = hand.getPlayer1_id();
 			String player = id_player.get(player_id).getName();
-			if(hand.getDataset()==null){
-				continue;
-			}
 			//points for hand
 			int points = 0;
 			int multiplier = 1; int board_performance = 1;
-			board_performance = hand.getCv_accuracy();
-			//training levels use training scoring to make trees easier to understand
-			//if(hand.getPhenotype().equals("mammal")||hand.getPhenotype().equals("zoo")){
-			//	board_performance = hand.getTraining_accuracy();
-			//}
-			multiplier = pheno_multiplier.get(hand.getDataset());
+			board_performance = hand.getP1_score();
+
+			String tmp = "dream_breast_cancer";
+			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
+				tmp = "mammal";
+			}
+			multiplier = pheno_multiplier.get(tmp);
 			if(board_performance < 1){
 				continue;
 			}
@@ -235,7 +233,7 @@ public class GameLog {
 			player_global_points.put(player, gpoints);
 			
 			//player max
-			int score = hand.getScore();
+			int score = hand.getP1_score();
 			Integer max = player_max.get(player);
 			if(max ==null){
 				max = score;
@@ -244,7 +242,7 @@ public class GameLog {
 			}
 			player_max.put(player, max);
 			//board max
-			String board = hand.getDataset()+"_"+hand.getBoard_id();
+			String board = tmp+"_"+hand.getBoard_id();
 			max = board_max.get(board);
 			if(max ==null){
 				max = score;

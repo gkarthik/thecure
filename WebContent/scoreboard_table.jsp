@@ -2,11 +2,11 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.GameLog"%>
 <%@ page import="org.scripps.combo.model.Player"%>
-<%@ page import="org.scripps.combo.model.Hand"%>
+<%@ page import="org.scripps.combo.model.Game"%>
 <%@ page import="java.util.List"%>
 <%
   GameLog log = new GameLog();
-  List<Hand> whs = Hand.getTheFirstHandPerPlayerPerBoard(true);
+  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true);
   GameLog.high_score sb = log.getScoreBoard(whs);
   Player player = (Player) session.getAttribute("player");
   boolean show_player = false;

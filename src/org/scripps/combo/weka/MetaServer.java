@@ -37,7 +37,6 @@ import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
-import org.scripps.combo.model.Hand;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
@@ -92,20 +91,20 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 		//dream data
-		//		try {
-		//			String dataset = "dream_breast_cancer";
-		//			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-		//			Weka dream_weka = new Weka();
-		//			dream_weka.buildWeka(train_loc, null, dataset);			
-		//			name_dataset.put("dream_breast_cancer", dream_weka);	
-		//			train_loc.close();
-		//		} catch (IOException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		} catch (Exception e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
+				try {
+					String dataset = "dream_breast_cancer";
+					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
+					Weka dream_weka = new Weka();
+					dream_weka.buildWeka(train_loc, null, dataset);			
+					name_dataset.put("dream_breast_cancer", dream_weka);	
+					train_loc.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 	}
 
 	/**

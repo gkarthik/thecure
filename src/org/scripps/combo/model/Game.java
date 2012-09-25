@@ -9,7 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.scripps.util.JdbcConnection;
 
@@ -81,7 +84,143 @@ public class Game {
 
 	}
 
+	public static List<Game> getTheFirstGamePerPlayerByBoard(int board_id){
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select * from game where board_id = "+board_id+" order by game_finished asc");
+		Map<String, Game> bpw_hand = new HashMap<String, Game>();
+		try {
+			while(rslt.next()){
+				Game hand = new Game();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setP1_score(rslt.getInt("p1_score"));
+				hand.setP2_score(rslt.getInt("p2_score"));			
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer1_id(rslt.getInt("player1_id"));
+				hand.setPlayer2_id(rslt.getInt("player2_id"));
+				hand.setWin(rslt.getInt("win"));
+				hand.setCreated(rslt.getDate("created"));
+				hand.setUpdated(rslt.getTimestamp("updated"));
+				hand.setGame_started(rslt.getTimestamp("game_started"));
+				hand.setGame_finished(rslt.getTimestamp("game_finished"));
+						
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
+					hand.setFeaturesForGameToUniqueIds();
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<Game> hands = new ArrayList<Game>(bpw_hand.values());
+		return hands;
+	}	
+	
+	private void setFeaturesForGameToUniqueIds() {
+		List<String> p1_f_us = new ArrayList<String>();
+		for(String p1_f : getPlayer1_features()){
+			Feature f = Feature.getByDbId(Integer.parseInt(p1_f));
+			if(f!=null){
+				p1_f_us.add(f.getUnique_id());
+			}
+		}
+		setPlayer1_features(p1_f_us);
+		
+		List<String> p2_f_us = new ArrayList<String>();
+		for(String p2_f : getPlayer2_features()){
+			Feature f = Feature.getByDbId(Integer.parseInt(p2_f));
+			if(f!=null){
+				p2_f_us.add(f.getUnique_id());
+			}
+		}
+		setPlayer2_features(p2_f_us);
+	}
 
+	/**
+	 * Limit the hand list to the first hand per player per board that was won.
+	 * @return
+	 */
+	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning){
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select * from game order by game_finished asc";
+		if(only_winning){
+			q = "select * from game where win > 0 order by game_finished asc";
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		Map<String, Game> bpw_hand = new HashMap<String, Game>();
+		try {
+			while(rslt.next()){
+				Game hand = new Game();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setP1_score(rslt.getInt("p1_score"));
+				hand.setP2_score(rslt.getInt("p2_score"));			
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer1_id(rslt.getInt("player1_id"));
+				hand.setPlayer2_id(rslt.getInt("player2_id"));
+				hand.setWin(rslt.getInt("win"));
+				hand.setCreated(rslt.getDate("created"));
+				hand.setUpdated(rslt.getTimestamp("updated"));
+				long ttest = rslt.getLong("game_started");
+				if(ttest==0){ //"0000-00-00 00:00:00"
+					hand.setGame_started(rslt.getTimestamp("game_finished"));
+				}else{
+					hand.setGame_started(rslt.getTimestamp("game_started"));
+				}
+				hand.setGame_finished(rslt.getTimestamp("game_finished"));
+				
+				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
+					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+			//		System.out.println("first "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}else{
+			//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<Game> hands = new ArrayList<Game>(bpw_hand.values());
+		return hands;
+	}
+	
+	/**
+	 * get everything - includes multiple hands per board per player caused by refreshes..
+	 * @return
+	 */
+	public static List<Game> getAllGames(boolean only_winning){
+		List<Game> hands = new ArrayList<Game>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select * from game ";
+		if(only_winning){
+			q+=" and win = 1 "; 
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				Game hand = new Game();
+				hand.setBoard_id(rslt.getInt("board_id"));
+				hand.setP1_score(rslt.getInt("p1_score"));
+				hand.setP2_score(rslt.getInt("p2_score"));			
+				hand.setId(rslt.getInt("id"));
+				hand.setIp(rslt.getString("ip"));
+				hand.setPlayer1_id(rslt.getInt("player1_id"));
+				hand.setPlayer2_id(rslt.getInt("player2_id"));
+				hand.setWin(rslt.getInt("win"));
+				hand.setCreated(rslt.getDate("created"));
+				hand.setUpdated(rslt.getTimestamp("updated"));
+				hand.setGame_started(rslt.getTimestamp("game_started"));
+				hand.setGame_finished(rslt.getTimestamp("game_finished"));
+				hands.add(hand);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return hands;
+	}
+	
 	/**
 	 * Insert a game record 
 	 * @throws SQLException 
@@ -315,6 +454,8 @@ public class Game {
 	public void setMouse_actions(List<mouse> mouse_actions) {
 		this.mouse_actions = mouse_actions;
 	}
+
+
 
 
 

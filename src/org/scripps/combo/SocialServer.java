@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.scripps.combo.model.Hand;
+import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.util.Mail;
 
@@ -54,7 +54,7 @@ public class SocialServer extends HttpServlet {
 		}else if(command.equals("gamelogs")){
 			GameLog log = new GameLog();
 			boolean winning_only = true;
-			List<Hand> hands = Hand.getTheFirstHandPerPlayerPerBoard(winning_only);
+			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only);
 			GameLog.high_score sb = log.getScoreBoard(hands);
 			String json = log.getD3CompatibleJson(sb);
 			response.setContentType("text/json");
