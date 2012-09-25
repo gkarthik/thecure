@@ -227,7 +227,7 @@ public class Feature {
 	public static Feature getByUniqueId(String unique_id){
 		Feature f = null;
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select * from feature where unique_id = "+unique_id;
+		String q = "select * from feature where unique_id = '"+unique_id+"'";
 
 		ResultSet rslt = conn.executeQuery(q);
 		try {

@@ -15,8 +15,7 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
-create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, ip varchar(30), player1_id int, player2_id int, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, updated timestamp, primary key (id));
-create table game_player_feature (game_id int, player_id int, feature_id int);
+create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, ip varchar(30), player1_id int, player2_id int, updated timestamp, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, primary key (id));create table game_player_feature (game_id int, player_id int, feature_id int);
 create table game_card_ux(game_id int, feature_id int, time timestamp, panel varchar(50), board_hover boolean);
 create table game_mouse_action(game_id int, x int, y int, time timestamp);
 
@@ -39,7 +38,7 @@ public class Game {
 	List<String> player2_features; 
 	List<ux> feature_ux;
 	List<mouse> mouse_actions;
-	
+
 	public class ux{
 		public ux(String feature_id, long t, String panel, boolean board_hover) {
 			super();
@@ -53,24 +52,27 @@ public class Game {
 		String panel;
 		boolean board_hover;
 	}
-	
+
 	public ux makeUx(String unique_id, long t, String panel, boolean board_hover){
 		return new ux(unique_id, t, panel, board_hover);
 	}
-	
+
 	public class mouse{
 		public mouse(long t, int x, int y) {
 			super();
+			this.timestamp = new Timestamp(t);
+			this.x = x;
+			this.y = y;
 		}
 		Timestamp timestamp;
 		int x;
 		int y;
 	}
-	
+
 	public mouse makeMouse(long t, int x, int y){
 		return new mouse(t, x, y);
 	}
-	
+
 	/**
 	 * @param args
 	 */
@@ -79,7 +81,7 @@ public class Game {
 
 	}
 
-	
+
 	/**
 	 * Insert a game record 
 	 * @throws SQLException 
@@ -108,7 +110,7 @@ public class Game {
 			pst.setInt(9, getWin());
 			pst.setDate(10, new Date(System.currentTimeMillis()));
 			pst.setString(11, getIp());
-			
+
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Inserting game failed, no rows affected.");
@@ -121,24 +123,46 @@ public class Game {
 				for(String unique_id : player1_features){
 					Feature f = Feature.getByUniqueId(unique_id);
 					if(f!=null){
-						conn.executeUpdate("insert into game_player_feature values ("+newid+","+player1_id+","+f.id);
+						String upfs = "insert into game_player_feature values ("+newid+","+player1_id+","+f.id+")";
+						conn.executeUpdate(upfs);
 					}
 				}
 				for(String unique_id : player2_features){
 					Feature f = Feature.getByUniqueId(unique_id);
 					if(f!=null){
-						conn.executeUpdate("insert into game_player_feature values ("+newid+","+player2_id+","+f.id);
+						String upfs = "insert into game_player_feature values ("+newid+","+player2_id+","+f.id+")";
+						conn.executeUpdate(upfs);
 					}
 				}
 				//insert ux
+				PreparedStatement pst_ux = conn.connection.prepareStatement("insert into game_card_ux values (?,?,?,?,?)");				
 				for(ux x : feature_ux){
-					conn.executeUpdate("insert into game_card_ux values ("+newid+","+x.feature_id+","+x.timestamp+","+x.panel+","+x.board_hover);
+					Feature f = Feature.getByUniqueId(x.feature_id);
+					if(f!=null){
+						pst_ux.clearParameters();
+						//"+newid+","+x.feature_id+","+x.timestamp+","+x.panel+","+x.board_hover+"
+						pst_ux.setInt(1, newid);
+						pst_ux.setInt(2, f.getId());
+						pst_ux.setTimestamp(3, x.timestamp);
+						pst_ux.setString(4, x.panel);
+						pst_ux.setBoolean(5, x.board_hover);
+						pst_ux.executeUpdate();
+					}
 				}
+				pst_ux.close();
 				//insert mouse
+				PreparedStatement pst_m = conn.connection.prepareStatement("insert into game_mouse_action values (?,?,?,?)");
 				for(mouse m : mouse_actions){
-					conn.executeUpdate("insert into game_mouse_action values ("+newid+","+m.x+","+m.y+","+m.timestamp);				
+					pst_m.clearParameters();
+					//"+newid+","+m.x+","+m.y+","+m.timestamp+"
+					pst_m.setInt(1, newid);
+					pst_m.setInt(2, m.x);
+					pst_m.setInt(3, m.y);
+					pst_m.setTimestamp(4, m.timestamp);
+					pst_m.executeUpdate();				
 				}
-				
+				pst_m.close();
+
 			} else {
 				throw new SQLException("Creating board failed, no generated key obtained.");
 			}
@@ -150,8 +174,8 @@ public class Game {
 		return newid;
 	}
 
-	
-	
+
+
 	public int getId() {
 		return id;
 	}
@@ -292,6 +316,6 @@ public class Game {
 		this.mouse_actions = mouse_actions;
 	}
 
-	
-	
+
+
 }
