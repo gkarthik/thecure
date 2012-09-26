@@ -250,7 +250,7 @@ public class MetaServer extends HttpServlet {
 		String tree_json = "";
 		JsonTree jtree = new JsonTree();
 		try {		
-			tree_json = jtree.getJsonTreeString(wekamodel); //, weka
+			tree_json = jtree.getJsonTreeString(wekamodel, weka); //, weka
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
