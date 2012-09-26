@@ -128,11 +128,11 @@ public class MetaServer extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String t = request.getContentType();
-		System.out.println("content type "+t);
+		//System.out.println("content type "+t);
 		if(t!=null&&t.startsWith("application/json")){
 			String json = extractJson(request);
 			if(json!=null){
-				System.out.println(json);
+				//System.out.println(json);
 				LinkedHashMap postData = mapper.readValue(json, LinkedHashMap.class);	
 				String command = null;
 				if(postData!=null){
@@ -260,7 +260,7 @@ public class MetaServer extends HttpServlet {
 		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
 		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
 		"\"tree\":"+tree_json+"}";
-		System.out.println(treeoutput);
+		//System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
 

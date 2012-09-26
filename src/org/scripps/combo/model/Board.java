@@ -415,6 +415,7 @@ public class Board {
 				board_scores.add(score);
 				player_board_scores.put(player_id, board_scores);
 			}
+			hands.close();
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -485,7 +486,8 @@ public class Board {
 						fs.add(f);
 					}
 					board.setFeatures(fs);
-
+					rslt.close();
+					conn.connection.close();
 					return board;
 				}
 			} catch (SQLException e) {
