@@ -32,8 +32,8 @@
         if(name == null || name.length() == 0) {
           displayName = "anon";
         }
-        if(name.length() > 16) {
-          displayName = name.substring(0, 15);
+        if(name.length() > 14) {
+          displayName = name.substring(0, 14);
         }
         if(r<=max||player.getName().equals(name)){
           if(show_player&&player.getName().equals(name)){

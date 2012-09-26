@@ -115,7 +115,7 @@
               <%
               } else if (levels_passed > level) {
               %>
-              <p><span style="font-size: 100px; color: #B2365F;">★</span></p>
+              <p><span style="font-size: 100px; color: #B2365F;">&#9733;</span></p>
               <% } else { %>
                 <div class="btn btn-large btn-primary disabled">
                   <img src="images/lock-6-64.png">
