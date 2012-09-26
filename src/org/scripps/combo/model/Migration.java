@@ -24,15 +24,16 @@ public class Migration {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+		//migrateHandsCure1Cure2();
+		migratePlayersCure1Cure2();
 	}
 
 	public static void migrateCardsCure1Cure2(){	
 		//insert into cure2.card select id,user_id,board_id,geneid,display_loc,timestamp from cure.card;
 	}
 	public static void migrateHandToGame(){
-		//insert into game (id, board_id, ip, player1_id, updated, game_finished, p1_score, win, created) select id, board_id, ip, player_id, updated, updated, cv_accuracy,win,created from hand;
-		//insert into game_player_feature (game_id, player_id, feature_id) select hand_feature.hand_id, hand.player_id, hand_feature.feature_id from hand_feature, hand where hand.id = hand_feature.hand_id;
+		//insert into game (id, board_id, ip, player1_id, updated, game_finished, p1_score, win, created) select hand.id, board_id, hand.ip, player.id, hand.time, hand.time, cv_accuracy,win,hand.time from cure.hand, cure.player where cure.hand.player_name = player.name;
+		//insert into game_player_feature (game_id, player_id, feature_id) select hand_feature.hand_id, game.player1_id, hand_feature.feature_id from hand_feature, game where game.id = hand_feature.hand_id;
 	}
 		
 	public static void migrateBoardsCure1Cure2(){	
@@ -113,7 +114,7 @@ public class Migration {
 //					}
 //				}
 ////				//insert in current default db
-//				hand.insert();
+//				//hand.insert();
 //			}
 //			rslt.close();
 //			conn.connection.close();
@@ -121,21 +122,21 @@ public class Migration {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-//		
+//	}		
 		/**
-		 mysql> update hand set board_id = 201 where board_id = 0;
+		 mysql> update game set board_id = 201 where board_id = 0;
 Query OK, 194 rows affected (0.02 sec)
 Rows matched: 194  Changed: 194  Warnings: 0
 
-mysql> update hand set board_id = 202 where board_id = 1;
+mysql> update game set board_id = 202 where board_id = 1;
 Query OK, 240 rows affected (0.02 sec)
 Rows matched: 240  Changed: 240  Warnings: 0
 
-mysql> update hand set board_id = 203 where board_id = 2;
+mysql> update game set board_id = 203 where board_id = 2;
 Query OK, 282 rows affected (0.02 sec)
 Rows matched: 282  Changed: 282  Warnings: 0
 
-mysql> update hand set board_id = 204 where board_id = 3;
+mysql> update game set board_id = 204 where board_id = 3;
 Query OK, 178 rows affected (0.01 sec)
 Rows matched: 178  Changed: 178  Warnings: 0
 
