@@ -203,7 +203,8 @@ div#games h1 {
 
 div#games h2,
 div#games h3,
-div.boardroom h2 {
+div.boardroom h2,
+div.training h2 {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   font-weight: 200;
   font-size: 36px;
@@ -415,32 +416,32 @@ div#footer iframe.twitter-share-button {
 
 /* D3 Plot/Charting CSS */
 
-#chart1 {
+.stats_graph {
   position: relative;
 }
 
-#chart1 .rule line {
+.stats_graph .rule line {
   stroke: #eee;
   shape-rendering: crispEdges;
 }
 
-#chart1 .rule line.axis {
+.stats_graph .rule line.axis {
   stroke: #000;
 }
 
-#chart1 line {
+.stats_graph line {
   fill: none;
   stroke: #B2365F;
   stroke-width: .5px;
 }
 
-#chart1 .line {
+.stats_graph .line {
   fill: none;
   stroke: #B2365F;
 }
 
 
-#chart1 path.domain {
+.stats_graph path.domain {
   shape-rendering: crispEdges;
   stroke: #373c3f;
   fill: none;
@@ -636,7 +637,8 @@ input#search {
   box-shadow: inset 0px 0px 6px #666;
 }
 
-#endgame {
+#endgame,
+#alertmsg {
   width: 360px;
   background-color: #fff;
   padding: 18px;
