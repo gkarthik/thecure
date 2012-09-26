@@ -862,7 +862,7 @@ CURE.boardroom = {
      ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled";
 
      if ( v.enabled == false ) {
-        content = "•";
+        content = "&#8226;";
         font_size = font_size*3;
         top_pos = (hw*.2);
       }
