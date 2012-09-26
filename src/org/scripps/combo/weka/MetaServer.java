@@ -318,7 +318,6 @@ public class MetaServer extends HttpServlet {
 			mouses.add(m);
 		}
 		game.setMouse_actions(mouses);
-		System.out.println("about to save game");
 		try {
 			game.insert();
 		} catch (SQLException e) {
