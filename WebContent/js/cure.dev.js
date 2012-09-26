@@ -867,12 +867,12 @@ CURE.boardroom = {
         top_pos = (hw*.2);
       }
       if ( v.trophy == true) {
-        content = "★";
+        content = "&#9733;";
         font_size = font_size*0.4;
         top_pos = Math.floor(hw*.2);
       }
       if ( v.enabled == false && v.trophy == true) {
-        content = "★";
+        content = "&#9733;";
         top_pos = Math.floor(hw*.2);
       }
 
