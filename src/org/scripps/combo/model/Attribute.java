@@ -51,6 +51,12 @@ public class Attribute {
 		//load();
 		//No feature 1 for ILMN_1777971
 		//No feature 1 for ILMN_1715947
+		//somewhere there needs to be a mapping between the attribute id and the feature id
+		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
+		//there also needs to be a weka-structured dataset so we can pull out the column index
+		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";	
+		String dataset_name = "dream_breast_cancer_2";
+		load(dataset_name, weka_data, att_info_file);
 	}
 
 
@@ -60,10 +66,7 @@ public class Attribute {
 	 * @param args
 	 * @throws Exception 
 	 */
-	public static void load() throws Exception {
-
-		//somewhere there needs to be a mapping between the attribute id and the feature id
-		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
+	public static void load(String dataset_name, String weka_data, String att_info_file) throws Exception {
 		//Att_name	Gene_symbol	Entrez
 		Map<String, String> att_uni = new HashMap<String, String>();
 		BufferedReader f;
@@ -86,14 +89,12 @@ public class Attribute {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		//there also needs to be a weka-structured dataset so we can pull out the column index
-		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";		
+	
 		//declare what dataset this is
-		String dataset = "dream_breast_cancer";
+		//String dataset_name = "dream_breast_cancer";
 		try {	
 			Weka weka = new Weka();
-			weka.buildWeka(new FileInputStream(weka_data), null, dataset);
+			weka.buildWeka(new FileInputStream(weka_data), null, dataset_name);
 
 			//get the col index...
 			Instances data = weka.getTrain();
@@ -108,7 +109,7 @@ public class Attribute {
 						if(feat!=null){
 							Attribute a = new Attribute();
 							a.setCol_index(col);
-							a.setDataset(dataset);
+							a.setDataset(dataset_name);
 							a.setName(name);
 							//					a.setReliefF(c.getPower());
 							a.setFeature_id(feat.getId());
