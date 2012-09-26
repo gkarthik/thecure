@@ -37,15 +37,19 @@
 
       <div class="container boardroom">
         <div class="hero-unit">
+
           <div class="row">
-
-            <div id="chart1"></div>
-
+            <div id="compbar" class="stats_graph"></div>
           </div>
 
           <div class="row">
-            <div id="heatmap"></div>
+            <div id="chart1" class="stats_graph"></div>
           </div>
+
+          <div class="row">
+            <div id="heatmap" class="stats_graph"></div>
+          </div>
+        
         </div>
       </div>
 

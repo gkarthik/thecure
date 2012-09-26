@@ -165,8 +165,78 @@ CURE.stats = {
 //     $.getJSON(url, function(data) {
 //       CURE.utilities.drawLineGraph(data, "chart1");
 //     });
+    CURE.stats.competition_bar(data.chart1, "#compbar");
     CURE.utilities.drawLineGraph(data.chart1, "#chart1", 600);
     CURE.stats.heatmap();
+
+  },
+  competition_bar : function(data, targetEl) {
+    var utils = CURE.utilities;
+
+    var format = d3.time.format.utc('%Y-%m-%d');
+    var height = 400;
+    var width = 800;
+    var small_padding = width*0.025;
+    var large_padding = width*0.125;
+
+    var timeScale = d3.time.scale.utc().range([0, width]);
+    var firstDomain = format.parse('2012-09-01');
+    var secondDomain = format.parse('2012-10-15');
+    timeScale.domain([firstDomain, secondDomain])
+
+    var y = d3.scale.linear()
+      .domain([0, 1])
+      .range([height,0]);
+
+    //-- Axes
+    var xAxis = d3.svg.axis().scale(timeScale);
+    var yAxis = d3.svg.axis().scale(y).orient('left');
+
+    var graphSvg = d3.select(targetEl).append("svg:svg");
+
+    graphSvg.append('g')
+      .attr('class', 'x_axis')
+      .attr('transform', 'translate('+ large_padding +','+(height + small_padding)+')')
+      .call(xAxis.tickFormat(d3.time.format('%b %d')));
+
+   graphSvg.append('g')
+      .attr('class', 'y_axis')
+      .attr('transform', 'translate('+ large_padding +','+ small_padding +')')
+      .call(yAxis);
+
+    //-- 
+    graphSvg.append('g')
+      .attr('class', 'guide_lines_x')
+      .attr('transform', 'translate('+ large_padding +','+ (height + small_padding) +')')
+      .call(xAxis.tickFormat('').tickSize(-height,0,0));
+
+    //-- These lines go horizontal
+    graphSvg.append('g')
+      .attr('class', 'guide_lines_y')
+      .attr('transform', 'translate('+ (large_padding) +', '+ small_padding +')')
+      .call(yAxis.tickFormat('').tickSize(-width,0,0));
+
+    // var line = d3.svg.line()
+    //   .x(function(d) { return timeScale( d.timestamp ) })
+    //   .y(function(d) { return y( d.y ) })
+    //   .interpolate("basis");
+
+    // graphSvg.append('g')
+    //   .attr('class', 'line')
+    //   .attr('transform', 'translate('+ large_padding +', '+ small_padding +')')
+    //   .append('path')
+    //   .attr('class', 'line')
+    //   .attr('d', line( data.data ));
+
+    graphSvg.append('g')
+      .attr('class', 'bars')
+      .attr('transform', 'translate('+ large_padding +', '+ (small_padding+height) +')').selectAll('rect')
+      .data( data.data ).enter()
+      .append('rect')
+        .attr('width', "12px")
+        .attr('height', function(d) { return y( d.y ); })
+        .attr('x', function(d){ return timeScale( d.timestamp ); })
+        .attr('y', '0px');
 
   },
   heatmap : function() {
@@ -187,7 +257,6 @@ CURE.stats = {
     var hits = d3.scale.linear()
       .domain([_.min(hits), _.max(hits)])
       .range([1, 2]);
-
 
     var vis = d3.select("#heatmap").append("svg");
 
@@ -474,7 +543,7 @@ CURE.boardgame = {
                 game.board_id == 204 ) {
       winnerEl.append("<h2>Congratulations! You finished your training!</h1>")
       winnerEl.append("<h3>You have gained access to the challenge area.</h3>")
-      winnerEl.append("<h3><span class='pink'><a href='boardroom.jsp'>Start the challenge!</a><></h3>");
+      winnerEl.append("<h3><span class='pink'><a href='boardroom.jsp'>Start the challenge!</a></h3>");
       $("#holdem_button").hide();
       game.moveBarney("lose"); //incorrect win lose
       game.moveClayton("win");
@@ -717,15 +786,16 @@ CURE.boardgame = {
 
 CURE.login = {
   init : function() {
-    var bad = CURE.utilities.getParameterByName("bad");
-
+    var utils = CURE.utilities;
+    var bad = utils.getParameterByName("bad"),
+        alertEl = $("#alertmsg")
     //start with new user area hidden
     if( bad == "nametaken" ) {
-      alert("Sorry, that user name has been taken. Please try another one.");
+      alertEl.html("<p>Sorry, that user name has been taken. Please try another one.</p>").leanModal();
       $("#newuser").show();
       $("#olduser").hide();
     } else if( bad=="pw" ) {
-      alert("Sorry, that username/password combination is invalid.  Please try again.  ");
+      alertEl.html("<p>Sorry, that username/password combination is invalid. Please try again.</p>").leanModal();
       $("#olduser").show();
     } else if( bad=='n' ) {
       $("#newuser").show();
