@@ -122,6 +122,7 @@ public class Player {
 				//for boardroom
 				player.setBoardScoresWithDb();
 			}
+			p.close();
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -147,6 +148,7 @@ public class Player {
 				//for boardroom
 				player.setBoardScoresWithDb();
 			}
+			p.close();
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -182,6 +184,7 @@ public class Player {
 				players.add(player);
 
 			}
+			r.close();
 			conn.connection.close();
 
 		} catch (SQLException e) {
@@ -224,6 +227,7 @@ public class Player {
 				player.setTop_score(r.getInt("top_score"));
 				players.add(player);
 			}
+			r.close();
 			conn.connection.close();
 
 		} catch (SQLException e) {
@@ -255,6 +259,7 @@ public class Player {
 
 				player.setBoardScoresWithDb();
 			}
+			r.close();
 			conn.connection.close();
 
 		} catch (SQLException e) {
@@ -304,6 +309,7 @@ public class Player {
 			} else {
 				throw new SQLException("Creating player failed, no generated key obtained.");
 			}
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -350,6 +356,7 @@ public class Player {
 			} else {
 				throw new SQLException("Creating player failed, no generated key obtained.");
 			}
+			conn.connection.close();
 		} finally {
 			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
 			if (p != null) try { p.close(); } catch (SQLException logOrIgnore) {}

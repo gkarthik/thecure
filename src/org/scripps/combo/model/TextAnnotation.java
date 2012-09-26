@@ -126,6 +126,7 @@ public class TextAnnotation {
 			} else {
 				throw new SQLException("Creating text annotation failed, no generated key obtained.");
 			}
+			conn.connection.close();
 		} finally {
 			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
 			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
@@ -152,6 +153,8 @@ public class TextAnnotation {
 				a.setAnno_text(rslt.getString("anno_text"));
 				annos.add(a);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -177,6 +180,8 @@ public class TextAnnotation {
 				a.setAnno_text(rslt.getString("anno_text"));
 				annos.add(a);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

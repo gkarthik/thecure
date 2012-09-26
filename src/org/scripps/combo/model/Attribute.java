@@ -150,6 +150,8 @@ public class Attribute {
 				a.setReliefF(rslt.getFloat("reliefF"));
 				atts.add(a);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -176,6 +178,8 @@ public class Attribute {
 				a.setReliefF(rslt.getFloat("reliefF"));
 				atts.add(a);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

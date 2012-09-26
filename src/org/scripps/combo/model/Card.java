@@ -56,7 +56,7 @@ public class Card {
 			p.setString(3,unique_id);
 			p.setInt(4,display_loc);
 			p.executeUpdate();
-			
+			p.close();
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -82,6 +82,8 @@ public class Card {
 				card.setId(rslt.getString("id"));
 				cards.add(card);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -107,6 +109,8 @@ public class Card {
 				cards.add(card);
 				cards.add(card);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -125,6 +129,8 @@ public class Card {
 				int c = rslt.getInt(2);
 				board_count.put(board_id,c);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

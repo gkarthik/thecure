@@ -193,6 +193,8 @@ public class Feature {
 				f.getAllMetadataFromDb();
 				features.put(f.getUnique_id(), f);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -217,6 +219,8 @@ public class Feature {
 				f.setShort_name(rslt.getString("short_name"));
 				f.setUnique_id(rslt.getString("unique_id"));
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -241,6 +245,8 @@ public class Feature {
 				f.setShort_name(rslt.getString("short_name"));
 				f.setUnique_id(unique_id);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

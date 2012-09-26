@@ -109,6 +109,8 @@ public class Game {
 					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
 				}
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -177,6 +179,8 @@ public class Game {
 			//		System.out.println(" next "+hand.getId()+"\t"+hand.getPlayer_name()+"\t"+hand.getBoard_id());
 				}
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -214,6 +218,8 @@ public class Game {
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hands.add(hand);
 			}
+			rslt.close();
+			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -301,7 +307,7 @@ public class Game {
 					pst_m.executeUpdate();				
 				}
 				pst_m.close();
-
+				conn.connection.close();
 			} else {
 				throw new SQLException("Creating board failed, no generated key obtained.");
 			}
