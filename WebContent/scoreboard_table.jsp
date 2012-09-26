@@ -23,26 +23,29 @@
       <span class="points">Points</span>
     </h3>
     <ol>
-      <%
+    <%
       int max = 10;
       int r = 0;
       for(String name : sb.getPlayer_global_points().keySet()){
-      r++;
-      String displayName = name;
-      if(name == null || name.length() == 0) {
-        displayName = "anon";
-      }
+        r++;
+        String displayName = name;
+        if(name == null || name.length() == 0) {
+          displayName = "anon";
+        }
+        if(name.length() > 16) {
+          displayName = name.substring(0, 15);
+        }
         if(r<=max||player.getName().equals(name)){
-           if(show_player&&player.getName().equals(name)){
+          if(show_player&&player.getName().equals(name)){
         %>
-          <li class="currentPlayer">
+            <li class="currentPlayer">
         <% } else { %>
-          <li>
+            <li>
         <% } %>
-        <span class="rank"> <%=r%> </span>
-        <span class="player"> <%=displayName%> </span>
-        <span class="points"> <%=sb.getPlayer_global_points().get(name)%> </span>
-      </li>
+          <span class="rank"> <%=r%> </span>
+          <span class="player"> <%=displayName%> </span>
+          <span class="points"> <%=sb.getPlayer_global_points().get(name)%> </span>
+        </li>
       <% }} %>
     </ol>
   </div>
