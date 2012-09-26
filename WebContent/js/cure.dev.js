@@ -360,10 +360,24 @@ CURE.boardgame = {
     $("#search").keyup(function(e) {
       $("#board .gamecard").removeClass("highlight");
       var needle = $(this).val();
+      //search descriptions
+      game.performDescriptionSearch(needle);
       game.performOntologySearch(needle);
       game.performRifSearch(needle);
     })
 
+  },
+  performDescriptionSearch : function(term) {
+    var game = CURE.boardgame;
+
+    var needle = term.toLowerCase().trim();
+    _.each( game.cards , function(v,i) {
+      var haystack = v.description;
+      if(haystack == null) { return false; }
+      if ( (needle == haystack.substring(0, needle.length) || haystack.indexOf(needle) != -1 ) && needle.length > 0) {
+        $("#card_"+v.unique_id).addClass("highlight")
+      }
+    })
   },
   performOntologySearch : function(term) {
     var game = CURE.boardgame;
@@ -668,35 +682,42 @@ CURE.boardgame = {
     }
     $("#endgame").html("<p>"+ msg +"</p>").leanModal();
   },
+  infoBoxGeneHeader : function(card_obj, targetEl) {
+    targetEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
+    targetEl.append("<h2>"+ (card_obj.long_name || "") +"</h2>");
+    targetEl.append("<p>"+ (card_obj.description || "<span class='lightfade'>No RefSeq summary available.</span>") +"</p>");
+  },
   setupHelpDisplay : function() {
-    var game = CURE.boardgame;
+    var game = CURE.boardgame,
+        utils = CURE.utilities;
     $("span.help_label").hover(function(e) {
       var unique_id = $(this).parent().attr('id').split("card_")[1];
       game.cached_info_panel_unique_id = unique_id;
       var card_obj = _.find(game.cards, function(obj){ return obj.unique_id == unique_id; });
-      var card_metadata = card_obj.metadata;
+          card_metadata = card_obj.metadata;
+          scope = $("#game_area #help_area #infoboxes")
 
-      var scope = $("#game_area #help_area #infoboxes")
-      //ontology
+      //-- Ontology
       var ontologyEl = $("div#ontology", scope).html("");
-      ontologyEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
-      ontologyEl.append("<p>"+ card_obj.description +"</p>");
+      game.infoBoxGeneHeader(card_obj, ontologyEl);
 
       _.each(card_metadata.ontology, function(v,i) {
-        ontologyEl.append("<h2>"+ v.type +"</h2>")
+        ontologyEl.append("<h3>"+ v.type +"</h3>")
         var values = [];
         _.each(v.values, function(v,i) {
-          values.push("<a target='_blank' href='http://www.ebi.ac.uk/QuickGO/GTerm?id="+ v.accession +"'>"+ v.term +"</a>")
+          var ontolText = (i == 0) ? utils.upcaseStringFirstLetter( v.term ) : v.term;
+          values.push("<a target='_blank' href='http://www.ebi.ac.uk/QuickGO/GTerm?id="+ v.accession +"'>"+ ontolText +"</a>");
         })
         ontologyEl.append("<p>"+ values.join(", ") +"</p>")
       })
 
-      //rifs
+      //-- Rifs
       var rifsEl = $("div#rifs", scope).html("");
-      rifsEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
-      rifsEl.append("<p>"+ card_obj.description +"</p>");
+      game.infoBoxGeneHeader(card_obj, rifsEl);
+
+      var rifsList = rifsEl.append("<ol></ol>")
       _.each(card_metadata.rifs, function(v,i) {
-        rifsEl.append("<p><a target='_blank' href='http://www.ncbi.nlm.nih.gov/pubmed/"+ v.pubmed_id +"'>"+ v.text +"</a></p>");
+        rifsList.append("<li><a target='_blank' href='http://www.ncbi.nlm.nih.gov/pubmed/"+ v.pubmed_id +"'>"+ utils.upcaseStringFirstLetter(v.text) +"</a></li>");
       })
 
       //-- Log this out
@@ -706,7 +727,7 @@ CURE.boardgame = {
         board_hover : true
       });
 
-      //dont play this card
+      //-- Don't play this card by event propagation to parent div.boardgame
       e.stopPropagation()
     })
   },
@@ -1096,6 +1117,7 @@ CURE.utilities = {
     else
       return decodeURIComponent(results[1].replace(/\+/g, " "));
   },
+  upcaseStringFirstLetter : function(text) { return text.charAt(0).toUpperCase() + text.slice(1); },
 ///////////////////////////////
   kind : function(kind_text) {
     switch(kind_text)

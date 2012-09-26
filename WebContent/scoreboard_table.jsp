@@ -33,7 +33,7 @@
           displayName = "anon";
         }
         if(name.length() > 14) {
-          displayName = name.substring(0, 14);
+          displayName = name.substring(0, 13);
         }
         if(r<=max||player.getName().equals(name)){
           if(show_player&&player.getName().equals(name)){
