@@ -685,7 +685,8 @@ input#search {
   padding: 6px;
 }
 
-span.replay_level {
+span.replay_level,
+span.play_another {
   cursor: pointer;
   color: #B2365F;
 }
