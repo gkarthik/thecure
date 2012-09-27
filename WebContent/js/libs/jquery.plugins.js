@@ -48,3 +48,35 @@
     }
   });
 })(jQuery);
+
+(function($){
+  $.fn.extend({
+    glowText: function(options) {
+      var defaults = {
+          speed: 300,
+          color: "#F69",
+          max_distance: "16px"
+      }
+      options =  $.extend(defaults, options);
+
+      return this.each(function() {
+        var o = options;
+        var that = $(this);
+        ball(that, o);
+      });
+
+      function ball(that, o) {
+        var i = 0;
+        var blahh = that;
+        setInterval(function(){
+          i = i+1;
+          console.log( blahh );
+          $(this).css({
+            'textShadow' : '0px 0px '+i+'px '+o.color
+          });
+        }, o.speed); 
+      }
+
+    }
+  });
+})(jQuery);
