@@ -53,30 +53,22 @@
   $.fn.extend({
     glowText: function(options) {
       var defaults = {
-          speed: 300,
+          speed: 60,
           color: "#F69",
-          max_distance: "16px"
+          max_distance: 20
       }
       options =  $.extend(defaults, options);
+      return this.each(function(i, v) { glowThatText(v, options); });
 
-      return this.each(function() {
-        var o = options;
-        var that = $(this);
-        ball(that, o);
-      });
-
-      function ball(that, o) {
-        var i = 0;
-        var blahh = that;
+      function glowThatText(that, o) {
+        var i = 1,
+            up = true;
         setInterval(function(){
-          i = i+1;
-          console.log( blahh );
-          $(this).css({
-            'textShadow' : '0px 0px '+i+'px '+o.color
-          });
-        }, o.speed); 
+          $(that).css({'textShadow' : '0px 0px '+i+'px '+o.color });
+          if(i == o.max_distance) { up = false; } else if (i == 0) { up = true; }
+          (up) ? i++ : i--;
+        }, o.speed);
       }
-
     }
   });
 })(jQuery);
