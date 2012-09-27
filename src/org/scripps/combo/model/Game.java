@@ -41,6 +41,7 @@ public class Game {
 	List<String> player2_features; 
 	List<ux> feature_ux;
 	List<mouse> mouse_actions;
+	String search_term;
 
 	public class ux{
 		public ux(String feature_id, long t, String panel, boolean board_hover) {
@@ -103,7 +104,7 @@ public class Game {
 				hand.setUpdated(rslt.getTimestamp("updated"));
 				hand.setGame_started(rslt.getTimestamp("game_started"));
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
-						
+				hand.setSearch_term(rslt.getString("search_term"));		
 				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
 					hand.setFeaturesForGameToUniqueIds();
 					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
@@ -164,6 +165,7 @@ public class Game {
 				hand.setWin(rslt.getInt("win"));
 				hand.setCreated(rslt.getDate("created"));
 				hand.setUpdated(rslt.getTimestamp("updated"));
+				hand.setSearch_term(rslt.getString("search_term"));
 				long ttest = rslt.getLong("game_started");
 				if(ttest==0){ //"0000-00-00 00:00:00"
 					hand.setGame_started(rslt.getTimestamp("game_finished"));
@@ -216,6 +218,7 @@ public class Game {
 				hand.setUpdated(rslt.getTimestamp("updated"));
 				hand.setGame_started(rslt.getTimestamp("game_started"));
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
+				hand.setSearch_term(rslt.getString("search_term"));
 				hands.add(hand);
 			}
 			rslt.close();
@@ -237,8 +240,8 @@ public class Game {
 		ResultSet generatedKeys = null; PreparedStatement pst = null;
 		try {
 			pst = conn.connection.prepareStatement(
-					"insert into game (id, board_id, player1_id, player2_id, game_started, game_finished, p1_score, p2_score, win, created, ip)" +
-					"values (?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+					"insert into game (id, board_id, player1_id, player2_id, game_started, game_finished, p1_score, p2_score, win, created, ip, search_term)" +
+					"values (?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			pst.clearParameters();
 			if(id>0){
 				pst.setInt(1,getId());
@@ -255,7 +258,7 @@ public class Game {
 			pst.setInt(9, getWin());
 			pst.setDate(10, new Date(System.currentTimeMillis()));
 			pst.setString(11, getIp());
-
+			pst.setString(12, getSearch_term());
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Inserting game failed, no rows affected.");
@@ -459,6 +462,14 @@ public class Game {
 
 	public void setMouse_actions(List<mouse> mouse_actions) {
 		this.mouse_actions = mouse_actions;
+	}
+
+	public String getSearch_term() {
+		return search_term;
+	}
+
+	public void setSearch_term(String search_term) {
+		this.search_term = search_term;
 	}
 
 

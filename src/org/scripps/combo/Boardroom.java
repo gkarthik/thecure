@@ -130,10 +130,10 @@ public class Boardroom {
 				beat_base = true;
 			}
 
-			if((unique_player_wins > 9)||(player_won_level)){
+			if((unique_player_wins > 12)||(player_won_level)){
 				view.setEnabled(false);
 			}
-			view.setAttempts(unique_player_wins);
+			view.setAttempts(unique_player_wins - 2);
 			if(player_won_level){
 				view.setTrophy(true);
 				view.setPlayer_score(player_score);

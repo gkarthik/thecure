@@ -52,11 +52,22 @@ public class Attribute {
 		//No feature 1 for ILMN_1777971
 		//No feature 1 for ILMN_1715947
 		//somewhere there needs to be a mapping between the attribute id and the feature id
-		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/id_map2.txt";
+		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Illumina2entrez_extras.tsv";
 		//there also needs to be a weka-structured dataset so we can pull out the column index
-		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";	
+		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";	
 		String dataset_name = "dream_breast_cancer_2";
 		load(dataset_name, weka_data, att_info_file);
+//		Attribute v1 = Attribute.getByAttNameDataset("ILMN_1679920", "dream_breast_cancer");
+		/**
+		 * still missing
+		 * ILMN_1872419	NA
+ILMN_1833858	NA
+9948
+990
+9965
+9906
+		 */
+//		System.out.println(v1.feature_id);
 	}
 
 
@@ -77,7 +88,7 @@ public class Attribute {
 			while(line!=null){
 				c++;
 				String[] items = line.split("\t");
-				String uid = items[2]; String att = items[0];
+				String uid = items[1]; String att = items[0];
 				att_uni.put(att, uid);
 				line = f.readLine(); 
 			}
@@ -106,6 +117,13 @@ public class Attribute {
 				if(att.index()!=data.classIndex()){
 					if(unique_id!=null){
 						Feature feat = Feature.getByUniqueId(unique_id);
+						if(feat==null){//meaning that the mapping table presented here is not aligned with the feature database
+							//see if we have already got it
+							Attribute v1 = Attribute.getByAttNameDataset(name, "dream_breast_cancer");
+							if(v1!=null){
+								feat = Feature.getByDbId(v1.getFeature_id());
+							}
+						}
 						if(feat!=null){
 							Attribute a = new Attribute();
 							a.setCol_index(col);
@@ -118,7 +136,7 @@ public class Attribute {
 							System.out.println("No feature 1 for "+name);
 						}
 					}else{
-						System.out.println("No feature 2 for "+name);
+						System.out.println("No feature in mapping table for "+name);
 					}
 				}
 			}
@@ -132,6 +150,33 @@ public class Attribute {
 		} 
 
 	}
+	
+	public static Attribute getByAttNameDataset(String att_name, String dataset){
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select attribute.* from attribute where name = '"+att_name+"' and dataset = '"+dataset+"'";
+		Attribute a = null;
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			if(rslt.next()){
+				a = new Attribute();
+				a.setName(rslt.getString("name"));
+				a.setCol_index(rslt.getInt("col_index"));
+				a.setCreated(rslt.getDate("created"));
+				a.setFeature_id(rslt.getInt("feature_id"));
+				a.setId(rslt.getInt("id"));
+				a.setUpdated(rslt.getTimestamp("updated"));
+				a.setDataset(rslt.getString("dataset"));
+				a.setReliefF(rslt.getFloat("reliefF"));
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return a;
+	}
+	
 	public static List<Attribute> getByFeatureUniqueId(String unique_id){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();
