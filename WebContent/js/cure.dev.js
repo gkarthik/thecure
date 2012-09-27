@@ -548,7 +548,10 @@ CURE.boardgame = {
           game.p1_score > 0 ) {
       winnerEl.append("<h2>Sorry, you lost this hand.</h2>");
       winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
-      //$tabs.tabs('select', 4);
+
+      game.closeAllInfoTabs();
+      $("#p2_current_tree").show();
+
       game.moveBarney("win"); //incorrect win lose
 
 
@@ -572,38 +575,61 @@ CURE.boardgame = {
 
       winnerEl.append("<h2>You beat Barney!</h2>")
       winnerEl.append("<h3>You earned "+ game.p1_score +" points!</h3>");
-      //$tabs.tabs('select', 3);
+      winnerEl.append("<h3><span class='play_another'>Play Another Level?</span></h3>");
+
+      game.closeAllInfoTabs();
+      $("#p1_current_tree").show();
+
       game.moveBarney("lose"); //incorrect win lose
       game.moveClayton("win");
-    
+
     } else if ( game.p1_score == game.p2_score) {
 
       winnerEl.append("<h2>You tied Barney!</h2>");
       winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
-      //$tabs.tabs('select', 3);
+
+      game.closeAllInfoTabs();
+      $("#p1_current_tree").show();
+
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
-
     }
 
-    $("#endgame").leanModal();
+    winnerEl.css({
+      'display' : 'block',
+      'position' : 'absolute',
+      'top' : "12%",
+      'left' : "62%"
+    });
 
     $("span.replay_level").click(function() {
         game.replayHand();
         $("#lean_overlay").fadeOut(200);
         $("#endgame").css({ 'display' : 'none' });
     })
-    $("#lean_overlay").click(function() {
-      $(this).fadeOut(200);
-      $("#endgame").css({ 'display' : 'none' });
 
+    $("span.play_another").click(function() {
       if ( _.include(["201", "202", "203"], game.board_id) ){
         window.location.href = "training.jsp"
       } else {
         window.location.href = "boardroom.jsp";
       }
-
     })
+
+    $("span.replay_level").glowText();
+    $("span.play_another").glowText();
+
+    // $("#lean_overlay").click(function() {
+    //   $(this).fadeOut(200);
+    //   $("#endgame").css({ 'display' : 'none' });
+
+    //   if ( _.include(["201", "202", "203"], game.board_id) ){
+    //     window.location.href = "training.jsp"
+    //   } else {
+    //     window.location.href = "boardroom.jsp";
+    //   }
+
+    // })
 
   },
   addCardToBarney : function() { 
@@ -746,7 +772,9 @@ CURE.boardgame = {
     }
 
     game.metadata.game_finished = (new Date).getTime();
+    game.metadata.search_term = $("input#search").val();
     //-- So this is a hack, but before submitting the cards, go through each one and delete all the non-gameplay metadata
+    var cached_cards = game.cards;
     game.cards = _.map(game.cards, function(obj){
       delete obj.metadata.ontology;
       delete obj.metadata.rifs;
@@ -775,7 +803,7 @@ CURE.boardgame = {
       dataType: 'json',
       contentType: "application/json; charset=utf-8",
     });
-
+    game.cards = cached_cards;
   },
   replayHand : function() {
     var game = CURE.boardgame;
