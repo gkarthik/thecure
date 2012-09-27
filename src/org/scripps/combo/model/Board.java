@@ -50,9 +50,10 @@ public class Board {
 	Timestamp updated;
 
 	public static void main(String args[]) throws Exception{
-		Board b = Board.getBoardById(101+"", true);	
-		String j = b.toJSON(true);
-		System.out.println(j);
+//		Board b = Board.getBoardById(101+"", true);	
+//		String j = b.toJSON(true);
+//		System.out.println(j);
+		Board.setupCureV3();
 	}
 
 	
@@ -179,6 +180,58 @@ public class Board {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	
+	public static void setupCureV3(){
+		String dataset = "dream_breast_cancer_2";
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
+		int nper = 25; int nboards = 50; String room = "3";
+		try {
+			for(int i=0; i<2; i++){
+				createAndSaveBoardsCoverGenes(train_file, nper, dataset, room, nboards);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void createAndSaveBoardsCoverGenes(String train_file, int n_per_board, String dataset, String room, int total) throws Exception{	
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, dataset);
+
+		//produce the list of unique entrez gene ids
+
+		List<String> gene_ids = new ArrayList<String>(weka.getFeatures().keySet());
+		System.out.println("N gene ids: "+gene_ids.size());
+
+		//randomize
+		Collections.shuffle(gene_ids);
+				
+		//build the boards with random collections
+		for(int board_id =1; board_id<=total; board_id++){
+			Board board = new Board();
+			board.setDataset(dataset);
+			board.setRoom(room);
+			List<Feature> bfs = new ArrayList<Feature>();
+			List<String> unique_ids = new ArrayList<String>();		
+			//add the rest
+			for(int r=0; r<n_per_board;r++){
+				unique_ids.add(gene_ids.get(0));
+				gene_ids.remove(0);
+			}
+			//add the features			
+			for(String gene : unique_ids){
+				bfs.add(weka.getFeatures().get(gene));
+			}
+			board.setFeatures(bfs);
+			//test it
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
+			float base_score = (float)base.eval.pctCorrect();
+			board.setBase_score(base_score);
+			board.insert();
+			System.out.println(board_id+"\t"+base_score+"\t"+gene_ids.size()+"\t");
 		}
 	}
 	

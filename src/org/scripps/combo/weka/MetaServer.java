@@ -90,7 +90,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//dream data
+	//	dream 1 data
 				try {
 					String dataset = "dream_breast_cancer";
 					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
@@ -105,6 +105,21 @@ public class MetaServer extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+		//dream 2 data
+//				try {
+//					String dataset = "dream_breast_cancer_2";
+//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_Its_2500genes.arff");
+//					Weka dream_weka = new Weka();
+//					dream_weka.buildWeka(train_loc, null, dataset);			
+//					name_dataset.put(dataset, dream_weka);	
+//					train_loc.close();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (Exception e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}		
 	}
 
 	/**
@@ -276,6 +291,7 @@ public class MetaServer extends HttpServlet {
 		LinkedHashMap gmetadata = (LinkedHashMap)gdata.get("metadata");
 		game.setGame_started(new Timestamp((Long)gmetadata.get("game_started")));
 		game.setGame_finished(new Timestamp((Long)gmetadata.get("game_finished")));
+		game.setSearch_term((String)gmetadata.get("search_term"));
 		game.setBoard_id(Integer.parseInt((String)gmetadata.get("board_id")));
 		game.setPlayer1_id(Integer.parseInt((String)gmetadata.get("player1_id")));
 		game.setPlayer2_id(Integer.parseInt((String)gmetadata.get("player2_id")));
