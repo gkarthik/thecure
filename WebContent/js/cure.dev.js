@@ -616,8 +616,8 @@ CURE.boardgame = {
       }
     })
 
-    //$("span.play_another").glowText();
-
+    $("span.replay_level").glowText();
+    $("span.play_another").glowText();
 
     // $("#lean_overlay").click(function() {
     //   $(this).fadeOut(200);
