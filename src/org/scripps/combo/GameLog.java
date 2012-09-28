@@ -60,14 +60,14 @@ public class GameLog {
 	 */
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, "dream_breast_cancer");
 		
 		for(Game hand : whs){
 			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer1_id()+"\t"+hand.getP1_score());
 		}
 		
-//		GameLog.high_score sb = log.getScoreBoard();
-//		String json = log.getD3CompatibleJson(sb);
+		GameLog.high_score sb = log.getScoreBoard(whs);
+		String json = log.getD3CompatibleJson(sb);
 //		System.out.println(json);
 //		for(String name : sb.getPlayer_max().keySet()){
 //			//System.out.println(name+" "+sb.getPlayer_max().get(name)+" "+sb.getPlayer_avg().get(name));
@@ -98,7 +98,9 @@ public class GameLog {
 		for(Entry<Long, Integer> date_game : sb.getDate_games().entrySet()){
 			//System.out.println(date_game.getKey()+" "+date_game.getValue());
 			ObjectNode game = mapper.createObjectNode();
-			game.put("timestamp", date_game.getKey());
+			Long t =  date_game.getKey();//1348849497000
+			t = t/1000;
+			game.put("timestamp", t);
 			game.put("y", date_game.getValue());
 			games.add(game);
 		}

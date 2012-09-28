@@ -24,7 +24,7 @@ public class Stats {
 	 */
 	public static void main(String[] args) {
 		boolean only_winning = true;
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, null);
 
 		//filters
 		

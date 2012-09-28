@@ -6,7 +6,8 @@
 <%@ page import="java.util.List"%>
 <%
   GameLog log = new GameLog();
-  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true);
+  String dataset = "dream_breast_cancer_2"; //use dream_breast_cancer for round 1 data 
+  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, dataset);
   GameLog.high_score sb = log.getScoreBoard(whs);
   Player player = (Player) session.getAttribute("player");
   boolean show_player = false;
