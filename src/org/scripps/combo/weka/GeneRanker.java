@@ -52,14 +52,15 @@ public class GeneRanker {
 		List<String> gids = null;
 		boolean weight_card_order = false; boolean only_cancer_people = true;
 		gids = getRankedGenes(weight_card_order, only_cancer_people);
-		testGeneList(gids, n_genes);
+		String dataset = "dream_breast_cancer";
+		testGeneList(gids, n_genes, dataset);
 
 	//	generateRandomBaseline(n_genes, 1000);
 	//	Player.describePlayers(true);
 	}
 
 
-	public static void generateRandomBaseline(int n_genes, int n_sampled) throws Exception{
+	public static void generateRandomBaseline(int n_genes, int n_sampled, String dataset) throws Exception{
 		//get results vector ready
 		DescriptiveStatistics cvs = new DescriptiveStatistics();
 		
@@ -88,7 +89,7 @@ public class GeneRanker {
 				genes+=gh+",";
 			}
 			//test group
-			execution base = weka.pruneAndExecuteWithFeatureIds(geneids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(geneids, null, dataset);
 			double cv = base.eval.pctCorrect();
 			cvs.addValue(cv);
 			System.out.println(i+"\t"+cv);
@@ -102,11 +103,11 @@ public class GeneRanker {
 	 * @param gids
 	 * @throws Exception 
 	 */
-	public static void testGeneList(List<String> gids, int n_genes) throws Exception {
+	public static void testGeneList(List<String> gids, int n_genes, String dataset) throws Exception {
 		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes.arff";
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
-		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(gids, null);
+		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(gids, null, dataset);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
 	}

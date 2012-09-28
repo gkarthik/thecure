@@ -172,12 +172,14 @@ public class Weka {
 		}
 	}
 	
-	public execution pruneAndExecuteWithFeatureIds(List<String> f_ids, Classifier wekamodel) {
+	public execution pruneAndExecuteWithFeatureIds(List<String> f_ids, Classifier wekamodel, String dataset) {
 		String indices = "";
 		for(String fid : f_ids){
 			Feature f = features.get(fid);
 			for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-				indices+=a.getCol_index()+",";
+				if(a.getDataset().equals(dataset)){
+					indices+=a.getCol_index()+",";
+				}
 			}
 		}
 		return pruneAndExecute(indices, wekamodel);
