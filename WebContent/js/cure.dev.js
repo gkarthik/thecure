@@ -1,11 +1,13 @@
 var CURE = CURE || {};
 
 CURE.load = function() {
+  var utils = CURE.utilities;
   var page = window.location.href.split("/cure/")[1];
   if ( page.indexOf('?') > 0 ) {
     page = page.substring(0, page.indexOf('?'));
   }
   CURE.page = page.replace(".jsp","");
+  CURE.isiPad = navigator.userAgent.match(/iPad/i) != null;
 
   switch(CURE.page)
   {
@@ -27,13 +29,16 @@ CURE.load = function() {
     case "boardroom":
       CURE.user_id = cure_user_id;
       CURE.user_experience = cure_user_experience;
-
       CURE.boardroom.init();
       break;
     case "boardgame":
       CURE.user_id = cure_user_id;
       CURE.user_experience = cure_user_experience;
-
+      if(CURE.isiPad) {
+        $("div.navbar.navbar-fixed-top").hide();
+      } else {
+        $("div#boardgame").css({"margin":"60px auto"});
+      }
       CURE.boardgame.init();
       break;
     case "stats":
@@ -445,8 +450,8 @@ CURE.boardgame = {
           game.board_state_clickable = false;
           game.addCardToBarney();
         } else {  
-          $("#endgame").html("").append("<p>Sorry, you can only have 5 cards in your hand in this game.</p>").leanModal(); }
-      } else { $("#endgame").html("").append("<p>Wait your turn!</p>"); }
+          $("#modal").html("").append("<p>Sorry, you can only have 5 cards in your hand in this game.</p>").leanModal(); }
+      } else { $("#modal").html("").append("<p>Wait your turn!</p>"); }
     })
   },
   returnCard : function(obj) {
@@ -548,9 +553,9 @@ CURE.boardgame = {
           game.p1_score > 0 ) {
       winnerEl.append("<h2>Sorry, you lost this hand.</h2>");
       winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
+      winnerEl.append("<h3><span class='play_another'>Play Another Level?</span></h3>");
 
-      game.closeAllInfoTabs();
-      $("#p2_current_tree").show();
+      game.showTab("p2_current_tree");
 
       game.moveBarney("win"); //incorrect win lose
 
@@ -567,7 +572,7 @@ CURE.boardgame = {
 
       $("#lean_overlay").click(function() {
         $(this).fadeOut(200);
-        $("#endgame").css({ 'display' : 'none' });
+        $("#modal").fadeOut();
         window.location.href = "boardroom.jsp";
       })
 
@@ -577,8 +582,7 @@ CURE.boardgame = {
       winnerEl.append("<h3>You earned "+ game.p1_score +" points!</h3>");
       winnerEl.append("<h3><span class='play_another'>Play Another Level?</span></h3>");
 
-      game.closeAllInfoTabs();
-      $("#p1_current_tree").show();
+      game.showTab("p1_current_tree");
 
       game.moveBarney("lose"); //incorrect win lose
       game.moveClayton("win");
@@ -588,24 +592,29 @@ CURE.boardgame = {
       winnerEl.append("<h2>You tied Barney!</h2>");
       winnerEl.append("<h3><span class='replay_level'>Play Level Again?</span></h3>");
 
-      game.closeAllInfoTabs();
-      $("#p1_current_tree").show();
+      game.showTab("p1_current_tree");
 
       game.moveBarney("win"); //incorrect win lose
       game.moveClayton("win");
     }
 
+    var top_pos = "-24px",
+        right_pos = "-40px";
+    if( CURE.isiPad ) {
+      top_pos = "-44px";
+      right_pos = "-20px";
+    }
+
     winnerEl.css({
-      'display' : 'block',
       'position' : 'absolute',
-      'top' : "12%",
-      'left' : "62%"
-    });
+      'top' : top_pos,
+      'right' : right_pos,
+      'width' : '196px',
+    }).fadeIn(800);
 
     $("span.replay_level").click(function() {
         game.replayHand();
-        $("#lean_overlay").fadeOut(200);
-        $("#endgame").css({ 'display' : 'none' });
+        winnerEl.fadeOut();
     })
 
     $("span.play_another").click(function() {
@@ -618,18 +627,6 @@ CURE.boardgame = {
 
     $("span.replay_level").glowText();
     $("span.play_another").glowText();
-
-    // $("#lean_overlay").click(function() {
-    //   $(this).fadeOut(200);
-    //   $("#endgame").css({ 'display' : 'none' });
-
-    //   if ( _.include(["201", "202", "203"], game.board_id) ){
-    //     window.location.href = "training.jsp"
-    //   } else {
-    //     window.location.href = "boardroom.jsp";
-    //   }
-
-    // })
 
   },
   addCardToBarney : function() { 
@@ -673,8 +670,8 @@ CURE.boardgame = {
     //-- Handles switching between tab views
     $("#tabs ul li").click(function(e) {
       var selEl = $(this).attr('class').split(' ')[0];
-      game.closeAllInfoTabs();
-      $("#"+selEl).show();
+
+      game.showTab(selEl);
 
       //-- Save the tab change to the card's metadata
       if ( game.cached_info_panel_unique_id != 0 ) {
@@ -706,7 +703,7 @@ CURE.boardgame = {
     } else if ( CURE.dataset == "dream_breast_cancer" ) {
       msg = "Pick <b>"+ game.max_hand +"</b> genes that track breast cancer survival.  Look for genes that you think will have prognostic RNA expression or copy number variation.";
     }
-    $("#endgame").html("<p>"+ msg +"</p>").leanModal();
+    $("#modal").html("<p>"+ msg +"</p>").leanModal();
   },
   infoBoxGeneHeader : function(card_obj, targetEl) {
     targetEl.append("<h1><a target='_blank' href='http://www.ncbi.nlm.nih.gov/gene/"+ card_obj.unique_id +"'>"+ card_obj.short_name +"</a></h1>");
@@ -830,6 +827,20 @@ CURE.boardgame = {
     game.board_state_clickable = true;
     game.cached_info_panel_unique_id = 0;
     game.init();
+  },
+  showTab : function(tab_id) {
+    var game = CURE.boardgame;
+    game.closeAllInfoTabs();
+    $("#"+tab_id).show();
+    //-- Highlight the one that is open
+    _.each( $("div#help_area div#infoboxes div.infobox"), function(v) {
+      var tabEl = $("div#tabs ul li." + $(v).attr("id") );
+      if( $(v).is(":visible") ) {
+        tabEl.addClass("highlight");
+      } else {
+        tabEl.removeClass("highlight");
+      }
+    })
   }
 }
 
