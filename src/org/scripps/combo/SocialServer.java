@@ -64,9 +64,12 @@ public class SocialServer extends HttpServlet {
 		}else if(command.equals("boardroom")){
 			Boardroom b = new Boardroom();
 			int user_id = Integer.parseInt(request.getParameter("user_id"));
-			String phenotype = "dream_breast_cancer_2";//request.getParameter("dataset"); //"dream_breast_cancer"
 			String room = request.getParameter("room");
-			b.buildBoardView(user_id, phenotype, room);
+			String dataset = "dream_breast_cancer_2";//request.getParameter("dataset"); //"dream_breast_cancer"
+			if(dataset.equals("dream_breast_cancer_2")){
+				room = "3";
+			}
+			b.buildBoardView(user_id, dataset, room);
 			String json = b.renderjsonBoardViews();
 			response.setContentType("text/json");
 			PrintWriter out = response.getWriter();

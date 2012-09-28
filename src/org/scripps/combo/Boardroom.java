@@ -133,7 +133,7 @@ public class Boardroom {
 			if((unique_player_wins > 12)||(player_won_level)){
 				view.setEnabled(false);
 			}
-			view.setAttempts(unique_player_wins - 2);
+			view.setAttempts(unique_player_wins);
 			if(player_won_level){
 				view.setTrophy(true);
 				view.setPlayer_score(player_score);
