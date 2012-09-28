@@ -52,9 +52,10 @@ public class SocialServer extends HttpServlet {
 			mail.sendMail(message, "Invite", "bgood@scripps.edu", "Ben", "Ben", "ben.mcgee.good@gmail.com");
 			response.sendRedirect("/cure/");
 		}else if(command.equals("gamelogs")){
+			String dataset = request.getParameter("dataset");
 			GameLog log = new GameLog();
 			boolean winning_only = true;
-			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only);
+			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only, dataset);
 			GameLog.high_score sb = log.getScoreBoard(hands);
 			String json = log.getD3CompatibleJson(sb);
 			response.setContentType("text/json");

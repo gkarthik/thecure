@@ -142,13 +142,20 @@ public class Game {
 
 	/**
 	 * Limit the hand list to the first hand per player per board that was won.
+	 * @param dataset 
 	 * @return
 	 */
-	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning){
+	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset){
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game order by game_finished asc";
 		if(only_winning){
 			q = "select * from game where win > 0 order by game_finished asc";
+		}
+		if(dataset!=null){
+			q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' order by game_finished asc";
+			if(only_winning){
+				q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' and win > 0 order by game_finished asc";				
+			}
 		}
 		ResultSet rslt = conn.executeQuery(q);
 		Map<String, Game> bpw_hand = new HashMap<String, Game>();

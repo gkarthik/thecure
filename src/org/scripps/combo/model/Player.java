@@ -55,7 +55,7 @@ public class Player {
 		if(all_hands){
 			wm = Game.getAllGames(false); // //
 		}else{//just get the first hand per player per board
-			wm = Game.getTheFirstGamePerPlayerPerBoard(false);
+			wm = Game.getTheFirstGamePerPlayerPerBoard(false, null);
 		}
 			//remove mammal
 		List<Game> hands = new ArrayList<Game>();
