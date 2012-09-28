@@ -171,8 +171,16 @@ CURE.stats = {
 //       CURE.utilities.drawLineGraph(data, "chart1");
 //     });
     CURE.stats.competition_bar(data.chart1, "#compbar");
-    CURE.utilities.drawLineGraph(data.chart1, "#chart1", 600);
     CURE.stats.heatmap();
+    
+    var args = {
+      command : "gamelogs",
+    }
+    $.getJSON("SocialServer", args, function(data) {
+      console.log(data);
+      CURE.utilities.drawLineGraph(data.chart, "#chart1", 600);
+      CURE.utilities.drawPieChart(data.leaderboard, "#leaderPie");
+    });
 
   },
   competition_bar : function(data, targetEl) {
@@ -1058,6 +1066,47 @@ CURE.utilities = {
       })
     });
   },
+  drawPieChart : function(data, selEl) {
+    var w = 400,
+      h = 400,
+      r = Math.min(w, h) / 2.4,
+      labelr = r + 10, // radius for label anchor
+      color = d3.scale.category20(),
+      donut = d3.layout.pie(),
+      arc = d3.svg.arc().innerRadius(r * .4).outerRadius(r);
+
+    var vis = d3.select(selEl)
+      .append("svg:svg")
+      .data([data])
+      .attr("width", w + 200)
+      .attr("height", h + 200);
+
+    var arcs = vis.selectAll("g.arc")
+      .data(donut.value(function(d) { return d.score }))
+      .enter().append("svg:g")
+      .attr("class", "arc")
+      .attr("transform", "translate(" + (r + 130) + "," + (r+100) + ")");
+
+    arcs.append("svg:path")
+      .attr("fill", function(d, i) { return color(i); })
+      .attr("d", arc);
+
+    arcs.append("svg:text")
+      .attr("transform", function(d) {
+      var c = arc.centroid(d),
+        x = c[0],
+        y = c[1],
+        // pythagorean theorem for hypotenuse
+        h = Math.sqrt(x*x + y*y);
+        return "translate(" + (x/h * labelr) +  ',' + (y/h * labelr) +  ")"; 
+    })
+    .attr("dy", ".35em")
+    .attr("text-anchor", function(d) {
+      // are we past the center?
+      return (d.endAngle + d.startAngle)/2 > Math.PI ? "end" : "start";
+    })
+    .text(function(d, i) { return d.data.username; });
+  },
   drawLineGraph : function(data, targetEl, size){
     var format = d3.time.format.utc('%Y-%m-%d');
     var hw = size || 200;
@@ -1108,12 +1157,12 @@ CURE.utilities = {
       .attr('transform', 'translate('+ large_padding +', '+ small_padding +')')
       .append('path')
       .attr('class', 'line')
-      .attr('d', line( data.data ));
+      .attr('d', line( data ));
 
     graphSvg.append('g')
       .attr('class', 'points')
       .attr('transform', 'translate('+ large_padding +', '+ small_padding +')').selectAll('circle')
-      .data( data.data ).enter()
+      .data( data ).enter()
       .append('circle')
         .attr('r', 1.5)
         .attr('cx', function(d){ return timeScale( d.timestamp ); })
@@ -1125,7 +1174,7 @@ CURE.utilities = {
       .attr("text-anchor", "center")
       .attr("x", (hw/2)+large_padding )
       .attr("y", hw + (large_padding - small_padding) )
-      .text( data.metadata.x_axis_label );
+      .text( "data" );
 
     graphSvg.append("text")
       .attr("class", "y label")
@@ -1133,7 +1182,7 @@ CURE.utilities = {
       .attr("dy", hw )
       .attr("x", "100")
       .attr("transform", "rotate(-90)")
-      .text( data.metadata.y_axis_label );
+      .text( "data also" );
   },
   validateEmail : function(email) {
     var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
