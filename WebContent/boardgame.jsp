@@ -65,11 +65,11 @@
     <div id="game_meta_info"></div>
 
     <div id="p2_area">
+      <div id="p2_hand"></div>
       <div id="p2_scorebox">
         <img id="barney5" class="avatar" src="images/barney.png" />
         <h2>Barney's score: <span id="p2_score">0</span></h2>
       </div>
-      <div id="p2_hand"></div>
     </div>
 
     <div id="game_area">
@@ -78,7 +78,7 @@
       <div id="help_area">
       <div id="tabs">
           <ul>
-            <li class="ontology">Ontology</li>
+            <li class="ontology highlight">Ontology</li>
             <li class="rifs">Rifs</li>
             <li class="p1_current_tree">Yours</li>
             <li class="p2_current_tree">Barney's</li>
@@ -103,14 +103,15 @@
       </div>
 
       <div id="endgame" style="display: none;"></div>
+      <div id="modal" style="display: none;"></div>
     </div>
 
     <div id="p1_area">
+      <div id="p1_hand"></div>
       <div id="p1_scorebox">
         <img id="clayton1" class="avatar" src="images/200px-Clayton.png"/>
         <h2>Your score: <span id="p1_score">0</span></h2>
       </div>
-      <div id="p1_hand"></div>
     </div>
 
   </div>
