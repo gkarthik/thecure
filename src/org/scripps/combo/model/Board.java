@@ -186,18 +186,26 @@ public class Board {
 	public static void setupCureV3(){
 		String dataset = "dream_breast_cancer_2";
 		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
-		int nper = 25; int nboards = 50; String room = "3";
+		int nper = 25; int nboards = 100; String room = "3";
 		try {
-			for(int i=0; i<2; i++){
-				createAndSaveBoardsCoverGenes(train_file, nper, dataset, room, nboards);
-			}
+			//for(int i=0; i<2; i++){
+				createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);
+			//}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	public static void createAndSaveBoardsCoverGenes(String train_file, int n_per_board, String dataset, String room, int total) throws Exception{	
+	/**
+	 * For each of 'total' genes, generate two boards containing it.
+	 * @param train_file
+	 * @param n_per_board
+	 * @param dataset
+	 * @param room
+	 * @param total
+	 * @throws Exception
+	 */
+	public static void createAndSaveBoardsCoverGenesTwice(String train_file, int n_per_board, String dataset, String room, int total) throws Exception{	
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
 
@@ -206,11 +214,12 @@ public class Board {
 		List<String> gene_ids = new ArrayList<String>(weka.getFeatures().keySet());
 		System.out.println("N gene ids: "+gene_ids.size());
 
+		List<String> kept_genes = new ArrayList<String>();
 		//randomize
 		Collections.shuffle(gene_ids);
 				
 		//build the boards with random collections
-		for(int board_id =1; board_id<=total; board_id++){
+		for(int board_id =1; board_id<=total/2; board_id++){
 			Board board = new Board();
 			board.setDataset(dataset);
 			board.setRoom(room);
@@ -219,7 +228,8 @@ public class Board {
 			//add the rest
 			for(int r=0; r<n_per_board;r++){
 				unique_ids.add(gene_ids.get(0));
-				gene_ids.remove(0);
+				kept_genes.add(gene_ids.get(0));
+				gene_ids.remove(0);				
 			}
 			//add the features			
 			for(String gene : unique_ids){
@@ -227,7 +237,33 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null, dataset);
+			float base_score = (float)base.eval.pctCorrect();
+			board.setBase_score(base_score);
+			board.insert();
+			System.out.println(board_id+"\t"+base_score+"\t"+gene_ids.size()+"\t");
+		}
+		//build second batch 
+		//todo generalize
+		Collections.shuffle(kept_genes);
+		for(int board_id =1; board_id<=total/2; board_id++){
+			Board board = new Board();
+			board.setDataset(dataset);
+			board.setRoom(room);
+			List<Feature> bfs = new ArrayList<Feature>();
+			List<String> unique_ids = new ArrayList<String>();		
+			//add the rest
+			for(int r=0; r<n_per_board;r++){
+				unique_ids.add(kept_genes.get(0));
+				kept_genes.remove(kept_genes.get(0));
+			}
+			//add the features			
+			for(String gene : unique_ids){
+				bfs.add(weka.getFeatures().get(gene));
+			}
+			board.setFeatures(bfs);
+			//test it
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null, dataset);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -296,7 +332,7 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null, dataset);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -324,7 +360,7 @@ public class Board {
 				unique_ids.add(gene_ids.get(i));
 				bfs.add(weka.getFeatures().get(gene_ids.get(i)));
 			}
-			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null);
+			execution base = weka.pruneAndExecuteWithFeatureIds(unique_ids, null, dataset);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.setFeatures(bfs);
@@ -346,7 +382,7 @@ public class Board {
 			f.getAllMetadataFromDb();
 			bfs.add(f);
 		}
-		execution base = weka.pruneAndExecuteWithFeatureIds(feature_ids, null);
+		execution base = weka.pruneAndExecuteWithFeatureIds(feature_ids, null, dataset);
 		float base_score = (float)base.eval.pctCorrect();
 		board.setBase_score(base_score);
 		board.setFeatures(bfs);

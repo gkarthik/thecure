@@ -91,27 +91,12 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 	//	dream 1 data
-				try {
-					String dataset = "dream_breast_cancer";
-					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-					Weka dream_weka = new Weka();
-					dream_weka.buildWeka(train_loc, null, dataset);			
-					name_dataset.put("dream_breast_cancer", dream_weka);	
-					train_loc.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		//dream 2 data
 //				try {
-//					String dataset = "dream_breast_cancer_2";
-//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_Its_2500genes.arff");
+//					String dataset = "dream_breast_cancer";
+//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
 //					Weka dream_weka = new Weka();
 //					dream_weka.buildWeka(train_loc, null, dataset);			
-//					name_dataset.put(dataset, dream_weka);	
+//					name_dataset.put("dream_breast_cancer", dream_weka);	
 //					train_loc.close();
 //				} catch (IOException e) {
 //					// TODO Auto-generated catch block
@@ -119,7 +104,22 @@ public class MetaServer extends HttpServlet {
 //				} catch (Exception e) {
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
-//				}		
+//				}
+		//dream 2 data
+				try {
+					String dataset = "dream_breast_cancer_2";
+					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_Its_2500genes.arff");
+					Weka dream_weka = new Weka();
+					dream_weka.buildWeka(train_loc, null, dataset);			
+					name_dataset.put(dataset, dream_weka);	
+					train_loc.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}		
 	}
 
 	/**
@@ -255,7 +255,7 @@ public class MetaServer extends HttpServlet {
 		unique_ids = (List<String>)data.get("unique_ids");
 
 		J48 wekamodel = new J48();
-		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel);
+		Weka.execution result = weka.pruneAndExecuteWithFeatureIds(unique_ids, wekamodel, board.getDataset());
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		//serialize and return the result
 		JSONObject r = new JSONObject(short_result);
