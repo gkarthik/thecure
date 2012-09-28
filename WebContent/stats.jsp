@@ -37,6 +37,9 @@
 
       <div class="container boardroom">
         <div class="hero-unit">
+          <div class="row">
+            <div id="leaderPie"></div>
+          </div>
 
           <div class="row">
             <div id="compbar" class="stats_graph"></div>
