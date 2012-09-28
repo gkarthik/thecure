@@ -917,7 +917,7 @@ CURE.boardroom = {
       var scaleAttempt = attempt(v.attempts);
           if (scaleAttempt > 100) { scaleAttempt = 100; }
       var isEnabled,
-          content,
+          content = "",
           font_size = text_size;
      ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled";
 
@@ -936,7 +936,7 @@ CURE.boardroom = {
         top_pos = Math.floor(hw*.2);
       }
 
-      if ( v.enabled == true && v.trophy == false && v.attempts < 10 ) {
+      if ( v.enabled == true && v.trophy == false && v.attempts <= 10 ) {
         content = (v.position+1);
         top_pos = Math.floor(hw*.2);
       }
