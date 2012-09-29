@@ -180,7 +180,8 @@ public class Player {
 				player.setTop_score(r.getInt("top_score"));
 				player.setBiologist(r.getString("biologist"));
 				player.setCancer(r.getString("cancer"));
-				player.setDegree(r.getString("degree"));				
+				player.setDegree(r.getString("degree"));	
+				player.setEmail(r.getString("email"));
 				players.add(player);
 
 			}
