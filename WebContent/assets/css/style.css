@@ -306,11 +306,25 @@ div#games h3:hover { cursor: pointer; }
 
 #leaderboard span.player {
   color: #B2365F;
+  width: 100px;
+}
+
+#leaderboard span.avg {
+  color: #B2365F;
+  float: right;
+  width: 200px;
+}
+
+#leaderboard span.max {
+  color: #B2365F;
+  float: right;
+  width: 100px;
 }
 
 #leaderboard span.points {
   color: #B2365F;
   float: right;
+
 }
 
 #leaderboard ol li.currentPlayer {

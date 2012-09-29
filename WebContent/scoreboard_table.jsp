@@ -17,7 +17,7 @@
 %>
 
   <div id="leaderboard">
-    <h2>Leader Board</h3>
+    <h2>Active Round Leader Board</h3>
     <h3>
       <span class="rank">Rank</span>
       <span class="player">Player</span>
