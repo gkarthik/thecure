@@ -170,15 +170,18 @@ CURE.stats = {
 //     $.getJSON(url, function(data) {
 //       CURE.utilities.drawLineGraph(data, "chart1");
 //     });
-    CURE.stats.competition_bar(data.chart1, "#compbar");
-    CURE.stats.heatmap();
+    //CURE.stats.competition_bar(data.chart1, "#compbar");
+    //CURE.stats.heatmap();
     
     var args = {
       command : "gamelogs",
     }
     $.getJSON("SocialServer", args, function(data) {
-      console.log(data);
-      CURE.utilities.drawLineGraph(data.chart, "#chart1", 600);
+      var timedata = _.map(data.chart, function(obj) {
+        obj["timestamp"] = obj["timestamp"]/1;
+        return obj;
+      });
+      CURE.utilities.drawLineGraph(timedata, "#chart");
       CURE.utilities.drawPieChart(data.leaderboard, "#leaderPie");
     });
 
@@ -972,10 +975,7 @@ CURE.boardroom = {
 CURE.landing = {
   init : function() {
     CURE.utilities.collapseInfo();
-    // $('#twitter-widget-1').ready(function() {
-    //   CURE.landing.getTwitterTimeline();
-    // });
-      var args = {
+      /*var args = {
         command : "gamelogs"
       }
       $.getJSON("SocialServer", args, function(data) {
@@ -983,6 +983,8 @@ CURE.landing = {
         var listItems = CURE.utilities.listOfLeaderBoard(data, 6);
         var olEl = $("div#leaderboard ol").append(listItems);
      });
+     */
+    $("#leaderboard").html("<h4 style='margin-top: 40px;'>Second rounder leaderboard underway...</h4>");
 
     $("input.playnow").click(function(e) {
       //link to the game, need to do anything else?
@@ -1109,20 +1111,23 @@ CURE.utilities = {
   },
   drawLineGraph : function(data, targetEl, size){
     var format = d3.time.format.utc('%Y-%m-%d');
-    var hw = size || 200;
+    var hw = size || 600;
     var small_padding = hw*0.025;
     var large_padding = hw*0.125;
-    var timeScale = d3.time.scale.utc().range([0, hw]);
-    var firstDomain = format.parse('2012-09-01');
-    var secondDomain = format.parse('2012-10-15');
-    timeScale.domain([firstDomain, secondDomain])
 
+    var x_values = _.pluck(data, "timestamp");
+    console.log(x_values);
+    var x = d3.time.scale()
+      .domain([format.parse('2012-09-01'), format.parse('2012-10-15')])
+      .range([0, hw]);
+
+    var y_values = _.pluck(data, "y");
     var y = d3.scale.linear()
-      .domain([0, 1])
-      .range([hw,0]);
+      .domain([  _.min(y_values), _.max(y_values) ])
+      .range([hw, 0]);
 
     // axes
-    var xAxis = d3.svg.axis().scale(timeScale);
+    var xAxis = d3.svg.axis().scale(x);
     var yAxis = d3.svg.axis().scale(y).orient('left');
 
     var graphSvg = d3.select(targetEl).append("svg:svg");
@@ -1148,7 +1153,7 @@ CURE.utilities = {
       .call(yAxis.tickFormat('').tickSize(-hw,0,0));
 
     var line = d3.svg.line()
-      .x(function(d) { return timeScale( d.timestamp ) })
+      .x(function(d) { return x( d.timestamp ) })
       .y(function(d) { return y( d.y ) })
       .interpolate("basis");
 
@@ -1165,7 +1170,7 @@ CURE.utilities = {
       .data( data ).enter()
       .append('circle')
         .attr('r', 1.5)
-        .attr('cx', function(d){ return timeScale( d.timestamp ); })
+        .attr('cx', function(d){ return x( d.timestamp ); })
         .attr('cy', function(d){ return y( d.y ); })
 
     // Axis labels
