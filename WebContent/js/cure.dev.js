@@ -590,7 +590,7 @@ CURE.boardgame = {
     } else if ( game.p1_score > game.p2_score ) {
 
       winnerEl.append("<h2>You beat Barney!</h2>")
-      winnerEl.append("<h3>You earned "+ game.p1_score +" points!</h3>");
+      winnerEl.append("<h3>You earned "+ (game.p1_score*21) +" points!</h3>");
       winnerEl.append("<h3><span class='play_another'>Play Another Level?</span></h3>");
 
       game.showTab("p1_current_tree");
