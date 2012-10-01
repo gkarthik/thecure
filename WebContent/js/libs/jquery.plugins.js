@@ -65,7 +65,7 @@
             up = true;
         setInterval(function(){
           $(that).css({'textShadow' : '0px 0px '+i+'px '+o.color });
-          if(i == o.max_distance) { up = false; } else if (i == 0) { up = true; }
+          if(i == o.max_distance) { up = false; } else if (i == 1) { up = true; }
           (up) ? i++ : i--;
         }, o.speed);
       }

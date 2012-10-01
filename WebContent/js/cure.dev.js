@@ -177,7 +177,11 @@ CURE.stats = {
       command : "gamelogs",
     }
     $.getJSON("SocialServer", args, function(data) {
-      CURE.utilities.drawLineGraph(data.chart, "#chart", "Games Won");
+      var timedata = _.map(data.chart, function(obj) {
+        obj["timestamp"] = obj["timestamp"]*1000;
+        return obj;
+      })
+      CURE.utilities.drawLineGraph(timedata, "#games_won", "Games Won");
       CURE.utilities.drawPieChart(data.leaderboard, "#leaderPie");
     });
 
@@ -969,16 +973,16 @@ CURE.landing = {
      });
      */
     $("#leaderboard").html("<h4 style='margin-top: 40px;'>Second rounder leaderboard underway...</h4>");
-
     $("input.playnow").click(function(e) {
       //link to the game, need to do anything else?
       var gameUrl = "login.jsp";
       window.location.replace(gameUrl);
-      // window.open(gameUrl);
       return false;
     })
 
-       // $("input#refEmail").blur(function() {
+    $("#column2 h4").glowText();
+
+      // $("input#refEmail").blur(function() {
       //     var email = $("input#refEmail").val();
       //     validateEmail(email)
       // })
@@ -1038,7 +1042,7 @@ CURE.utilities = {
       })
       res["chart"+i] = chart;
     }
-    
+
     return res;
   },
   collapseInfo : function() {
@@ -1170,14 +1174,14 @@ CURE.utilities = {
     graphSvg.append("text")
       .attr("class", "x label")
       .attr("text-anchor", "center")
-      .attr("x", (hw/2)+large_padding )
+      .attr("x", ((hw/2) - (x_label.length*2))+large_padding )
       .attr("y", hw + (large_padding - small_padding) )
       .text( x_label );
 
     graphSvg.append("g")
-      .attr("class", "y label")
-      .attr("transform", "translate(10, "+ hw/2 +")")
+      .attr("transform", "translate(15, "+ (hw/2 + (y_label.length*2)) +")")
       .append("text")
+      .attr("class", "y label")
       .attr("transform", "rotate(-90)")
       .attr("text-anchor", "center")
       .text( y_label );
