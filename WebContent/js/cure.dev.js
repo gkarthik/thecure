@@ -177,11 +177,7 @@ CURE.stats = {
       command : "gamelogs",
     }
     $.getJSON("SocialServer", args, function(data) {
-      var timedata = _.map(data.chart, function(obj) {
-        obj["timestamp"] = obj["timestamp"]/1;
-        return obj;
-      });
-      CURE.utilities.drawLineGraph(timedata, "#chart");
+      CURE.utilities.drawLineGraph(data.chart, "#chart", "Games Won");
       CURE.utilities.drawPieChart(data.leaderboard, "#leaderPie");
     });
 
@@ -232,22 +228,10 @@ CURE.stats = {
       .attr('transform', 'translate('+ (large_padding) +', '+ small_padding +')')
       .call(yAxis.tickFormat('').tickSize(-width,0,0));
 
-    // var line = d3.svg.line()
-    //   .x(function(d) { return timeScale( d.timestamp ) })
-    //   .y(function(d) { return y( d.y ) })
-    //   .interpolate("basis");
-
-    // graphSvg.append('g')
-    //   .attr('class', 'line')
-    //   .attr('transform', 'translate('+ large_padding +', '+ small_padding +')')
-    //   .append('path')
-    //   .attr('class', 'line')
-    //   .attr('d', line( data.data ));
-
     graphSvg.append('g')
       .attr('class', 'bars')
       .attr('transform', 'translate('+ large_padding +', '+ (small_padding+height) +')').selectAll('rect')
-      .data( data.data ).enter()
+      .data( data ).enter()
       .append('rect')
         .attr('width', "12px")
         .attr('height', function(d) { return y( d.y ); })
@@ -662,7 +646,7 @@ CURE.boardgame = {
     //-- Check to see if the randomly selected card is already in 
     //a player's hand
     var used_cards = _.union( _(game.p1_hand).pluck('unique_id'), _(game.p2_hand).pluck('unique_id') )
-    
+
     if( _(used_cards).include( card_obj.unique_id ) ) {
       return game.getBarneysNextCard();
     } else {
@@ -1077,6 +1061,11 @@ CURE.utilities = {
       donut = d3.layout.pie(),
       arc = d3.svg.arc().innerRadius(r * .4).outerRadius(r);
 
+    var scores = _.pluck(data, "score");
+    var label_color = d3.scale.linear()
+      .domain([_.min(scores), _.max(scores)])
+      .range(["#FFF", "#000"]);
+
     var vis = d3.select(selEl)
       .append("svg:svg")
       .data([data])
@@ -1102,6 +1091,9 @@ CURE.utilities = {
         h = Math.sqrt(x*x + y*y);
         return "translate(" + (x/h * labelr) +  ',' + (y/h * labelr) +  ")"; 
     })
+    .attr("fill", function(d) {
+      return label_color(d.value);
+    })
     .attr("dy", ".35em")
     .attr("text-anchor", function(d) {
       // are we past the center?
@@ -1109,14 +1101,15 @@ CURE.utilities = {
     })
     .text(function(d, i) { return d.data.username; });
   },
-  drawLineGraph : function(data, targetEl, size){
-    var format = d3.time.format.utc('%Y-%m-%d');
-    var hw = size || 600;
-    var small_padding = hw*0.025;
-    var large_padding = hw*0.125;
+  drawLineGraph : function(data, targetEl, yLabel){
+    var format = d3.time.format.utc('%Y-%m-%d'),
+        hw = 600,
+        small_padding = hw*0.025,
+        large_padding = hw*0.125,
+        y_label = yLabel || "Y Axis",
+        x_label = "Competition Run Time";
 
     var x_values = _.pluck(data, "timestamp");
-    console.log(x_values);
     var x = d3.time.scale()
       .domain([format.parse('2012-09-01'), format.parse('2012-10-15')])
       .range([0, hw]);
@@ -1179,15 +1172,15 @@ CURE.utilities = {
       .attr("text-anchor", "center")
       .attr("x", (hw/2)+large_padding )
       .attr("y", hw + (large_padding - small_padding) )
-      .text( "data" );
+      .text( x_label );
 
-    graphSvg.append("text")
+    graphSvg.append("g")
       .attr("class", "y label")
-      .attr("text-anchor", "center")
-      .attr("dy", hw )
-      .attr("x", "100")
+      .attr("transform", "translate(10, "+ hw/2 +")")
+      .append("text")
       .attr("transform", "rotate(-90)")
-      .text( "data also" );
+      .attr("text-anchor", "center")
+      .text( y_label );
   },
   validateEmail : function(email) {
     var re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
