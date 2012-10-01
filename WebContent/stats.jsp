@@ -38,13 +38,12 @@
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
-            <div id="leaderPie"></div>
-          </div>
-
-          <div class="row">
             <div id="chart" class="stats_graph"></div>
           </div>
 
+          <div class="row">
+            <div id="leaderPie"></div>
+          </div>
         </div>
       </div>
 
