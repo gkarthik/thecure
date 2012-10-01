@@ -10,9 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.scripps.util.JdbcConnection;
 
@@ -235,6 +237,35 @@ public class Game {
 			e.printStackTrace();
 		}
 		return hands;
+	}
+	
+	public static Map<Calendar, Integer> getGamesPerDay(boolean only_winning){
+		Map<Calendar, Integer> day_games = new TreeMap<Calendar, Integer>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select YEAR(created), MONTH(created), DAY(created), count(*) as c from game group by YEAR(created), MONTH(created), DAY(created)";
+		if(only_winning){
+			q = "select YEAR(created), MONTH(created), DAY(created), count(*) as c from game where win = 1 group by YEAR(created), MONTH(created), DAY(created)"; 
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				int day = rslt.getInt(3);
+				int count = rslt.getInt(4);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				c.set(Calendar.DAY_OF_MONTH, day);
+				day_games.put(c, count);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return day_games;
 	}
 	
 	/**
