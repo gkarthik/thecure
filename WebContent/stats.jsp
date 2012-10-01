@@ -42,17 +42,9 @@
           </div>
 
           <div class="row">
-            <div id="compbar" class="stats_graph"></div>
+            <div id="chart" class="stats_graph"></div>
           </div>
 
-          <div class="row">
-            <div id="chart1" class="stats_graph"></div>
-          </div>
-
-          <div class="row">
-            <div id="heatmap" class="stats_graph"></div>
-          </div>
-        
         </div>
       </div>
 
