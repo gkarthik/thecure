@@ -35,13 +35,15 @@
         </div>
       </div>
 
-      <div class="container boardroom">
+      <div class="container stats">
         <div class="hero-unit">
           <div class="row">
-            <div id="chart" class="stats_graph"></div>
+            <h2>Games won per day</h2>
+            <div id="games_won" class="stats_graph"></div>
           </div>
 
           <div class="row">
+            <h2>Leader Board</h2>
             <div id="leaderPie"></div>
           </div>
         </div>

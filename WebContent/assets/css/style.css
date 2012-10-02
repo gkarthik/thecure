@@ -213,6 +213,15 @@ div.training h2 {
   padding: 10px 0px 10px 0px;
 }
 
+div.stats h2 {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 200;
+  font-size: 36px;
+  letter-spacing: 4px;
+  color: #3DAECC;
+  text-align: center;
+}
+
 div#games h3:hover { cursor: pointer; }
 
 /* About */
@@ -432,6 +441,7 @@ div#footer iframe.twitter-share-button {
 
 .stats_graph {
   position: relative;
+  height: 700px;
 }
 
 .stats_graph .rule line {
@@ -459,6 +469,13 @@ div#footer iframe.twitter-share-button {
   shape-rendering: crispEdges;
   stroke: #373c3f;
   fill: none;
+}
+
+.stats_graph text.label {
+  fill: #B2365F;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  font-size: 18px;
 }
 
 #boardgame {
@@ -743,3 +760,17 @@ span.lightfade {
     background-color: rba(0,0,0,.2);
     display: none;
 }
+
+#games_won {
+  width: 700px;
+  margin: 0 auto;
+}
+
+#leaderPie svg {
+  width: 600px;
+}
+#leaderPie {
+  width: 600px;
+  margin: 0 auto;
+}
+

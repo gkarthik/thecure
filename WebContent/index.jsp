@@ -72,15 +72,8 @@
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
             </div>
-
-         <!--    <div id="leaderboard">
-              <h3>Top Players</h3>
-              <ol></ol>
-            </div> -->
-			<div id="temp">
-			<p>Round 2 started! <br/><a href="round1.jsp">View Round 1 results</a></p>
-			</div>
-            <div id="twitterUserFeed">
+          <h4>Round 2 started! <br/><a href="round1.jsp">View Round 1 results</a></h4>
+          <div id="twitterUserFeed">
               <a class="twitter-timeline" href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
               <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
             </div>
@@ -90,6 +83,7 @@
         </div>
   <jsp:include page="footer.jsp" />
   <script src="js/libs/jquery-1.8.0.min.js"></script>
+  <script src="js/libs/jquery.plugins.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
   <script src="js/cure.js"></script>
