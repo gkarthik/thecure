@@ -196,6 +196,18 @@ div#main p {
   -webkit-appearance: none;
 }
 
+
+#column2 h4 {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  text-align: center;
+  padding: 14px;
+}
+
+#column2 h4 a {
+  text-decoration: none;
+  color: #B2365F;
+}
+
 #action #email input.emailsub:active {
  -webkit-box-shadow: 0px 0px 8px 0px #20282B;
           box-shadow: 0px 0px 8px 0px #20282B;
