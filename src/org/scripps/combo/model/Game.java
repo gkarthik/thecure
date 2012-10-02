@@ -20,7 +20,8 @@ import org.scripps.util.JdbcConnection;
 
 /**
  * @author bgood
-create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, ip varchar(30), player1_id int, player2_id int, updated timestamp, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, primary key (id));create table game_player_feature (game_id int, player_id int, feature_id int);
+create table game (id int(10) NOT NULL AUTO_INCREMENT, board_id int, ip varchar(30), player1_id int, player2_id int, updated timestamp, game_started timestamp, game_finished timestamp, p1_score int, p2_score int, win int, created Date, search_term varchar(200), primary key (id), unique key g1 (board_id, player1_id, game_finished));
+create table game_player_feature (game_id int, player_id int, feature_id int, unique key gpf1 (game_id, player_id, feature_id));
 create table game_card_ux(game_id int, feature_id int, time timestamp, panel varchar(50), board_hover boolean);
 create table game_mouse_action(game_id int, x int, y int, time timestamp);
 
@@ -104,11 +105,18 @@ public class Game {
 				hand.setWin(rslt.getInt("win"));
 				hand.setCreated(rslt.getDate("created"));
 				hand.setUpdated(rslt.getTimestamp("updated"));
-				hand.setGame_started(rslt.getTimestamp("game_started"));
+				
+				long ttest = rslt.getLong("game_started");
+				if(ttest==0){ //"0000-00-00 00:00:00"
+					hand.setGame_started(rslt.getTimestamp("game_finished"));
+				}else{
+					hand.setGame_started(rslt.getTimestamp("game_started"));
+				}
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hand.setSearch_term(rslt.getString("search_term"));		
+				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
 				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
-					hand.setFeaturesForGameToUniqueIds();
+					hand.setPlayer1FeaturesForGameToUniqueIds();
 					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
 				}
 			}
@@ -122,7 +130,25 @@ public class Game {
 		return hands;
 	}	
 	
-	private void setFeaturesForGameToUniqueIds() {
+	private void setFeaturesForGameWithDB(int game_id, int player1_id){
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select * from game_player_feature where game_id = "+game_id+" and player_id = "+player1_id);
+		player1_features = new ArrayList<String>();
+		try {
+			while(rslt.next()){
+				String feature_id = rslt.getString("feature_id");
+				player1_features.add(feature_id);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return;
+	}
+	
+	private void setPlayer1FeaturesForGameToUniqueIds() {
 		List<String> p1_f_us = new ArrayList<String>();
 		for(String p1_f : getPlayer1_features()){
 			Feature f = Feature.getByDbId(Integer.parseInt(p1_f));
@@ -132,14 +158,14 @@ public class Game {
 		}
 		setPlayer1_features(p1_f_us);
 		
-		List<String> p2_f_us = new ArrayList<String>();
-		for(String p2_f : getPlayer2_features()){
-			Feature f = Feature.getByDbId(Integer.parseInt(p2_f));
-			if(f!=null){
-				p2_f_us.add(f.getUnique_id());
-			}
-		}
-		setPlayer2_features(p2_f_us);
+//		List<String> p2_f_us = new ArrayList<String>();
+//		for(String p2_f : getPlayer2_features()){
+//			Feature f = Feature.getByDbId(Integer.parseInt(p2_f));
+//			if(f!=null){
+//				p2_f_us.add(f.getUnique_id());
+//			}
+//		}
+//		setPlayer2_features(p2_f_us);
 	}
 
 	/**
@@ -175,6 +201,8 @@ public class Game {
 				hand.setCreated(rslt.getDate("created"));
 				hand.setUpdated(rslt.getTimestamp("updated"));
 				hand.setSearch_term(rslt.getString("search_term"));
+				//might want to add an index if this is too slow
+				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
 				long ttest = rslt.getLong("game_started");
 				if(ttest==0){ //"0000-00-00 00:00:00"
 					hand.setGame_started(rslt.getTimestamp("game_finished"));

@@ -49,7 +49,7 @@ public class Player {
 	
 	public static void describePlayers(boolean all_hands){
 		List<Player> players = Player.getAllPlayers();
-		Map<String, Player> name_player = Player.playerListToMap(players);
+		Map<Integer, Player> name_player = Player.playerListToIdMap(players);
 		GameLog log = new GameLog();
 		List<Game> wm = null;
 		if(all_hands){
@@ -157,10 +157,10 @@ public class Player {
 		return player;
 	}
 
-	public static Map<String, Player> playerListToMap(List<Player> players){
-		Map<String, Player> name_player = new HashMap<String, Player>();
+	public static Map<Integer, Player> playerListToIdMap(List<Player> players){
+		Map<Integer, Player> name_player = new HashMap<Integer, Player>();
 		for(Player p : players){
-			name_player.put(p.getName(), p);
+			name_player.put(p.getId(), p);
 		}
 		return name_player;
 	}
