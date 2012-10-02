@@ -171,10 +171,17 @@ public class Weka {
 			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
-	
-	public execution pruneAndExecuteWithFeatureIds(List<String> f_ids, Classifier wekamodel, String dataset) {
+	/**
+	 * unique ids match are used for the keys in the features table
+	 * they are external unqiue ids
+	 * @param unique_ids
+	 * @param wekamodel
+	 * @param dataset
+	 * @return
+	 */
+	public execution pruneAndExecuteWithUniqueIds(List<String> unique_ids, Classifier wekamodel, String dataset) {
 		String indices = "";
-		for(String fid : f_ids){
+		for(String fid : unique_ids){
 			Feature f = features.get(fid);
 			for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
 				if(a.getDataset().equals(dataset)){
