@@ -258,7 +258,7 @@ public class Feature {
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
 		Instances data = weka.getTrain();
-		Map<Integer, Float> index_relief = weka.getRelief();
+		Map<String, Float> index_relief = weka.getRelief();
 		for(int a=0; a<data.numAttributes(); a++){
 			weka.core.Attribute att = data.attribute(a);
 			if(att.index()!=data.classIndex()){
@@ -273,7 +273,7 @@ public class Feature {
 				combo_att.setDataset(dataset);
 				combo_att.setFeature_id(f_id);
 				combo_att.setName(att.name());
-				combo_att.setReliefF(index_relief.get(att.index()));
+				combo_att.setReliefF(index_relief.get(att.name()));
 				combo_att.insert();
 			}
 		}				

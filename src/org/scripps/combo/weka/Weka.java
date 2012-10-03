@@ -83,8 +83,8 @@ public class Weka {
 	} 
 
 	
-	public Map<Integer, Float> getRelief(){
-		Map<Integer, Float> index_value = new HashMap<Integer, Float>();
+	public Map<String, Float> getRelief(){
+		Map<String, Float> index_value = new HashMap<String, Float>();
 		//set the reliefF value for the attribute
 		AttributeSelection as = new AttributeSelection();
 		Ranker ranker = new Ranker();
@@ -101,14 +101,8 @@ public class Weka {
 			for(int att=0; att<ranked.length; att++){
 				int att_id = (int)ranked[att][0];
 				float att_value = (float)ranked[att][1];
-				index_value.put(att_id, att_value);
-//				Attribute tmp = getTrain().attribute(att_id);
-//				card c = att_meta.get(tmp.name());
-//				if(c==null){
-//					c = new card(tmp.index(), tmp.name(), tmp.name(), "_");
-//				}
-//				c.setPower(att_value);
-//				att_meta.put(tmp.name(), c);
+				Attribute tmp = getTrain().attribute(att_id);
+				index_value.put(tmp.name(), att_value);
 			}
 			setTrain(filtered);
 			//	System.out.println(ranked[0][0]+" "+ranked[0][1]);

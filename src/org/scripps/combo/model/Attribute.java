@@ -52,24 +52,37 @@ public class Attribute {
 		//No feature 1 for ILMN_1777971
 		//No feature 1 for ILMN_1715947
 		//somewhere there needs to be a mapping between the attribute id and the feature id
-		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Illumina2entrez_extras.tsv";
+		//		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Illumina2entrez_extras.tsv";
 		//there also needs to be a weka-structured dataset so we can pull out the column index
-		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";	
-		String dataset_name = "dream_breast_cancer_2";
-		load(dataset_name, weka_data, att_info_file);
-//		Attribute v1 = Attribute.getByAttNameDataset("ILMN_1679920", "dream_breast_cancer");
-		/**
-		 * still missing
-		 * ILMN_1872419	NA
-ILMN_1833858	NA
-9948
-990
-9965
-9906
-		 */
-//		System.out.println(v1.feature_id);
+		//		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";	
+		//		String dataset_name = "dream_breast_cancer_2";
+		//		load(dataset_name, weka_data, att_info_file);
+		//		Attribute v1 = Attribute.getByAttNameDataset("ILMN_1679920", "dream_breast_cancer");
+		//		System.out.println(v1.feature_id);
+		String dataset = "dream_breast_cancer_2";
+		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
+		setReliefValue(dataset, weka_data);
 	}
 
+	//set the relief value for all attributes
+	//integrate it with the frequency information to make a final ranking..
+	public static void setReliefValue(String dataset_name, String weka_data) throws FileNotFoundException, Exception{
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(weka_data), null, dataset_name);
+		Map<String, Float> index_relief = weka.getRelief();
+		//String atest = "ILMN_1737586"; //0.0413
+		for(String index : index_relief.keySet()){
+			weka.core.Attribute tmp = weka.getTrain().attribute(index);
+			//System.out.println(tmp.name()+"\t"+index_relief.get(index));
+			Attribute dbatt = Attribute.getByAttNameDataset(index, dataset_name);
+			if(dbatt!=null){
+				dbatt.setReliefF(index_relief.get(index));
+				dbatt.updateRelief();
+			}else{
+				System.out.println("Att missing\t"+index+"\t"+dataset_name);
+			}
+		}
+	}
 
 	/**
 	 *Load up attributes from a weka dataset - make sure they map to rows in the feature table
@@ -100,7 +113,7 @@ ILMN_1833858	NA
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	
+
 		//declare what dataset this is
 		//String dataset_name = "dream_breast_cancer";
 		try {	
@@ -150,7 +163,7 @@ ILMN_1833858	NA
 		} 
 
 	}
-	
+
 	public static Attribute getByAttNameDataset(String att_name, String dataset){
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select attribute.* from attribute where name = '"+att_name+"' and dataset = '"+dataset+"'";
@@ -176,7 +189,7 @@ ILMN_1833858	NA
 		}
 		return a;
 	}
-	
+
 	public static List<Attribute> getByFeatureUniqueId(String unique_id){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();
@@ -231,6 +244,26 @@ ILMN_1833858	NA
 			e.printStackTrace();
 		}
 		return atts;
+	}
+
+	public int updateRelief() throws SQLException{
+		int newid = 0;
+		JdbcConnection conn = new JdbcConnection();
+		PreparedStatement pst = null;
+		try {
+			pst = conn.connection.prepareStatement(
+					"update attribute set reliefF = "+getReliefF()+" where id = "+getId());
+			int affectedRows = pst.executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Updating attribute failed, no rows affected.");
+			}
+			pst.close();
+			conn.connection.close();
+		} finally {
+			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}
+		return newid;
 	}
 
 	public int insert() throws SQLException{

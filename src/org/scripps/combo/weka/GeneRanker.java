@@ -5,11 +5,14 @@ package org.scripps.combo.weka;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +29,7 @@ import org.scripps.combo.Boardroom;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.Boardroom.boardview;
+import org.scripps.combo.model.Attribute;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
@@ -59,30 +63,82 @@ public class GeneRanker {
 	 */
 	public static void main(String[] args) throws Exception {		
 		Map<String, gene_rank> gid_ranked = null;
-		String dataset = "dream_breast_cancer";
+		String dataset_1 = "dream_breast_cancer";
+		String dataset_2 = "dream_breast_cancer_2";
 		GeneRanker ranker = new GeneRanker();
 		boolean only_winning = false;
 		boolean only_cancer_people = true;
 		boolean only_bio_people = false;
 		boolean only_phd = false;
-		gid_ranked = ranker.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
+		gid_ranked = ranker.getRankedGenes(dataset_1, only_winning, only_cancer_people, only_bio_people, only_phd);
+		gid_ranked = ranker.addReliefToGeneRanking(gid_ranked);
+		gid_ranked = ranker.scaleRelief(gid_ranked);
 		List<gene_rank> gr = new ArrayList<gene_rank>(gid_ranked.values());
-		Collections.sort(gr);
-		Collections.reverse(gr);
+		Collections.shuffle(gr);
+		//gr = ranker.sortByRelief(gr);
+		//gr = ranker.sortByReliefAndFrequency(gr);
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
+		ranker.initWeka(train_file, dataset_2);
 
-		//		for(gene_rank r : gr){
-		//			System.out.println(r.f_id+"\t"+r.entrez+"\t"+r.symbol+"\t"+r.views+"\t"+r.votes+"\t"+r.votes/r.views);
-		//		}
-
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes_v1.arff";
-		ranker.initWeka(train_file, dataset);
-		boolean printout = false;
-		int runs = 50;
+		int runs = 125;
 		System.out.println("N_genes\tcv_score");
-		for(int run=5; run<=runs; run+=5){
+		for(int run=5; run<=runs; run=run*5){
 			Classifier model = new RandomForest();
 			String[] options = new String[4];
-			options[0] = "-I"; options[1] = "500";
+			options[0] = "-I"; options[1] = "100";
+			options[2] = "-K"; options[3] = "5";
+			try {
+				model.setOptions(options);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			List<String> test_fs = new ArrayList<String>();
+			for(int i=0; i< run; i++){
+				//don't use genes not in next dataset
+				Feature f = ranker.weka.features.get(gr.get(i).entrez);
+				if(f!=null){
+					test_fs.add(gr.get(i).entrez);
+				}
+			}		
+			float cv = ranker.testGeneList(test_fs, dataset_2, false, model);
+			System.out.println(test_fs.size()+"\t"+cv);
+		}
+
+	}
+
+	/**
+	 * Select a set of played hands based on player filters (always limited to first hand per player per board)
+	 * Calculate the frequency with which each gene is selected
+	 * Sort based on frequency and reliefF measure for the attribute
+	 * Use top N genes to train/test classifiers
+	 * @throws FileNotFoundException
+	 * @throws Exception
+	 */
+	public void testRankings() throws FileNotFoundException, Exception{
+		Map<String, gene_rank> gid_ranked = null;
+		String dataset = "dream_breast_cancer";
+		boolean only_winning = false;
+		boolean only_cancer_people = false;
+		boolean only_bio_people = true;
+		boolean only_phd = false;
+		gid_ranked = getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
+		gid_ranked = addReliefToGeneRanking(gid_ranked);
+		gid_ranked = scaleRelief(gid_ranked);
+		List<gene_rank> gr = new ArrayList<gene_rank>(gid_ranked.values());
+		gr = sortByReliefAndFrequency(gr);
+
+		String outlist = "/Users/bgood/workspace/acure/database/ranking_r1_biologists.txt";
+		writeFile(outlist, gr);
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_2500genes_v1.arff";
+		initWeka(train_file, dataset);
+		boolean printout = false;
+		int runs = 125;
+		System.out.println("N_genes\tcv_score");
+		for(int run=5; run<=runs; run=run*5){
+			Classifier model = new RandomForest();
+			String[] options = new String[4];
+			options[0] = "-I"; options[1] = "100";
 			options[2] = "-K"; options[3] = "5";
 			try {
 				model.setOptions(options);
@@ -94,16 +150,78 @@ public class GeneRanker {
 			for(int i=0; i< run; i++){
 				test_fs.add(gr.get(i).entrez);
 			}		
-			float cv = ranker.testGeneList(test_fs, dataset, printout, model);
+			float cv = testGeneList(test_fs, dataset, printout, model);
 			System.out.println(run+"\t"+cv);
 		}
 		
-		//ranker.testHGF(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
-		
-		//	generateRandomBaseline(n_genes, 1000, dataset, train_file);
-		//	Player.describePlayers(true);
 	}
 
+	public List<gene_rank> sortByRelief(List<gene_rank> ranked){
+		//sort in descending order of the addition of relief and selection frequency
+		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
+			public int compare(gene_rank compare, gene_rank compareto) {
+				Float r2 = compareto.relief; 
+				Float r1 = compare.relief;
+				return r2.compareTo(r1);
+			}
+		};
+		Collections.sort(ranked, MergeOrder);
+		return ranked;
+	}
+	
+	public List<gene_rank> sortByReliefAndFrequency(List<gene_rank> ranked){
+		//sort in descending order of the addition of relief and selection frequency
+		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
+			public int compare(gene_rank compare, gene_rank compareto) {
+				Float r2 = compareto.relief; 
+				Float r1 = compare.relief;
+				Float f2 = compareto.votes/compareto.views;
+				Float f1 = compare.votes/compare.views;
+				Float r1_merge = r1+f1;
+				Float r2_merge = r2+f2;
+				return r2_merge.compareTo(r1_merge);
+			}
+		};
+		Collections.sort(ranked, MergeOrder);
+		return ranked;
+	}
+	
+	/**
+	 * Divide all the relief values by the max to get a -1 to 1 scale.
+	 * @param gid_ranked
+	 * @return
+	 */
+	public Map<String, gene_rank> scaleRelief(Map<String, gene_rank> gid_ranked) {
+		float max = -1;
+		for(gene_rank gr : gid_ranked.values()){
+			if(max<gr.relief){
+				max = gr.relief;
+			}
+		}
+		for(String fid : gid_ranked.keySet()){
+			gene_rank gr = gid_ranked.get(fid);
+			gr.relief = gr.relief/max;
+			gid_ranked.put(fid, gr);
+		}
+		return gid_ranked;
+	}
+
+
+	public void writeFile(String filename, List<gene_rank> grs){
+		try {
+			FileWriter f = new FileWriter(filename);
+			f.write("f_id\tentrez\tsymbol\tviews\tvote\tvotes/views\trelief\trelief_plus_f\n");
+			for(gene_rank r : grs){
+				float merge = ((r.votes/r.views) + r.relief);
+				f.write(r.f_id+"\t"+r.entrez+"\t"+r.symbol+"\t"+r.views+"\t"+r.votes+"\t"+r.votes/r.views+"\t"+r.relief+"\t"+merge+"\n");
+			}
+			f.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public gene_rank makeGene_rank(){
 		gene_rank r = new gene_rank();
 		r.frequency = 0;
@@ -112,7 +230,7 @@ public class GeneRanker {
 		return r;
 	}
 
-	public class gene_rank implements Comparable{
+	public class gene_rank implements Comparable<gene_rank>{
 
 		String f_id;
 		String entrez;
@@ -120,17 +238,58 @@ public class GeneRanker {
 		float frequency;
 		float views;
 		float votes;
+		float relief;
 		List<Integer> board_id;
 		@Override
-		public int compareTo(Object arg0) {
+		public int compareTo(gene_rank arg0) {
 			gene_rank compareto = (gene_rank)arg0;
 			Float fcomp = compareto.votes/compareto.views;
 			Float f = this.votes/this.views;
-			return f.compareTo(fcomp);
+			if(f==fcomp){
+				Float views = this.views;
+				Float cviews = compareto.views;
+				return cviews.compareTo(views);
+			}else{
+				return fcomp.compareTo(f);
+			}
 		}
 	}
 
+	public Map<String, gene_rank> addReliefToGeneRanking(Map<String, gene_rank> gene_ranked){
+		//add relief
+		for(String fid : gene_ranked.keySet()){
+			Feature f = Feature.getByDbId(Integer.parseInt(fid));
+			if(f!=null){
+				f.getMappedAttributesFromDb();
+				if(f.getDataset_attributes()!=null){
+					float maxRelief = -1;
+					for(Attribute att : f.getDataset_attributes()){
+						if(att.getReliefF()>maxRelief){
+							maxRelief = att.getReliefF();
+						}
+					}
+					gene_rank gr = gene_ranked.get(fid);
+					gr.relief = maxRelief;
+					gene_ranked.put(fid, gr);
+				}
+			}
+		}
+		
+		return gene_ranked;
+	}
+	
 
+	/**
+	 * Get data for ranking genes based on selection frequency
+	 * Results returned unsorted
+	 * Returns map with the feature id in our database as the key and a gene_rank object as the value
+	 * @param dataset
+	 * @param only_winning
+	 * @param only_cancer_people
+	 * @param only_bio_people
+	 * @param only_phd
+	 * @return
+	 */
 	public Map<String, gene_rank> getRankedGenes(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 
 		List<Game> hands = getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
@@ -177,6 +336,15 @@ public class GeneRanker {
 		return gene_ranked;
 	}
 
+	/**
+	 * Filter games based on the dataset they came from and the characteristics of who played them
+	 * @param dataset
+	 * @param only_winning
+	 * @param only_cancer_people
+	 * @param only_bio_people
+	 * @param only_phd
+	 * @return
+	 */
 	public List<Game> getFilteredGameList(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 
 		//get the hands		
@@ -224,6 +392,17 @@ public class GeneRanker {
 		return hands;
 	}
 	
+	/**
+	 * Build a voting classifier, each completed hand is used to make a decision tree and is given one vote
+	 * classifications made using majority rule.  Simple version of bagging that is similar but less
+	 * sophisticated than a random forest as it does not involve boostrap resampling of the training data
+	 * @param dataset
+	 * @param only_winning
+	 * @param only_cancer_people
+	 * @param only_bio_people
+	 * @param only_phd
+	 * @return
+	 */
 	public float testHGF(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 		float cv = 0;
 		List<Game> hands = getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
@@ -277,6 +456,7 @@ public class GeneRanker {
 		cv = short_result.getAccuracy();
 		return cv;
 	}
+
 	
 	/**
 	 * Get an id what random sampling would look like
