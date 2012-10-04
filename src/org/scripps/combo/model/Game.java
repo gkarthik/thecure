@@ -253,7 +253,12 @@ public class Game {
 				hand.setWin(rslt.getInt("win"));
 				hand.setCreated(rslt.getDate("created"));
 				hand.setUpdated(rslt.getTimestamp("updated"));
-				hand.setGame_started(rslt.getTimestamp("game_started"));
+				long ttest = rslt.getLong("game_started");
+				if(ttest==0){ //"0000-00-00 00:00:00"
+					hand.setGame_started(rslt.getTimestamp("game_finished"));
+				}else{
+					hand.setGame_started(rslt.getTimestamp("game_started"));
+				}
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hand.setSearch_term(rslt.getString("search_term"));
 				hands.add(hand);

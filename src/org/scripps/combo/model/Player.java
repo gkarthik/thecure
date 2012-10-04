@@ -42,9 +42,12 @@ public class Player {
 	Map<String, Map<Integer,Integer>> dataset_board_scores; 
 //	List<Integer> barney_levels;	
 
-
 	public Player() {
 		dataset_board_scores = new HashMap<String, Map<Integer,Integer>>();
+	}
+	
+	public static void main(String[] args){
+		describePlayers(true);
 	}
 	
 	public static void describePlayers(boolean all_hands){
@@ -58,9 +61,12 @@ public class Player {
 			wm = Game.getTheFirstGamePerPlayerPerBoard(false, null);
 		}
 			//remove mammal
+		List<Game> mammalhands = new ArrayList<Game>();
 		List<Game> hands = new ArrayList<Game>();
 		for(Game hand : wm){
 			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
+				mammalhands.add(hand);
+			}else{
 				hands.add(hand);
 			}
 		}
@@ -79,13 +85,15 @@ public class Player {
 		System.out.println("name	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
 		GameLog.high_score sb = log.getScoreBoard(hands);
 	
-		for(String name : sb.getPlayer_avg().keySet()){
-			if(name_player.get(name)!=null){
-				TimeCounter tc = new TimeCounter(""+name_player.get(name).getId());
+		for(Player player : players){
+			String name = player.getName();
+			int id = player.getId();
+			if(name_player.get(id)!=null){
+				TimeCounter tc = new TimeCounter(""+id);
 				System.out.println(name+"\t"+
-						name_player.get(name).getBiologist()+"\t"+
-						name_player.get(name).getCancer()+"\t"+
-						name_player.get(name).getDegree()+"\t"+
+						player.getBiologist()+"\t"+
+						player.getCancer()+"\t"+
+						player.getDegree()+"\t"+
 						sb.getPlayer_max().get(name)+"\t"
 						+sb.getPlayer_avg().get(name)+"\t"+
 						sb.getPlayer_global_points().get(name)+"\t"+
