@@ -39,6 +39,9 @@ public class TimeCounter {
 	 */
 	public void setForUser(String user_id){
 		List<Card> cards = Card.getAllPlayedCards(user_id);
+		if(cards==null||cards.size()==0){
+			return;
+		}
 		Calendar t_prev = Calendar.getInstance();
 		int i = 0; long delta = 0; int c = 0;
 		String prev_board = cards.get(0).getBoard_id();

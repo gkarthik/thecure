@@ -121,7 +121,7 @@ public class Card {
 	public static Map<String, Integer> getBoardCardCount(int user_id ){
 		Map<String, Integer> board_count = new HashMap<String, Integer>();
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select board_id, count(*) from card where user_id = '"+user_id+"' group by username, board_id";
+		String q = "select board_id, count(*) from card where user_id = '"+user_id+"' group by user_id, board_id";
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){
