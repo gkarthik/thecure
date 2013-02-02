@@ -55,7 +55,7 @@ public class SocialServer extends HttpServlet {
 			String dataset = request.getParameter("dataset");
 			GameLog log = new GameLog();
 			boolean winning_only = true;
-			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only, dataset);
+			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only, dataset, true);
 			GameLog.high_score sb = log.getScoreBoard(hands);
 			String json = log.getD3CompatibleJson(sb);
 			response.setContentType("text/json");
