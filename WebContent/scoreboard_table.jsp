@@ -7,7 +7,7 @@
 <%
   GameLog log = new GameLog();
   String dataset = "dream_breast_cancer_2"; //use dream_breast_cancer for round 1 data 
-  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, dataset);
+  List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, dataset, true);
   GameLog.high_score sb = log.getScoreBoard(whs);
   Player player = (Player) session.getAttribute("player");
   boolean show_player = false;

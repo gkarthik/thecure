@@ -173,7 +173,7 @@ public class Game {
 	 * @param dataset 
 	 * @return
 	 */
-	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset){
+	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset, boolean forscoreboard){
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game order by game_finished asc";
 		if(only_winning){
@@ -201,8 +201,10 @@ public class Game {
 				hand.setCreated(rslt.getDate("created"));
 				hand.setUpdated(rslt.getTimestamp("updated"));
 				hand.setSearch_term(rslt.getString("search_term"));
-				//might want to add an index if this is too slow
-				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
+				//no need for this info in current live game
+				if(!forscoreboard){
+					hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
+				}
 				long ttest = rslt.getLong("game_started");
 				if(ttest==0){ //"0000-00-00 00:00:00"
 					hand.setGame_started(rslt.getTimestamp("game_finished"));
