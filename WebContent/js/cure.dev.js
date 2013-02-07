@@ -920,7 +920,7 @@ CURE.boardroom = {
           font_size = text_size;
      ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled";
 
-     if ( v.enabled == false ) {
+     if ( v.enabled == false || v.attempts > 10) {
         content = "&#8226;";
         font_size = font_size*3;
         top_pos = (hw*.2);
