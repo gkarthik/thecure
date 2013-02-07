@@ -42,7 +42,14 @@
       <div class="row">
         <div  id="results">
           <div id="leaderboard">
-    <h2>Scoreboard for first round</h3>
+    <h2>Scoreboard for first round</h2>
+
+     <h3 class="datadescription" id="data">The Data</h3>
+              <div id="datadescription">
+                <p>The data used to run this game was provided by the SAGE7 challenge.  (Note that we are not affiliated with SAGE7 beyond acting as participants. ) For detailed information, check out their <a href="https://sagebionetworks.jira.com/wiki/display/BCC/Breast+Cancer+Challenge%3A+Detailed+Description">technical information</a>. When you select genes in the game, predictive models are constructed using information from both gene expression and copy number variation.  Clinical information is not included at this time.  Each board contains a different set of genes.</p>
+                <p>The training dataset comes from the METABRIC cohort of 2,000 breast cancer samples and includes detailed clinical annotations, 10 median year survival time, gene expression, and copy number data for 1’000 samples. Gene expression levels have been selected based on probe match quality and signal intensity compared to the overall median, then ranked based on their variance across the  samples. We selected the probes with the highest variance corresponding to 1500 unique genes. Similarly, we ranked copy number data based on the sum of squares across the  samples, and selected the top 1000 unique genes. Finally, we merged CNV, gene expression and survival data in a single table with 2500 unique genes. This table is used to generate the hundred boards in The Cure.</p>
+              </div>
+ 
     <h3><a href="boardroom.jsp">Play current round!</a></h3>
     <h3>
       <span class="rank">Rank</span>

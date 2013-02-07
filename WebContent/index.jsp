@@ -28,7 +28,7 @@
           <div id="sections" class="section">
             <h3 class="about">About</h3>
             <div id="about" style="display: none;">
-              <p>TheCure is a serious, biology-based card game. Assemble the best hands and you can win - just like poker. The challenge with TheCure is that we don't know the rules yet! Until you play, we can't tell you if you have the equivalent of a royal flush or a pair of 2s. By playing the game, you will be both teaching and learning the rules of nature.</p>
+              <p>The Cure is a serious, biology-based card game. Assemble the best hands and you can win - just like poker. The challenge with The Cure is that we don't know the rules yet! Until you play, we can't tell you if you have the equivalent of a royal flush or a pair of 2s. By playing the game, you will be both teaching and learning the rules of nature.</p>
             </div>
             <h3 class="background">Background</h3>
             <div id="background" style="display: none;">
@@ -42,9 +42,9 @@
             <div id="idea" style="display: none;">
               <p>One advantage when it comes to addressing these problems is our increasing understanding of biology. Our knowledge of genes, biological mechanisms and disease is growing exponentially and much of this knowledge is available on the Web. When we start looking for predictive patterns in a dataset such as the breast cancer example, we can use this knowledge to guide our search. TheCure was created as a fun way to solicit help in guiding the search for stable patterns that can be used to make biologically and medically important predictions.  When people play TheCure they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions about the best combinations of variables (e.g. genes) to use to build predictive patterns. These combos are the &lsquo;hands&rsquo; in TheCure card game. Every time a game is played, the hands are evaluated and stored. Eventually predictors will be developed using advanced machine learning algorithms that are informed by the hands played in the game.</p>
             </div>
-            <h3 class="mission">Current mission: <br /> <span class="pink">DREAM7 challenge</span></h3>
+            <h3 class="mission">Current mission: <br /> <span class="pink">Griffith MetaStudy</span></h3>
             <div id="mission" style="display: none;">
-              <p>TheCure team is currently working on the <a href="http://www.the-dream-project.org/challenges/sage-bionetworks-dream-breast-cancer-prognosis-challenge">DREAM7 breast cancer prognosis challenge</a>.  The goal is to, by October 14, create the world&#8217;s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  <a href="login.jsp">Join us now!</a></p>
+              <p>The Cure team is currently working on creating the world&#8217;s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  <a href="login.jsp">Join us now!</a></p>
             </div>
             <h3 class="contact">Contact</h3>
             <div id="contact" style="display: none;">
@@ -57,7 +57,7 @@
                   <p>Anyone is welcome to play.  The more you know about biology and disease at the level of gene function, the better you are likely to do, but you can also learn as you go.  The game provides a lot of information about the genes as well as links off to related Web resources.  We hope that anyone who plays will learn something about gene function.</p>
                 </li>
                 <li><h4>How do you evaluate the quality of the data provided by game players?</h4>
-                  <p>The predictors generated using thecure data are evaluated for accuracy on independent test datasets - just like any other predictor inferred by experts or by statistics would be.
+                  <p>The predictors generated using The Cure data are evaluated for accuracy on independent test datasets - just like any other predictor inferred by experts or by statistics would be.
               By testing on real data, we can tell the good players apart from those that are guessing randomly.  Since each player action in the game is associated with their account, it is then very easy to filter out data that is not useful.  
               This approach, while it may seem strange for a scientific project, follows the &lsquo;publish then filter&rsquo; approach that has made the Web so successful.  We hope that it encourages many people to share their time and their intelligence with the project.</p>
               </li>
@@ -72,7 +72,7 @@
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
             </div>
-          <h4>Round 2 started! <br/><a href="round1.jsp">View Round 1 results</a></h4>
+          <h4>Round 3 started! <br/>View results from <a href="round1.jsp"> Round 1</a>, <a href="round2.jsp"> Round 2 </a></h4>
           <div id="twitterUserFeed">
               <a class="twitter-timeline" href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
               <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>

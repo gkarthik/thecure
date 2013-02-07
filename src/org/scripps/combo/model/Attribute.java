@@ -67,7 +67,7 @@ public class Attribute {
 		//there also needs to be a weka-structured dataset so we can pull out the column index
 		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";	
 		String dataset_name = "griffith_breast_cancer_1";
-		//load(dataset_name, weka_data, att_info_file);
+		load(dataset_name, weka_data, att_info_file);
 		setReliefValue(dataset_name, weka_data);
 	}
 
