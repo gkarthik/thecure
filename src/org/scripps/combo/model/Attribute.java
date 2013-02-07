@@ -59,9 +59,16 @@ public class Attribute {
 		//		load(dataset_name, weka_data, att_info_file);
 		//		Attribute v1 = Attribute.getByAttNameDataset("ILMN_1679920", "dream_breast_cancer");
 		//		System.out.println(v1.feature_id);
-		String dataset = "dream_breast_cancer_2";
-		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
-		setReliefValue(dataset, weka_data);
+//		String dataset = "dream_breast_cancer_2";
+//		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
+//		setReliefValue(dataset, weka_data);
+		
+		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_meta.txt";
+		//there also needs to be a weka-structured dataset so we can pull out the column index
+		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";	
+		String dataset_name = "griffith_breast_cancer_1";
+		//load(dataset_name, weka_data, att_info_file);
+		setReliefValue(dataset_name, weka_data);
 	}
 
 	//set the relief value for all attributes
@@ -91,7 +98,7 @@ public class Attribute {
 	 * @throws Exception 
 	 */
 	public static void load(String dataset_name, String weka_data, String att_info_file) throws Exception {
-		//Att_name	Gene_symbol	Entrez
+		//Att_name	Entrez	Gene_symbol
 		Map<String, String> att_uni = new HashMap<String, String>();
 		BufferedReader f;
 		try {			
@@ -101,7 +108,7 @@ public class Attribute {
 			while(line!=null){
 				c++;
 				String[] items = line.split("\t");
-				String uid = items[1]; String att = items[0];
+				String uid = items[2]; String att = items[0];
 				att_uni.put(att, uid);
 				line = f.readLine(); 
 			}
@@ -132,7 +139,7 @@ public class Attribute {
 						Feature feat = Feature.getByUniqueId(unique_id);
 						if(feat==null){//meaning that the mapping table presented here is not aligned with the feature database
 							//see if we have already got it
-							Attribute v1 = Attribute.getByAttNameDataset(name, "dream_breast_cancer");
+							Attribute v1 = Attribute.getByAttNameDataset(name, dataset_name);
 							if(v1!=null){
 								feat = Feature.getByDbId(v1.getFeature_id());
 							}

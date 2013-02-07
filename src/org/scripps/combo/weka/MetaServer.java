@@ -106,20 +106,35 @@ public class MetaServer extends HttpServlet {
 //					e.printStackTrace();
 //				}
 		//dream 2 data
-				try {
-					String dataset = "dream_breast_cancer_2";
-					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff");
-					Weka dream_weka = new Weka();
-					dream_weka.buildWeka(train_loc, null, dataset);			
-					name_dataset.put(dataset, dream_weka);	
-					train_loc.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}		
+//				try {
+//					String dataset = "dream_breast_cancer_2";
+//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff");
+//					Weka dream_weka = new Weka();
+//					dream_weka.buildWeka(train_loc, null, dataset);			
+//					name_dataset.put(dataset, dream_weka);	
+//					train_loc.close();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (Exception e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}		
+		//Griffith data
+		try {
+			String dataset = "griffith_breast_cancer_1";
+			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/griffith/griffith_breast_cancer_1.arff");
+			Weka weka = new Weka();
+			weka.buildWeka(train_loc, null, dataset);			
+			name_dataset.put(dataset, weka);	
+			train_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 
 	/**
