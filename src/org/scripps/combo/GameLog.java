@@ -51,8 +51,9 @@ public class GameLog {
 		pheno_multiplier.put("zoo", 0);
 		pheno_multiplier.put("vantveer", 0);
 		pheno_multiplier.put("coronal_case_control", 0);
-		pheno_multiplier.put("griffith_full_filtered", 0);
+		pheno_multiplier.put("griffith_breast_cancer_1", 21);
 		pheno_multiplier.put("dream_breast_cancer", 21);
+		pheno_multiplier.put("dream_breast_cancer_2", 21);
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
 	}
@@ -67,7 +68,7 @@ public class GameLog {
 //			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer1_id()+"\t"+hand.getP1_score());
 //		}
 		
-		GameLog.high_score sb = log.getScoreBoard(whs);
+		GameLog.high_score sb = log.getScoreBoard(whs, "dream_breast_cancer");
 //		SimpleDateFormat f = new SimpleDateFormat();
 //		for(Entry<Calendar,Integer> date_game : sb.getDate_games().entrySet()){
 //			System.out.println(f.format(date_game.getKey().getTime())+"\t"+date_game.getValue());
@@ -201,7 +202,7 @@ public class GameLog {
 	
 
 	
-	public high_score getScoreBoard(List<Game> hands){
+	public high_score getScoreBoard(List<Game> hands, String dataset){
 		high_score scores = new high_score();
 		
 		Map<Integer, Player> id_player = Player.mapPlayersByDbId(Player.getAllPlayers());
@@ -221,7 +222,7 @@ public class GameLog {
 			int multiplier = 1; int board_performance = 1;
 			board_performance = hand.getP1_score();
 
-			String tmp = "dream_breast_cancer";
+			String tmp = dataset;
 			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
 				tmp = "mammal";
 			}

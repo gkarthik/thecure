@@ -47,10 +47,10 @@ public class Player {
 	}
 	
 	public static void main(String[] args){
-		describePlayers(true);
+		describePlayers(true, "dream_breast_cancer");
 	}
 	
-	public static void describePlayers(boolean all_hands){
+	public static void describePlayers(boolean all_hands, String dataset){
 		List<Player> players = Player.getAllPlayers();
 		Map<Integer, Player> name_player = Player.playerListToIdMap(players);
 		GameLog log = new GameLog();
@@ -83,7 +83,7 @@ public class Player {
 		}
 	
 		System.out.println("name	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
-		GameLog.high_score sb = log.getScoreBoard(hands);
+		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
 	
 		for(Player player : players){
 			String name = player.getName();
