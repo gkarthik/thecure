@@ -40,6 +40,7 @@ import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
+import org.scripps.util.JdbcConnection;
 import org.scripps.util.Mail;
 import org.scripps.util.MapFun;
 
@@ -74,11 +75,30 @@ public class MetaServer extends HttpServlet {
 		//load all active datasets
 		ServletContext context = config.getServletContext();
 
+		//configure this deployment
+		String training_level_1_data = "";
+		String training_level_1_name = "";
+		String active_data = "";
+		String active_data_name = "";
+		
+		try{
+	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties") ;
+	        Properties props = new Properties();
+	        props.load(in);
+	        training_level_1_data = props.getProperty("training_level_1_data");
+	        training_level_1_name = props.getProperty("training_level_1_name");
+	        active_data = props.getProperty("active_data");
+	        active_data_name = props.getProperty("active_data_name");
+	       } 
+	    catch(Exception e){
+	        System.out.println("error" + e);
+	       }	 
+		
 		//training game data 
 		try { 
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/zoo_mammals.arff");
+			InputStream train_loc = context.getResourceAsStream(training_level_1_data);
 			Weka mammal_weka = new Weka();
-			String dataset = "mammal";
+			String dataset = training_level_1_name;
 			mammal_weka.buildWeka(train_loc, null, dataset);
 			mammal_weka.setEval_method("training_set");
 			name_dataset.put(dataset, mammal_weka);
@@ -122,8 +142,8 @@ public class MetaServer extends HttpServlet {
 //				}		
 		//Griffith data
 		try {
-			String dataset = "griffith_breast_cancer_1";
-			InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/griffith/griffith_breast_cancer_1.arff");
+			String dataset = active_data_name;
+			InputStream train_loc = context.getResourceAsStream(active_data);
 			Weka weka = new Weka();
 			weka.buildWeka(train_loc, null, dataset);			
 			name_dataset.put(dataset, weka);	
