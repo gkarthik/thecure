@@ -3,12 +3,17 @@
  */
 package org.scripps.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * @author bgood
@@ -19,9 +24,23 @@ public class JdbcConnection {
 	
 	public JdbcConnection(){
 		String serverLocation = "127.0.0.1";
-		String db = "cure2";
-		String user = "cure";
-		String password = "cure";
+		String db = "";
+		String user = "";
+		String password = "";
+		
+		try{
+	        InputStream in = JdbcConnection.class.getResourceAsStream("/props/database.properties") ;
+	        Properties props = new Properties();
+	        props.load(in);
+	        serverLocation = props.getProperty("serverLocation");
+	        db = props.getProperty("db");
+	        user = props.getProperty("user");
+	        password = props.getProperty("password");
+	       } 
+	    catch(Exception e){
+	        System.out.println("error" + e);
+	       }	 
+		
 		createConnection(serverLocation, db, user, password);
 	}
 	
@@ -32,7 +51,16 @@ public class JdbcConnection {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+		JdbcConnection c = new JdbcConnection();
+		ResultSet r = c.executeQuery("select * from player limit 2");
+		try {
+			while(r.next()){
+				System.out.println(r.getString(1));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 
