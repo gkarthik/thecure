@@ -9,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class Player {
 	String cancer;
 	String biologist;
 	float avg_cards_per_hand;
-
+	Calendar created;
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
 	Map<String, Map<Integer,Integer>> dataset_board_scores; 
@@ -47,7 +49,7 @@ public class Player {
 	}
 	
 	public static void main(String[] args){
-		describePlayers(true, "dream_breast_cancer");
+		describePlayers(true, "dream_breast_cancer_2");
 	}
 	
 	public static void describePlayers(boolean all_hands, String dataset){
@@ -82,15 +84,18 @@ public class Player {
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 	
-		System.out.println("name	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
+		System.out.println("name	created	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
 		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
-	
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+	 
 		for(Player player : players){
 			String name = player.getName();
+			Calendar c = player.getCreated();
+			String cdate = formatter.format(c.getTime());
 			int id = player.getId();
 			if(name_player.get(id)!=null){
 				TimeCounter tc = new TimeCounter(""+id);
-				System.out.println(name+"\t"+
+				System.out.println(name+"\t"+cdate+"\t"+
 						player.getBiologist()+"\t"+
 						player.getCancer()+"\t"+
 						player.getDegree()+"\t"+
@@ -181,6 +186,9 @@ public class Player {
 			ResultSet r = conn.executeQuery(q);
 			while(r.next()){
 				Player player = new Player();
+				Calendar c = Calendar.getInstance();
+				c.setTime(r.getDate("created"));
+				player.setCreated(c);
 				player.setName(r.getString("name"));
 				player.setPassword(r.getString("password"));
 				player.setGames_played(r.getInt("games_played"));
@@ -502,6 +510,14 @@ public class Player {
 	public void setDataset_board_scores(
 			Map<String, Map<Integer, Integer>> dataset_board_scores) {
 		this.dataset_board_scores = dataset_board_scores;
+	}
+
+	public Calendar getCreated() {
+		return created;
+	}
+
+	public void setCreated(Calendar created) {
+		this.created = created;
 	}
 
 
