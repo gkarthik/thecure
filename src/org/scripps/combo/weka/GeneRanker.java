@@ -37,6 +37,7 @@ import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.Weka.metaExecution;
+import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 
@@ -63,6 +64,10 @@ public class GeneRanker {
 	 */
 	public static void main(String[] args) throws Exception {		
 
+		
+		/*
+		 * workflow for merging
+		
 		String dataset = "dream_breast_cancer";
 		String outfile = "/Users/bgood/workspace/acure/database/ranking_merged_r1r2_only_cancer.txt";
 		boolean only_winning = false;
@@ -77,14 +82,49 @@ public class GeneRanker {
 		gid_ranked_2 = ranker.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 		List<gene_rank> gr = ranker.mergeGeneRankings(gid_ranked_1, gid_ranked_2);
 		ranker.writeFile(outfile, gr);
+		 */
+		
+		String dataset = "griffith_breast_cancer_1";
+		String outfile = "/Users/bgood/workspace/acure/database/griffith_1_cancer_only.txt";
+		boolean only_winning = false;
+		boolean only_cancer_people = true;
+		boolean only_bio_people = false;
+		boolean only_phd = false;
+		GeneRanker ranker = new GeneRanker();
+		List<gene_rank> gr = ranker.exportGeneRankings(dataset, outfile, only_winning, only_cancer_people, only_bio_people, only_phd);
+		gr = ranker.sortByReliefAndFrequency(gr);
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
+		ranker.initWeka(train_file, dataset);
 
-		//List<gene_rank> gr = ranker.exportGeneRankings(dataset, outfile, only_winning, only_cancer_people, only_bio_people, only_phd);
-		Collections.shuffle(gr);
-		//gr = ranker.sortByRelief(gr);
-		//gr = ranker.sortByReliefAndFrequency(gr);
-		//String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
-		//ranker.initWeka(train_file, dataset);
+		//build and export model (e.g. decision tree) with top n genes according to ranking above.
+		J48 model = new J48();
+		model.setUnpruned(false); 
+		model.setMinNumObj(4);
+		List<String> test_fs = new ArrayList<String>();
+		int n = 25;
+		for(int i=0; i< n; i++){
+			Feature f = ranker.weka.features.get(gr.get(i).entrez);
+			if(f!=null){
+				test_fs.add(gr.get(i).entrez);
+			}else{
+				System.out.println("missing "+f.getShort_name());
+			}
+		}		
+		Weka.execution result = ranker.weka.pruneAndExecuteWithUniqueIds(test_fs, model, dataset);
 
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
+
+		JsonTree jsonexporter = new JsonTree();
+		String json = jsonexporter.getJsonTreeString(model, ranker.weka);
+		System.out.println(json);
+
+		ranker.weka.setEval_method("training_set");
+		result = ranker.weka.pruneAndExecuteWithUniqueIds(test_fs, model, dataset);
+		System.out.println("training_set_accuracy\t"+result.eval.pctCorrect());
+		
+		/**
+		 * workflow for iterating through model building params	and testing	 
 		int runs = 125;
 		System.out.println("N_genes\tcv_score");
 		for(int run=5; run<=runs; run=run*5){
@@ -109,6 +149,7 @@ public class GeneRanker {
 			float cv = ranker.testGeneList(test_fs, dataset, false, model);
 			System.out.println(test_fs.size()+"\t"+cv);
 		}
+		*/
 
 	}
 
@@ -242,6 +283,19 @@ public class GeneRanker {
 				Float r1_merge = r1+f1;
 				Float r2_merge = r2+f2;
 				return r2_merge.compareTo(r1_merge);
+			}
+		};
+		Collections.sort(ranked, MergeOrder);
+		return ranked;
+	}
+	
+	public List<gene_rank> sortByFrequency(List<gene_rank> ranked){
+		//sort in descending order of the addition of selection frequency
+		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
+			public int compare(gene_rank compare, gene_rank compareto) {
+				Float r2 = compareto.votes/compareto.views; 
+				Float r1 = compare.votes/compare.views;
+				return r2.compareTo(r1);
 			}
 		};
 		Collections.sort(ranked, MergeOrder);

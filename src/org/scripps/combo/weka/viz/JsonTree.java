@@ -120,7 +120,8 @@ public class JsonTree {
 		Map<String, String> att_dname = new HashMap<String, String>();
 		for(Feature f : weka.getFeatures().values()){
 			for(Attribute att : f.getDataset_attributes()){
-				att_dname.put(att.getName(), f.getShort_name());
+				String displayname = f.getShort_name();
+				att_dname.put(att.getName(), displayname);
 			}
 		}
 		
@@ -129,6 +130,7 @@ public class JsonTree {
 		TreeBuild builder = new TreeBuild();
 		Node top = builder.create(new StringReader(classifier.graph()));   	
 		json_root.put("name", att_dname.get(top.getLabel()));
+		json_root.put("id", top.getLabel());
 		json_root.put("kind", "split_node");
 		outputJsonTreeNode(top, json_root, 1, att_dname);
 		String json = mapper.writeValueAsString(json_root);
@@ -181,6 +183,7 @@ public class JsonTree {
 		}else{
 			depth++;
 			jroot.put("name", att_dname.get(root.getLabel()));
+			jroot.put("id", root.getLabel());
 			jroot.put("kind", "split_node");
 			//build the edge children
 			ArrayNode edge_children = mapper.createArrayNode();
@@ -194,6 +197,7 @@ public class JsonTree {
 				}
 				edgenode.put("name", edgename);
 				edgenode.put("kind", "split_value");
+				edgenode.put("threshold", edge.getLabel());
 				outputJsonTreeEdge(edge, edgenode, depth, att_dname);	
 				edge_children.add(edgenode);
 			}

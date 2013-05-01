@@ -307,7 +307,7 @@ div#games h3:hover { cursor: pointer; }
 #leaderboard span.rank {
   color: #B2365F;
   float: left;
-  width: 70px;
+  width: 40px;
 }
 
 #leaderboard span.player {
