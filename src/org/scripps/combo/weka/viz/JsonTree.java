@@ -150,11 +150,11 @@ public class JsonTree {
 		ClassifierTree tree = classifier.getM_root();
 		num_leaves = (int) classifier.measureNumLeaves();
 		tree_size = (int) classifier.measureTreeSize();  	
-		boolean ismammal = false;
-		if(weka.getDataset().equals("mammal")){
-			ismammal = true;
-		}
-		getJsonTree(tree, json_root, 0, ismammal);
+//		boolean ismammal = false;
+//		if(weka.getDataset().equals("mammal")){
+//			ismammal = true;
+//		}
+		getJsonTree(tree, json_root, 0);
 		String json = mapper.writeValueAsString(json_root);
 		return json;
 	}
@@ -170,7 +170,7 @@ public class JsonTree {
 	 * @param depth
 	 * @throws Exception
 	 */
-	public void getJsonTree(ClassifierTree tree, ObjectNode jroot, int depth, boolean mammal) throws Exception{
+	public void getJsonTree(ClassifierTree tree, ObjectNode jroot, int depth) throws Exception{
 		depth++; 
 		if(tree.isM_isLeaf()){
 			NoSplit split = (NoSplit)tree.getM_localModel();			
@@ -188,11 +188,21 @@ public class JsonTree {
 		}else{
 			C45Split split = (C45Split)tree.getM_localModel();	
 			//collect features to describe this split node
+			//1.7976931348623157E308
+			//1.7976931348623157E308
 			double split_point = split.getM_splitPoint();
+			String split_tag = split_point+"";
+			boolean nominal = false;
+			if(split_point == Double.MAX_VALUE){
+				//then we have a nominal data type
+				nominal = true;
+				split_tag = "nominal";
+			}
+			
 			double gain_ratio = split.gainRatio();
 			double infogain = split.infoGain();
 			double total_below = split.getM_distribution().getTotaL();
-			//TODO assuming again binary splits
+			//TODO assuming again binary splits (or there would be more than 0,1 bags)
 			double total_below_left = Utils.roundDouble(split.getM_distribution().perBag(0),2);
 			double total_below_right = Utils.roundDouble(split.getM_distribution().perBag(1),2);
 
@@ -202,7 +212,7 @@ public class JsonTree {
 			double errors_right = Utils.roundDouble(split.getM_distribution().numIncorrect(1),2);
 			double pct_correct_below = 100*(total_below-errors_right-errors_left)/total_below;
 
-			jroot.put("split_point", split_point);
+			jroot.put("split_point", split_tag);
 			String name = "";//attindex_nodename.get(split.attIndex()); //TODO fix this when att)index has changed because of a filter.
 			String attribute_name = tree.getM_train().attribute(split.attIndex()).name();
 			name = attname_nodename.get(attribute_name);
@@ -232,16 +242,20 @@ public class JsonTree {
 				if(i==0){
 					full_edgename = "<= "+split_point;
 					short_edgename = "low";
-					if(mammal){
-						short_edgename = "true";
-					}
 				}else if(i==1){
 					full_edgename = "> "+split_point;
 					short_edgename = "high";
-					if(mammal){
-						short_edgename = "false";
-					}
 				}
+				//TODO generalize
+				//cure1 specific 
+				if(name.equals("legs")){
+					short_edgename = full_edgename;
+				}
+				//check for nominal values
+				if(nominal){
+					short_edgename = ((Instances)tree.getM_train()).attribute(split.attIndex()).value(i);
+					full_edgename = short_edgename;
+				}				
 				//add to json rep
 				edgenode.put("name", short_edgename);
 				edgenode.put("threshold", full_edgename);
@@ -254,7 +268,7 @@ public class JsonTree {
 				ObjectNode target = mapper.createObjectNode();
 				ClassifierTree son = tree.getM_sons()[i];		
 				//recurse!
-				getJsonTree(son, target,depth+1, mammal);
+				getJsonTree(son, target,depth+1);
 				edge_target.add(target);
 				edgenode.put("children", edge_target);				
 				edge_children.add(edgenode);
