@@ -24,7 +24,6 @@ package weka.classifiers;
 
 import weka.classifiers.evaluation.NominalPrediction;
 import weka.classifiers.evaluation.ThresholdCurve;
-import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.pmml.consumer.PMMLClassifier;
 import weka.classifiers.xml.XMLClassifier;
 import weka.core.Drawable;
@@ -66,7 +65,6 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -338,6 +336,7 @@ public class Evaluation
    */
   public Evaluation(Instances data, CostMatrix costMatrix) 
   throws Exception {
+
     m_NumClasses = data.numClasses();
     m_NumFolds = 1;
     m_ClassIsNominal = data.classAttribute().isNominal();
