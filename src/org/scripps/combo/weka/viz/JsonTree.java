@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.scripps.combo.model.Attribute;
 import org.scripps.combo.model.Feature;
+import org.scripps.combo.weka.ClassifierEvaluation;
 import org.scripps.combo.weka.Weka;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -37,41 +38,21 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.j48.C45Split;
+import weka.classifiers.trees.j48.ClassifierTree;
+import weka.classifiers.trees.j48.NoSplit;
 import weka.core.FastVector;
+import weka.core.Instances;
+import weka.core.Utils;
 
 import weka.gui.treevisualizer.Edge;
 import weka.gui.treevisualizer.Node;
 import weka.gui.treevisualizer.TreeBuild;
 
 /**
- * Handle data conversions related to tree visualizations
- * @author bgood
- *
- */
-public class JsonTree {
-	ObjectMapper mapper;
-	ObjectNode json_root;
-	int max_depth;
-	int num_leaves;
-	int tree_size;
-
-
-	public JsonTree() {
-		mapper = new ObjectMapper();
-		json_root = mapper.createObjectNode();
-		max_depth = 0;
-		num_leaves = 0;
-		tree_size = 0;
-	}
-
-	/**
-	 * @param args
-	 * @throws Exception 
-	 */
-	public static void main(String[] args) throws Exception {
-
-		/*
-		 D3 json tree rep
+ * Handle data conversions related to tree visualizations.  Focus on representing Weka J48 trees in D3.
+ * D3 likes trees to look like:
+ * 
 		 {
  "name": "flare",
  "children": [
@@ -92,30 +73,210 @@ public class JsonTree {
  ]
 }
 
-		 */
+ * @author bgood
+ *
+ */
+public class JsonTree {
+	ObjectMapper mapper;
+	ObjectNode json_root;
+	int max_depth;
+	int num_leaves;
+	int tree_size;
+	Map<String, String> attname_nodename;
+	Map<Integer, String> attindex_nodename;
 
-		String train_file = "/Users/bgood/data/zoo.arff"; //_mammals
+	public JsonTree() {
+		mapper = new ObjectMapper();
+		json_root = mapper.createObjectNode();
+		max_depth = 0;
+		num_leaves = 0;
+		tree_size = 0;
+	}
+
+
+	/**
+	 * @param args
+	 * @throws Exception 
+	 */
+	public static void main(String[] args) throws Exception {
+
+		//String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
+		String train_file = "/Users/bgood/data/zoo_mammals.arff"; //_mammals
 		Weka weka = new Weka();
-		weka.buildWeka(new FileInputStream(train_file), null, "mammal");
+		weka.buildWeka(new FileInputStream(train_file), null, "mammal"); //griffith_breast_cancer_1
 		J48 classifier = new J48();
-		classifier.setUnpruned(false); 
-		Evaluation eval_train = new Evaluation(weka.getTrain());
-		classifier.buildClassifier(weka.getTrain());
-		eval_train.evaluateModel(classifier, weka.getTrain());
+//		classifier.setUnpruned(false); 
+//		Evaluation eval_train = new Evaluation(weka.getTrain());
+//		classifier.buildClassifier(weka.getTrain());
+//		eval_train.evaluateModel(classifier, weka.getTrain());
+		List<String> unique_ids = new ArrayList<String>(); 
+		unique_ids.add("mammal_6");
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 
-		System.out.println(classifier.measureNumLeaves());
-		System.out.println(classifier.measureTreeSize());
-
+		
+		System.out.println(classifier.toString());
+		System.out.println("pct correct = "+short_result.getAccuracy());
 		//System.out.println(classifier.graph());
-		//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
-//		JsonTree t = new JsonTree();
-//		String json = t.getJsonTreeString(classifier);
-//		System.out.println(json);
-//		System.out.println(t.max_depth);
+		//		//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
+		//		JsonTree t = new JsonTree();
+		//		String json = t.getJsonTreeStringFromGraph(classifier, weka);
+		//		System.out.println(json);
+		//		System.out.println(t.max_depth);
+
+		JsonTree t = new JsonTree();
+		String json = t.getJsonTreeAllInfo(classifier, weka);
+		System.out.println(json);
 
 	}
 
-	public String getJsonTreeString(J48 classifier, Weka weka) throws Exception {
+	/**
+	 * Render a trained J48 decision tree as a json object, including size and quality data for each split.	
+	 * @param classifier
+	 * @return
+	 * @throws Exception
+	 */
+	public String getJsonTreeAllInfo(J48 classifier, Weka weka) throws Exception{
+		//init the name mappings
+		//get map from attributes to desired output name
+		attname_nodename = new HashMap<String, String>();
+		attindex_nodename = new HashMap<Integer, String>();
+		for(Feature f : weka.getFeatures().values()){
+			for(Attribute att : f.getDataset_attributes()){
+				String displayname = f.getShort_name();
+				attname_nodename.put(att.getName(), displayname);			
+			}
+		}
+		ClassifierTree tree = classifier.getM_root();
+		num_leaves = (int) classifier.measureNumLeaves();
+		tree_size = (int) classifier.measureTreeSize();  	
+		boolean ismammal = false;
+		if(weka.getDataset().equals("mammal")){
+			ismammal = true;
+		}
+		getJsonTree(tree, json_root, 0, ismammal);
+		String json = mapper.writeValueAsString(json_root);
+		return json;
+	}
+
+	/**
+	 * Recursively build a jackson Object model for a weka tree.
+	 * Each split node in the tree is represented by a single ClassifierTree object
+	 * Note that this requires some modification to the weka source.  Had to accessor methods to 
+	 * get to private data about the node like its distribution object.
+	 * Mods reflected in weka-mod jar file associated with this project.
+	 * @param tree
+	 * @param jroot
+	 * @param depth
+	 * @throws Exception
+	 */
+	public void getJsonTree(ClassifierTree tree, ObjectNode jroot, int depth, boolean mammal) throws Exception{
+		depth++; 
+		if(tree.isM_isLeaf()){
+			NoSplit split = (NoSplit)tree.getM_localModel();			
+			String label = ((Instances)tree.getM_train()).classAttribute().value(split.getM_distribution().maxClass(0));
+			double bin_size = Utils.roundDouble(split.getM_distribution().perBag(0),2);
+			double errors = Utils.roundDouble(split.getM_distribution().numIncorrect(0),2);
+			jroot.put("kind", "leaf_node");
+			jroot.put("name", label);
+			jroot.put("bin_size", bin_size);
+			jroot.put("errors", errors);		
+			if(depth>max_depth){
+				max_depth = depth;
+			}
+			return;
+		}else{
+			C45Split split = (C45Split)tree.getM_localModel();	
+			//collect features to describe this split node
+			double split_point = split.getM_splitPoint();
+			double gain_ratio = split.gainRatio();
+			double infogain = split.infoGain();
+			double total_below = split.getM_distribution().getTotaL();
+			//TODO assuming again binary splits
+			double total_below_left = Utils.roundDouble(split.getM_distribution().perBag(0),2);
+			double total_below_right = Utils.roundDouble(split.getM_distribution().perBag(1),2);
+
+			//errors are estimates right here - like if this node was a leaf.
+			//these do not account for downstream
+			double errors_left = Utils.roundDouble(split.getM_distribution().numIncorrect(0),2);
+			double errors_right = Utils.roundDouble(split.getM_distribution().numIncorrect(1),2);
+			double pct_correct_below = 100*(total_below-errors_right-errors_left)/total_below;
+
+			jroot.put("split_point", split_point);
+			String name = "";//attindex_nodename.get(split.attIndex()); //TODO fix this when att)index has changed because of a filter.
+			String attribute_name = tree.getM_train().attribute(split.attIndex()).name();
+			name = attname_nodename.get(attribute_name);
+			//String longname = attindex_longnodename.get(split.attIndex());
+			jroot.put("name", name);
+			//jroot.put("longname", longname);
+			jroot.put("id", name);
+			jroot.put("attribute_name", attribute_name);
+			jroot.put("kind", "split_node");	
+			jroot.put("gain_ratio", gain_ratio);
+			jroot.put("infogain", infogain);
+			jroot.put("total_below_left", total_below_left);
+			jroot.put("total_below_right", total_below_right);
+			jroot.put("bin_size", split.getM_distribution().getTotaL());
+			jroot.put("errors_from_left", errors_left);
+			jroot.put("errors_from_right", errors_right);
+			jroot.put("total_errors_here", errors_right+errors_left);
+			jroot.put("pct_correct_here", pct_correct_below);
+			double[] bag_sizes = split.getM_distribution().getM_perBag();
+			// walk down to collect outgoing edges
+			// each "bag" corresponds to a group of instances following down one edge
+			ArrayNode edge_children = mapper.createArrayNode();
+			for(int i=0; i<tree.getM_sons().length; i++){
+				ObjectNode edgenode = mapper.createObjectNode();
+				String full_edgename = ""; String short_edgename = "";
+				//custom for binary split situation - //TODO needs work to generalize
+				if(i==0){
+					full_edgename = "<= "+split_point;
+					short_edgename = "low";
+					if(mammal){
+						short_edgename = "true";
+					}
+				}else if(i==1){
+					full_edgename = "> "+split_point;
+					short_edgename = "high";
+					if(mammal){
+						short_edgename = "false";
+					}
+				}
+				//add to json rep
+				edgenode.put("name", short_edgename);
+				edgenode.put("threshold", full_edgename);
+				edgenode.put("bin_size", bag_sizes[i]);
+				edgenode.put("kind", "split_value");
+				//TODO figure out bag_class -> displayable value about purity here
+
+				//hook up to edge targets
+				ArrayNode edge_target = mapper.createArrayNode();
+				ObjectNode target = mapper.createObjectNode();
+				ClassifierTree son = tree.getM_sons()[i];		
+				//recurse!
+				getJsonTree(son, target,depth+1, mammal);
+				edge_target.add(target);
+				edgenode.put("children", edge_target);				
+				edge_children.add(edgenode);
+			}
+			if(edge_children.size()>0){
+				jroot.put("children", edge_children);
+			}
+
+		}
+		return;
+	}
+
+	/**
+	 * This uses the graph constructed by weka to produce a json view of the tree.
+	 * Good because it does not require changes to weka source.
+	 * Bad because it makes it impossible to get to a lot of useful information about split nodes.
+	 * @param classifier
+	 * @param weka
+	 * @return
+	 * @throws Exception
+	 */
+	public String getJsonTreeStringFromGraph(J48 classifier, Weka weka) throws Exception {
 		//get map from attributes to desired output name
 		Map<String, String> att_dname = new HashMap<String, String>();
 		for(Feature f : weka.getFeatures().values()){
@@ -123,8 +284,7 @@ public class JsonTree {
 				String displayname = f.getShort_name();
 				att_dname.put(att.getName(), displayname);
 			}
-		}
-		
+		}		
 		num_leaves = (int) classifier.measureNumLeaves();
 		tree_size = (int) classifier.measureTreeSize();
 		TreeBuild builder = new TreeBuild();
@@ -136,7 +296,7 @@ public class JsonTree {
 		String json = mapper.writeValueAsString(json_root);
 		return json;
 	}
-	
+
 
 
 
@@ -154,11 +314,11 @@ public class JsonTree {
 		if(root.getChild(0)==null){
 			String leaf = root.getLabel();
 			String label = leaf.substring(0,leaf.indexOf("(")).trim();
-//			if(label.contains("non")){
-//				label = "NR";
-//			}else if(label.contains("relapse")){
-//				label = "R";
-//			}
+			//			if(label.contains("non")){
+			//				label = "NR";
+			//			}else if(label.contains("relapse")){
+			//				label = "R";
+			//			}
 			String count = leaf.substring(leaf.indexOf("("));
 			float bin_size = 0; float errors = 0;
 			if(count.contains("/")){
@@ -171,10 +331,10 @@ public class JsonTree {
 				String b = count.substring(1,count.indexOf(")"));
 				bin_size = Float.parseFloat(b);
 			}
-//			label += " :"+(int)bin_size+"/"+(int)errors;
+			//			label += " :"+(int)bin_size+"/"+(int)errors;
 			jroot.put("name", label);
 			jroot.put("kind", "leaf_node");
-			
+
 			jroot.put("bin_size",bin_size);
 			jroot.put("errors", errors);
 			if(depth>max_depth){
@@ -224,104 +384,7 @@ public class JsonTree {
 		node_children.add(targetnode);
 		jroot.put("children", node_children);
 	}
-	
-	
-	
-	public String getJsonTreeString(J48 classifier) throws Exception{
-		num_leaves = (int) classifier.measureNumLeaves();
-		tree_size = (int) classifier.measureTreeSize();
-		TreeBuild builder = new TreeBuild();
-		Node top = builder.create(new StringReader(classifier.graph()));   	
-		json_root.put("name", top.getLabel());
-		json_root.put("kind", "split_node");
-		outputJsonTreeNode(top, json_root, 1);
-		String json = mapper.writeValueAsString(json_root);
-		return json;
-	}
-//
-//
-//	/**
-//	 * Works with outputJsonTreeEdge to walk through a decision tree and convert it into a simple (edge-free) directed graph	
-//	 * @param root
-//	 * @param jroot
-//	 * @throws JsonGenerationException
-//	 * @throws JsonMappingException
-//	 * @throws IOException
-//	 */
-	public void outputJsonTreeNode(Node root, ObjectNode jroot, int depth) throws JsonGenerationException, JsonMappingException, IOException {
-		Edge edge;
-		//handle the leaves
-		if(root.getChild(0)==null){
-			String leaf = root.getLabel();
-			String label = leaf.substring(0,leaf.indexOf("(")).trim();
-//			if(label.contains("non")){
-//				label = "NR";
-//			}else if(label.contains("relapse")){
-//				label = "R";
-//			}
-			String count = leaf.substring(leaf.indexOf("("));
-			float bin_size = 0; float errors = 0;
-			if(count.contains("/")){
-				String e = count.split("/")[1];
-				e = e.substring(0,e.length()-1);
-				errors = Float.parseFloat(e);
-				String b = count.substring(1,count.indexOf("/"));
-				bin_size = Float.parseFloat(b);
-			}else{
-				String b = count.substring(1,count.indexOf(")"));
-				bin_size = Float.parseFloat(b);
-			}
-//			label += " :"+(int)bin_size+"/"+(int)errors;
-			jroot.put("name", label);
-			jroot.put("kind", "leaf_node");
-			
-			jroot.put("bin_size",bin_size);
-			jroot.put("errors", errors);
-			if(depth>max_depth){
-				max_depth = depth;
-			}
-		}else{
-			depth++;
-			jroot.put("name", root.getLabel());
-			jroot.put("kind", "split_node");
-			//build the edge children
-			ArrayNode edge_children = mapper.createArrayNode();
-			for (int noa = 0;(edge = root.getChild(noa)) != null;noa++) {
-				ObjectNode edgenode = mapper.createObjectNode();
-				String edgename = edge.getLabel();
-				if(edgename.contains("<")){
-					edgename = "low";
-				}else if(edgename.contains(">")){
-					edgename = "high";
-				}
-				edgenode.put("name", edgename);
-				edgenode.put("kind", "split_value");
-				outputJsonTreeEdge(edge, edgenode, depth);	
-				edge_children.add(edgenode);
-			}
-			if(edge_children.size()>0){
-				jroot.put("children", edge_children);
-			}
-		}
-	}
 
-	/**
-	 * Works with outputJsonTreeNode to walk through a decision tree and convert it into a simple (edge-free) directed graph	
-	 * @param root
-	 * @param jroot
-	 * @throws JsonGenerationException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 */	
-	public void outputJsonTreeEdge(Edge root, ObjectNode jroot, int depth) throws JsonGenerationException, JsonMappingException, IOException {		
-		ArrayNode node_children = mapper.createArrayNode();
-		Node target = root.getTarget();
-		ObjectNode targetnode = mapper.createObjectNode();
-		depth++;
-		outputJsonTreeNode(target, targetnode, depth);	
-		node_children.add(targetnode);
-		jroot.put("children", node_children);
-	}
 
 	/**
 	 * Given the root node from a decision tree, recursively convert it into a jackson ObjectNode model that can be exported and used with the D3 javascript library
@@ -331,7 +394,7 @@ public class JsonTree {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */	
-	public void outputJsonTree1(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
+	public void outputJsonTreeJacksonStruct(Node root, ObjectNode jroot) throws JsonGenerationException, JsonMappingException, IOException {
 		Edge e;
 		//build the edge children
 		ArrayNode children = mapper.createArrayNode();
@@ -346,7 +409,7 @@ public class JsonTree {
 			}
 			jnode.put("name", e.getLabel()+tlabel);
 			children.add(jnode);
-			outputJsonTree1(e.getTarget(), jnode);				
+			outputJsonTreeJacksonStruct(e.getTarget(), jnode);				
 		}
 		if(children.size()>0){
 			jroot.put("children", children);
@@ -354,7 +417,7 @@ public class JsonTree {
 	}
 
 	/**
-	 * Pits out all of the nodes in a decision tree
+	 * Prints out all of the nodes in a decision tree
 	 * @param root
 	 */
 	public static void outputTextTree(Node root) {

@@ -300,17 +300,19 @@ public class MetaServer extends HttpServlet {
 		String tree_json = "";
 		JsonTree jtree = new JsonTree();
 		try {		
-			tree_json = jtree.getJsonTreeString(wekamodel, weka); //, weka
+			tree_json = jtree.getJsonTreeAllInfo(wekamodel, weka); 
+			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println("Died trying to get tree");
 		}
 		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
 		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
 		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
 		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
 		"\"tree\":"+tree_json+"}";
-		//System.out.println(treeoutput);
+		System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
 
