@@ -99,7 +99,7 @@ public class GeneRanker {
 		//build and export model (e.g. decision tree) with top n genes according to ranking above.
 		J48 model = new J48();
 		model.setUnpruned(false); 
-		model.setMinNumObj(4);
+		model.setMinNumObj(15);
 		List<String> test_fs = new ArrayList<String>();
 		int n = 25;
 		for(int i=0; i< n; i++){
@@ -116,7 +116,7 @@ public class GeneRanker {
 		System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
 
 		JsonTree jsonexporter = new JsonTree();
-		String json = jsonexporter.getJsonTreeString(model, ranker.weka);
+		String json = jsonexporter.getJsonTreeStringFromGraph(model, ranker.weka);
 		System.out.println(json);
 
 		ranker.weka.setEval_method("training_set");
