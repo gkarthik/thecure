@@ -54,7 +54,8 @@ public class Board {
 //		String j = b.toJSON(true);
 //		System.out.println(j);
 //		Board.setupCureV3();
-		setupCureV4_griffith_1();
+//		setupCureV4_griffith_1();
+		setupCureV5_griffith_1();
 	}
 
 	
@@ -202,6 +203,20 @@ public class Board {
 		String dataset = "griffith_breast_cancer_1";
 		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";
 		int nper = 25; int nboards = 100; String room = "4";
+		try {
+			//for(int i=0; i<2; i++){
+				createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);
+			//}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void setupCureV5_griffith_1(){
+		String dataset = "griffith_breast_cancer_1";
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
+		int nper = 25; int nboards = 100; String room = "5";
 		try {
 			//for(int i=0; i<2; i++){
 				createAndSaveBoardsCoverGenesTwice(train_file, nper, dataset, room, nboards);

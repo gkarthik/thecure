@@ -55,7 +55,7 @@ public class SocialServer extends HttpServlet {
 			String dataset = request.getParameter("dataset");
 			GameLog log = new GameLog();
 			boolean winning_only = true;
-			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only, dataset, true);
+			List<Game> hands = Game.getTheFirstGamePerPlayerPerBoard(winning_only, dataset, true, 0);
 			GameLog.high_score sb = log.getScoreBoard(hands, dataset);
 			String json = log.getD3CompatibleJson(sb);
 			response.setContentType("text/json");
@@ -68,7 +68,7 @@ public class SocialServer extends HttpServlet {
 			String room = request.getParameter("room");
 			String dataset = "griffith_breast_cancer_1";//request.getParameter("dataset"); //"dream_breast_cancer"
 			if(dataset.equals("griffith_breast_cancer_1")){
-				room = "4";
+				room = "5";
 			}
 			b.buildBoardView(user_id, dataset, room);
 			String json = b.renderjsonBoardViews();
