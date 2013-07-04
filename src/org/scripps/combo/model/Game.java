@@ -173,19 +173,32 @@ public class Game {
 	 * @param dataset 
 	 * @return
 	 */
-	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset, boolean forscoreboard){
+	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset, boolean forscoreboard, int room){
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game order by game_finished asc";
 		if(only_winning){
 			q = "select * from game where win > 0 order by game_finished asc";
 		}
 		if(dataset!=null){
-			q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' order by game_finished asc";
-			if(only_winning){
-				q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' and win > 0 order by game_finished asc";				
+			if(room!=0){
+				q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' and room = '"+room+"' order by game_finished asc";
+			}else{
+				q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' order by game_finished asc";
+
 			}
+			if(only_winning){
+				if(room!=0){
+					q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' and win > 0 and room = '"+room+"' order by game_finished asc";				
+				}else{
+					q = "select game.* from game, board where game.board_id = board.id and dataset = '"+dataset+"' and win > 0 order by game_finished asc";				
+
+				}
+				}
 		}
 		ResultSet rslt = conn.executeQuery(q);
+		if(rslt==null){
+			return new ArrayList<Game>();
+		}
 		Map<String, Game> bpw_hand = new HashMap<String, Game>();
 		try {
 			while(rslt.next()){

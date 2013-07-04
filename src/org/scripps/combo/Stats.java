@@ -20,7 +20,7 @@ public class Stats {
 	public static void main(String[] args) {
 		boolean only_winning = true;
 		String dataset = "dream_breast_cancer_2";
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0);
 
 		//filters
 

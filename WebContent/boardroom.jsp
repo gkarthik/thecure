@@ -46,8 +46,9 @@ Player player = (Player) session.getAttribute("player");
             <a class="brand" href="/cure/">The Cure</a>
             <div class="nav-collapse">
               <ul class="nav">
-                <li><a href="round1.jsp">DREAM Round 1</a></li>
-                <li><a href="round2.jsp">DREAM Round 2</a></li>
+                <li><a href="round1.jsp">DREAM R1</a></li>
+                <li><a href="round2.jsp">DREAM R2</a></li>
+                <li><a href="round3.jsp">Griffith R3</a></li>
                 <li><a href="contact.jsp">Contact</a></li>
                 <li><a href="logout.jsp">Logout</a></li>
                 <li><a href="help.jsp">Help</a></li>
@@ -60,7 +61,7 @@ Player player = (Player) session.getAttribute("player");
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
-            <h2>DREAM7 challenge: predict breast cancer survival</h2>
+            <h2>Your challenge: predict breast cancer survival</h2>
               <p>Your objective is to identify genes that can be used to classify tumor samples into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis. Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
 
               <p>Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck. This is not going to be easy, give it your best shot! <a href="help.jsp"><span style="color: #B2365F;">(help)</span></a></p>
