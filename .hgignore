@@ -1,2 +1,3 @@
+glob:.hgignore
 glob:build/*
 glob:src/props/*
