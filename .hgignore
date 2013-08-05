@@ -1,0 +1,7 @@
+glob:build/*
+glob:src/props/*
+
+syntax: regexp
+^src/props$
+syntax: regexp
+^src/props$
