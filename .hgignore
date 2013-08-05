@@ -5,3 +5,7 @@ syntax: regexp
 ^src/props$
 syntax: regexp
 ^src/props$
+syntax: regexp
+^WebContent/WEB-INF/data/dream$
+syntax: regexp
+^database$
