@@ -1,0 +1,122 @@
+html, body{
+  margin: 0px;
+  padding:0px;
+  height:100%;
+}
+
+div.container {
+  margin-top: 40px;
+}
+
+svg{
+  position: absolute;
+  height: 100%;
+}
+
+#svgwrapper{
+  height:100%;
+}
+
+.d3edit
+{
+  display:inline;
+  position:absolute;
+}
+
+input.edit{
+  display:none;
+  padding:0px;
+  font-size:13px;
+  width:100%;
+  text-align:center;
+}
+
+.editing .attrvalue {
+  display: none; /* Hides label text when .editing*/
+}
+
+.editing input.edit {
+  display:block;
+  width:100%;  
+}
+
+.node {
+  z-index:3;
+  position: absolute;
+  border:2px solid steelblue;
+  border-radius:5px;
+  background-color: white;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+.btn{
+  margin:0px 2px;
+  padding:0px;
+  float:left;
+}
+.name
+{
+  display:block;
+  text-align:center;
+  background: steelblue;
+  color: #FFF;
+}
+
+textarea.jsonview_data{
+  display:none;
+  position:absolute;	
+  width:300px;
+  height: 300px;
+  margin-top:10px;
+}
+
+.showjson
+{
+  float:none;
+}
+
+#json_structure textarea
+{
+  z-index: 4;
+  position:absolute;
+  margin-top: 0px;
+}
+
+.editnode
+{
+  background:#dff0d8;	
+}
+
+#json_structure .attrvalue
+{
+  width:164px;
+  margin-bottom:12px;
+}
+
+#json_structure .edit
+{
+  text-align: left;
+}
+
+.highlight
+{
+  box-shadow: 0px 0px 10px 2px red;
+}
+
+#traverse
+{
+  margin-bottom:10px;
+  padding:5px;
+}
+
+.node .label
+{
+  position:absolute;
+  margin-top:-25px;
+  width:80%;
+  text-align:center;
+}

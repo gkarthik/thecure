@@ -1,8 +1,1 @@
-glob:.classpath
-glob:.project
-glob:build/*
-glob:src/props/*
-glob:.settings/*
-glob:WebContent/WEB-INF/data/*
-glob:WebContent/cure2.0/tests/*.pyc
-glob:WebContent/cure2.0/tests/*.swp
+glob:metadata/*
