@@ -27,9 +27,9 @@
     Node = Backbone.RelationalModel.extend({
       defaults: {
         'name' : '',
+        'cid':0,
         'options' : {
-          content:'Hello World!',
-          value: '0'
+        	
         },
         edit: 0,
         highlight: 0 
@@ -129,7 +129,8 @@
         } else {
           name = this.model.get('name')+"."+this.model.get('children').length;
         }
-        var newNode = new Node({'name' : name, 'id':'node'+name, "options": { "content": "Hello World!", value: Math.floor(Math.random()*100) }});
+        var newNode = new Node({'name' : name, "options": {}});
+        newNode.set("cid",newNode.cid);
         newNode.parentNode = this.model;
         this.model.get('children').add(newNode);
       }
@@ -171,7 +172,7 @@
       },
       tagName: "tr",
       initialize: function() {        
-        this.model.bind('add:children', this.render);
+        //this.model.bind('add:children', this.render);
         this.model.bind('change', this.render);
         this.model.on('change:edit', function () {
           if (this.model.get('edit') != 0) 
@@ -187,10 +188,9 @@
       template : function(serialized_model) {
         var name = serialized_model.name;
         var options = serialized_model.options;
-        var jsondata = Cure.prettyPrint(serialized_model);
         if(serialized_model.edit == 0)
         {
-          return _.template(shownode_html, {name : name,jsondata : jsondata}, {variable: 'args'});  
+          return _.template(shownode_html, {name : name,jsondata : Cure.prettyPrint(serialized_model)}, {variable: 'args'});  
         }
         else
         {
@@ -221,7 +221,6 @@
         {
           field = $(field.currentTarget);
         }        
-        console.log(field);
         if(field.hasClass("modeloption"))
         {
           var data = {}; 
@@ -258,7 +257,7 @@
     //
 
     //-- Pretty Print JSON.
-    //-- Ref : http://stackoverflow.com/questions/4810841/json-pretty-print-using-javascript
+    //-- Ref : http://stackoverflow.com/questions/4810841/json-pchildjson["children"].length>0retty-print-using-javascript
     Cure.prettyPrint = function (json) {
       if (typeof json != 'string') {
            json = JSON.stringify(json, undefined, 2);
@@ -296,7 +295,7 @@
       {
         for(var innerTemp in d3nodes)
         {
-          if(String(d3nodes[innerTemp].name)==String(Cure.NodeCollection["models"][temp].get('name')))
+          if(String(d3nodes[innerTemp].cid)==String(Cure.NodeCollection["models"][temp].get('cid')))
           {
             Cure.NodeCollection["models"][temp].set("x",d3nodes[innerTemp].x);
             Cure.NodeCollection["models"][temp].set("y",d3nodes[innerTemp].y);
@@ -323,6 +322,47 @@
       }
     }
     
+    Cure.generateJSON = function(parent,childjson)
+    {
+    	var newNode = new Node();
+    	for(var temp in childjson)
+    	{
+    		if(temp == "name")
+    		{
+    			newNode.set("name",childjson[temp]);
+    		}
+    		else if(temp!="children")
+    		{
+    			var data = newNode.get("options");
+    			data[temp] = childjson[temp];
+    			newNode.set("options",data);
+    		}
+    	}
+    	newNode.set("cid",newNode.cid);
+    	if(parent!=null)
+    	{
+    		parent.get('children').add(newNode);
+    		newNode.parentNode = parent;
+    	}
+    	var flag = null;
+    	try
+    	{
+    		flag = childjson["children"].length;
+    	}
+    	catch(exception)
+    	{
+    		console.log("No Children.");
+    	}
+  		if(flag != null)
+  		{
+  			for(var childtemp in childjson["children"])
+  			{
+  				Cure.generateJSON(newNode,childjson["children"][childtemp]);
+  			}
+  		} 
+    	//console.log(Cure.NodeCollection.toJSON());
+    }
+    
     Cure.traverseTree = function(rootNode)
     {
       rootNode.set("highlight",1);
@@ -333,13 +373,12 @@
         var min_value = 100;
         for(var temp in childnodes)
         {
-          if(childnodes[temp].get('options').value < min_value)
+          if(childnodes[temp].get('options').bin_size < min_value)
           {
-            min_value = childnodes[temp].get('options').value;
+            min_value = childnodes[temp].get('options').bin_size;
             min_index = temp;
           }
         }
-        console.log(min_index);
         window.setTimeout(function(){
           Cure.traverseTree(childnodes[min_index]);          
         },1000);
@@ -386,17 +425,10 @@
 
     //
     //-- App init!
-    //
-        
+    //    
     Cure.addInitializer(function(options){
-    	//Test Request
-    	var args = {
-          command : "getboard",
-          board_id : 202,
-        }
-      $.getJSON("/cure/MetaServer", args, function(data) {
-      	console.log(data);
-      });
+    	//Test JSON
+    	Cure.jsondata = {"evaluation" : {"modelrep":"J48 pruned tree\n------------------\n\naquatic = FALSE\n|   tail = TRUE: mammal (49.0/19.0)\n|   tail = FALSE: not mammal (16.0/5.0)\naquatic = TRUE: not mammal (36.0/6.0)\n\nNumber of Leaves  : \t3\n\nSize of the tree : \t5\n","accuracy":70}, "max_depth":"5","num_leaves":"3","tree_size":"5","tree":{"split_point":"nominal","name":"aquatic","id":"aquatic","attribute_name":"aquatic","kind":"split_node","gain_ratio":0.10834896756263769,"infogain":0.10181386403186005,"total_below_left":65.0,"total_below_right":36.0,"bin_size":101.0,"errors_from_left":30.0,"errors_from_right":6.0,"total_errors_here":36.0,"pct_correct_here":64.35643564356435,"children":[{"name":"FALSE","threshold":"FALSE","bin_size":65.0,"kind":"split_value","children":[{"split_point":"nominal","name":"tail","id":"tail","attribute_name":"tail","kind":"split_node","gain_ratio":0.06080720189176067,"infogain":0.048957398877010186,"total_below_left":49.0,"total_below_right":16.0,"bin_size":65.0,"errors_from_left":19.0,"errors_from_right":5.0,"total_errors_here":24.0,"pct_correct_here":63.07692307692308,"children":[{"name":"TRUE","threshold":"TRUE","bin_size":49.0,"kind":"split_value","children":[{"kind":"leaf_node","name":"mammal","bin_size":49.0,"errors":19.0}]},{"name":"FALSE","threshold":"FALSE","bin_size":16.0,"kind":"split_value","children":[{"kind":"leaf_node","name":"not mammal","bin_size":16.0,"errors":5.0}]}]}]},{"name":"TRUE","threshold":"TRUE","bin_size":36.0,"kind":"split_value","children":[{"kind":"leaf_node","name":"not mammal","bin_size":36.0,"errors":6.0}]}]}};
       //Declaring D3 Variables
       Cure.width = $("#svgwrapper").width(),
       Cure.height = $("#svgwrapper").height(),
@@ -409,8 +441,6 @@
                 .attr("height", Cure.height)
                 .append("svg:g")
                 .attr("transform", "translate(0,40)");
-                
-      
       Cure.NodeCollection = new NodeCollection();
       Cure.NodeCollectionView = new NodeCollectionView({ collection: Cure.NodeCollection }),
       Cure.JSONCollectionView = new JSONCollectionView({ collection: Cure.NodeCollection });
@@ -422,9 +452,9 @@
       });
       Cure.TreeRegion.show(Cure.NodeCollectionView);
       Cure.JsonRegion.show(Cure.JSONCollectionView);
-        
-      //Add Root Node to Collection
-      Cure.RootNode = new Node({'name':'ROOT'})
+
+      //Add Nodes from JSON
+      Cure.generateJSON(null,Cure.jsondata["tree"]);
       Cure.branch = 1;
       $("#traverse").click(function(){
         Cure.traverseTree(Cure.NodeCollection.models[0]);
@@ -434,50 +464,3 @@
     });
     
     Cure.start();
-    
-    //-- TASKS / IDEAS:
-    //-- Might be fun to have a 'autogenerate network with X nodes and X tiers' random function, not exactly
-    //-- relevant to the exact task at hand but might make you more comertable with how to leverage this collection/model structure
-
-    //-- To note, please look at the formatting differences I made, we want to make sure the code says clean (and to help with the fact that I need to read it)
-    //-- (WILL DO)
-
-    //-- (TODO) Question to ask yourself about Cure.NodeCollection.counter, do you really need it? Hint: http://puff.me.uk/ss/B0DvC.png.
-    //-- (DONE) - Used Cure.NodeCollection.length to monitor number of models in the collection. I just have to ask, what is puff.me.uk? Some ftp server?
-    //-- ALMOST THERE
-    //-- (DONE)
-
-    //-- (TODO) _ templates not in a big string but using a script
-    //-- (DONE)
-
-    //-- (TODO) - "smarter" name convention to suggest depth level as well
-    //          - also currently parentNode == null so that will have to be fixed to 
-    //          - to access parent
-    //-- (DONE)
-
-    //-- (TODO) - keep this.options around on node to act as a storage area for metadata
-    //-- (DONE)
-
-    //-- (TODO) - convert $json_structure.html() into d3 drawing
-    //-- (DONE)
-
-    //-- (TODO) - On click of d3 node, get the model repersentation of that in Backbone collection
-    //-- (DONE - ItemView Linked with every node)
-
-    //-- (TODO) - input event for name update
-
-    //-- (TODO) - attributes to literal objects
-    //-- (DONE) - Most of the d3 removed since nodes are rendered by Marionette.
-    
-    //-- (TODO) - question of d3 >> search through backbone || backbone with paths to draw networks
-    //-- (DONE) - D3 renders Paths. BackBone renders the nodes.
-    
-    //-- (TODO) - Edit List with double click. On double click open up edit panel. Use Boolean value in node to show edit panel.
-    //-- (TODO) - Make decision tree with light weights.
-    //-- (TODO) - className to highlight nodes.
-    //-- (TODO) - .bind to .bondTo
-    //-- (TODO) - 1.  Move dev into tomcat
-    //-- (TODO)   2.  Render tree with response object
-    //-- (TODO)   3.  Mirror my visual with his HTML, display annotation info for each node on some mouse event - color scale for every level. - double click show gene annotation info.
-    //-- (TODO)   4.  Display purity of each node
-    //-- AWESOME START!
