@@ -40,7 +40,6 @@ public class JdbcConnection {
 	    catch(Exception e){
 	        System.out.println("error" + e);
 	       }	 
-		
 		createConnection(serverLocation, db, user, password);
 	}
 	
