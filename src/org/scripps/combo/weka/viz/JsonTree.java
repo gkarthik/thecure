@@ -5,6 +5,7 @@ package org.scripps.combo.weka.viz;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -104,24 +105,25 @@ public class JsonTree {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
+		//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
 		String train_file = "/Users/bgood/data/zoo_mammals.arff"; //_mammals
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, "mammal"); //griffith_breast_cancer_1
 		J48 classifier = new J48();
-//		classifier.setUnpruned(false); 
-//		Evaluation eval_train = new Evaluation(weka.getTrain());
-//		classifier.buildClassifier(weka.getTrain());
-//		eval_train.evaluateModel(classifier, weka.getTrain());
+		//		classifier.setUnpruned(false); 
+		//		Evaluation eval_train = new Evaluation(weka.getTrain());
+		//		classifier.buildClassifier(weka.getTrain());
+		//		eval_train.evaluateModel(classifier, weka.getTrain());
 		List<String> unique_ids = new ArrayList<String>(); 
-		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); //unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
+		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
+		unique_ids.add("mammal_12"); unique_ids.add("mammal_13"); 
 		weka.setEval_method("train");
 		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-		
-		
-		System.out.println(classifier.toString());
-		System.out.println("pct correct = "+short_result.getAccuracy());
+		System.out.println("pct correct = "+short_result.getAccuracy());		
+
+		System.out.println(classifier.toString()); //+"\n"+eval_train.pctCorrect()
+
 		//System.out.println(classifier.graph());
 		//		//	FastVector nodes = new FastVector(); FastVector edges = new FastVector();  	
 		//		JsonTree t = new JsonTree();
@@ -131,12 +133,87 @@ public class JsonTree {
 
 		JsonTree t = new JsonTree();
 		String json1 = t.getJsonTreeAllInfo(classifier, weka);
-//		System.out.println(json1);
+		System.out.println(json1);
 		ManualTree readtree = t.parseJsonJ48(weka, json1);
 		Evaluation maneval = new Evaluation(weka.getTrain());
 		maneval.evaluateModel(readtree, weka.getTrain());
 		System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
-		
+
+	}
+
+	/**
+	 * script for testing the life cycle json tree (from web site)-> weka tree -> evaluation -> output for website
+	 //TODO if desired, finish this with an identity test of the two tree outputs and evaluations
+		//right now eyeballing it and its close but not identical 
+		//- tree building process choosing its own, sometimes slightly different split points.
+		//- sometimes goes deeper than starting tree...
+	 //TODO decide on and implement an evaluation response for web client		
+	 */
+	public void testManualTreeParseCreate(){
+		/**
+		 * Test on Mammal dataset - nominal and numeric
+		 */
+		System.out.println("testing json parse, tree build, evaluate on mammal classification dataset.");
+		String train_file = "/Users/bgood/data/zoo_mammals.arff"; //_mammals
+		Weka weka = new Weka();
+		try {
+			weka.buildWeka(new FileInputStream(train_file), null, "mammal");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		J48 classifier = new J48();
+		//filter for a set that will give a more interesting tree than if milk then mammal..
+		List<String> unique_ids = new ArrayList<String>(); 
+		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
+		unique_ids.add("mammal_12"); unique_ids.add("mammal_13"); 
+		weka.setEval_method("train");
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		System.out.println("pct correct = "+short_result.getAccuracy());		
+		System.out.println(classifier.toString());
+		String json1;
+		try {
+			//here is the test json
+			json1 = getJsonTreeAllInfo(classifier, weka);
+			System.out.println(json1);
+			//build the weka tree
+			ManualTree readtree = parseJsonJ48(weka, json1);
+			//evaluate it
+			Evaluation maneval = new Evaluation(weka.getTrain());
+			maneval.evaluateModel(readtree, weka.getTrain());	
+			System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/**
+		 * Test on gene expression dataset
+		 */
+		System.out.println("testing json parse, tree build, evaluate on gene expression dataset.");
+		train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
+		weka = new Weka();
+		try {
+			weka.buildWeka(new FileInputStream(train_file), null, "griffith_breast_cancer_1");
+			classifier = new J48();
+			classifier.setUnpruned(false); 
+			Evaluation eval_train = new Evaluation(weka.getTrain());
+			classifier.buildClassifier(weka.getTrain());
+			eval_train.evaluateModel(classifier, weka.getTrain());
+			System.out.println(classifier.toString()+"\n"+eval_train.pctCorrect());
+
+			json1 = getJsonTreeAllInfo(classifier, weka);
+			System.out.println(json1);
+			ManualTree readtree = parseJsonJ48(weka, json1);
+			Evaluation maneval = new Evaluation(weka.getTrain());
+			maneval.evaluateModel(readtree, weka.getTrain());
+			System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -165,8 +242,8 @@ public class JsonTree {
 		}
 		return tree;
 	}
-	
-	
+
+
 	/**
 	 * Render a trained J48 decision tree as a json object, including size and quality data for each split.	
 	 * @param classifier
@@ -193,10 +270,10 @@ public class JsonTree {
 		}
 		num_leaves = (int) classifier.measureNumLeaves();
 		tree_size = (int) classifier.measureTreeSize();  	
-//		boolean ismammal = false;
-//		if(weka.getDataset().equals("mammal")){
-//			ismammal = true;
-//		}
+		//		boolean ismammal = false;
+		//		if(weka.getDataset().equals("mammal")){
+		//			ismammal = true;
+		//		}
 		getJsonTree(tree, json_root, 0);
 		String json = mapper.writeValueAsString(json_root);
 		return json;
@@ -241,7 +318,7 @@ public class JsonTree {
 				nominal = true;
 				split_tag = "nominal";
 			}
-			
+
 			double gain_ratio = split.gainRatio();
 			double infogain = split.infoGain();
 			double total_below = split.getM_distribution().getTotaL();
