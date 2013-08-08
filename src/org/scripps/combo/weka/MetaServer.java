@@ -71,6 +71,12 @@ public class MetaServer extends HttpServlet {
 		mapper = new ObjectMapper();
 	}
 
+	/**
+	 * Initialize the service.  This only runs the first time a request is made to this servlet.  It reads local 
+	 * configuration files and loads up all the data needed to run the game including all of the annotation information
+	 * that is stored in the database.  This information is held in a Weka object associated with each live dataset.
+	 * This takes a long time to run when there is a lot of data to load - but once its finished, things go pretty quickly...
+	 */
 	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
