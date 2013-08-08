@@ -16,13 +16,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openjena.atlas.json.JsonArray;
 import org.scripps.combo.model.Attribute;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.weka.ClassifierEvaluation;
 import org.scripps.combo.weka.Weka;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,6 +41,7 @@ import com.hp.hpl.jena.vocabulary.RDFS;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.ManualTree;
 import weka.classifiers.trees.j48.C45Split;
 import weka.classifiers.trees.j48.ClassifierTree;
 import weka.classifiers.trees.j48.NoSplit;
@@ -110,10 +114,11 @@ public class JsonTree {
 //		classifier.buildClassifier(weka.getTrain());
 //		eval_train.evaluateModel(classifier, weka.getTrain());
 		List<String> unique_ids = new ArrayList<String>(); 
-		unique_ids.add("mammal_6");
+		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); //unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
+		weka.setEval_method("train");
 		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-
+		
 		
 		System.out.println(classifier.toString());
 		System.out.println("pct correct = "+short_result.getAccuracy());
@@ -125,11 +130,43 @@ public class JsonTree {
 		//		System.out.println(t.max_depth);
 
 		JsonTree t = new JsonTree();
-		String json = t.getJsonTreeAllInfo(classifier, weka);
-		System.out.println(json);
-
+		String json1 = t.getJsonTreeAllInfo(classifier, weka);
+//		System.out.println(json1);
+		ManualTree readtree = t.parseJsonJ48(weka, json1);
+		Evaluation maneval = new Evaluation(weka.getTrain());
+		maneval.evaluateModel(readtree, weka.getTrain());
+		System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
+		
 	}
 
+	/**
+	 * Given the structure of a decision tree, create and evaluate it using weka
+	 * Assumes the weka instance that it receives has already been populated with an 
+	 * appropriate dataset
+	 * @param weka
+	 * @param jsontree
+	 * @return
+	 */
+	public ManualTree parseJsonJ48(Weka weka, String jsontree){
+		ManualTree tree = new ManualTree();
+		try {
+			JsonNode rootNode = mapper.readTree(jsontree);
+			tree.setTreeStructure(rootNode);
+			tree.buildClassifier(weka.getTrain());
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tree;
+	}
+	
+	
 	/**
 	 * Render a trained J48 decision tree as a json object, including size and quality data for each split.	
 	 * @param classifier
@@ -137,6 +174,9 @@ public class JsonTree {
 	 * @throws Exception
 	 */
 	public String getJsonTreeAllInfo(J48 classifier, Weka weka) throws Exception{
+		if(classifier==null){
+			return "";
+		}
 		//init the name mappings
 		//get map from attributes to desired output name
 		attname_nodename = new HashMap<String, String>();
@@ -148,6 +188,9 @@ public class JsonTree {
 			}
 		}
 		ClassifierTree tree = classifier.getM_root();
+		if(tree==null){
+			return "";
+		}
 		num_leaves = (int) classifier.measureNumLeaves();
 		tree_size = (int) classifier.measureTreeSize();  	
 //		boolean ismammal = false;
@@ -162,9 +205,9 @@ public class JsonTree {
 	/**
 	 * Recursively build a jackson Object model for a weka tree.
 	 * Each split node in the tree is represented by a single ClassifierTree object
-	 * Note that this requires some modification to the weka source.  Had to accessor methods to 
+	 * Note that this requires some modification to the weka source.  Had to add accessor methods to 
 	 * get to private data about the node like its distribution object.
-	 * Mods reflected in weka-mod jar file associated with this project.
+	 * Incorporated (forked) the relevant weka source files into the cure codebase so I could change them.
 	 * @param tree
 	 * @param jroot
 	 * @param depth
