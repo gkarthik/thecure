@@ -37,7 +37,10 @@ import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -104,7 +107,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	/** a ZeroR model in case no model can be built from the data */
 	protected Classifier m_ZeroR;
-	
+
 	/** A tree captured from json **/
 	protected JsonNode jsontree;
 
@@ -971,20 +974,18 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
 			boolean debug, int depth, JsonNode node, int parent_index) throws Exception {
 
-//		
-//		JsonNode node_id = rootNode.get("id");
-//		JsonNode children = rootNode.get("children");
-//		int i = 0;
-//		for(JsonNode child : children){
-//			i++;
-//			System.out.println(i+"\t"+child.get("name"));
-//		}
-//		System.out.println(node_id.asText());
-//		
-		
+
 		// Store structure of dataset, set minimum number of instances
 		m_Info = header;
 		m_Debug = debug;
+
+		//if in dead json return
+		if (node==null) {
+			m_Attribute = -1;
+			m_ClassDistribution = null;
+			m_Prop = null;
+			return;
+		}
 
 		// Make leaf if there are no training instances
 		if (data.numInstances() == 0) {
@@ -1017,11 +1018,35 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
-		JsonNode node_id = node.get("id");
-		if(node_id!=null){
-			attIndex = node_id.asInt();
-		}
+		JsonNode k = node.get("kind");
 
+		String kind = node.get("kind").asText();
+		JsonNode node_id = node.get("id");
+		JsonNode att_name = node.get("attribute_name");
+		//		JsonNode node_name = node.get("name");
+
+		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
+		//		String name = node_name.asText();
+		if(kind!=null&&kind.equals("split_node")){
+			//attIndex = data.attribute(node_id.asText()).index();
+			attIndex = data.attribute(att_name.asText()).index();
+			JsonNode split_values = node.get("children");
+			int c = 0;
+			for(JsonNode svalue : split_values){
+				String key = svalue.get("name").asText();
+				JsonNode son = svalue.get("children").get(0);
+				if(key.contains("<")){
+					key = "low";
+				}else if(key.contains(">")){
+					key = "high";
+				}
+				sons.put(key, son);
+				c++;
+			}
+			//	System.out.println("Id "+node_id+" name "+name+" index "+attIndex+" type "+kind+" sons "+c);
+		}else{
+			//	System.out.println("non split node, name "+name+" type "+kind);
+		}
 		splits[attIndex] = distribution(props, dists, attIndex, data);
 		vals[attIndex] = gain(dists[attIndex], priorVal(dists[attIndex]));
 
@@ -1034,14 +1059,36 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			m_Prop = props[m_Attribute];
 			Instances[] subsets = splitData(data);
 			m_Successors = new ManualTree[distribution.length];
-			//TODO - change this to use the children of the current json node
-			//use whats here for reality checks
+
 			for (int i = 0; i < distribution.length; i++) {
 				m_Successors[i] = new ManualTree();
 				m_Successors[i].setKValue(m_KValue);
 				m_Successors[i].setMaxDepth(getMaxDepth());
-				m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug,
-						depth + 1, null, attIndex+1);
+
+				//test an instance to see which child node to send its subset down.
+				//after split, should hold for all in set
+				String child_name = "";
+				Instances subset = subsets[i];
+				Instance inst = subset.instance(0);
+				//which nominal attribute is this split linked to?
+				if (subset.attribute(m_Attribute).isNominal()) {
+					child_name = inst.attribute(m_Attribute).value((int)inst.value(m_Attribute));
+				}
+				// otherwise, if we have a numeric attribute, are we going high or low?
+				else if (data.attribute(m_Attribute).isNumeric()) {
+					if(inst.value(m_Attribute) < m_SplitPoint){
+						child_name = "low";
+					}else{
+						child_name = "high";
+					}
+				}
+				JsonNode son = sons.get(child_name);
+				if(son!=null){
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex);
+				}else{
+					//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex);
+				}
 			}
 
 			// If all successors are non-empty, we don't need to store the class distribution
@@ -1060,6 +1107,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			// Make leaf
 			m_Attribute = -1;
 		}
+
 	}
 
 	/**
@@ -1425,7 +1473,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 */
 	public void setTreeStructure(JsonNode rootNode) {
 		jsontree = rootNode;
-		
+
 	}
 }
 
