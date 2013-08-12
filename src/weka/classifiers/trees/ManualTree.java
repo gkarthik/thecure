@@ -1018,12 +1018,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
-		JsonNode k = node.get("kind");
-
-		String kind = node.get("kind").asText();
-		JsonNode node_id = node.get("id");
-		JsonNode att_name = node.get("attribute_name");
-		//		JsonNode node_name = node.get("name");
+		
+		//options child added by web client developer for unknown reason...
+		JsonNode options = node.get("options");		
+		String kind = options.get("kind").asText();
+		JsonNode att_name = options.get("attribute_name");
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
