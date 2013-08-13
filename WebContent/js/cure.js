@@ -1227,7 +1227,10 @@ CURE.utilities = {
   	Cure.start({"json": json, "regions":{
   		TreeRegion : selector_string,
   		//JsonRegion : "#json_structure"
-  	}});
+  	},
+  	height: 360,
+		width: 452
+  	});
   	/*
     var utils = CURE.utilities;
     if(json.max_depth<2){
