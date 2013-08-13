@@ -26,12 +26,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A game">
     <meta name="author" content="Ben">
-
+	
+	<!-- Styles for Tree - @gkarthik -->
+	<link rel="stylesheet" href="/cure/cured3/assets/css/bootstrap.min.css" type="text/css" media="screen">
+	<link rel="stylesheet" href="/cure/cured3/assets/css/style.css" type="text/css" media="screen">
+	
     <link rel="stylesheet" href="assets/css/barney.css" type="text/css"	media="screen">
     <link rel="stylesheet" href="assets/css/combo.css" type="text/css"	media="screen">
     <link rel="stylesheet" href="assets/css/combo_bootstrap.css" type="text/css" media="screen">
     <link rel="stylesheet" href="assets/css/style.css" type="text/css" media="screen">
-
+	
     <title>The Cure: ...</title>
 <%
   String ran = request.getParameter("level");
@@ -94,10 +98,10 @@
             <p>Gene References into Function</p>
           </div>
           <div class="infobox" id="p1_current_tree" style="display: none;">
-            <p>Your decision tree will be displayed here.</p>
+          	  <p>Your decision tree will be displayed here.</p>
           </div>
           <div class="infobox" id="p2_current_tree" style="display: none;">
-            <p>Barney's decision tree will be displayed here.</p>
+          	<p>Barney's decision tree will be displayed here.</p>
           </div>
         </div>
       </div>
@@ -125,6 +129,53 @@
   <script src="js/libs/jquery.plugins.js"></script>
   <script src="js/libs/underscore-min.js"></script>
   <script src="js/libs/d3.v2.min.js"></script>
+  <!-- Scripts for Tree - @gkarthik -->
+  <script id="JSONtemplate" type="text/template">
+      <td><span class="jsonview_name"><@= args.name @></span></td>
+      <td><span><button class="btn btn-link showattr" >Edit</button></span></td>
+      <td><span><button class="btn btn-link showjson" >JSON</button></span></td>
+      <td><textarea class="jsonview_data"><@ print (args.jsondata); @></textarea></td>
+  </script>
+  <script id="Attrtemplate" type="text/template">
+    <td colspan="3">
+    <ul class="unstyled">
+      <li>
+            <span class="attredit">
+              <label class="label label-info">Name</label><br /><label class="attrvalue"><@= args.name @></label>
+              <input class="input-medium edit" id="name" type="text" value="<@= args.name @>" />
+            </span>
+      </li>
+      <@ for(var option in args.options) {@>
+        <li>
+            <span class="attredit">
+              <label class="label label-info"><@= option @></label><br /><label class="attrvalue"> <@= args.options[option] @></label>
+              <input class="input-medium edit modeloption" id="<@= option @>" type="text" value="<@= args.options[option] @>" />
+            </span>
+        </li>
+      <@ } @>
+      <li><button class="btn btn-link editdone" >Done</button></li>
+    </ul>
+    </td>
+  </script>
+  <script id="nodeTemplate" type="text/template">
+    <span class="label label-success">
+      <@= options.bin_size @>
+    </span>    
+    <span class="name attrvalue">
+      <@= name @>
+    </span>
+    <input type="text" class="edit d3edit" value="<@- name @>">
+    <button class="btn btn-small btn-link addchildren" type="button">
+      <i class="icon-plus-sign"></i>
+    </button>
+    <button class="btn btn-small btn-link delete" href="#">
+      <i class="icon-remove"></i>
+    </button>
+  </script>
+  <script type="text/javascript" src="/cure/cured3/assets/js/backbone.js"></script>
+  <script type="text/javascript" src="/cure/cured3/assets/js/backbone-relational.js"></script>
+  <script type="text/javascript" src="/cure/cured3/assets/js/marionette.backbone.min.js"></script>
+  <script type="text/javascript" src="/cure/cured3/assets/js/app.js"></script>  
   <script src="js/cure.js"></script>
   <jsp:include page="js/analytics.js" />
 
