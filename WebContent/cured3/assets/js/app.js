@@ -441,19 +441,18 @@ Cure.addInitializer(function(options) {
 	    evaluate: /\<\@([\s\S]+?)\@\>/gim,
 	    escape: /\<\@\-(.+?)\@\>/gim
 	};
+	$(options.regions.TreeRegion).append("<div id='"+options.regions.TreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.TreeRegion.replace("#","")+"SVG'></svg>")
 			// Test JSON
 			Cure.jsondata = options["json"];
 			// Declaring D3 Variables
-			Cure.width = $(options.regions.TreeRegion).width();
-			Cure.height = $(options.regions.TreeRegion).height();
+			Cure.width = options["width"];
+			Cure.height = options["height"];
 			Cure.duration = 500;
 			Cure.cluster = d3.layout.tree().size([ Cure.width, Cure.height ]);
 			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			console.log(options.regions.TreeRegion);
-			
-			Cure.svg = d3.select(options.regions.TreeRegion).append("svg").attr("width", Cure.width).attr(
+			Cure.svg = d3.select(options.regions.TreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
 			Cure.NodeCollection = new NodeCollection();
@@ -464,7 +463,11 @@ Cure.addInitializer(function(options) {
 			});
 
 			// Assign View to Region
-			Cure.addRegions(options["regions"]);
+			console.log(options.regions.TreeRegion+"Tree")
+			Cure.addRegions({
+	  		TreeRegion : options.regions.TreeRegion+"Tree",
+	  		//JsonRegion : "#json_structure"
+	  	});
 			Cure.TreeRegion.show(Cure.NodeCollectionView);
 			//Cure.JsonRegion.show(Cure.JSONCollectionView);
 
