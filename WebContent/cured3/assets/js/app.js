@@ -365,14 +365,13 @@ Cure.generateJSON = function(parent, childjson) {
 	try {
 		flag = childjson["children"].length;
 	} catch (exception) {
-		console.log("No Children.");
+
 	}
 	if (flag != null) {
 		for ( var childtemp in childjson["children"]) {
 			Cure.generateJSON(newNode, childjson["children"][childtemp]);
 		}
 	}
-	console.log(newNode.get('options'));
 }
 
 Cure.traverseTree = function(rootNode) {
@@ -437,97 +436,23 @@ Cure.render_network = function(dataset) {
 // -- App init!
 //    
 Cure.addInitializer(function(options) {
+	_.templateSettings = {
+	    interpolate: /\<\@\=(.+?)\@\>/gim,
+	    evaluate: /\<\@([\s\S]+?)\@\>/gim,
+	    escape: /\<\@\-(.+?)\@\>/gim
+	};
+	$(options.regions.TreeRegion).append("<div id='"+options.regions.TreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.TreeRegion.replace("#","")+"SVG'></svg>")
 			// Test JSON
-			Cure.jsondata = {
-				"evaluation" : {
-					"modelrep" : "J48 pruned tree\n------------------\n\naquatic = FALSE\n|   tail = TRUE: mammal (49.0/19.0)\n|   tail = FALSE: not mammal (16.0/5.0)\naquatic = TRUE: not mammal (36.0/6.0)\n\nNumber of Leaves  : \t3\n\nSize of the tree : \t5\n",
-					"accuracy" : 70
-				},
-				"max_depth" : "5",
-				"num_leaves" : "3",
-				"tree_size" : "5",
-				"tree" : {
-					"split_point" : "nominal",
-					"name" : "aquatic",
-					"id" : "aquatic",
-					"attribute_name" : "aquatic",
-					"kind" : "split_node",
-					"gain_ratio" : 0.10834896756263769,
-					"infogain" : 0.10181386403186005,
-					"total_below_left" : 65.0,
-					"total_below_right" : 36.0,
-					"bin_size" : 101.0,
-					"errors_from_left" : 30.0,
-					"errors_from_right" : 6.0,
-					"total_errors_here" : 36.0,
-					"pct_correct_here" : 64.35643564356435,
-					"children" : [ {
-						"name" : "FALSE",
-						"threshold" : "FALSE",
-						"bin_size" : 65.0,
-						"kind" : "split_value",
-						"children" : [ {
-							"split_point" : "nominal",
-							"name" : "tail",
-							"id" : "tail",
-							"attribute_name" : "tail",
-							"kind" : "split_node",
-							"gain_ratio" : 0.06080720189176067,
-							"infogain" : 0.048957398877010186,
-							"total_below_left" : 49.0,
-							"total_below_right" : 16.0,
-							"bin_size" : 65.0,
-							"errors_from_left" : 19.0,
-							"errors_from_right" : 5.0,
-							"total_errors_here" : 24.0,
-							"pct_correct_here" : 63.07692307692308,
-							"children" : [ {
-								"name" : "TRUE",
-								"threshold" : "TRUE",
-								"bin_size" : 49.0,
-								"kind" : "split_value",
-								"children" : [ {
-									"kind" : "leaf_node",
-									"name" : "mammal",
-									"bin_size" : 49.0,
-									"errors" : 19.0
-								} ]
-							}, {
-								"name" : "FALSE",
-								"threshold" : "FALSE",
-								"bin_size" : 16.0,
-								"kind" : "split_value",
-								"children" : [ {
-									"kind" : "leaf_node",
-									"name" : "not mammal",
-									"bin_size" : 16.0,
-									"errors" : 5.0
-								} ]
-							} ]
-						} ]
-					}, {
-						"name" : "TRUE",
-						"threshold" : "TRUE",
-						"bin_size" : 36.0,
-						"kind" : "split_value",
-						"children" : [ {
-							"kind" : "leaf_node",
-							"name" : "not mammal",
-							"bin_size" : 36.0,
-							"errors" : 6.0
-						} ]
-					} ]
-				}
-			};
+			Cure.jsondata = options["json"];
 			// Declaring D3 Variables
-			Cure.width = $("#svgwrapper").width(), Cure.height = $(
-					"#svgwrapper").height(), Cure.duration = 500,
-					Cure.cluster = d3.layout.tree().size(
-							[ Cure.width, Cure.height ]),
-					Cure.diagonal = d3.svg.diagonal().projection(function(d) {
+			Cure.width = options["width"];
+			Cure.height = options["height"];
+			Cure.duration = 500;
+			Cure.cluster = d3.layout.tree().size([ Cure.width, Cure.height ]);
+			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			Cure.svg = d3.select("svg").attr("width", Cure.width).attr(
+			Cure.svg = d3.select(options.regions.TreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
 			Cure.NodeCollection = new NodeCollection();
@@ -538,13 +463,16 @@ Cure.addInitializer(function(options) {
 			});
 
 			// Assign View to Region
-			Cure.addRegions(options);
+			console.log(options.regions.TreeRegion+"Tree")
+			Cure.addRegions({
+	  		TreeRegion : options.regions.TreeRegion+"Tree",
+	  		//JsonRegion : "#json_structure"
+	  	});
 			Cure.TreeRegion.show(Cure.NodeCollectionView);
-			Cure.JsonRegion.show(Cure.JSONCollectionView);
+			//Cure.JsonRegion.show(Cure.JSONCollectionView);
 
 			// Add Nodes from JSON
-			Cure.generateJSON(null, Cure.jsondata["tree"]);
-			console.log(Cure.NodeCollection.toJSON());			
+			Cure.generateJSON(null, Cure.jsondata["tree"]);			
 			Cure.branch = 1;
 			$("#traverse").click(function() {
 				Cure.traverseTree(Cure.NodeCollection.models[0]);
@@ -552,8 +480,3 @@ Cure.addInitializer(function(options) {
 				$(this).addClass("disabled");
 			});
 		});
-
-Cure.start({
-	TreeRegion : "#svgwrapper",
-	JsonRegion : "#json_structure"
-});
