@@ -158,9 +158,6 @@
     </td>
   </script>
   <script id="nodeTemplate" type="text/template">
-    <span class="label label-success">
-      <@= options.bin_size @>
-    </span>    
     <span class="name attrvalue">
       <@= name @>
     </span>
