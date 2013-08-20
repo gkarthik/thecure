@@ -222,10 +222,8 @@ public class MetaServer extends HttpServlet {
 	private void routePost(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//route to appropriate functions
 		if(command.equals("getscore")){
-			//does not work
 			getScore(postData, request, response);
 		}else if(command.equals("savehand")){
-			//does not work
 			saveHand(postData, request, response);
 		}else if(command.equals("saveplayedcard")){
 			savePlayedCard(postData, request, response);
@@ -283,6 +281,55 @@ public class MetaServer extends HttpServlet {
 	 * @throws IOException 
 	 */
 	private void getScore(LinkedHashMap data, HttpServletRequest request_, HttpServletResponse response) throws IOException {
+
+		String board_id = (String)data.get("board_id");
+		boolean getmeta = false;
+		Board board = Board.getBoardById(board_id, getmeta);		
+		Weka weka = name_dataset.get(board.getDataset());
+		if(weka==null){
+			handleBadRequest(request_, response, "no dataset loaded for name: "+board.getDataset());
+			return;
+		}		
+		List<String> unique_ids = new ArrayList<String>();
+		unique_ids = (List<String>)data.get("unique_ids");
+
+		J48 wekamodel = new J48();
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset());
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		//serialize and return the result
+		JSONObject r = new JSONObject(short_result);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String eval_json = r.toString();
+		String tree_json = "";
+		JsonTree jtree = new JsonTree();
+		try {		
+			tree_json = jtree.getJsonTreeAllInfo(wekamodel, weka); 
+			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Died trying to get tree");
+		}
+		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
+		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
+		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
+		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
+		"\"tree\":"+tree_json+"}";
+		//System.out.println(treeoutput);
+		out.write(treeoutput);
+		out.close();
+
+	}
+	
+	/**
+	 * Given a manually created tree, represented as a json object, respond with the score information for the tree and each of its nodes.
+	 * @param data
+	 * @param request_
+	 * @param response
+	 * @throws IOException
+	 */
+	private void getScoreForManualTree(LinkedHashMap data, HttpServletRequest request_, HttpServletResponse response) throws IOException {
 
 		String board_id = (String)data.get("board_id");
 		boolean getmeta = false;

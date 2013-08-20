@@ -224,7 +224,7 @@ public class GameLog {
 
 			String tmp = dataset;
 			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
-				tmp = "mammal";
+				tmp = "zoo";
 			}
 			multiplier = pheno_multiplier.get(tmp);
 			if(board_performance < 1){

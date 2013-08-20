@@ -76,32 +76,17 @@ public class Scratch {
 //		Weka weka = new Weka();
 //		weka.buildWeka(new FileInputStream(train_file), null, "dream_breast_cancer");
 
-		String file = "/Users/bgood/workspace/acure/database/test.json"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
-		BufferedReader f;
-		String json = "";
-		try {			
-			f = new BufferedReader(new FileReader(file));
-			String line = f.readLine(); 
-			while(line!=null){
-				json+=line;
-				line = f.readLine(); 
-			}
-			f.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ObjectMapper mapper = new ObjectMapper();
-		LinkedHashMap userData = mapper.readValue(json, LinkedHashMap.class);//mapper.readValue(new File("user.json"), Map.class);
+		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff" ;		
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, "griffith_breast_cancer_1");
+//		//run a basic rule-based attribute filter
+		float min_expression_change = (float)4;
+		int n_samples_over_min = 50; int outlier_threshold = 15; boolean remove_atts_with_outliers = true;
+		System.out.println("before "+weka.getTrain().numAttributes());
+		weka.executeManualAttFiltersTrainTest(min_expression_change, n_samples_over_min, outlier_threshold, remove_atts_with_outliers);
+		System.out.println("after "+weka.getTrain().numAttributes());
+//
 		
-		System.out.println(userData.get("command")+"\t"+userData.get("board_id")+"\t"+userData.get("player_id"));
-//		List<String> ids = (List<String>)userData.get("unique_ids");
-//		for(String id : ids){
-//			System.out.println(id);
-//		}
 	}
 	
 	
