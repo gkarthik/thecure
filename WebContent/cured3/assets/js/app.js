@@ -10,15 +10,25 @@ NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
 		// This add is for the seed node alone.
-		this.on("add", function() {
-			Cure.updatepositions();
+		this.on("add", function(model) {
+			Cure.updatepositions(this);
 			Cure.render_network(this.toJSON()[0]);
 		});
 		this.on("remove", function() {
-			Cure.updatepositions();
+			Cure.updatepositions(this);
 			Cure.render_network(this.toJSON()[0]);
 		});
-	}
+	},
+	getNodeByName: function(name) {
+		var filtered = [];
+    filtered = this.filter(function(Node) {
+      if(Node.get("name") === name)
+      {
+      	return Node;      //Assuming unique names for every Node.	
+      }
+    });
+    return filtered;
+  },
 });
 
 //
@@ -32,18 +42,41 @@ Node = Backbone.RelationalModel.extend({
 
 		},
 		edit : 0,
-		highlight : 0
+		highlight : 0,
+		created_by:""
 	},
 	url : "./",
 	initialize : function() {
 		this.bind("add:children", function() {
-			Cure.updatepositions();
-			Cure.render_network(Cure.NodeCollection.toJSON()[0]);
+			if(this.get("created_by")=="player")
+			{
+				Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+				Cure.updatepositions(Cure.PlayerNodeCollection);
+			}
+			else if(this.get("created_by")=="barney")
+			{
+				Cure.render_network(Cure.BarneyNodeCollection.toJSON()[0]);
+				Cure.updatepositions(Cure.BarneyNodeCollection);
+			}
 		});
 		this.bind("change", function() {
-			Cure.render_network(Cure.NodeCollection.toJSON()[0]);
+			if(this.get("created_by")=="player")
+			{
+				Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+			}
+			else if(this.get("created_by")=="barney")
+			{
+				Cure.render_network(Cure.BarneyNodeCollection.toJSON()[0]);
+			}
 		});
-		Cure.NodeCollection.add(this);
+		if(this.get("created_by")=="player")
+		{
+			Cure.PlayerNodeCollection.add(this);
+		}
+		else if(this.get("created_by")=="barney")
+		{
+			Cure.BarneyNodeCollection.add(this);
+		}
 	},
 	relations : [ {
 		type : Backbone.HasMany,
@@ -119,11 +152,11 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		this.ui.input.focus();
 	},
 	remove : function() {
-		if (Cure.NodeCollection.length > 1) {
+		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
 			$(this.el).remove();
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
-		}
+		//}
 	},
 	addChildren : function() {
 		var name = 0;
@@ -136,9 +169,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		}
 		var newNode = new Node({
 			'name' : name,
-			"options" : {}
+			"options" : {},
 		});
 		newNode.set("cid", newNode.cid);
+		newNode.set("created_by",this.model.get("created_by"));
 		newNode.parentNode = this.model;
 		this.model.get('children').add(newNode);
 	}
@@ -302,8 +336,13 @@ Cure.prettyPrint = function(json) {
 //
 // -- Get JSON from d3 to BackBone
 //
-Cure.updatepositions = function() {
-	var d3nodes = Cure.cluster.nodes(Cure.NodeCollection.toJSON()[0]);
+Cure.updatepositions = function(NodeCollection) {
+	var d3nodes = [];
+	if(NodeCollection.toJSON().length>0)
+	{
+		d3nodes = Cure.cluster.nodes(NodeCollection.toJSON()[0]);
+	}
+	
 	d3nodes.forEach(function(d) {
 		d.y = d.depth * 130;
 	});
@@ -311,17 +350,17 @@ Cure.updatepositions = function() {
 		d.x0 = d.x;
 		d.y0 = d.y;
 	});
-	for ( var temp in Cure.NodeCollection["models"]) {
+	for ( var temp in NodeCollection["models"]) {
 		for ( var innerTemp in d3nodes) {
-			if (String(d3nodes[innerTemp].cid) == String(Cure.NodeCollection["models"][temp]
+			if (String(d3nodes[innerTemp].cid) == String(NodeCollection["models"][temp]
 					.get('cid'))) {
-				Cure.NodeCollection["models"][temp].set("x",
+				NodeCollection["models"][temp].set("x",
 						d3nodes[innerTemp].x);
-				Cure.NodeCollection["models"][temp].set("y",
+				NodeCollection["models"][temp].set("y",
 						d3nodes[innerTemp].y);
-				Cure.NodeCollection["models"][temp].set("x0",
+				NodeCollection["models"][temp].set("x0",
 						d3nodes[innerTemp].x0);
-				Cure.NodeCollection["models"][temp].set("y0",
+				NodeCollection["models"][temp].set("y0",
 						d3nodes[innerTemp].y0);
 			}
 		}
@@ -341,25 +380,40 @@ Cure.delete_all_children = function(seednode) {
 	}
 }
 
-Cure.generateJSON = function(parent, childjson) {
-	var newNode = new Node({
-		'name' : name,
-		"options" : {}
-	});
-	for ( var temp in childjson) {
-		if (temp == "name") {
-			newNode.set("name", childjson[temp]);
-		} 
-		else if (temp != "children") {
-			var data = newNode.get("options");
-			data[temp] = childjson[temp];
-			newNode.set("options", data);
+Cure.generateJSON = function(parent, childjson, created_by, Collection) {
+	//var NodesPresent = Collection.getNodeByName(childjson["name"]);
+	//if(NodesPresent.length==0)
+	{
+		var creator = "";
+		if(created_by != null)
+		{
+			creator = created_by;
 		}
-	}
-	newNode.set("cid", newNode.cid);
-	if (parent != null) {
-		parent.get('children').add(newNode);
-		newNode.parentNode = parent;
+		else
+		{
+			creator = parent.get("created_by");
+		}
+		console.log(childjson["name"]);
+		var newNode = new Node({
+			'name' : childjson["name"],
+			"options" : {},
+			created_by : creator
+		});
+		for ( var temp in childjson) {
+			if (temp == "name") {
+				newNode.set("name", childjson[temp]);
+			} 
+			else if (temp != "children" && temp != "created_by") {
+				var data = newNode.get("options");
+				data[temp] = childjson[temp];
+				newNode.set("options", data);
+			}
+		}
+		newNode.set("cid", newNode.cid);
+		if (parent != null) {
+			parent.get('children').add(newNode);
+			newNode.parentNode = parent;
+		}
 	}
 	var flag = null;
 	try {
@@ -369,7 +423,7 @@ Cure.generateJSON = function(parent, childjson) {
 	}
 	if (flag != null) {
 		for ( var childtemp in childjson["children"]) {
-			Cure.generateJSON(newNode, childjson["children"][childtemp]);
+			Cure.generateJSON(newNode, childjson["children"][childtemp], null, Collection);
 		}
 	}
 }
@@ -399,38 +453,50 @@ Cure.traverseTree = function(rootNode) {
 // -- Render d3 Network
 //
 Cure.render_network = function(dataset) {
-	var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-	nodes.forEach(function(d) {
-		d.y = d.depth * 130;
-	});
-	var link = Cure.svg.selectAll(".link").data(links);
-	link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
-			function(d) {
-				var o = {
-					x : dataset.x0,
-					y : dataset.y0
-				};
-				return Cure.diagonal({
-					source : o,
-					target : o
-				});
-			});
-	link.transition().duration(Cure.duration).attr("d", Cure.diagonal);
-	link.exit().transition().duration(Cure.duration).attr("d", function(d) {
-		var o = {
-			x : dataset.x,
-			y : dataset.y
-		};
-		return Cure.diagonal({
-			source : o,
-			target : o
+	var SVG;
+	if(dataset)
+	{
+		if(dataset["created_by"]=="player")
+		{
+			SVG = Cure.PlayerSvg;
+		}
+		else
+		{
+			SVG = Cure.BarneySvg;
+		}
+		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
+		nodes.forEach(function(d) {
+			d.y = d.depth * 130;
 		});
-	}).remove();
-	nodes.forEach(function(d) {
-		d.x0 = d.x;
-		d.y0 = d.y;
-	});
-}
+		var link = SVG.selectAll(".link").data(links);
+		link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
+				function(d) {
+					var o = {
+						x : dataset.x0,
+						y : dataset.y0
+					};
+					return Cure.diagonal({
+						source : o,
+						target : o
+					});
+				});
+		link.transition().duration(Cure.duration).attr("d", Cure.diagonal);
+		link.exit().transition().duration(Cure.duration).attr("d", function(d) {
+			var o = {
+				x : dataset.x,
+				y : dataset.y
+			};
+			return Cure.diagonal({
+				source : o,
+				target : o
+			});
+		}).remove();
+		nodes.forEach(function(d) {
+			d.x0 = d.x;
+			d.y0 = d.y;
+		});
+	}
+	}
 
 //
 // -- App init!
@@ -441,42 +507,56 @@ Cure.addInitializer(function(options) {
 	    evaluate: /\<\@([\s\S]+?)\@\>/gim,
 	    escape: /\<\@\-(.+?)\@\>/gim
 	};
-	$(options.regions.TreeRegion).append("<div id='"+options.regions.TreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.TreeRegion.replace("#","")+"SVG'></svg>")
+	$(options.regions.PlayerTreeRegion).html("<div id='"+options.regions.PlayerTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.PlayerTreeRegion.replace("#","")+"SVG'></svg>")
+	$(options.regions.BarneyTreeRegion).html("<div id='"+options.regions.BarneyTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.BarneyTreeRegion.replace("#","")+"SVG'></svg>")
 			// Test JSON
 			Cure.jsondata = options["json"];
 			// Declaring D3 Variables
 			Cure.width = options["width"];
-			Cure.height = options["height"];
+			Cure.height = options["height"];	
 			Cure.duration = 500;
 			Cure.cluster = d3.layout.tree().size([ Cure.width, Cure.height ]);
 			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			Cure.svg = d3.select(options.regions.TreeRegion+"SVG").attr("width", Cure.width).attr(
+			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
-			Cure.NodeCollection = new NodeCollection();
-			Cure.NodeCollectionView = new NodeCollectionView({
-				collection : Cure.NodeCollection
-			}), Cure.JSONCollectionView = new JSONCollectionView({
+			Cure.BarneySvg = d3.select(options.regions.BarneyTreeRegion+"SVG").attr("width", Cure.width).attr(
+					"height", Cure.height).append("svg:g").attr("transform",
+					"translate(0,40)");
+			Cure.PlayerNodeCollection = new NodeCollection();
+			Cure.BarneyNodeCollection = new NodeCollection();
+			Cure.PlayerNodeCollectionView = new NodeCollectionView({
+				collection : Cure.PlayerNodeCollection
+			});
+			Cure.BarneyNodeCollectionView = new NodeCollectionView({
+				collection : Cure.BarneyNodeCollection
+			})
+			/*
+			Cure.JSONCollectionView = new JSONCollectionView({
 				collection : Cure.NodeCollection
 			});
+			*/
 
 			// Assign View to Region
-			console.log(options.regions.TreeRegion+"Tree")
 			Cure.addRegions({
-	  		TreeRegion : options.regions.TreeRegion+"Tree",
+	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
+	  		BarneyTreeRegion : options.regions.BarneyTreeRegion+"Tree",
 	  		//JsonRegion : "#json_structure"
 	  	});
-			Cure.TreeRegion.show(Cure.NodeCollectionView);
+			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
+			Cure.BarneyTreeRegion.show(Cure.BarneyNodeCollectionView);
 			//Cure.JsonRegion.show(Cure.JSONCollectionView);
 
 			// Add Nodes from JSON
-			Cure.generateJSON(null, Cure.jsondata["tree"]);			
+			//Cure.generateJSON(null, Cure.jsondata["tree"],);			
 			Cure.branch = 1;
+			/*
 			$("#traverse").click(function() {
 				Cure.traverseTree(Cure.NodeCollection.models[0]);
 				$(this).html("Traversing...");
 				$(this).addClass("disabled");
 			});
+			*/
 		});
