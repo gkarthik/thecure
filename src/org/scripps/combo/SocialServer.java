@@ -68,7 +68,7 @@ public class SocialServer extends HttpServlet {
 			String room = request.getParameter("room");
 			String dataset = "griffith_breast_cancer_1";//request.getParameter("dataset"); //"dream_breast_cancer"
 			if(dataset.equals("griffith_breast_cancer_1")){
-				room = "5";
+				room = "4";
 			}
 			b.buildBoardView(user_id, dataset, room);
 			String json = b.renderjsonBoardViews();
