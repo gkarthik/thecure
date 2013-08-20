@@ -85,7 +85,7 @@ public class GeneRanker {
 		 */
 		
 		String dataset = "griffith_breast_cancer_1";
-		String outfile = "/Users/bgood/workspace/acure/database/griffith_1_cancer_only.txt";
+		String outfile = "/Users/bgood/workspace/aacure/database/griffith_1_cancer_only.txt";
 		boolean only_winning = false;
 		boolean only_cancer_people = true;
 		boolean only_bio_people = false;

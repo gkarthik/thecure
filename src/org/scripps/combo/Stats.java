@@ -22,12 +22,6 @@ public class Stats {
 		String dataset = "dream_breast_cancer_2";
 		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0);
 
-		//filters
-
-		//		ObjectMapper mapper = new ObjectMapper();
-		//		ObjectNode json_root = mapper.createObjectNode();
-		//		ArrayNode players = mapper.createArrayNode();	
-
 		//get a scoreboard
 		GameLog log = new GameLog();
 		high_score sb = log.getScoreBoard(whs, dataset);

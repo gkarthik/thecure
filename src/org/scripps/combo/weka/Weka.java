@@ -167,7 +167,7 @@ public class Weka {
 	}
 	/**
 	 * unique ids match are used for the keys in the features table
-	 * they are external unqiue ids
+	 * they are external unique ids
 	 * @param unique_ids
 	 * @param wekamodel
 	 * @param dataset
@@ -177,9 +177,13 @@ public class Weka {
 		String indices = "";
 		for(String fid : unique_ids){
 			Feature f = features.get(fid);
+			//Todo when a gene maps to multiple attributes (probe sets for example),
+			//pick the "best" one here.
 			for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
 				if(a.getDataset().equals(dataset)){
 					indices+=a.getCol_index()+",";
+					//only add one for now (first = best at the moment..)
+					break;
 				}
 			}
 		}
