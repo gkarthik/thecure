@@ -287,6 +287,14 @@ public class Game {
 		return hands;
 	}
 	
+	public static Map<Calendar, Integer> getGamesPerTime(boolean only_winning, String day_or_month){
+		if(day_or_month.equals("day")){
+			return getGamesPerDay(only_winning);
+		}else{
+			return getGamesPerMonth(only_winning);
+		}
+	}
+	
 	public static Map<Calendar, Integer> getGamesPerDay(boolean only_winning){
 		Map<Calendar, Integer> day_games = new TreeMap<Calendar, Integer>();
 		JdbcConnection conn = new JdbcConnection();
@@ -315,6 +323,34 @@ public class Game {
 		}
 		return day_games;
 	}
+	
+	public static Map<Calendar, Integer> getGamesPerMonth(boolean only_winning){
+		Map<Calendar, Integer> month_games = new TreeMap<Calendar, Integer>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select YEAR(created), MONTH(created), count(*) as c from game group by YEAR(created), MONTH(created)";
+		if(only_winning){
+			q = "select YEAR(created), MONTH(created), count(*) as c from game where win = 1 group by YEAR(created), MONTH(created)"; 
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				int count = rslt.getInt(3);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				month_games.put(c, count);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return month_games;
+	}
+	
 	
 	/**
 	 * Insert a game record 
