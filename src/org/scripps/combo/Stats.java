@@ -5,16 +5,21 @@ package org.scripps.combo;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
+import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 
 /**
@@ -51,11 +56,70 @@ public class Stats {
 		//players
 		//		outfile = output_dir+"players_month";
 		//		outputNewPlayersPerTime(outfile);
-				outfile = output_dir+"global_player_info.txt";
-		outputGlobalPlayerInfo(outfile);
-
+		//		outfile = output_dir+"global_player_info.txt";
+		//		outputGlobalPlayerInfo(outfile);
+		//		outfile = output_dir+"player_game_counts.txt";
+		//		outputPlayerGames(outfile);
+//				outfile = output_dir+"players/players_all_games.txt";
+//				boolean only_first_per_board = false;
+//				Player.describePlayers(only_first_per_board, outfile, null);
+//				List<String> datasets = getDatasets();				
+//				for(String dataset : datasets){
+//					outfile = output_dir+"players/players_"+dataset+".txt";
+//					Player.describePlayers(only_first_per_board, outfile, dataset);
+//				}
+//				only_first_per_board = true;
+//				outfile = output_dir+"players/players_all_first_games.txt";
+//				Player.describePlayers(only_first_per_board, outfile, null);
+//				for(String dataset : datasets){
+//					outfile = output_dir+"players/players_first_"+dataset+".txt";
+//					Player.describePlayers(only_first_per_board, outfile, dataset);
+//				}
 	}
-
+	
+	public static List<String> getDatasets(){
+		List<String> datasets = new ArrayList<String>();
+		String q = "select distinct dataset from board";
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				String d = rslt.getString("dataset");
+				datasets.add(d);
+			} 
+			rslt.close();
+			conn.connection.close();	
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return datasets;
+	}
+	
+	public static void outputPlayerGames(String outfile){
+		boolean only_winning = false;
+		String dataset = null;//gets all of them
+		List<Game> hands = Game.getAllGames(only_winning, dataset);
+		GameLog log = new GameLog();
+		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
+		
+		try {
+			FileWriter out = new FileWriter(outfile);
+			int i = 0;
+			for(Entry<String, Integer> p_games : sb.player_games.entrySet()){
+				i++;
+				if(i<10){
+					System.out.println(p_games.getKey()+"\t"+p_games.getValue()+"\t");
+				}
+				out.write(p_games.getKey()+"\t"+p_games.getValue()+"\n");
+			}
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static void outputGlobalPlayerInfo(String outfile){
 		try {
 			FileWriter out = new FileWriter(outfile);
@@ -78,6 +142,13 @@ public class Stats {
 				System.out.println(cancer_c.getKey()+"\t"+cancer_c.getValue()+"\t"+cancer_pct.get(cancer_c.getKey()));
 				out.write("\nKnow about cancer?\n"+cancer_c.getKey()+"\t"+cancer_c.getValue()+"\n");
 			}
+			//
+			System.out.println("\nTarget Audience");
+			for(Entry<String, Integer> target_c : ps.target_audience_count.entrySet()){
+				System.out.println(target_c.getKey()+"\t"+target_c.getValue());
+				out.write("\nTarget\n"+target_c.getKey()+"\t"+target_c.getValue()+"\n");
+			}			
+			out.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

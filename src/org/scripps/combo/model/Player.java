@@ -3,6 +3,8 @@
  */
 package org.scripps.combo.model;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +52,7 @@ public class Player {
 	}
 
 	public static void main(String[] args){
-		describePlayers(true, "dream_breast_cancer_2");
+		//describePlayers(true, "dream_breast_cancer_2");
 	}
 
 
@@ -162,7 +164,14 @@ public class Player {
 		public Map<String, Integer> degree_count;
 		public Map<String, Integer> cancer_count;
 		public Map<String, Integer> biologist_count;
+		public Map<String, Integer> target_audience_count;
+
 	}
+
+	/***
+	 * Cure-wide counts related to players.  (not dataset-specific)
+	 * @return
+	 */
 	public PlayerSet getGlobalPlayerCounts(){
 		PlayerSet ps = new PlayerSet();
 		String q = "select degree, count(*) as c from player group by degree";
@@ -194,39 +203,45 @@ public class Player {
 				ps.biologist_count.put(can, c);
 			} 
 			rslt.close();
-			conn.connection.close();
+			//target audience
+			q = "select count(*) as c from player where cancer = 'yes' and (degree = 'bachelors' or degree = 'masters' or degree = 'md' or degree = 'phd')";
+			ps.target_audience_count = new TreeMap<String, Integer>();
+			rslt = conn.executeQuery(q);
+			while(rslt.next()){
+				int c = rslt.getInt("c");
+				ps.target_audience_count.put("know about cancer with undergraduate or higher degree", c);
+			} 
+			rslt.close();
+			conn.connection.close();	
 		}catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return ps;
 	}
 
-	public static void describePlayers(boolean all_hands, String dataset){
+	/**
+	 * Provide insight into the quantity and quality of contributions from each player across all datasets
+	 * @param outfile
+	 */
+	public static void describePlayers(boolean only_first_per_board, String outfile, String dataset){
+		boolean only_winning = false; boolean for_scoreboard_in_game = false;
+		int room = 0; 
 		List<Player> players = Player.getAllPlayers();
 		Map<Integer, Player> name_player = Player.playerListToIdMap(players);
+
 		GameLog log = new GameLog();
-		List<Game> wm = null;
-		if(all_hands){
-			wm = Game.getAllGames(false); // //
-		}else{//just get the first hand per player per board
-			wm = Game.getTheFirstGamePerPlayerPerBoard(false, null, false, 1);
-		}
-		//remove mammal
-		List<Game> mammalhands = new ArrayList<Game>();
-		List<Game> hands = new ArrayList<Game>();
-		for(Game hand : wm){
-			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
-				mammalhands.add(hand);
-			}else{
-				hands.add(hand);
-			}
+		List<Game> hands = null;
+		if(only_first_per_board){
+			hands = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, for_scoreboard_in_game, room);
+		}else{
+			hands = Game.getAllGames(false, dataset);
 		}
 
+		//count the average number of cards played per board
 		Map<String, Float> player_cardsboard = new HashMap<String, Float>();
 		for(Player player : players){
-			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId());
+			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId(), dataset);
 			float avg_cards_board = 0;
 			for(Entry<String, Integer> board_count : board_counts.entrySet()){
 				avg_cards_board+= board_count.getValue();
@@ -235,32 +250,47 @@ public class Player {
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
 
-		System.out.println("name	created	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
-		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			FileWriter f = new FileWriter(outfile);
 
-		for(Player player : players){
-			String name = player.getName();
-			Calendar c = player.getCreated();
-			String cdate = formatter.format(c.getTime());
-			int id = player.getId();
-			if(name_player.get(id)!=null){
-				TimeCounter tc = new TimeCounter(""+id);
-				System.out.println(name+"\t"+cdate+"\t"+
-						player.getBiologist()+"\t"+
-						player.getCancer()+"\t"+
-						player.getDegree()+"\t"+
-						sb.getPlayer_max().get(name)+"\t"
-						+sb.getPlayer_avg().get(name)+"\t"+
-						sb.getPlayer_global_points().get(name)+"\t"+
-						sb.getPlayer_games().get(name)+"\t"+
-						sb.getPlayer_avg_win().get(name)+"\t"+
-						player_cardsboard.get(name)+"\t"+
-						tc.getAvg_time_per_board()+"\t"+
-						tc.getAvg_time_per_card()+"\t"+
-						tc.getTotal_time()
-				);
+			String header = "name	created	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time";
+			f.write(header+"\n");
+			System.out.println(header);
+			GameLog.high_score sb = log.getScoreBoard(hands, dataset);
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+			for(Player player : players){
+				String name = player.getName();
+				Calendar c = player.getCreated();
+				String cdate = formatter.format(c.getTime());
+				int id = player.getId();
+				if(name_player.get(id)!=null){
+					TimeCounter tc = new TimeCounter(""+id, dataset);
+					String row = name+"\t"+cdate+"\t"+
+					player.getBiologist()+"\t"+
+					player.getCancer()+"\t"+
+					player.getDegree()+"\t"+
+					sb.getPlayer_max().get(name)+"\t"
+					+sb.getPlayer_avg().get(name)+"\t"+
+					sb.getPlayer_global_points().get(name)+"\t"+
+					sb.getPlayer_games().get(name)+"\t"+
+					sb.getPlayer_avg_win().get(name)+"\t"+
+					player_cardsboard.get(name)+"\t"+
+					tc.getAvg_time_per_board()+"\t"+
+					tc.getAvg_time_per_card()+"\t"+
+					tc.getTotal_time();
+					
+					row = row.replaceAll("null", "0");
+					row = row.replaceAll("NaN", "0");
+					
+					f.write(row+"\n");
+					System.out.println(row);
+				}
 			}
+			f.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
