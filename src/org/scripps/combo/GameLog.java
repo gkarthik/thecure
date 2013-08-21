@@ -277,7 +277,8 @@ public class GameLog {
 			board_games.put(board, bscores);
 		
 			//update player win_ratio.
-			int win = hand.getWin();
+			int win = hand.getWin();//0 loss , 1 win, 2 tie
+			if(win>0){win = 1;}
 			Float wr = player_win.get(player);
 			if(wr==null){
 				wr = new Float(win);

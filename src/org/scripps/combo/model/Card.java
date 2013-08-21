@@ -65,11 +65,14 @@ public class Card {
 
 	}
 
-	public static List<Card> getAllPlayedCards(String user_id){
+	public static List<Card> getAllPlayedCards(String user_id, String dataset){
 		List<Card> cards = new ArrayList<Card>();
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from card where user_id = '"+user_id+"'";
-
+		if(dataset!=null){
+			q = "select card.* from card, board where user_id = '"+user_id+"' and card.board_id = board.id and board.dataset = '"+dataset+"'";
+		}
+		
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){
@@ -118,10 +121,17 @@ public class Card {
 		return cards;
 	}
 	
-	public static Map<String, Integer> getBoardCardCount(int user_id ){
+	public static Map<String, Integer> getBoardCardCount(int user_id, String dataset ){
 		Map<String, Integer> board_count = new HashMap<String, Integer>();
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select board_id, count(*) from card where user_id = '"+user_id+"' group by user_id, board_id";
+		if(dataset!=null){
+			q = "select board_id, count(card.id) from card, board " +
+				"where user_id = '"+user_id+"' " +
+				"and card.board_id = board.id " +
+				"and board.dataset = '"+dataset+"' " +
+				"group by user_id, board_id";
+		}
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){

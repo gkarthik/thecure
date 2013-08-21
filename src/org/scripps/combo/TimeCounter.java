@@ -21,15 +21,15 @@ public class TimeCounter {
 	float max_per_card = 0;
 	static int max_timeout = 300000; //5 minute max
 	
-	public TimeCounter(String user_id){
-		setForUser(user_id);
+	public TimeCounter(String user_id, String dataset){
+		setForUser(user_id, dataset);
 	}
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TimeCounter tc = new TimeCounter("54");
+		TimeCounter tc = new TimeCounter("54", null);
 		System.out.println("total time\t"+tc.total_time+"\tavg_time_card\t"+tc.avg_time_per_card+"\tavg_time_board\t"+tc.avg_time_per_board);
 	}
 
@@ -37,8 +37,8 @@ public class TimeCounter {
 	 * Calculate the time this user has spent playing the cure
 	 * @param user_id
 	 */
-	public void setForUser(String user_id){
-		List<Card> cards = Card.getAllPlayedCards(user_id);
+	public void setForUser(String user_id, String dataset){
+		List<Card> cards = Card.getAllPlayedCards(user_id, dataset);
 		if(cards==null||cards.size()==0){
 			return;
 		}

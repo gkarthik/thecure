@@ -247,10 +247,14 @@ public class Game {
 	 * get everything - includes multiple hands per board per player caused by refreshes..
 	 * @return
 	 */
-	public static List<Game> getAllGames(boolean only_winning){
+	public static List<Game> getAllGames(boolean only_winning, String dataset){
 		List<Game> hands = new ArrayList<Game>();
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game ";
+		if(dataset!=null){
+			q = "select game.* from game, board where game.board_id = board.id and board.dataset = '"+dataset+"' ";
+		}
+		
 		if(only_winning){
 			q+=" and win = 1 "; 
 		}
