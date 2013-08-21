@@ -226,7 +226,11 @@ public class GameLog {
 			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
 				tmp = "zoo";
 			}
-			multiplier = pheno_multiplier.get(tmp);
+			if(tmp!=null){
+				multiplier = pheno_multiplier.get(tmp);
+			}else{
+				multiplier = 1;
+			}
 			if(board_performance < 1){
 				continue;
 			}
