@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math.stat.inference.TestUtils;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
@@ -60,23 +63,104 @@ public class Stats {
 		//		outputGlobalPlayerInfo(outfile);
 		//		outfile = output_dir+"player_game_counts.txt";
 		//		outputPlayerGames(outfile);
-//				outfile = output_dir+"players/players_all_games.txt";
-//				boolean only_first_per_board = false;
-//				Player.describePlayers(only_first_per_board, outfile, null);
-//				List<String> datasets = getDatasets();				
-//				for(String dataset : datasets){
-//					outfile = output_dir+"players/players_"+dataset+".txt";
-//					Player.describePlayers(only_first_per_board, outfile, dataset);
-//				}
-//				only_first_per_board = true;
-//				outfile = output_dir+"players/players_all_first_games.txt";
-//				Player.describePlayers(only_first_per_board, outfile, null);
-//				for(String dataset : datasets){
-//					outfile = output_dir+"players/players_first_"+dataset+".txt";
-//					Player.describePlayers(only_first_per_board, outfile, dataset);
-//				}
+		//				outfile = output_dir+"players/players_all_games.txt";
+		//				boolean only_first_per_board = false;
+		//				Player.describePlayers(only_first_per_board, outfile, null);
+		//				List<String> datasets = getDatasets();				
+		//				for(String dataset : datasets){
+		//					outfile = output_dir+"players/players_"+dataset+".txt";
+		//					Player.describePlayers(only_first_per_board, outfile, dataset);
+		//				}
+		//				only_first_per_board = true;
+		//				outfile = output_dir+"players/players_all_first_games.txt";
+		//				Player.describePlayers(only_first_per_board, outfile, null);
+		//				for(String dataset : datasets){
+		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
+		//					Player.describePlayers(only_first_per_board, outfile, dataset);
+		//				}
+		outfile = output_dir+"players/player_agreeability.txt";
+		outputPlayerAgreeability(outfile);
+
 	}
-	
+
+
+	public static void outputBoardConsensus(String outfile){
+
+		//		
+		//		try {
+		//			FileWriter out = new FileWriter(outfile);
+		//			out.write("player.getId()\tplayer.getName()\tplayer.getBiologist()\tplayer.getCancer()\tplayer.getDegree()\tpc.getN()\tpc.getMean()\tpc.getPercentile(50)\n");
+		//			int i = 0;
+		//			for(Player player : players){
+		//				i++;
+		//				DescriptiveStatistics pc = Player.measurePCscore(player.getId());
+		//				out.write(player.getId()+"\t"+player.getName()+"\t"+player.getBiologist()+"\t"+player.getCancer()+"\t"+player.getDegree()+"\t");
+		//				out.write(pc.getN()+"\t"+pc.getMean()+"\t"+pc.getPercentile(50)+"\n");
+		//				System.out.println(i);
+		//			}
+		//			out.close();
+		//		} catch (IOException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
+	}
+
+	/**
+	 * Quantify how similar the player's gene selections are to the community consensus
+	 * @param outfile
+	 */
+	public static void outputPlayerAgreeability(String outfile){
+		List<Player> players = Player.getAllPlayers();
+
+		try {
+			FileWriter out = new FileWriter(outfile);
+			out.write("player.getId()\tplayer.getName()\tplayer.getBiologist()\tplayer.getCancer()\tplayer.getDegree()\tpc.getN()\tpc.getMean()\tpc.getPercentile(50)\n");
+			int i = 0;
+			DescriptiveStatistics with_cancer_knowledge = new DescriptiveStatistics();
+			DescriptiveStatistics without_cancer_knowledge = new DescriptiveStatistics();
+			DescriptiveStatistics with_phd = new DescriptiveStatistics();
+			DescriptiveStatistics without_phd = new DescriptiveStatistics();
+			for(Player player : players){
+				i++;
+				DescriptiveStatistics pc = Player.measurePCscore(player.getId());
+				out.write(player.getId()+"\t"+player.getName()+"\t"+player.getBiologist()+"\t"+player.getCancer()+"\t"+player.getDegree()+"\t");
+				out.write(pc.getN()+"\t"+pc.getMean()+"\t"+pc.getPercentile(50)+"\n");
+				System.out.println(i);
+				if(pc.getN()>0){
+					if(player.getCancer().equals("yes")){
+						with_cancer_knowledge.addValue(pc.getPercentile(50));
+					}else{
+						without_cancer_knowledge.addValue(pc.getPercentile(50));
+					}
+					if(player.getDegree().equals("phd")){
+						with_phd.addValue(pc.getPercentile(50));
+					}else{
+						without_phd.addValue(pc.getPercentile(50));
+					}
+				}
+			}
+			double know_cancer_diff_agree = TestUtils.tTest(without_cancer_knowledge, with_cancer_knowledge);
+			double phd_diff_agree = TestUtils.tTest(without_phd, with_phd);
+			System.out.println("t for cancer knowledge and agreeability:"+know_cancer_diff_agree+"" +
+					" mean know: "+with_cancer_knowledge.getMean()+" "+with_cancer_knowledge.getN()+" "+
+					" mean don't know: "+without_cancer_knowledge.getMean()+" "+without_cancer_knowledge.getN());
+			System.out.println("t for phd and agreeability:"+phd_diff_agree +
+					" mean phd: "+with_phd.getMean()+" "+with_phd.getN()+" "+
+					" mean without phd: "+without_phd.getMean()+" "+without_phd.getN());
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MathException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
 	public static List<String> getDatasets(){
 		List<String> datasets = new ArrayList<String>();
 		String q = "select distinct dataset from board";
@@ -95,14 +179,14 @@ public class Stats {
 		}
 		return datasets;
 	}
-	
+
 	public static void outputPlayerGames(String outfile){
 		boolean only_winning = false;
 		String dataset = null;//gets all of them
 		List<Game> hands = Game.getAllGames(only_winning, dataset);
 		GameLog log = new GameLog();
 		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
-		
+
 		try {
 			FileWriter out = new FileWriter(outfile);
 			int i = 0;
@@ -119,7 +203,7 @@ public class Stats {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void outputGlobalPlayerInfo(String outfile){
 		try {
 			FileWriter out = new FileWriter(outfile);
