@@ -88,9 +88,15 @@ public class Game {
 
 	}
 
-	public static List<Game> getTheFirstGamePerPlayerByBoard(int board_id){
+	
+	public static List<Game> getGamesForBoard(int board_id, boolean first_play_only, int player_id){
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from game where board_id = "+board_id+" order by game_finished asc");
+		String q = "select * from game where board_id = "+board_id+" order by game_finished asc";
+		if(player_id !=0){
+			q = "select * from game where board_id = "+board_id+" and player1_id = "+player_id+" order by game_finished asc";
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		List<Game> games = new ArrayList<Game>();
 		Map<String, Game> bpw_hand = new HashMap<String, Game>();
 		try {
 			while(rslt.next()){
@@ -115,9 +121,14 @@ public class Game {
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hand.setSearch_term(rslt.getString("search_term"));		
 				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
-				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
-					hand.setPlayer1FeaturesForGameToUniqueIds();
-					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+				//NOT sure about why this is here...
+				//hand.setPlayer1FeaturesForGameToUniqueIds();
+				if(first_play_only){
+					if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
+						bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+					}
+				}else{
+					games.add(hand);
 				}
 			}
 			rslt.close();
@@ -126,8 +137,12 @@ public class Game {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		List<Game> hands = new ArrayList<Game>(bpw_hand.values());
-		return hands;
+		
+		if(first_play_only){
+			games = new ArrayList<Game>(bpw_hand.values());
+		}
+		
+		return games;
 	}	
 	
 	private void setFeaturesForGameWithDB(int game_id, int player1_id){

@@ -17,12 +17,15 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.GameLog.high_score;
+import org.scripps.combo.weka.GeneRanker;
 import org.scripps.util.JdbcConnection;
 
 /**
@@ -220,6 +223,41 @@ public class Player {
 		return ps;
 	}
 
+	/**
+	 * Estimate how close this player generally picks genes compared to the consensus
+	 * @param player_id
+	 */
+	public static DescriptiveStatistics measurePCscore(int player_id){
+		Set<Integer> boards_played = Board.getBoardsByPlayer(player_id);
+		//take out training
+		boards_played.remove(201);boards_played.remove(202);boards_played.remove(203);boards_played.remove(204);
+		System.out.println(boards_played.size()+" boards played");
+		GeneRanker gr = new GeneRanker();
+		Map<Integer,Double> board_agreement_levels = new HashMap<Integer, Double>();
+		for(Integer b : boards_played){
+			double n_cards_board = 0;
+			double sum_agreement_levels = 0;
+			double consensus_agreement_for_board = 0;
+			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0);
+			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id);
+			for(Entry<String, GeneRanker.gene_rank> player_selected : player_genes.entrySet()){
+				if(player_selected.getValue().votes>0){
+					n_cards_board++;
+					GeneRanker.gene_rank comm_pct = board_consensus.get(player_selected.getKey());
+					sum_agreement_levels+=comm_pct.frequency;
+				}
+			}
+			consensus_agreement_for_board = sum_agreement_levels/n_cards_board;
+			board_agreement_levels.put(b, consensus_agreement_for_board);
+		}
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		for(Double d : board_agreement_levels.values()){
+			stats.addValue(d);
+		}
+		return stats;
+	}
+	
+	
 	/**
 	 * Provide insight into the quantity and quality of contributions from each player across all datasets
 	 * @param outfile

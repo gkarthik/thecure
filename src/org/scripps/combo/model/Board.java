@@ -14,8 +14,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.scripps.util.MapFun;
 import org.scripps.combo.weka.Weka;
@@ -518,6 +520,27 @@ public class Board {
 //		return board_scores;
 //	}
 
+	
+	public static Set<Integer> getBoardsByPlayer(int player_id){
+		Set<Integer> boards= new HashSet<Integer>();
+		String getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id";
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(getboards);
+			ResultSet bds = p.executeQuery();
+			while(bds.next()){
+				int id = bds.getInt("id");
+				boards.add(id);
+			}
+			bds.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return boards;
+	}
+	
 	public static Map<String,List<Integer>> getPlayerBoardScoresForWins(int board_id){
 		Map<String,List<Integer>> player_board_scores = new HashMap<String,List<Integer>>();
 		String gethands = "select * from game where win = 1 and board_id = '"+board_id+"' ";
