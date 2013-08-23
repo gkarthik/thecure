@@ -224,9 +224,13 @@ public class GameLog {
 
 			String tmp = dataset;
 			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
-				tmp = "mammal";
+				tmp = "zoo";
 			}
-			multiplier = pheno_multiplier.get(tmp);
+			if(tmp!=null){
+				multiplier = pheno_multiplier.get(tmp);
+			}else{
+				multiplier = 1;
+			}
 			if(board_performance < 1){
 				continue;
 			}
@@ -273,7 +277,8 @@ public class GameLog {
 			board_games.put(board, bscores);
 		
 			//update player win_ratio.
-			int win = hand.getWin();
+			int win = hand.getWin();//0 loss , 1 win, 2 tie
+			if(win>0){win = 1;}
 			Float wr = player_win.get(player);
 			if(wr==null){
 				wr = new Float(win);

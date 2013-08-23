@@ -84,8 +84,8 @@ public class GeneRanker {
 		ranker.writeFile(outfile, gr);
 		 */
 		
-		String dataset = "griffith_breast_cancer_1";
-		String outfile = "/Users/bgood/workspace/acure/database/griffith_1_cancer_only.txt";
+/*		String dataset = "griffith_breast_cancer_1";
+		String outfile = "/Users/bgood/workspace/aacure/database/griffith_1_cancer_only.txt";
 		boolean only_winning = false;
 		boolean only_cancer_people = true;
 		boolean only_bio_people = false;
@@ -122,7 +122,7 @@ public class GeneRanker {
 		ranker.weka.setEval_method("training_set");
 		result = ranker.weka.pruneAndExecuteWithUniqueIds(test_fs, model, dataset);
 		System.out.println("training_set_accuracy\t"+result.eval.pctCorrect());
-		
+*/		
 		/**
 		 * workflow for iterating through model building params	and testing	 
 		int runs = 125;
@@ -150,7 +150,12 @@ public class GeneRanker {
 			System.out.println(test_fs.size()+"\t"+cv);
 		}
 		*/
-
+		
+		GeneRanker gr = new GeneRanker();
+		Map<String, gene_rank> bg_rank = gr.getBoardConsensus(1054, 0);
+		for(gene_rank r : bg_rank.values()){
+			System.out.println(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.votes+"\t"+r.frequency);
+		}
 	}
 
 	public List<gene_rank> mergeGeneRankings(Map<String, gene_rank> r1, Map<String, gene_rank> r2){
@@ -348,13 +353,13 @@ public class GeneRanker {
 
 	public class gene_rank implements Comparable<gene_rank>{
 
-		String f_id;
-		String entrez;
-		String symbol;
-		float frequency;
-		float views;
-		float votes;
-		float relief;
+		public String f_id;
+		public String entrez;
+		public String symbol;
+		public float frequency;
+		public float views;
+		public float votes;
+		public float relief;
 		List<Integer> board_id;
 		@Override
 		public int compareTo(gene_rank arg0) {
@@ -394,7 +399,63 @@ public class GeneRanker {
 		return gene_ranked;
 	}
 
+/**
+ * Calculate frequency with which players selected each gene on a given board
+ * @param board_id
+ * @return
+ */
+	public Map<String, gene_rank> getBoardConsensus(int board_id, int player_id){
+		boolean first_hand_only = true;
+		List<Game> hands = Game.getGamesForBoard(board_id, first_hand_only, player_id);
+		//this will be the output
+		Map<String, gene_rank> gene_ranked = new HashMap<String, gene_rank>();
+		int games_played = hands.size();
+		//catch what each player to play the board selected
+		Map<Integer, Set<String>> player_genes = new HashMap<Integer, Set<String>>();
+		for(Game hand : hands){
+			List<String> features = hand.getPlayer1_features();
+			int p_id = hand.getPlayer1_id();
+			Set<String> genes = player_genes.get(p_id);
+			if(genes==null){
+				genes = new HashSet<String>();
+			}
+			genes.addAll(features);
+			player_genes.put(p_id, genes);
+		}	
+		//System.out.println(player_genes.keySet().size()+" players");
+		//go through each gene on the board and count occurrences
+		for(Entry<Integer, Set<String>> p_genes : player_genes.entrySet()){
+			Set<String> genes = p_genes.getValue();
+			for(String gene : genes){
+				gene_rank gr = gene_ranked.get(gene);
+				if(gr == null){
+					gr = makeGene_rank();
+				}
+				//add votes for each of the genes
+				gr.votes++;
+				gene_ranked.put(gene, gr);
+			}
+		}	
+		//set the frequencies
+		Board board = Board.getBoardById(""+board_id, false);
+		for(Feature f : board.getFeatures()){
+			String f_id = ""+f.getId();
+			gene_rank gr = gene_ranked.get(f_id);
+			if(gr == null){
+				gr = makeGene_rank();
+			}
+			gr.f_id = f_id;
+			gr.entrez = f.getUnique_id();
+			gr.symbol = f.getShort_name();
+			//set the frequencies
+			gr.frequency = gr.votes/games_played;
+			gene_ranked.put(f_id, gr);
+		}
 
+		return gene_ranked;
+	}
+	
+	
 	/**
 	 * Get data for ranking genes based on selection frequency
 	 * Results returned unsorted

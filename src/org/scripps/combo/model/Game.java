@@ -88,9 +88,15 @@ public class Game {
 
 	}
 
-	public static List<Game> getTheFirstGamePerPlayerByBoard(int board_id){
+	
+	public static List<Game> getGamesForBoard(int board_id, boolean first_play_only, int player_id){
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from game where board_id = "+board_id+" order by game_finished asc");
+		String q = "select * from game where board_id = "+board_id+" order by game_finished asc";
+		if(player_id !=0){
+			q = "select * from game where board_id = "+board_id+" and player1_id = "+player_id+" order by game_finished asc";
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		List<Game> games = new ArrayList<Game>();
 		Map<String, Game> bpw_hand = new HashMap<String, Game>();
 		try {
 			while(rslt.next()){
@@ -115,9 +121,14 @@ public class Game {
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hand.setSearch_term(rslt.getString("search_term"));		
 				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
-				if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
-					hand.setPlayer1FeaturesForGameToUniqueIds();
-					bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+				//NOT sure about why this is here...
+				//hand.setPlayer1FeaturesForGameToUniqueIds();
+				if(first_play_only){
+					if(!bpw_hand.containsKey(hand.getBoard_id()+"_"+hand.getPlayer1_id())){
+						bpw_hand.put(hand.getBoard_id()+"_"+hand.getPlayer1_id(), hand);
+					}
+				}else{
+					games.add(hand);
 				}
 			}
 			rslt.close();
@@ -126,8 +137,12 @@ public class Game {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		List<Game> hands = new ArrayList<Game>(bpw_hand.values());
-		return hands;
+		
+		if(first_play_only){
+			games = new ArrayList<Game>(bpw_hand.values());
+		}
+		
+		return games;
 	}	
 	
 	private void setFeaturesForGameWithDB(int game_id, int player1_id){
@@ -247,10 +262,14 @@ public class Game {
 	 * get everything - includes multiple hands per board per player caused by refreshes..
 	 * @return
 	 */
-	public static List<Game> getAllGames(boolean only_winning){
+	public static List<Game> getAllGames(boolean only_winning, String dataset){
 		List<Game> hands = new ArrayList<Game>();
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game ";
+		if(dataset!=null){
+			q = "select game.* from game, board where game.board_id = board.id and board.dataset = '"+dataset+"' ";
+		}
+		
 		if(only_winning){
 			q+=" and win = 1 "; 
 		}
@@ -287,6 +306,14 @@ public class Game {
 		return hands;
 	}
 	
+	public static Map<Calendar, Integer> getGamesPerTime(boolean only_winning, String day_or_month){
+		if(day_or_month.equals("day")){
+			return getGamesPerDay(only_winning);
+		}else{
+			return getGamesPerMonth(only_winning);
+		}
+	}
+	
 	public static Map<Calendar, Integer> getGamesPerDay(boolean only_winning){
 		Map<Calendar, Integer> day_games = new TreeMap<Calendar, Integer>();
 		JdbcConnection conn = new JdbcConnection();
@@ -315,6 +342,34 @@ public class Game {
 		}
 		return day_games;
 	}
+	
+	public static Map<Calendar, Integer> getGamesPerMonth(boolean only_winning){
+		Map<Calendar, Integer> month_games = new TreeMap<Calendar, Integer>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select YEAR(created), MONTH(created), count(*) as c from game group by YEAR(created), MONTH(created)";
+		if(only_winning){
+			q = "select YEAR(created), MONTH(created), count(*) as c from game where win = 1 group by YEAR(created), MONTH(created)"; 
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				int count = rslt.getInt(3);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				month_games.put(c, count);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return month_games;
+	}
+	
 	
 	/**
 	 * Insert a game record 
