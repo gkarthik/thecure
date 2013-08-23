@@ -39,14 +39,6 @@ CURE.load = function() {
       } else {
         $("div#boardgame").css({"margin":"60px auto"});
       }
-      Cure.start({"regions":{
-    		PlayerTreeRegion : "#p1_current_tree",
-    		BarneyTreeRegion : "#p2_current_tree",
-    		//JsonRegion : "#json_structure"
-    	},
-    	height: 360,
-  		width: 452
-    	});
       CURE.boardgame.init();
       break;
     case "stats":
@@ -522,7 +514,7 @@ CURE.boardgame = {
 
         if (data.max_depth > 2) { treeheight = 200 + 30*data.max_depth; }
         //draw the current tree
-        //$("#p"+ player +"_current_tree").empty();
+        $("#p"+ player +"_current_tree").empty();
         utils.drawTree(data, treewidth, treeheight, "#p"+ player +"_current_tree");
         //sometimes randomness in cross-validation gets you a different score even without producing
         //any tree at all.
@@ -1232,26 +1224,7 @@ CURE.utilities = {
     return 3;
   },
   drawTree : function(json, width, height, selector_string) {
-  if(selector_string=="#p1_current_tree")
-  {
-  	if(Cure.PlayerNodeCollection.models.length>0)
-  	{
-  		Cure.delete_all_children(Cure.PlayerNodeCollection.models[0]);
-    	Cure.PlayerNodeCollection.models[0].destroy();
-  	}
-  	Cure.generateJSON(null, json["tree"], "player", Cure.PlayerNodeCollection);
-  }
-  else
-  {
-  	if(Cure.BarneyNodeCollection.models.length>0)
-  	{
-    	Cure.delete_all_children(Cure.BarneyNodeCollection.models[0]);
-    	Cure.BarneyNodeCollection.models[0].destroy();
-  	}
-  	Cure.generateJSON(null, json["tree"], "barney", Cure.BarneyNodeCollection);
-  }
   	
-  	/*
     var utils = CURE.utilities;
     if(json.max_depth<2){
       $(selector_string).append("Could not build a useful tree with the selected features...");
@@ -1355,9 +1328,9 @@ CURE.utilities = {
     //      sliceColors: ['#1FA13A','#D44413']
     //      }).fadeIn(1200);
     //    });
-    */
+    
   },
-  /*
+  
   drawTreeNoLeaf : function(json, width, height, selector_string) {
     var utils = CURE.utilities;
     var green = "#1FA13A",
@@ -1461,7 +1434,7 @@ CURE.utilities = {
       .style("text-anchor", "middle")
       .text(function(d) { return d.name.toUpperCase() });
   }
-  */
+  
 }
 
 $(document).ready(function() {
