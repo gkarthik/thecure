@@ -3,6 +3,8 @@
  */
 package org.scripps.combo.model;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,11 +17,15 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.GameLog.high_score;
+import org.scripps.combo.weka.GeneRanker;
 import org.scripps.util.JdbcConnection;
 
 /**
@@ -42,40 +48,238 @@ public class Player {
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
 	Map<String, Map<Integer,Integer>> dataset_board_scores; 
-//	List<Integer> barney_levels;	
+	//	List<Integer> barney_levels;	
 
 	public Player() {
 		dataset_board_scores = new HashMap<String, Map<Integer,Integer>>();
 	}
-	
+
 	public static void main(String[] args){
-		describePlayers(true, "dream_breast_cancer_2");
+		//describePlayers(true, "dream_breast_cancer_2");
+	}
+
+
+	public class RegMonth {
+		public Map<String, Integer> degree_count;
+		public Map<String, Integer> cancer_knowledge_count;
+		public Map<String, Integer> biologist_count;
+		public Calendar month;
+		public RegMonth() {
+			degree_count = new TreeMap<String, Integer>();
+			cancer_knowledge_count = new TreeMap<String, Integer>();
+			biologist_count = new TreeMap<String, Integer>();
+			degree_count.put("phd", 0);degree_count.put("masters", 0);degree_count.put("bachelors", 0);degree_count.put("none", 0);degree_count.put("ns", 0);degree_count.put("other", 0);degree_count.put("md", 0);
+			cancer_knowledge_count.put("yes", 0); cancer_knowledge_count.put("no", 0); cancer_knowledge_count.put("ns", 0);
+			biologist_count.put("yes", 0); biologist_count.put("no", 0);biologist_count.put("ns", 0);
+		}
+
+	}
+
+	public Map<String, RegMonth> getNewPlayersPerMonth(){
+		Map<String, RegMonth> month_reg = new TreeMap<String, RegMonth>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select YEAR(created), MONTH(created), degree, count(*) as c from player group by YEAR(created), MONTH(created), degree;";
+		ResultSet rslt = conn.executeQuery(q);
+		SimpleDateFormat f = new SimpleDateFormat(); f.applyPattern("yyyy.MM");
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				String degree = rslt.getString(3);
+				int count = rslt.getInt(4);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				String key = f.format(c.getTime());
+				RegMonth rm = month_reg.get(key);
+				if(rm==null){
+					rm = new RegMonth();
+				}
+				rm.month = c;
+				rm.degree_count.put(degree, count);
+				month_reg.put(key, rm);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		q = "select YEAR(created), MONTH(created), cancer, count(*) as c from player group by YEAR(created), MONTH(created), cancer;";
+		conn = new JdbcConnection();
+		rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				String cancer = rslt.getString(3);
+				int count = rslt.getInt(4);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				String key = f.format(c.getTime());
+				RegMonth rm = month_reg.get(key);
+				if(rm==null){
+					rm = new RegMonth();
+				}
+				rm.month = c;
+				rm.cancer_knowledge_count.put(cancer, count);
+				month_reg.put(key, rm);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		q = "select YEAR(created), MONTH(created), biologist, count(*) as c from player group by YEAR(created), MONTH(created), biologist;";
+		conn = new JdbcConnection();
+		rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int year = rslt.getInt(1);
+				int month = rslt.getInt(2);
+				String biologist = rslt.getString(3);
+				int count = rslt.getInt(4);
+				Calendar c = Calendar.getInstance();
+				c.set(Calendar.YEAR, year);
+				c.set(Calendar.MONTH, month-1);
+				String key = f.format(c.getTime());
+				RegMonth rm = month_reg.get(key);
+				if(rm==null){
+					rm = new RegMonth();
+				}
+				rm.month = c;
+				rm.biologist_count.put(biologist, count);
+				month_reg.put(key, rm);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return month_reg;
+	}
+
+	public class PlayerSet {
+		public Map<String, Integer> degree_count;
+		public Map<String, Integer> cancer_count;
+		public Map<String, Integer> biologist_count;
+		public Map<String, Integer> target_audience_count;
+
+	}
+
+	/***
+	 * Cure-wide counts related to players.  (not dataset-specific)
+	 * @return
+	 */
+	public PlayerSet getGlobalPlayerCounts(){
+		PlayerSet ps = new PlayerSet();
+		String q = "select degree, count(*) as c from player group by degree";
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			ps.degree_count = new TreeMap<String, Integer>();
+			while(rslt.next()){
+				String degree = rslt.getString("degree");
+				int c = rslt.getInt("c");
+				ps.degree_count.put(degree, c);
+			} 
+			rslt.close();
+			q = "select cancer, count(*) as c from player group by cancer";
+			ps.cancer_count = new TreeMap<String, Integer>();
+			rslt = conn.executeQuery(q);
+			while(rslt.next()){
+				String can = rslt.getString("cancer");
+				int c = rslt.getInt("c");
+				ps.cancer_count.put(can, c);
+			} 
+			rslt.close();
+			q = "select biologist, count(*) as c from player group by biologist";
+			ps.biologist_count = new TreeMap<String, Integer>();
+			rslt = conn.executeQuery(q);
+			while(rslt.next()){
+				String can = rslt.getString("biologist");
+				int c = rslt.getInt("c");
+				ps.biologist_count.put(can, c);
+			} 
+			rslt.close();
+			//target audience
+			q = "select count(*) as c from player where cancer = 'yes' and (degree = 'bachelors' or degree = 'masters' or degree = 'md' or degree = 'phd')";
+			ps.target_audience_count = new TreeMap<String, Integer>();
+			rslt = conn.executeQuery(q);
+			while(rslt.next()){
+				int c = rslt.getInt("c");
+				ps.target_audience_count.put("know about cancer with undergraduate or higher degree", c);
+			} 
+			rslt.close();
+			conn.connection.close();	
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ps;
+	}
+
+	/**
+	 * Estimate how close this player generally picks genes compared to the consensus
+	 * @param player_id
+	 */
+	public static DescriptiveStatistics measurePCscore(int player_id){
+		Set<Integer> boards_played = Board.getBoardsByPlayer(player_id);
+		//take out training
+		boards_played.remove(201);boards_played.remove(202);boards_played.remove(203);boards_played.remove(204);
+		System.out.println(boards_played.size()+" boards played");
+		GeneRanker gr = new GeneRanker();
+		Map<Integer,Double> board_agreement_levels = new HashMap<Integer, Double>();
+		for(Integer b : boards_played){
+			double n_cards_board = 0;
+			double sum_agreement_levels = 0;
+			double consensus_agreement_for_board = 0;
+			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0);
+			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id);
+			for(Entry<String, GeneRanker.gene_rank> player_selected : player_genes.entrySet()){
+				if(player_selected.getValue().votes>0){
+					n_cards_board++;
+					GeneRanker.gene_rank comm_pct = board_consensus.get(player_selected.getKey());
+					sum_agreement_levels+=comm_pct.frequency;
+				}
+			}
+			consensus_agreement_for_board = sum_agreement_levels/n_cards_board;
+			board_agreement_levels.put(b, consensus_agreement_for_board);
+		}
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		for(Double d : board_agreement_levels.values()){
+			stats.addValue(d);
+		}
+		return stats;
 	}
 	
-	public static void describePlayers(boolean all_hands, String dataset){
+	
+	/**
+	 * Provide insight into the quantity and quality of contributions from each player across all datasets
+	 * @param outfile
+	 */
+	public static void describePlayers(boolean only_first_per_board, String outfile, String dataset){
+		boolean only_winning = false; boolean for_scoreboard_in_game = false;
+		int room = 0; 
 		List<Player> players = Player.getAllPlayers();
 		Map<Integer, Player> name_player = Player.playerListToIdMap(players);
+
 		GameLog log = new GameLog();
-		List<Game> wm = null;
-		if(all_hands){
-			wm = Game.getAllGames(false); // //
-		}else{//just get the first hand per player per board
-			wm = Game.getTheFirstGamePerPlayerPerBoard(false, null, false, 1);
+		List<Game> hands = null;
+		if(only_first_per_board){
+			hands = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, for_scoreboard_in_game, room);
+		}else{
+			hands = Game.getAllGames(false, dataset);
 		}
-			//remove mammal
-		List<Game> mammalhands = new ArrayList<Game>();
-		List<Game> hands = new ArrayList<Game>();
-		for(Game hand : wm){
-			if(hand.getBoard_id()>200&&hand.getBoard_id()<205){
-				mammalhands.add(hand);
-			}else{
-				hands.add(hand);
-			}
-		}
-		
+
+		//count the average number of cards played per board
 		Map<String, Float> player_cardsboard = new HashMap<String, Float>();
 		for(Player player : players){
-			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId());
+			Map<String, Integer> board_counts = Card.getBoardCardCount(player.getId(), dataset);
 			float avg_cards_board = 0;
 			for(Entry<String, Integer> board_count : board_counts.entrySet()){
 				avg_cards_board+= board_count.getValue();
@@ -83,36 +287,51 @@ public class Player {
 			avg_cards_board = avg_cards_board/board_counts.size();
 			player_cardsboard.put(player.getName(), avg_cards_board);
 		}
-	
-		System.out.println("name	created	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time");
-		GameLog.high_score sb = log.getScoreBoard(hands, dataset);
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-	 
-		for(Player player : players){
-			String name = player.getName();
-			Calendar c = player.getCreated();
-			String cdate = formatter.format(c.getTime());
-			int id = player.getId();
-			if(name_player.get(id)!=null){
-				TimeCounter tc = new TimeCounter(""+id);
-				System.out.println(name+"\t"+cdate+"\t"+
-						player.getBiologist()+"\t"+
-						player.getCancer()+"\t"+
-						player.getDegree()+"\t"+
-						sb.getPlayer_max().get(name)+"\t"
-						+sb.getPlayer_avg().get(name)+"\t"+
-						sb.getPlayer_global_points().get(name)+"\t"+
-						sb.getPlayer_games().get(name)+"\t"+
-						sb.getPlayer_avg_win().get(name)+"\t"+
-						player_cardsboard.get(name)+"\t"+
-						tc.getAvg_time_per_board()+"\t"+
-						tc.getAvg_time_per_card()+"\t"+
-						tc.getTotal_time()
-				);
+
+		try {
+			FileWriter f = new FileWriter(outfile);
+
+			String header = "name	created	biologist	cancer	degree	max_plus	avg	points	games	win_perct	n_cards_hand	avg_t_per_board	avg_t_card	total_time";
+			f.write(header+"\n");
+			System.out.println(header);
+			GameLog.high_score sb = log.getScoreBoard(hands, dataset);
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+			for(Player player : players){
+				String name = player.getName();
+				Calendar c = player.getCreated();
+				String cdate = formatter.format(c.getTime());
+				int id = player.getId();
+				if(name_player.get(id)!=null){
+					TimeCounter tc = new TimeCounter(""+id, dataset);
+					String row = name+"\t"+cdate+"\t"+
+					player.getBiologist()+"\t"+
+					player.getCancer()+"\t"+
+					player.getDegree()+"\t"+
+					sb.getPlayer_max().get(name)+"\t"
+					+sb.getPlayer_avg().get(name)+"\t"+
+					sb.getPlayer_global_points().get(name)+"\t"+
+					sb.getPlayer_games().get(name)+"\t"+
+					sb.getPlayer_avg_win().get(name)+"\t"+
+					player_cardsboard.get(name)+"\t"+
+					tc.getAvg_time_per_board()+"\t"+
+					tc.getAvg_time_per_card()+"\t"+
+					tc.getTotal_time();
+					
+					row = row.replaceAll("null", "0");
+					row = row.replaceAll("NaN", "0");
+					
+					f.write(row+"\n");
+					System.out.println(row);
+				}
 			}
+			f.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
-	
+
 	public static boolean isNumeric(String str)
 	{
 		return str.matches("-?\\d+(.\\d+)?");
@@ -143,7 +362,7 @@ public class Player {
 		}
 		return player;
 	}
-	
+
 	public static Player lookupPlayerById(int id){
 		Player player = null;
 		JdbcConnection conn = new JdbcConnection();
@@ -218,7 +437,7 @@ public class Player {
 		}
 		return id_player;
 	}
-	
+
 	public static Map<String, Player> mapPlayersByName(List<Player> players){
 		Map<String, Player> name_player = new HashMap<String, Player>();
 		for(Player player : players){
@@ -226,7 +445,7 @@ public class Player {
 		}
 		return name_player;
 	}
-	
+
 	public static List<Player> lookupByEmail(String email){
 		List<Player> players = new ArrayList<Player>();
 		JdbcConnection conn = new JdbcConnection();
@@ -297,7 +516,7 @@ public class Player {
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null; PreparedStatement p = null;		
 		String insert = "insert into player (id,name, ip, password, email, created, degree, cancer, biologist) " +
-				"values(null,?,?,?,?,?,?,?,?)";
+		"values(null,?,?,?,?,?,?,?,?)";
 		try {
 			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);					
 			p.setString(1, name);
@@ -342,9 +561,9 @@ public class Player {
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null; PreparedStatement p = null;
-		
+
 		String insert = "insert into player (id,name, ip, password, email, created, degree, cancer, biologist) " +
-				"values(?,?,?,?,?,?,?,?,?)";
+		"values(?,?,?,?,?,?,?,?,?)";
 		try {
 			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
 			if(id>0){
@@ -381,7 +600,7 @@ public class Player {
 		}
 		return newid;
 	}
-	
+
 	public void setBoardScoresWithDb(){
 		//anonymous players don't get to track their scores..
 		if(name.equals("anonymous_hero")){
