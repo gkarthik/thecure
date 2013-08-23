@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -19,9 +20,11 @@ import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math.stat.inference.TestUtils;
 import org.scripps.combo.GameLog.high_score;
+import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
+import org.scripps.combo.weka.GeneRanker;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 
@@ -78,40 +81,58 @@ public class Stats {
 		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
 		//					Player.describePlayers(only_first_per_board, outfile, dataset);
 		//				}
-		outfile = output_dir+"players/player_agreeability.txt";
-		outputPlayerAgreeability(outfile);
-
+		//	outfile = output_dir+"players/player_agreeability.txt";
+		//	boolean first_hand_only = true;
+		//	outputPlayerAgreeability(outfile, first_hand_only);
+		outfile = output_dir+"board_consensus.txt";
+		boolean first_hand_only = true;
+		outputBoardConsensus(outfile, first_hand_only);
+		outfile = output_dir+"board_consensus_all_hands.txt";
+		first_hand_only = false;
+		outputBoardConsensus(outfile, first_hand_only);
 	}
 
 
-	public static void outputBoardConsensus(String outfile){
+	public static void outputBoardConsensus(String outfile, boolean first_hand_only){
 
-		//		
-		//		try {
-		//			FileWriter out = new FileWriter(outfile);
-		//			out.write("player.getId()\tplayer.getName()\tplayer.getBiologist()\tplayer.getCancer()\tplayer.getDegree()\tpc.getN()\tpc.getMean()\tpc.getPercentile(50)\n");
-		//			int i = 0;
-		//			for(Player player : players){
-		//				i++;
-		//				DescriptiveStatistics pc = Player.measurePCscore(player.getId());
-		//				out.write(player.getId()+"\t"+player.getName()+"\t"+player.getBiologist()+"\t"+player.getCancer()+"\t"+player.getDegree()+"\t");
-		//				out.write(pc.getN()+"\t"+pc.getMean()+"\t"+pc.getPercentile(50)+"\n");
-		//				System.out.println(i);
-		//			}
-		//			out.close();
-		//		} catch (IOException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
+		boolean drop_mammal = true;
+		List<Board> boards = Board.getAllBoards(drop_mammal);
+		try {
+			FileWriter out = new FileWriter(outfile);
+			GeneRanker gr = new GeneRanker();
+			out.write("board_id\tmin_freq\tavg_freq\tmax_freq\tn_cards_counted\tplayer_count\tboard_base_score\tdataset\troom\tcreated\n");
+			int i = 0;
+			for(Board board : boards){
+				i++;
+				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only);
+				DescriptiveStatistics freqs = new DescriptiveStatistics();
+				DescriptiveStatistics votes = new DescriptiveStatistics();
+				float player_count = 0;
+				for(GeneRanker.gene_rank rank : ranks.values()){
+					freqs.addValue(rank.frequency);
+					votes.addValue(rank.votes);
+					player_count = rank.players; //inelegant to keep setting, but same for all players..
+				}
+				String row = board.getId()+"\t"+freqs.getMin()+"\t"+freqs.getMean()+"\t"+freqs.getMax()+"\t"+votes.getSum()+"\t"+player_count;
+					   row+= "\t"+board.getBase_score()+"\t"+board.getDataset()+"\t"+board.getRoom()+"\t"+board.getUpdated();
+					   row = row.replaceAll("NaN", "0");
+				out.write(row+"\n");
+				System.out.println(i+"\t"+row);
+			}
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * Quantify how similar the player's gene selections are to the community consensus
 	 * @param outfile
 	 */
-	public static void outputPlayerAgreeability(String outfile){
+	public static void outputPlayerAgreeability(String outfile, boolean first_hand_only){
 		List<Player> players = Player.getAllPlayers();
-
+		
 		try {
 			FileWriter out = new FileWriter(outfile);
 			out.write("player.getId()\tplayer.getName()\tplayer.getBiologist()\tplayer.getCancer()\tplayer.getDegree()\tpc.getN()\tpc.getMean()\tpc.getPercentile(50)\n");
@@ -122,7 +143,7 @@ public class Stats {
 			DescriptiveStatistics without_phd = new DescriptiveStatistics();
 			for(Player player : players){
 				i++;
-				DescriptiveStatistics pc = Player.measurePCscore(player.getId());
+				DescriptiveStatistics pc = Player.measurePCscore(player.getId(), first_hand_only);
 				out.write(player.getId()+"\t"+player.getName()+"\t"+player.getBiologist()+"\t"+player.getCancer()+"\t"+player.getDegree()+"\t");
 				out.write(pc.getN()+"\t"+pc.getMean()+"\t"+pc.getPercentile(50)+"\n");
 				System.out.println(i);

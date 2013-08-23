@@ -152,9 +152,12 @@ public class GeneRanker {
 		*/
 		
 		GeneRanker gr = new GeneRanker();
-		Map<String, gene_rank> bg_rank = gr.getBoardConsensus(1054, 0);
-		for(gene_rank r : bg_rank.values()){
-			System.out.println(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.votes+"\t"+r.frequency);
+		boolean first_hand_only = false;
+		Map<String, gene_rank> bg_rank = gr.getBoardConsensus(1001, 0, first_hand_only);
+		List<gene_rank> ranked = gr.sortByFrequency(new ArrayList<gene_rank>(bg_rank.values()));
+		Collections.reverse(ranked);
+		for(gene_rank r : ranked){
+			System.out.println(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.votes+"\t"+r.frequency+"\t"+r.players);
 		}
 	}
 
@@ -298,8 +301,8 @@ public class GeneRanker {
 		//sort in descending order of the addition of selection frequency
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
 			public int compare(gene_rank compare, gene_rank compareto) {
-				Float r2 = compareto.votes/compareto.views; 
-				Float r1 = compare.votes/compare.views;
+				Float r2 = compareto.frequency;
+				Float r1 = compare.frequency;
 				return r2.compareTo(r1);
 			}
 		};
@@ -348,6 +351,7 @@ public class GeneRanker {
 		r.frequency = 0;
 		r.views = 0;
 		r.votes = 0;
+		r.players = 0;
 		return r;
 	}
 
@@ -360,6 +364,7 @@ public class GeneRanker {
 		public float views;
 		public float votes;
 		public float relief;
+		public float players;
 		List<Integer> board_id;
 		@Override
 		public int compareTo(gene_rank arg0) {
@@ -401,18 +406,18 @@ public class GeneRanker {
 
 /**
  * Calculate frequency with which players selected each gene on a given board
+ * frequency(gene) = number of players to select that gene / number of players to play board
  * @param board_id
  * @return
  */
-	public Map<String, gene_rank> getBoardConsensus(int board_id, int player_id){
-		boolean first_hand_only = true;
-		List<Game> hands = Game.getGamesForBoard(board_id, first_hand_only, player_id);
+	public Map<String, gene_rank> getBoardConsensus(int board_id, int player_id, boolean first_hand_only){
+		List<Game> games = Game.getGamesForBoard(board_id, first_hand_only, player_id);
 		//this will be the output
 		Map<String, gene_rank> gene_ranked = new HashMap<String, gene_rank>();
-		int games_played = hands.size();
+		//int games_played = games.size();
 		//catch what each player to play the board selected
 		Map<Integer, Set<String>> player_genes = new HashMap<Integer, Set<String>>();
-		for(Game hand : hands){
+		for(Game hand : games){
 			List<String> features = hand.getPlayer1_features();
 			int p_id = hand.getPlayer1_id();
 			Set<String> genes = player_genes.get(p_id);
@@ -437,6 +442,7 @@ public class GeneRanker {
 			}
 		}	
 		//set the frequencies
+		int players_who_played = player_genes.size();
 		Board board = Board.getBoardById(""+board_id, false);
 		for(Feature f : board.getFeatures()){
 			String f_id = ""+f.getId();
@@ -448,7 +454,8 @@ public class GeneRanker {
 			gr.entrez = f.getUnique_id();
 			gr.symbol = f.getShort_name();
 			//set the frequencies
-			gr.frequency = gr.votes/games_played;
+			gr.frequency = gr.votes/players_who_played;
+			gr.players = players_who_played;
 			gene_ranked.put(f_id, gr);
 		}
 
