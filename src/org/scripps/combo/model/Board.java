@@ -521,6 +521,77 @@ public class Board {
 //	}
 
 	
+	public static List<Board> getAllBoards(boolean drop_mammal){
+		List<Board> boards= new ArrayList<Board>();
+		String getboards = "select * from board order by dataset, base_score desc";
+		if(drop_mammal){
+			getboards = "select * from board where dataset !='mammal'  order by dataset, base_score desc";
+		}
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(getboards);
+			ResultSet rslt = p.executeQuery();
+			while(rslt.next()){
+				Board board = new Board();				
+				board.setId(rslt.getInt("id"));
+				board.setDataset(rslt.getString("dataset"));
+				board.setRoom(rslt.getString("room"));
+				board.setUpdated(rslt.getTimestamp("updated"));
+				board.setBase_score(rslt.getFloat("base_score"));
+				
+//				ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+//				List<Feature> fs = new ArrayList<Feature>();
+//				while(f_list.next()){
+//					fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
+//				}
+//				board.setFeatures(fs);
+				boards.add(board);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return boards;
+	}
+	
+	public static List<Board> getA(String dataset, String room){
+		List<Board> boards = new ArrayList<Board>();
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select * from board where dataset = '"+dataset+"' and room = '"+room+"' order by base_score desc");
+		try {
+			while(rslt.next()){
+				Board board = new Board();
+				board.setAvg_score(rslt.getFloat("avg_score"));
+				board.setId(rslt.getInt("id"));
+				board.setMax_score(rslt.getFloat("max_score"));
+				board.setN_players(rslt.getInt("n_players"));
+				board.setN_wins(rslt.getInt("n_wins"));
+				board.setDataset(dataset);
+				board.setRoom(rslt.getString("room"));
+				board.setUpdated(rslt.getTimestamp("updated"));
+				board.setBase_score(rslt.getFloat("base_score"));
+				
+//				ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+//				List<Feature> fs = new ArrayList<Feature>();
+//				while(f_list.next()){
+//					fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
+//				}
+//				board.setFeatures(fs);
+				boards.add(board);
+			}
+			rslt.close();
+			conn.connection.close();	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return boards;
+	}
+	
+	
 	public static Set<Integer> getBoardsByPlayer(int player_id){
 		Set<Integer> boards= new HashSet<Integer>();
 		String getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id";

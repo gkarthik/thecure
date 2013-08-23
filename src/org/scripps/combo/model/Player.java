@@ -227,7 +227,7 @@ public class Player {
 	 * Estimate how close this player generally picks genes compared to the consensus
 	 * @param player_id
 	 */
-	public static DescriptiveStatistics measurePCscore(int player_id){
+	public static DescriptiveStatistics measurePCscore(int player_id, boolean first_hand_only){
 		Set<Integer> boards_played = Board.getBoardsByPlayer(player_id);
 		//take out training
 		boards_played.remove(201);boards_played.remove(202);boards_played.remove(203);boards_played.remove(204);
@@ -238,8 +238,8 @@ public class Player {
 			double n_cards_board = 0;
 			double sum_agreement_levels = 0;
 			double consensus_agreement_for_board = 0;
-			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0);
-			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id);
+			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0, first_hand_only);
+			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id, first_hand_only);
 			for(Entry<String, GeneRanker.gene_rank> player_selected : player_genes.entrySet()){
 				if(player_selected.getValue().votes>0){
 					n_cards_board++;
