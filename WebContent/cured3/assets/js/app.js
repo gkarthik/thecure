@@ -183,12 +183,20 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	itemView : NodeView,
 	initialize : function() {
 		this.collection.bind('add', this.onModelAdded);
+		this.collection.bind('change', this.checkEmpty);
+		this.checkEmpty();
 	},
 	onModelAdded : function(addedModel) {
 		var newNodeview = new NodeView({
 			model : addedModel
 		});
 		newNodeview.render();
+	},
+	checkEmpty : function() {
+		if(Cure.PlayerNodeCollection.length == 0)
+		{
+			$("#mygene_wrapper").fadeIn();
+		}
 	}
 });
 
@@ -462,7 +470,7 @@ Cure.render_network = function(dataset) {
 		}
 		else
 		{
-			SVG = Cure.BarneySvg;
+			//SVG = Cure.BarneySvg;
 		}
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
 		nodes.forEach(function(d) {
@@ -502,15 +510,21 @@ Cure.render_network = function(dataset) {
 // -- App init!
 //    
 Cure.addInitializer(function(options) {
+	
+	$('input.mygene_query_target').genequery_autocomplete({
+    select: function(event, ui) {
+                alert( ui.item ?
+                    "Selected: " + ui.item.label + '('+ui.item._id+')':
+                    "Nothing selected, input was " + this.value);
+            }
+	});
 	_.templateSettings = {
 	    interpolate: /\<\@\=(.+?)\@\>/gim,
 	    evaluate: /\<\@([\s\S]+?)\@\>/gim,
 	    escape: /\<\@\-(.+?)\@\>/gim
 	};
 	$(options.regions.PlayerTreeRegion).html("<div id='"+options.regions.PlayerTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.PlayerTreeRegion.replace("#","")+"SVG'></svg>")
-	$(options.regions.BarneyTreeRegion).html("<div id='"+options.regions.BarneyTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.BarneyTreeRegion.replace("#","")+"SVG'></svg>")
-			// Test JSON
-			Cure.jsondata = options["json"];
+	//$(options.regions.BarneyTreeRegion).html("<div id='"+options.regions.BarneyTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.BarneyTreeRegion.replace("#","")+"SVG'></svg>")
 			// Declaring D3 Variables
 			Cure.width = options["width"];
 			Cure.height = options["height"];	
@@ -522,31 +536,34 @@ Cure.addInitializer(function(options) {
 			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
+			/*
 			Cure.BarneySvg = d3.select(options.regions.BarneyTreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
+			*/
 			Cure.PlayerNodeCollection = new NodeCollection();
-			Cure.BarneyNodeCollection = new NodeCollection();
+			//Cure.BarneyNodeCollection = new NodeCollection();
 			Cure.PlayerNodeCollectionView = new NodeCollectionView({
 				collection : Cure.PlayerNodeCollection
 			});
+			/*
 			Cure.BarneyNodeCollectionView = new NodeCollectionView({
 				collection : Cure.BarneyNodeCollection
 			})
-			/*
-			Cure.JSONCollectionView = new JSONCollectionView({
-				collection : Cure.NodeCollection
-			});
 			*/
-
+			
+			Cure.JSONCollectionView = new JSONCollectionView({
+				collection : Cure.PlayerNodeCollection
+			});
+			
 			// Assign View to Region
 			Cure.addRegions({
 	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
-	  		BarneyTreeRegion : options.regions.BarneyTreeRegion+"Tree",
-	  		//JsonRegion : "#json_structure"
+	  		//BarneyTreeRegion : options.regions.BarneyTreeRegion+"Tree",
+	  		JsonRegion : "#json_structure"
 	  	});
 			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
-			Cure.BarneyTreeRegion.show(Cure.BarneyNodeCollectionView);
+			//Cure.BarneyTreeRegion.show(Cure.BarneyNodeCollectionView);
 			//Cure.JsonRegion.show(Cure.JSONCollectionView);
 
 			// Add Nodes from JSON
@@ -560,3 +577,5 @@ Cure.addInitializer(function(options) {
 			});
 			*/
 		});
+
+Cure.start({"height": 600, "width": 800, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion"}});
