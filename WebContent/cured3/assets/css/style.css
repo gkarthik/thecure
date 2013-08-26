@@ -8,6 +8,21 @@ div.container {
   margin-top: 40px;
 }
 
+#mygene_wrapper{
+	position: absolute;
+	z-index: 1;
+	width:30%;
+	padding:2.5%;
+	margin-left: 32.5%;
+	margin-top:150px;
+	display:none;
+}
+
+#mygene_addnode{
+	position:relative;
+	width:100%;
+}
+
 svg{
   position: absolute;
   height: 100%;

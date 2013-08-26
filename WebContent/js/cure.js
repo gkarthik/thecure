@@ -1314,7 +1314,7 @@ CURE.utilities = {
     //Left node text
     leaf_node.append("text")
       .transition().delay(100).duration(400)
-      //move it down slightly
+      //move it down slightly	
       .attr("dy", 12)
       .text(function(d) { return d.name.toUpperCase() });
 
