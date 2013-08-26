@@ -110,19 +110,19 @@ public class JsonTree {
 		String train_file = "/Users/bgood/data/zoo_mammals.arff"; //_mammals
 		Weka weka = new Weka();
 		weka.buildWeka(new FileInputStream(train_file), null, "mammal"); //griffith_breast_cancer_1
-		J48 classifier = new J48();
-		//		classifier.setUnpruned(false); 
-		//		Evaluation eval_train = new Evaluation(weka.getTrain());
-		//		classifier.buildClassifier(weka.getTrain());
-		//		eval_train.evaluateModel(classifier, weka.getTrain());
-		List<String> unique_ids = new ArrayList<String>(); 
-		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
-		unique_ids.add("mammal_12"); unique_ids.add("mammal_13"); 
-		weka.setEval_method("train");
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-		System.out.println("pct correct = "+short_result.getAccuracy());		
-		System.out.println(classifier.toString()); //+"\n"+eval_train.pctCorrect()
+//		J48 classifier = new J48();
+//		//		classifier.setUnpruned(false); 
+//		//		Evaluation eval_train = new Evaluation(weka.getTrain());
+//		//		classifier.buildClassifier(weka.getTrain());
+//		//		eval_train.evaluateModel(classifier, weka.getTrain());
+//		List<String> unique_ids = new ArrayList<String>(); 
+//		unique_ids.add("mammal_6"); unique_ids.add("mammal_7"); unique_ids.add("mammal_8"); unique_ids.add("mammal_9");
+//		unique_ids.add("mammal_12"); unique_ids.add("mammal_13"); 
+//		weka.setEval_method("train");
+//		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, classifier, "mammal");
+//		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+//		System.out.println("pct correct = "+short_result.getAccuracy());		
+//		System.out.println(classifier.toString()); //+"\n"+eval_train.pctCorrect()
 
 
 		JsonTree t = new JsonTree();
@@ -133,7 +133,7 @@ public class JsonTree {
 		//String json1 = t.getJsonTreeAllInfo(classifier, weka);
 		String json1 = HttpUtil.convertStreamToString(s);
 		//System.out.println(json1);
-		ManualTree readtree = t.parseJsonJ48(weka, json1);
+		ManualTree readtree = t.parseJsonTree(weka, json1);
 		Evaluation maneval = new Evaluation(weka.getTrain());
 		maneval.evaluateModel(readtree, weka.getTrain());
 		System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
@@ -146,7 +146,8 @@ public class JsonTree {
 		//right now eyeballing it and its close but not identical 
 		//- tree building process choosing its own, sometimes slightly different split points.
 		//- sometimes goes deeper than starting tree...
-	 //TODO decide on and implement an evaluation response for web client		
+	 //TODO decide on and implement an evaluation response for web client	
+	 //TODO fix test so the json data processed is the same as what is now coming from the web client	
 	 */
 	public void testManualTreeParseCreate(){
 		/**
@@ -175,10 +176,10 @@ public class JsonTree {
 		String json1;
 		try {
 			//here is the test json
-			json1 = getJsonTreeAllInfo(classifier, weka);
+			json1 = getJsonJ48AllInfo(classifier, weka);
 			System.out.println(json1);
 			//build the weka tree
-			ManualTree readtree = parseJsonJ48(weka, json1);
+			ManualTree readtree = parseJsonTree(weka, json1);
 			//evaluate it
 			Evaluation maneval = new Evaluation(weka.getTrain());
 			maneval.evaluateModel(readtree, weka.getTrain());	
@@ -203,9 +204,9 @@ public class JsonTree {
 			eval_train.evaluateModel(classifier, weka.getTrain());
 			System.out.println(classifier.toString()+"\n"+eval_train.pctCorrect());
 
-			json1 = getJsonTreeAllInfo(classifier, weka);
+			json1 = getJsonJ48AllInfo(classifier, weka);
 			System.out.println(json1);
-			ManualTree readtree = parseJsonJ48(weka, json1);
+			ManualTree readtree = parseJsonTree(weka, json1);
 			Evaluation maneval = new Evaluation(weka.getTrain());
 			maneval.evaluateModel(readtree, weka.getTrain());
 			System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
@@ -223,7 +224,7 @@ public class JsonTree {
 	 * @param jsontree
 	 * @return
 	 */
-	public ManualTree parseJsonJ48(Weka weka, String jsontree){
+	public ManualTree parseJsonTree(Weka weka, String jsontree){
 		ManualTree tree = new ManualTree();
 		try {
 			JsonNode rootNode = mapper.readTree(jsontree);
@@ -242,14 +243,32 @@ public class JsonTree {
 		return tree;
 	}
 
-
+	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode){
+		ManualTree tree = new ManualTree();
+		try {
+			tree.setTreeStructure(rootNode);
+			tree.buildClassifier(weka.getTrain());
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tree;
+	}
+	
+	
 	/**
 	 * Render a trained J48 decision tree as a json object, including size and quality data for each split.	
 	 * @param classifier
 	 * @return
 	 * @throws Exception
 	 */
-	public String getJsonTreeAllInfo(J48 classifier, Weka weka) throws Exception{
+	public String getJsonJ48AllInfo(J48 classifier, Weka weka) throws Exception{
 		if(classifier==null){
 			return "";
 		}
@@ -278,6 +297,31 @@ public class JsonTree {
 		return json;
 	}
 
+	
+	public String getJsonManualTreeAllInfo(ManualTree classifier, Weka weka) throws Exception{
+		if(classifier==null){
+			return "";
+		}
+		//init the name mappings
+		//get map from attributes to desired output name
+		attname_nodename = new HashMap<String, String>();
+		attindex_nodename = new HashMap<Integer, String>();
+		for(Feature f : weka.getFeatures().values()){
+			for(Attribute att : f.getDataset_attributes()){
+				String displayname = f.getShort_name();
+				attname_nodename.put(att.getName(), displayname);			
+			}
+		}
+//TODO - make this produce hatever is needed for client visualization..		
+//		ClassifierTree tree = classifier.getM_root();
+//		if(tree==null){
+//			return "";
+//		}
+//		getJsonTree(tree, json_root, 0);
+//		String json = mapper.writeValueAsString(json_root);
+		return null;
+	}
+	
 	/**
 	 * Recursively build a jackson Object model for a weka tree.
 	 * Each split node in the tree is represented by a single ClassifierTree object

@@ -46,13 +46,16 @@ import org.scripps.util.MapFun;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.ManualTree;
 import weka.core.converters.ConverterUtils.DataSource;
 
 /**
@@ -195,7 +198,24 @@ public class MetaServer extends HttpServlet {
 					Object command_ = postData.get("command");
 					if(command_!=null){
 						command = (String)command_;
-						routePost(command, postData, request, response);
+						//route to appropriate functions
+						if(command.equals("getscore")){
+							getScore(postData, request, response);
+						}else if(command.equals("savehand")){
+							saveHand(postData, request, response);
+						}else if(command.equals("saveplayedcard")){
+							savePlayedCard(postData, request, response);
+						}else if(command.equals("scoretree")){
+							//TODO clean this up so we aren't parsing the json twice.. 
+							JsonNode treedata = mapper.readTree(json);	
+							try{
+								getScoreForManualTree(treedata, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to get score for manual tree: "+json);
+							}
+						}
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
 					}
@@ -211,25 +231,7 @@ public class MetaServer extends HttpServlet {
 	}
 
 
-	/**
-	 * Send the json request to the appropriate handler based on the command parameter	
-	 * @param command
-	 * @param postData
-	 * @param request
-	 * @param response
-	 * @throws IOException
-	 */
-	private void routePost(String command, LinkedHashMap postData, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		//route to appropriate functions
-		if(command.equals("getscore")){
-			getScore(postData, request, response);
-		}else if(command.equals("savehand")){
-			saveHand(postData, request, response);
-		}else if(command.equals("saveplayedcard")){
-			savePlayedCard(postData, request, response);
-		}
 
-	}
 
 	private void routeGet(String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//route to appropriate functions
@@ -304,7 +306,7 @@ public class MetaServer extends HttpServlet {
 		String tree_json = "";
 		JsonTree jtree = new JsonTree();
 		try {		
-			tree_json = jtree.getJsonTreeAllInfo(wekamodel, weka); 
+			tree_json = jtree.getJsonJ48AllInfo(wekamodel, weka); 
 			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -327,44 +329,39 @@ public class MetaServer extends HttpServlet {
 	 * @param data
 	 * @param request_
 	 * @param response
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	private void getScoreForManualTree(LinkedHashMap data, HttpServletRequest request_, HttpServletResponse response) throws IOException {
+	private void getScoreForManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 
-		String board_id = (String)data.get("board_id");
-		boolean getmeta = false;
-		Board board = Board.getBoardById(board_id, getmeta);		
-		Weka weka = name_dataset.get(board.getDataset());
+		String dataset = data.get("dataset").asText();
+		Weka weka = name_dataset.get(dataset);
 		if(weka==null){
-			handleBadRequest(request_, response, "no dataset loaded for name: "+board.getDataset());
+			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
 			return;
 		}		
-		List<String> unique_ids = new ArrayList<String>();
-		unique_ids = (List<String>)data.get("unique_ids");
-
-		J48 wekamodel = new J48();
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset());
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		//create the weka tree structure
+		JsonTree t = new JsonTree();
+		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"));
+		//evaluate it on the data
+		Evaluation eval = new Evaluation(weka.getTrain());
+		eval.evaluateModel(readtree, weka.getTrain());
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)eval.pctCorrect(), readtree.toString());		
 		//serialize and return the result
 		JSONObject r = new JSONObject(short_result);
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		String eval_json = r.toString();
-		String tree_json = "";
-		JsonTree jtree = new JsonTree();
-		try {		
-			tree_json = jtree.getJsonTreeAllInfo(wekamodel, weka); 
-			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println("Died trying to get tree");
-		}
+		String tree_json = "{\tree_struct\":\"what goes here ?\"}";
+		
+//		try {		
+//			tree_json = t.getJsonManualTreeAllInfo(readtree, weka); 
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			System.out.println("Died trying to get tree");
+//		}
 		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
-		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
-		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
-		"\"tree_size\":\""+jtree.getTree_size()+"\"," +		
-		"\"tree\":"+tree_json+"}";
+		"\"treestruct\":"+tree_json+"}";
 		//System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
