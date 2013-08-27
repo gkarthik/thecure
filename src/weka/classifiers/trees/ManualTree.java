@@ -506,7 +506,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if something goes wrong or the data doesn't fit
 	 */
 	public void buildClassifier(Instances data) throws Exception {
-
 		// Make sure K value is in range
 		if (m_KValue > data.numAttributes() - 1)
 			m_KValue = data.numAttributes() - 1;
@@ -980,7 +979,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
 			boolean debug, int depth, JsonNode node, int parent_index) throws Exception {
 
-
+		if(mapper ==null){
+			mapper = new ObjectMapper();
+		}
 		// Store structure of dataset, set minimum number of instances
 		m_Info = header;
 		m_Debug = debug;
@@ -1053,9 +1054,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					c++;
 				}
 			}
-			//	System.out.println("Id "+node_id+" name "+name+" index "+attIndex+" type "+kind+" sons "+c);
+			System.out.println("Id name "+att_name+" index "+attIndex+" type "+kind+" sons "+c);
 		}else{
-			//	System.out.println("non split node, name "+name+" type "+kind);
+			System.out.println("non split node, name "+att_name+" type "+kind);
 		}
 		splits[attIndex] = distribution(props, dists, attIndex, data);
 		vals[attIndex] = gain(dists[attIndex], priorVal(dists[attIndex]));
@@ -1116,7 +1117,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						child.put("options", c_options);
 						children.add(child);
 						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex);
-						//todo add the class nodes under this leaf to the json tree
+
 					}else{
 						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
 						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex);
@@ -1139,6 +1140,33 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 			// Make leaf
 			m_Attribute = -1;
+			//add the data to the json object
+			double bin_size = 0, maxCount = 0;
+			int maxIndex = 0; double errors = 0; double pct_correct = 0;
+			if (m_ClassDistribution != null) {
+				bin_size = Utils.sum(m_ClassDistribution);
+				maxIndex = Utils.maxIndex(m_ClassDistribution);
+				maxCount = m_ClassDistribution[maxIndex];
+				errors = bin_size - maxCount;
+				pct_correct = (bin_size-errors)/bin_size;
+			} 
+			
+			ArrayNode children = (ArrayNode) evalresults.get("children");
+			if(children==null){
+				children = mapper.createArrayNode();
+			}
+			ObjectNode child = mapper.createObjectNode();
+			String class_name = m_Info.classAttribute().value(maxIndex);
+			child.put("name", class_name);
+			ObjectNode c_options = mapper.createObjectNode();
+			c_options.put("attribute_name", class_name);
+			c_options.put("kind", "leaf_node");
+			c_options.put("bin_size", Utils.doubleToString(bin_size, 2));
+			c_options.put("errors", Utils.doubleToString(errors, 2));
+			c_options.put("pct_correct", Utils.doubleToString(pct_correct, 2));
+			child.put("options", c_options);
+			children.add(child);
+			evalresults.put("children", children);
 		}
 
 	}
