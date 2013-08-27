@@ -229,7 +229,6 @@ public class JsonTree {
 	 */
 	public ManualTree parseJsonTree(Weka weka, String jsontree){
 		ManualTree tree = new ManualTree();
-		tree.setMapper(mapper);
 		try {
 			JsonNode rootNode = mapper.readTree(jsontree);
 			tree.setTreeStructure(rootNode);
@@ -249,7 +248,6 @@ public class JsonTree {
 
 	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode){
 		ManualTree tree = new ManualTree();
-		tree.setMapper(mapper);
 		try {
 			tree.setTreeStructure(rootNode);
 			tree.buildClassifier(weka.getTrain());
