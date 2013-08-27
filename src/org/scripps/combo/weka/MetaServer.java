@@ -362,7 +362,7 @@ public class MetaServer extends HttpServlet {
 //		}
 		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
 		"\"treestruct\":"+tree_json+"}";
-		//System.out.println(treeoutput);
+		System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
 

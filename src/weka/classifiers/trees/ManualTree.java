@@ -45,6 +45,9 @@ import java.util.Random;
 import java.util.Vector;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * <!-- globalinfo-start -->
@@ -110,6 +113,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	/** A tree captured from json **/
 	protected JsonNode jsontree;
+	
+	/** for building up the json tree **/
+	ObjectMapper mapper;
 
 	/**
 	 * Returns a string describing classifier
@@ -1018,11 +1024,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
-		
+
 		//options child added by web client developer for unknown reason...
 		JsonNode options = node.get("options");		
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
+
+		//this allows me to modify the json tree structure to add data about the evaluation
+		ObjectNode evalresults = (ObjectNode) options;
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
@@ -1031,16 +1040,18 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			attIndex = data.attribute(att_name.asText()).index();
 			JsonNode split_values = node.get("children");
 			int c = 0;
-			for(JsonNode svalue : split_values){
-				String key = svalue.get("name").asText();
-				JsonNode son = svalue.get("children").get(0);
-				if(key.contains("<")){
-					key = "low";
-				}else if(key.contains(">")){
-					key = "high";
+			if(split_values!=null&&split_values.size()>0){
+				for(JsonNode svalue : split_values){
+					String key = svalue.get("name").asText();
+					JsonNode son = svalue.get("children").get(0);
+					if(key.contains("<")){
+						key = "low";
+					}else if(key.contains(">")){
+						key = "high";
+					}
+					sons.put(key, son);
+					c++;
 				}
-				sons.put(key, son);
-				c++;
 			}
 			//	System.out.println("Id "+node_id+" name "+name+" index "+attIndex+" type "+kind+" sons "+c);
 		}else{
@@ -1058,6 +1069,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			m_Prop = props[m_Attribute];
 			Instances[] subsets = splitData(data);
 			m_Successors = new ManualTree[distribution.length];
+
+			//record quantity and quality measures for node
+			int quantity = 0;
+			for (int i = 0; i < distribution.length; i++) {
+				quantity+= subsets[i].numInstances();
+			}
+			evalresults.put("bin_size", quantity);
+			evalresults.put("infogain",vals[m_Attribute]);
 
 			for (int i = 0; i < distribution.length; i++) {
 				m_Successors[i] = new ManualTree();
@@ -1085,8 +1104,23 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				if(son!=null){
 					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex);
 				}else{
-					//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
-					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex);
+					//if we are a split node with no input children, we need to add them into the tree
+					//JsonNode split_values = node.get("children");
+					if(kind!=null&&kind.equals("split_node")){
+						ArrayNode children = (ArrayNode) node.get("children");
+						ObjectNode child = mapper.createObjectNode();
+						child.put("name", child_name);
+						ObjectNode c_options = mapper.createObjectNode();
+						c_options.put("attribute_name", child_name);
+						c_options.put("kind", "split_value");
+						child.put("options", c_options);
+						children.add(child);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex);
+						//todo add the class nodes under this leaf to the json tree
+					}else{
+						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex);
+					}
 				}
 			}
 
@@ -1474,5 +1508,18 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		jsontree = rootNode;
 
 	}
+
+	public JsonNode getJsontree() {
+		return jsontree;
+	}
+
+	public ObjectMapper getMapper() {
+		return mapper;
+	}
+
+	public void setMapper(ObjectMapper mapper) {
+		this.mapper = mapper;
+	}
+
 }
 
