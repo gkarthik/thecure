@@ -197,11 +197,16 @@ public class Attribute {
 		return a;
 	}
 
-	public static List<Attribute> getByFeatureUniqueId(String unique_id){
+	public static List<Attribute> getByFeatureUniqueId(String unique_id, String dataset){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select attribute.* from attribute, feature where feature.unique_id = '"+unique_id+"' and attribute.feature_id = feature.id ";
-
+		if(dataset!=null){
+			q = "select attribute.* from attribute, feature " +
+					"where feature.unique_id = '"+unique_id+"' " +
+					"and attribute.feature_id = feature.id " +
+					"and dataset = '"+dataset+"'";			
+		}
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){

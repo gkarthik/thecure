@@ -48,6 +48,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -341,29 +342,23 @@ public class MetaServer extends HttpServlet {
 		}		
 		//create the weka tree structure
 		JsonTree t = new JsonTree();
-		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"));
+		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
 		//evaluate it on the data
 		Evaluation eval = new Evaluation(weka.getTrain());
 		eval.evaluateModel(readtree, weka.getTrain());
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)eval.pctCorrect(), readtree.toString());		
-		//serialize and return the result
-		JSONObject r = new JSONObject(short_result);
+		
+		ObjectNode result = mapper.createObjectNode();
+		result.put("pct_correct", eval.pctCorrect());
+		result.put("text_tree", readtree.toString());
+		//serialize and return the result		
+		JsonNode treenode = readtree.getJsontree();
+		result.put("treestruct", treenode);
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
-		String eval_json = r.toString();
-		String tree_json = "{\tree_struct\":\"what goes here ?\"}";
-		
-//		try {		
-//			tree_json = t.getJsonManualTreeAllInfo(readtree, weka); 
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			System.out.println("Died trying to get tree");
-//		}
-		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
-		"\"treestruct\":"+tree_json+"}";
-		System.out.println(treeoutput);
-		out.write(treeoutput);
+		String result_json = mapper.writeValueAsString(result);
+
+		//System.out.println(result_json);
+		out.write(result_json);
 		out.close();
 
 	}

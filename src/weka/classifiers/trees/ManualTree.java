@@ -113,7 +113,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	/** A tree captured from json **/
 	protected JsonNode jsontree;
-	
+
 	/** for building up the json tree **/
 	ObjectMapper mapper;
 
@@ -1006,15 +1006,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		// or maximum depth reached
 		m_ClassDistribution = (double[]) classProbs.clone();
 
-		if (Utils.sum(m_ClassDistribution) < 2 * m_MinNum
-				|| Utils.eq(m_ClassDistribution[Utils.maxIndex(m_ClassDistribution)], Utils
-						.sum(m_ClassDistribution))
-						|| ((getMaxDepth() > 0) && (depth >= getMaxDepth()))) {
-			// Make leaf
-			m_Attribute = -1;
-			m_Prop = null;
-			return;
-		}
+//		if (Utils.sum(m_ClassDistribution) < 2 * m_MinNum
+//				|| Utils.eq(m_ClassDistribution[Utils.maxIndex(m_ClassDistribution)], Utils
+//						.sum(m_ClassDistribution))
+//						|| ((getMaxDepth() > 0) && (depth >= getMaxDepth()))) {
+//			// Make leaf
+//			m_Attribute = -1;
+//			m_Prop = null;
+//			return;
+//		}
 
 		// Compute class distributions and value of splitting
 		// criterion for each attribute
@@ -1026,13 +1026,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		// Investigate the selected attribute
 		int attIndex = parent_index;
 
-		//options child added by web client developer for unknown reason...
+		//options child added by web client developer
+		//TODO work with him to make a more meaningful structure...
 		JsonNode options = node.get("options");		
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
 
 		//this allows me to modify the json tree structure to add data about the evaluation
 		ObjectNode evalresults = (ObjectNode) options;
+		ObjectNode _node = (ObjectNode) node;
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
@@ -1054,17 +1056,19 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					c++;
 				}
 			}
-			System.out.println("Id name "+att_name+" index "+attIndex+" type "+kind+" sons "+c);
+			//System.out.println("Id name "+att_name+" index "+attIndex+" type "+kind+" sons "+c);
 		}else{
-			System.out.println("non split node, name "+att_name+" type "+kind);
+			//System.out.println("non split node, name "+att_name+" type "+kind);
 		}
 		splits[attIndex] = distribution(props, dists, attIndex, data);
 		vals[attIndex] = gain(dists[attIndex], priorVal(dists[attIndex]));
 
 		m_Attribute = attIndex;
 		double[][] distribution = dists[m_Attribute];
-
-		if (Utils.gr(vals[m_Attribute], 0)) {
+		
+		//stop if input json tree does not contain any more children
+		//replacing Utils.gr(vals[m_Attribute], 0)&&
+		if (kind!=null&&kind.equals("split_node")) {
 			// Build subtrees
 			m_SplitPoint = splits[m_Attribute];
 			m_Prop = props[m_Attribute];
@@ -1078,6 +1082,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			}
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
+			evalresults.put("split_point", m_SplitPoint);
 
 			for (int i = 0; i < distribution.length; i++) {
 				m_Successors[i] = new ManualTree();
@@ -1109,6 +1114,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					//JsonNode split_values = node.get("children");
 					if(kind!=null&&kind.equals("split_node")){
 						ArrayNode children = (ArrayNode) node.get("children");
+						if(children==null){
+							children = mapper.createArrayNode();
+						}
 						ObjectNode child = mapper.createObjectNode();
 						child.put("name", child_name);
 						ObjectNode c_options = mapper.createObjectNode();
@@ -1116,6 +1124,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						c_options.put("kind", "split_value");
 						child.put("options", c_options);
 						children.add(child);
+						_node.put("children",children);
 						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex);
 
 					}else{
@@ -1137,36 +1146,40 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				m_ClassDistribution = null;
 			}
 		} else {
-
-			// Make leaf
 			m_Attribute = -1;
-			//add the data to the json object
-			double bin_size = 0, maxCount = 0;
-			int maxIndex = 0; double errors = 0; double pct_correct = 0;
-			if (m_ClassDistribution != null) {
-				bin_size = Utils.sum(m_ClassDistribution);
-				maxIndex = Utils.maxIndex(m_ClassDistribution);
-				maxCount = m_ClassDistribution[maxIndex];
-				errors = bin_size - maxCount;
-				pct_correct = (bin_size-errors)/bin_size;
-			} 
-			
-			ArrayNode children = (ArrayNode) evalresults.get("children");
-			if(children==null){
-				children = mapper.createArrayNode();
+			if(kind!=null&&kind.equals("leaf_node")){
+				//already made this one..
+			}else{
+				// Make leaf
+		
+				//add the data to the json object
+				double bin_size = 0, maxCount = 0;
+				int maxIndex = 0; double errors = 0; double pct_correct = 0;
+				if (m_ClassDistribution != null) {
+					bin_size = Utils.sum(m_ClassDistribution);
+					maxIndex = Utils.maxIndex(m_ClassDistribution);
+					maxCount = m_ClassDistribution[maxIndex];
+					errors = bin_size - maxCount;
+					pct_correct = (bin_size-errors)/bin_size;
+				} 
+
+				ArrayNode children = (ArrayNode) node.get("children");
+				if(children==null){
+					children = mapper.createArrayNode();
+				}
+				ObjectNode child = mapper.createObjectNode();
+				String class_name = m_Info.classAttribute().value(maxIndex);
+				child.put("name", class_name);
+				ObjectNode c_options = mapper.createObjectNode();
+				c_options.put("attribute_name", class_name);
+				c_options.put("kind", "leaf_node");
+				c_options.put("bin_size", Utils.doubleToString(bin_size, 2));
+				c_options.put("errors", Utils.doubleToString(errors, 2));
+				c_options.put("pct_correct", Utils.doubleToString(pct_correct, 2));
+				child.put("options", c_options);
+				children.add(child);
+				_node.put("children", children);
 			}
-			ObjectNode child = mapper.createObjectNode();
-			String class_name = m_Info.classAttribute().value(maxIndex);
-			child.put("name", class_name);
-			ObjectNode c_options = mapper.createObjectNode();
-			c_options.put("attribute_name", class_name);
-			c_options.put("kind", "leaf_node");
-			c_options.put("bin_size", Utils.doubleToString(bin_size, 2));
-			c_options.put("errors", Utils.doubleToString(errors, 2));
-			c_options.put("pct_correct", Utils.doubleToString(pct_correct, 2));
-			child.put("options", c_options);
-			children.add(child);
-			evalresults.put("children", children);
 		}
 
 	}
