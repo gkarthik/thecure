@@ -1,0 +1,148 @@
+{
+  "name": "aquatic",
+  "options": {
+    "split_point": "nominal",
+    "id": "aquatic",
+    "attribute_name": "aquatic",
+    "kind": "split_node"
+  },
+  "cid": "c7",
+  "edit": 0,
+  "highlight": 0,
+  "children": [
+    {
+      "name": "FALSE",
+      "options": {
+        "threshold": "FALSE",
+        "kind": "split_value"
+      },
+      "cid": "c17",
+      "edit": 0,
+      "highlight": 0,
+      "children": [
+        {
+          "name": "tail",
+          "options": {
+            "split_point": "nominal",
+            "id": "tail",
+            "attribute_name": "tail",
+            "kind": "split_node"
+          },
+          "cid": "c26",
+          "edit": 0,
+          "highlight": 0,
+          "children": [
+            {
+              "name": "TRUE",
+              "options": {
+                "threshold": "TRUE",
+                "kind": "split_value"
+              },
+              "cid": "c35",
+              "edit": 0,
+              "highlight": 0,
+              "children": [
+                {
+                  "name": "mammal",
+                  "options": {
+                    "kind": "leaf_node"
+                  },
+                  "cid": "c44",
+                  "edit": 0,
+                  "highlight": 0,
+                  "children": [
+                    
+                  ],
+                  "x": 174,
+                  "y": 520,
+                  "x0": 174,
+                  "y0": 520
+                }
+              ],
+              "x": 174,
+              "y": 390,
+              "x0": 174,
+              "y0": 390
+            },
+            {
+              "name": "FALSE",
+              "options": {
+                "threshold": "FALSE",
+                "kind": "split_value"
+              },
+              "cid": "c53",
+              "edit": 0,
+              "highlight": 0,
+              "children": [
+                {
+                  "name": "not mammal",
+                  "options": {
+                    "kind": "leaf_node"
+                  },
+                  "cid": "c62",
+                  "edit": 0,
+                  "highlight": 0,
+                  "children": [
+                    
+                  ],
+                  "x": 522,
+                  "y": 520,
+                  "x0": 522,
+                  "y0": 520
+                }
+              ],
+              "x": 522,
+              "y": 390,
+              "x0": 522,
+              "y0": 390
+            }
+          ],
+          "x": 348,
+          "y": 260,
+          "x0": 348,
+          "y0": 260
+        }
+      ],
+      "x": 348,
+      "y": 130,
+      "x0": 348,
+      "y0": 130
+    },
+    {
+      "name": "TRUE",
+      "options": {
+        "threshold": "TRUE",
+        "kind": "split_value"
+      },
+      "cid": "c71",
+      "edit": 0,
+      "highlight": 0,
+      "children": [
+        {
+          "name": "not mammal",
+          "options": {
+            "kind": "leaf_node"
+          },
+          "cid": "c80",
+          "edit": 0,
+          "highlight": 0,
+          "children": [
+            
+          ],
+          "x": 696,
+          "y": 260,
+          "x0": 696,
+          "y0": 260
+        }
+      ],
+      "x": 696,
+      "y": 130,
+      "x0": 696,
+      "y0": 130
+    }
+  ],
+  "x": 522,
+  "y": 0,
+  "x0": 522,
+  "y0": 0
+}
