@@ -1,0 +1,92 @@
+{
+  "name": "aquatic",
+  "options": {
+    "split_point": "NaN",
+    "id": "aquatic",
+    "attribute_name": "aquatic",
+    "kind": "split_node",
+    "bin_size": 101,
+    "infogain": 0.1018138640318591
+  },
+  "cid": "c7",
+  "children": [
+    {
+      "name": "FALSE",
+      "options": {
+        "attribute_name": "FALSE",
+        "kind": "split_value"
+      },
+      "children": [
+        {
+          "name": "tail",
+          "options": {
+            "attribute_name": "tail",
+            "kind": "split_node",
+            "bin_size": 65,
+            "infogain": 0.04895739887701123,
+            "split_point": "NaN"
+          },
+          "children": [
+            {
+              "name": "TRUE",
+              "options": {
+                "attribute_name": "TRUE",
+                "kind": "split_value"
+              },
+              "children": [
+                {
+                  "name": "mammal",
+                  "options": {
+                    "attribute_name": "mammal",
+                    "kind": "leaf_node",
+                    "bin_size": "49",
+                    "errors": "19",
+                    "pct_correct": "0.61"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "FALSE",
+              "options": {
+                "attribute_name": "FALSE",
+                "kind": "split_value"
+              },
+              "children": [
+                {
+                  "name": "not mammal",
+                  "options": {
+                    "attribute_name": "not mammal",
+                    "kind": "leaf_node",
+                    "bin_size": "16",
+                    "errors": "5",
+                    "pct_correct": "0.69"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TRUE",
+      "options": {
+        "attribute_name": "TRUE",
+        "kind": "split_value"
+      },
+      "children": [
+        {
+          "name": "not mammal",
+          "options": {
+            "attribute_name": "not mammal",
+            "kind": "leaf_node",
+            "bin_size": "36",
+            "errors": "6",
+            "pct_correct": "0.83"
+          }
+        }
+      ]
+    }
+  ]
+}

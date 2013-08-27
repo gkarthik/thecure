@@ -1,0 +1,52 @@
+{
+  "name": "HER2",
+  "options": {
+    "split_point": 12.0658,
+    "id": "2064",
+    "kind": "split_node",
+    "attribute_name": "16206_216836_s_at",
+    "bin_size": 239,
+    "infogain": 0.009764974596367604
+  },
+  "cid": "c7",
+  "children": [
+    {
+      "name": "low",
+      "options": {
+        "attribute_name": "low",
+        "kind": "split_value"
+      },
+      "children": [
+        {
+          "name": "no relapse",
+          "options": {
+            "attribute_name": "no relapse",
+            "kind": "leaf_node",
+            "bin_size": "237",
+            "errors": "105",
+            "pct_correct": "0.56"
+          }
+        }
+      ]
+    },
+    {
+      "name": "high",
+      "options": {
+        "attribute_name": "high",
+        "kind": "split_value"
+      },
+      "children": [
+        {
+          "name": "relapse",
+          "options": {
+            "attribute_name": "relapse",
+            "kind": "leaf_node",
+            "bin_size": "2",
+            "errors": "0",
+            "pct_correct": "1"
+          }
+        }
+      ]
+    }
+  ]
+}

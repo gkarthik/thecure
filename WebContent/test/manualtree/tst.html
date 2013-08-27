@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>API tester</title>
+  <style>img{ height: 100px; float: left; }	</style>
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+</head>
+<body>
+<script>
+(function() {
+	
+  var tree = {
+		  "name": "HER2",
+		  "options": {
+		    "id": "2064",
+		    "kind": "split_node"
+		  },
+		  "cid": "c7",
+		  "children": []
+		}
+	
+  var apiurl = "/cure/MetaServer";
+  var args = {
+	      command : "scoretree",
+	      dataset : "griffith_breast_cancer_1",
+	      treestruct : tree
+	    };
+  console.log("trying it");
+  $.ajax({
+      type: 'POST',
+      url: '/cure/MetaServer',
+      data: JSON.stringify(args),
+      dataType: 'json',
+      contentType: "application/json; charset=utf-8"
+    }).done(function( data ) {
+        console.log("finished response :");
+        console.log(data);
+      });
+})();
+</script>
+ 
+</body>
+</html>
