@@ -284,30 +284,36 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		if(this.model)
 		{
 			var model = this.model;
-			var parentModel = this.model;
 		}
 		var html_template= $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
 	    select: function(event, ui) {
-	    if(model.get("kind")=="leaf_node")
+	    var kind_value="";
+	    try{
+	    	kind_value= model.get("options").kind;
+	    }catch (exception) {}
+	    if(kind_value=="leaf_node")
 	    {
-	    	parentModel = model.parentNode;
-	    	model.destroy();
+	    	model.set("name",ui.item.name);
+	    	model.set("options",{id: ui.item.id,"kind": "split_node"});
 	    }
-			var newNode = new Node({
-				'name' : ui.item.name,
-				"options" : {
-					id: ui.item.id,
-					"kind": "split_node"
-				},
-				"created_by": "player"
-			});
-			newNode.set("cid", newNode.cid);
-			if(model.get("children"))
-			{
-				parentModel.get("children").add(newNode);
-			}
+	    else
+	    {
+	    	var newNode = new Node({
+					'name' : ui.item.name,
+					"options" : {
+						id: ui.item.id,
+						"kind": "split_node"
+					},
+					"created_by": "player"
+				});
+				newNode.set("cid", newNode.cid);
+				if(model.get("children"))
+				{
+					model.get("children").add(newNode);
+				}
+	    }
 			if(Cure.MyGeneInfoRegion)
 			{
 				Cure.MyGeneInfoRegion.close();
