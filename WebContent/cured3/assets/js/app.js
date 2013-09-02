@@ -9,6 +9,7 @@ Cure = new Backbone.Marionette.Application();
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
+		this.self = this;
 		// This add is for the seed node alone.
 		this.on("add", function(model) {
 			Cure.updatepositions(this);
@@ -30,19 +31,64 @@ NodeCollection = Backbone.Collection.extend({
     return filtered;
   },
   url: "/cure/MetaServer",
-  sync: function(method, collection, success, error) {
-    var requestData={};
-    if(collection.length>0) {
-        requestData.last_tweet_id=collection.last.id 
+  sync: function() {
+    var tree=[];
+    if(this.models[0])
+    {
+    	tree = this.models[0].toJSON();
     }
-    var params = {
-        url:          "/tweet",
-        type:         "POST",
-        data:         requestData,
-        success:      success,
-        error:        error
+    var args = {
+      command : "scoretree",
+      dataset : "griffith_breast_cancer_1",
+      treestruct : tree
     };
-    $.ajax(params);
+		$.ajax({
+			type : 'POST',
+			url : '/cure/MetaServer',
+			data : JSON.stringify(args),
+			dataType : 'json',
+			contentType : "application/json; charset=utf-8",
+			success:      this.parseResponse,
+      error:        this.error
+		});
+  },
+  updateCollection: function(data,modelcount){
+  	var json = data;
+  	if(data["treestruct"])
+  	{
+  		json = data["treestruct"];
+  	}
+  	if(this.models[modelcount])
+  	{
+			if (json.cid == this.models[modelcount].get("cid")) {
+				for ( var key in json) {
+					this.models[modelcount].set(key, json[key]);
+					console.log(json[key]);
+				}
+			}
+			var children = this.models[modelcount].get('children');
+			modelcount++;
+			if (children.length > 0) {
+				for ( var temp in children) {
+					this.updateCollection(children[temp], modelcount);
+				}
+				this.updateCollection
+  		}
+  		else
+  		{
+  			Cure.delete_all_children(this.model);
+  		}
+  	}
+  	else
+  	{
+  		
+  	}
+  },
+  parseResponse: function(data){
+  	Cure.PlayerNodeCollection.updateCollection(data,0);
+  },
+  error: function(data){
+  	console.log(data);
   }
 });
 
@@ -561,7 +607,7 @@ Cure.addInitializer(function(options) {
 	  	});
 			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 			//Cure.BarneyTreeRegion.show(Cure.BarneyNodeCollectionView);
-			//Cure.JsonRegion.show(Cure.JSONCollectionView);
+			Cure.JsonRegion.show(Cure.JSONCollectionView);
 
 			// Add Nodes from JSON
 			//Cure.generateJSON(null, Cure.jsondata["tree"],);			

@@ -35,7 +35,6 @@
 (function($) {
   $('input.mygene_query_target').genequery_autocomplete({
     select: function(event, ui) {
-		console.log(ui);
 		var newNode = new Node({
 			'name' : ui.item.name,
 			"options" : {
@@ -45,13 +44,7 @@
 		newNode.set("cid", newNode.cid);
 		newNode.set("created_by","player");
 		Cure.PlayerNodeCollection.add(newNode);
-		var args = {
-         command : "scoretree",
-         dataset : "griffith_breast_cancer_1",
-         treestruct : Cure.PlayerNodeCollection.models[0].toJSON()
-    	}
-		Backbone.sync("create",Cure.PlayerNodeCollection,{data: JSON.stringify(args),dataType: 'json',  contentType: "application/json; charset=utf-8"});
-		
+		Cure.PlayerNodeCollection.sync();
 	}
 });
   } (jQuery));
