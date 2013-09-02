@@ -9,7 +9,6 @@ Cure = new Backbone.Marionette.Application();
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
-		this.self = this;
 		// This add is for the seed node alone.
 		this.on("add", function(model) {
 			Cure.updatepositions(this);
@@ -52,7 +51,7 @@ NodeCollection = Backbone.Collection.extend({
       error:        this.error
 		});
   },
-  updateCollection: function(data,modelcount){
+  updateCollection: function(data,modelcount,parent){
   	var json = data;
   	if(data["treestruct"])
   	{
@@ -62,34 +61,41 @@ NodeCollection = Backbone.Collection.extend({
   	{
 			if (json.cid == this.models[modelcount].get("cid")) {
 				for ( var key in json) {
-					if(key!="children"){
+					if(key!="children"&&key!="x"&&key!="y"){
 						this.models[modelcount].set(key, json[key]);
 					}
 				}
 			}
-			var json_children = json.children;
-			var collection_children = this.models[modelcount].get("children")
-			modelcount++;
-			console.log(json_children.length +" "+ collection_children.length);
+			var json_children = {"length":0};
+			if(json.children)
+			{
+				json_children = json.children;
+			}
+			var collection_children = {"length":0};
+			if(this.models[modelcount].get("children"))
+			{
+				collection_children = this.models[modelcount].get("children");
+			}
+			console.log(json_children.length+" "+collection_children.length);
 			if(json_children.length == collection_children.length && collection_children.length>0)
 			{//Just sync attributes
-				for(var temp in json.children)
+				for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children[temp],temp+modelcount+1,this.models[modelcount]);
 				}
 			}
   		else if(json_children.length > collection_children.length)
   		{//Add extra nodes to tree
-  			for(var temp in json.children)
+  			for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children[temp],temp+modelcount+1,this.models[modelcount]);
 				}
   		}
   		else if(json_children.length < collection_children.length)
   		{//Delete excess in tree
-  			for(var temp in json.children)
+  			for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children,temp+modelcount+1,this.models[modelcount]);
 				}
   			temp++;
   			for(var i=temp;i<collection_children.length;i++)
@@ -104,21 +110,22 @@ NodeCollection = Backbone.Collection.extend({
   		var newNode = new Node({
   			'name' : "",
   			"options" : {
-  			}
+  			},
+  			"created_by": "player"
   		});
   		for ( var key in json) {
-				if(key!="children"){
+				if(key!="children"&&key!="x"&&key!="y"){
 					newNode.set(key, json[key]);
 				}
 			}
-  		if(this.models[modelcount-1])
+  		newNode.set("cid", newNode.cid);
+  		if(parent!=null)
   		{
-  			this.models[modelcount-1].get('children').add(newNode);
+  			parent.get('children').add(newNode);
   		}
-  		modelcount++;
   		for(var temp in json.children)
 			{
-				this.updateCollection(json.children[temp],modelcount);
+				this.updateCollection(json.children[temp],temp+modelcount+1,newNode);
 			}
   	}
   },
@@ -138,7 +145,8 @@ Node = Backbone.RelationalModel.extend({
 		'name' : '',
 		'cid' : 0,
 		'options' : {
-
+      "id": "",
+      "kind": "split_node"
 		},
 		edit : 0,
 		highlight : 0,
@@ -262,7 +270,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		var GeneInfoRegion = new Backbone.Marionette.Region({
 		  el: "#"+$(this.ui.addgeneinfo).attr("id")
 		});
-		Cure.addRegions({"MyGeneInfoRegion":GeneInfoRegion});
+		Cure.addRegions({MyGeneInfoRegion:GeneInfoRegion});
 		var ShowGeneInfoWidget = new AddRootNodeView({'model':this.model});
 		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
 	}
@@ -276,22 +284,33 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		if(this.model)
 		{
 			var model = this.model;
+			var parentModel = this.model;
 		}
 		var html_template= $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
 	    select: function(event, ui) {
+	    if(model.get("kind")=="leaf_node")
+	    {
+	    	parentModel = model.parentNode;
+	    	model.destroy();
+	    }
 			var newNode = new Node({
 				'name' : ui.item.name,
 				"options" : {
-					id: ui.item.id
+					id: ui.item.id,
+					"kind": "split_node"
 				},
 				"created_by": "player"
 			});
 			newNode.set("cid", newNode.cid);
 			if(model.get("children"))
 			{
-				model.get("children").add(newNode)
+				parentModel.get("children").add(newNode);
+			}
+			if(Cure.MyGeneInfoRegion)
+			{
+				Cure.MyGeneInfoRegion.close();
 			}
 			Cure.PlayerNodeCollection.sync();
 		}
@@ -464,7 +483,7 @@ Cure.updatepositions = function(NodeCollection) {
 	{
 		d3nodes = Cure.cluster.nodes(NodeCollection.toJSON()[0]);
 	}
-	
+	Cure.cluster.nodes(NodeCollection.toJSON()[0]);
 	d3nodes.forEach(function(d) {
 		d.y = d.depth * 130;
 	});
