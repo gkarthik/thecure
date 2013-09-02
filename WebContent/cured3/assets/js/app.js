@@ -51,21 +51,21 @@ NodeCollection = Backbone.Collection.extend({
       error:        this.error
 		});
   },
-  updateCollection: function(data,modelcount,parent){
+  updateCollection: function(data,modelcount,parent,depth){
   	var json = data;
   	if(data["treestruct"])
   	{
   		json = data["treestruct"];
   	}
+		depth++;
   	if(this.models[modelcount])
   	{
-			if (json.cid == this.models[modelcount].get("cid")) {
+  		console.log(modelcount+" "+this.models[modelcount].get("name"));
 				for ( var key in json) {
 					if(key!="children"&&key!="x"&&key!="y"){
 						this.models[modelcount].set(key, json[key]);
 					}
 				}
-			}
 			var json_children = {"length":0};
 			if(json.children)
 			{
@@ -76,26 +76,25 @@ NodeCollection = Backbone.Collection.extend({
 			{
 				collection_children = this.models[modelcount].get("children");
 			}
-			console.log(json_children.length+" "+collection_children.length);
 			if(json_children.length == collection_children.length && collection_children.length>0)
 			{//Just sync attributes
 				for(var temp in json_children)
 				{
-					this.updateCollection(json_children[temp],temp+modelcount+1,this.models[modelcount]);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
 			}
   		else if(json_children.length > collection_children.length)
   		{//Add extra nodes to tree
   			for(var temp in json_children)
 				{
-					this.updateCollection(json_children[temp],temp+modelcount+1,this.models[modelcount]);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
   		}
   		else if(json_children.length < collection_children.length)
   		{//Delete excess in tree
   			for(var temp in json_children)
 				{
-					this.updateCollection(json_children,temp+modelcount+1,this.models[modelcount]);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
   			temp++;
   			for(var i=temp;i<collection_children.length;i++)
@@ -125,12 +124,12 @@ NodeCollection = Backbone.Collection.extend({
   		}
   		for(var temp in json.children)
 			{
-				this.updateCollection(json.children[temp],temp+modelcount+1,newNode);
+				this.updateCollection(json.children[temp],parseInt(temp)+parseInt(modelcount)+depth,newNode,depth);
 			}
   	}
   },
   parseResponse: function(data){
-  	Cure.PlayerNodeCollection.updateCollection(data,0);
+  	Cure.PlayerNodeCollection.updateCollection(data,0,null,1);
   },
   error: function(data){
 
