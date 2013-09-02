@@ -31,24 +31,6 @@
   	<div id="mygene_addnode">
   	  <input id="gene_query" style="width:250px" class="mygene_query_target">
   	</div>
-<script>
-(function($) {
-  $('input.mygene_query_target').genequery_autocomplete({
-    select: function(event, ui) {
-		var newNode = new Node({
-			'name' : ui.item.name,
-			"options" : {
-				id: ui.item.id
-			},
-		});
-		newNode.set("cid", newNode.cid);
-		newNode.set("created_by","player");
-		Cure.PlayerNodeCollection.add(newNode);
-		Cure.PlayerNodeCollection.sync();
-	}
-});
-  } (jQuery));
-</script>
   </script>
     <script id="JSONtemplate" type="text/template">
       <td><span class="jsonview_name"><@= args.name @></span></td>

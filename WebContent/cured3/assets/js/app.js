@@ -62,33 +62,71 @@ NodeCollection = Backbone.Collection.extend({
   	{
 			if (json.cid == this.models[modelcount].get("cid")) {
 				for ( var key in json) {
-					this.models[modelcount].set(key, json[key]);
-					console.log(json[key]);
+					if(key!="children"){
+						this.models[modelcount].set(key, json[key]);
+					}
 				}
 			}
-			var children = this.models[modelcount].get('children');
+			var json_children = json.children;
+			var collection_children = this.models[modelcount].get("children")
 			modelcount++;
-			if (children.length > 0) {
-				for ( var temp in children) {
-					this.updateCollection(children[temp], modelcount);
+			console.log(json_children.length +" "+ collection_children.length);
+			if(json_children.length == collection_children.length && collection_children.length>0)
+			{//Just sync attributes
+				for(var temp in json.children)
+				{
+					this.updateCollection(json.children[temp],modelcount);
 				}
-				this.updateCollection
+			}
+  		else if(json_children.length > collection_children.length)
+  		{//Add extra nodes to tree
+  			for(var temp in json.children)
+				{
+					this.updateCollection(json.children[temp],modelcount);
+				}
   		}
-  		else
-  		{
-  			Cure.delete_all_children(this.model);
+  		else if(json_children.length < collection_children.length)
+  		{//Delete excess in tree
+  			for(var temp in json.children)
+				{
+					this.updateCollection(json.children[temp],modelcount);
+				}
+  			temp++;
+  			for(var i=temp;i<collection_children.length;i++)
+  			{
+  				delete_all_children(collection_children[temp]);
+  				collection_children[temp].destroy();
+  			}
   		}
   	}
   	else
   	{
-  		
+  		var newNode = new Node({
+  			'name' : "",
+  			"options" : {
+  			}
+  		});
+  		for ( var key in json) {
+				if(key!="children"){
+					newNode.set(key, json[key]);
+				}
+			}
+  		if(this.models[modelcount-1])
+  		{
+  			this.models[modelcount-1].get('children').add(newNode);
+  		}
+  		modelcount++;
+  		for(var temp in json.children)
+			{
+				this.updateCollection(json.children[temp],modelcount);
+			}
   	}
   },
   parseResponse: function(data){
   	Cure.PlayerNodeCollection.updateCollection(data,0);
   },
   error: function(data){
-  	console.log(data);
+
   }
 });
 
@@ -104,7 +142,8 @@ Node = Backbone.RelationalModel.extend({
 		},
 		edit : 0,
 		highlight : 0,
-		created_by:""
+		created_by:"",
+		children: []
 	},
 	initialize : function() {
 		this.bind("add:children", function() {
@@ -224,7 +263,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		  el: "#"+$(this.ui.addgeneinfo).attr("id")
 		});
 		Cure.addRegions({"MyGeneInfoRegion":GeneInfoRegion});
-		var ShowGeneInfoWidget = new AddRootNodeView();
+		var ShowGeneInfoWidget = new AddRootNodeView({'model':this.model});
 		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
 	}
 });
@@ -232,7 +271,32 @@ NodeView = Backbone.Marionette.ItemView.extend({
 AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 	},
-	template: "#AddRootNode"
+	template: "#AddRootNode",
+	render: function(){
+		if(this.model)
+		{
+			var model = this.model;
+		}
+		var html_template= $("#AddRootNode").html();
+		this.$el.html(html_template);
+		this.$el.find('input.mygene_query_target').genequery_autocomplete({
+	    select: function(event, ui) {
+			var newNode = new Node({
+				'name' : ui.item.name,
+				"options" : {
+					id: ui.item.id
+				},
+				"created_by": "player"
+			});
+			newNode.set("cid", newNode.cid);
+			if(model.get("children"))
+			{
+				model.get("children").add(newNode)
+			}
+			Cure.PlayerNodeCollection.sync();
+		}
+	});
+	},
 });
 
 NodeCollectionView = Backbone.Marionette.CollectionView.extend({
@@ -451,7 +515,6 @@ Cure.generateJSON = function(parent, childjson, created_by, Collection) {
 		{
 			creator = parent.get("created_by");
 		}
-		console.log(childjson["name"]);
 		var newNode = new Node({
 			'name' : childjson["name"],
 			"options" : {},
@@ -470,7 +533,6 @@ Cure.generateJSON = function(parent, childjson, created_by, Collection) {
 		newNode.set("cid", newNode.cid);
 		if (parent != null) {
 			parent.get('children').add(newNode);
-			newNode.parentNode = parent;
 		}
 	}
 	var flag = null;
