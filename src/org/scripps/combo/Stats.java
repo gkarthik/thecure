@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math.stat.inference.TestUtils;
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Game;
@@ -81,15 +82,15 @@ public class Stats {
 		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
 		//					Player.describePlayers(only_first_per_board, outfile, dataset);
 		//				}
-		//	outfile = output_dir+"players/player_agreeability.txt";
-		//	boolean first_hand_only = true;
-		//	outputPlayerAgreeability(outfile, first_hand_only);
-		outfile = output_dir+"board_consensus.txt";
-		boolean first_hand_only = true;
-		outputBoardConsensus(outfile, first_hand_only);
-		outfile = output_dir+"board_consensus_all_hands.txt";
-		first_hand_only = false;
-		outputBoardConsensus(outfile, first_hand_only);
+			outfile = output_dir+"players/player_agreeability.txt";
+			boolean first_hand_only = true;
+			outputPlayerAgreeability(outfile, first_hand_only);
+//		outfile = output_dir+"board_consensus.txt";
+//		boolean first_hand_only = true;
+//		outputBoardConsensus(outfile, first_hand_only);
+//		outfile = output_dir+"board_consensus_all_hands.txt";
+//		first_hand_only = false;
+//		outputBoardConsensus(outfile, first_hand_only);
 	}
 
 
@@ -160,12 +161,18 @@ public class Stats {
 					}
 				}
 			}
-			double know_cancer_diff_agree = TestUtils.tTest(without_cancer_knowledge, with_cancer_knowledge);
-			double phd_diff_agree = TestUtils.tTest(without_phd, with_phd);
-			System.out.println("t for cancer knowledge and agreeability:"+know_cancer_diff_agree+"" +
+			double know_cancer_diff_agree_t = TestUtils.tTest(without_cancer_knowledge, with_cancer_knowledge);
+			double phd_diff_agree_t = TestUtils.tTest(without_phd, with_phd);
+			
+			MannWhitneyUTest mw = new MannWhitneyUTest();
+			double know_cancer_diff_agree_w = mw.mannWhitneyUTest(without_cancer_knowledge.getSortedValues(), with_cancer_knowledge.getSortedValues());
+			double phd_diff_agree_w = mw.mannWhitneyUTest(without_phd.getSortedValues(), with_phd.getSortedValues());
+			System.out.println("t for cancer knowledge and agreeability:"+know_cancer_diff_agree_t+" " +
+					"MW for cancer knowledge and agreeability:"+know_cancer_diff_agree_w+" " +
 					" mean know: "+with_cancer_knowledge.getMean()+" "+with_cancer_knowledge.getN()+" "+
 					" mean don't know: "+without_cancer_knowledge.getMean()+" "+without_cancer_knowledge.getN());
-			System.out.println("t for phd and agreeability:"+phd_diff_agree +
+			System.out.println("t for phd and agreeability:"+phd_diff_agree_t +" "+
+					"w for phd and agreeability:"+phd_diff_agree_w +
 					" mean phd: "+with_phd.getMean()+" "+with_phd.getN()+" "+
 					" mean without phd: "+without_phd.getMean()+" "+without_phd.getN());
 			out.close();
