@@ -15,11 +15,6 @@
     <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
   </head>
   <body>
-  	<div id="mygene_wrapper">
-  		<div id="mygene_addnode" class="ui-widget">
-  			<input id="gene_query" style="width:250px" class="mygene_query_target">
-  		</div>
-  	</div>
     <div class="container">
       <div class="row">
         <div class="span3">
@@ -32,7 +27,51 @@
         </div>
       </div>
     </div>
-  
+  <script type="text/template" id="AddRootNode">
+  	<div id="mygene_addnode">
+  	  <input id="gene_query" style="width:250px" class="mygene_query_target">
+  	</div>
+  </script>
+    <script id="JSONtemplate" type="text/template">
+      <td><span class="jsonview_name"><@= args.name @></span></td>
+      <td><span><button class="btn btn-link showattr" >Edit</button></span></td>
+      <td><span><button class="btn btn-link showjson" >JSON</button></span></td>
+      <td><textarea class="jsonview_data"><@ print (args.jsondata); @></textarea></td>
+  </script>
+  <script id="Attrtemplate" type="text/template">
+    <td colspan="3">
+    <ul class="unstyled">
+      <li>
+            <span class="attredit">
+              <label class="label label-info">Name</label><br /><label class="attrvalue"><@= args.name @></label>
+              <input class="input-medium edit" id="name" type="text" value="<@= args.name @>" />
+            </span>
+      </li>
+      <@ for(var option in args.options) {@>
+        <li>
+            <span class="attredit">
+              <label class="label label-info"><@= option @></label><br /><label class="attrvalue"> <@= args.options[option] @></label>
+              <input class="input-medium edit modeloption" id="<@= option @>" type="text" value="<@= args.options[option] @>" />
+            </span>
+        </li>
+      <@ } @>
+      <li><button class="btn btn-link editdone" >Done</button></li>
+    </ul>
+    </td>
+  </script>
+  <script id="nodeTemplate" type="text/template">  
+    <span class="name attrvalue">
+      <@= name @>
+    </span>
+    <input type="text" class="edit d3edit" value="<@- name @>">
+    <button class="btn btn-small btn-link addchildren" type="button">
+      <i class="icon-plus-sign"></i>
+    </button>
+    <button class="btn btn-small btn-link delete" href="#">
+      <i class="icon-remove"></i>
+    </button>
+	<div class="addgeneinfo" id="addgeneinfo<@= options.id @>"></div>
+  </script>
   <script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
 </html>
