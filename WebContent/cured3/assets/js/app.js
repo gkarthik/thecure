@@ -19,16 +19,6 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.render_network(this.toJSON()[0]);
 		});
 	},
-	getNodeByName: function(name) {
-		var filtered = [];
-    filtered = this.filter(function(Node) {
-      if(Node.get("name") === name)
-      {
-      	return Node;      //Assuming unique names for every Node.	
-      }
-    });
-    return filtered;
-  },
   url: "/cure/MetaServer",
   sync: function() {
     var tree=[];
@@ -51,19 +41,20 @@ NodeCollection = Backbone.Collection.extend({
       error:        this.error
 		});
   },
-  updateCollection: function(data,modelcount,parent,depth){
+  updateCollection: function(data,parent){
+  	Cure.modelcount++;
   	var json = data;
+  	var increment = 0;
   	if(data["treestruct"])
   	{
   		json = data["treestruct"];
   	}
-		depth++;
-  	if(this.models[modelcount])
+  	if(this.models[Cure.modelcount])
   	{
-  		console.log(modelcount+" "+this.models[modelcount].get("name"));
+  		console.log(Cure.modelcount+" "+this.models[Cure.modelcount].get("name"));
 				for ( var key in json) {
 					if(key!="children"&&key!="x"&&key!="y"){
-						this.models[modelcount].set(key, json[key]);
+						this.models[Cure.modelcount].set(key, json[key]);
 					}
 				}
 			var json_children = {"length":0};
@@ -72,29 +63,31 @@ NodeCollection = Backbone.Collection.extend({
 				json_children = json.children;
 			}
 			var collection_children = {"length":0};
-			if(this.models[modelcount].get("children"))
+			var temp_model;
+			temp_model = Cure.modelcount;
+			if(this.models[Cure.modelcount].get("children"))
 			{
-				collection_children = this.models[modelcount].get("children");
+				collection_children = this.models[Cure.modelcount].get("children");
 			}
 			if(json_children.length == collection_children.length && collection_children.length>0)
 			{//Just sync attributes
 				for(var temp in json_children)
 				{
-					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
+					this.updateCollection(json_children[temp],this.models[temp_model]);
 				}
 			}
   		else if(json_children.length > collection_children.length)
   		{//Add extra nodes to tree
   			for(var temp in json_children)
 				{
-					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
+  				this.updateCollection(json_children[temp],this.models[temp_model]);
 				}
   		}
   		else if(json_children.length < collection_children.length)
   		{//Delete excess in tree
   			for(var temp in json_children)
 				{
-					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
+  				this.updateCollection(json_children[temp],this.models[temp_model]);
 				}
   			temp++;
   			for(var i=temp;i<collection_children.length;i++)
@@ -106,6 +99,7 @@ NodeCollection = Backbone.Collection.extend({
   	}
   	else
   	{
+  		console.log(Cure.modelcount+" "+json["name"]);
   		var newNode = new Node({
   			'name' : "",
   			"options" : {
@@ -124,12 +118,14 @@ NodeCollection = Backbone.Collection.extend({
   		}
   		for(var temp in json.children)
 			{
-				this.updateCollection(json.children[temp],parseInt(temp)+parseInt(modelcount)+depth,newNode,depth);
+  			this.updateCollection(json.children[temp],newNode);
 			}
   	}
   },
   parseResponse: function(data){
-  	Cure.PlayerNodeCollection.updateCollection(data,0,null,1);
+  	Cure.modelcount = -1;
+  	console.log(Cure.modelcount);
+  	Cure.PlayerNodeCollection.updateCollection(data,null);
   },
   error: function(data){
 
