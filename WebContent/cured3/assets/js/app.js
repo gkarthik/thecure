@@ -9,7 +9,6 @@ Cure = new Backbone.Marionette.Application();
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
-		this.self = this;
 		// This add is for the seed node alone.
 		this.on("add", function(model) {
 			Cure.updatepositions(this);
@@ -52,44 +51,50 @@ NodeCollection = Backbone.Collection.extend({
       error:        this.error
 		});
   },
-  updateCollection: function(data,modelcount){
+  updateCollection: function(data,modelcount,parent,depth){
   	var json = data;
   	if(data["treestruct"])
   	{
   		json = data["treestruct"];
   	}
+		depth++;
   	if(this.models[modelcount])
   	{
-			if (json.cid == this.models[modelcount].get("cid")) {
+  		console.log(modelcount+" "+this.models[modelcount].get("name"));
 				for ( var key in json) {
-					if(key!="children"){
+					if(key!="children"&&key!="x"&&key!="y"){
 						this.models[modelcount].set(key, json[key]);
 					}
 				}
+			var json_children = {"length":0};
+			if(json.children)
+			{
+				json_children = json.children;
 			}
-			var json_children = json.children;
-			var collection_children = this.models[modelcount].get("children")
-			modelcount++;
-			console.log(json_children.length +" "+ collection_children.length);
+			var collection_children = {"length":0};
+			if(this.models[modelcount].get("children"))
+			{
+				collection_children = this.models[modelcount].get("children");
+			}
 			if(json_children.length == collection_children.length && collection_children.length>0)
 			{//Just sync attributes
-				for(var temp in json.children)
+				for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
 			}
   		else if(json_children.length > collection_children.length)
   		{//Add extra nodes to tree
-  			for(var temp in json.children)
+  			for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
   		}
   		else if(json_children.length < collection_children.length)
   		{//Delete excess in tree
-  			for(var temp in json.children)
+  			for(var temp in json_children)
 				{
-					this.updateCollection(json.children[temp],modelcount);
+					this.updateCollection(json_children[temp],parseInt(temp)+parseInt(modelcount)+depth,this.models[modelcount],depth);
 				}
   			temp++;
   			for(var i=temp;i<collection_children.length;i++)
@@ -104,26 +109,27 @@ NodeCollection = Backbone.Collection.extend({
   		var newNode = new Node({
   			'name' : "",
   			"options" : {
-  			}
+  			},
+  			"created_by": "player"
   		});
   		for ( var key in json) {
-				if(key!="children"){
+				if(key!="children"&&key!="x"&&key!="y"){
 					newNode.set(key, json[key]);
 				}
 			}
-  		if(this.models[modelcount-1])
+  		newNode.set("cid", newNode.cid);
+  		if(parent!=null)
   		{
-  			this.models[modelcount-1].get('children').add(newNode);
+  			parent.get('children').add(newNode);
   		}
-  		modelcount++;
   		for(var temp in json.children)
 			{
-				this.updateCollection(json.children[temp],modelcount);
+				this.updateCollection(json.children[temp],parseInt(temp)+parseInt(modelcount)+depth,newNode,depth);
 			}
   	}
   },
   parseResponse: function(data){
-  	Cure.PlayerNodeCollection.updateCollection(data,0);
+  	Cure.PlayerNodeCollection.updateCollection(data,0,null,1);
   },
   error: function(data){
 
@@ -138,7 +144,8 @@ Node = Backbone.RelationalModel.extend({
 		'name' : '',
 		'cid' : 0,
 		'options' : {
-
+      "id": "",
+      "kind": "split_node"
 		},
 		edit : 0,
 		highlight : 0,
@@ -262,7 +269,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		var GeneInfoRegion = new Backbone.Marionette.Region({
 		  el: "#"+$(this.ui.addgeneinfo).attr("id")
 		});
-		Cure.addRegions({"MyGeneInfoRegion":GeneInfoRegion});
+		Cure.addRegions({MyGeneInfoRegion:GeneInfoRegion});
 		var ShowGeneInfoWidget = new AddRootNodeView({'model':this.model});
 		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
 	}
@@ -281,17 +288,34 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
 	    select: function(event, ui) {
-			var newNode = new Node({
-				'name' : ui.item.name,
-				"options" : {
-					id: ui.item.id
-				},
-				"created_by": "player"
-			});
-			newNode.set("cid", newNode.cid);
-			if(model.get("children"))
+	    var kind_value="";
+	    try{
+	    	kind_value= model.get("options").kind;
+	    }catch (exception) {}
+	    if(kind_value=="leaf_node")
+	    {
+	    	model.set("name",ui.item.name);
+	    	model.set("options",{id: ui.item.id,"kind": "split_node"});
+	    }
+	    else
+	    {
+	    	var newNode = new Node({
+					'name' : ui.item.name,
+					"options" : {
+						id: ui.item.id,
+						"kind": "split_node"
+					},
+					"created_by": "player"
+				});
+				newNode.set("cid", newNode.cid);
+				if(model.get("children"))
+				{
+					model.get("children").add(newNode);
+				}
+	    }
+			if(Cure.MyGeneInfoRegion)
 			{
-				model.get("children").add(newNode)
+				Cure.MyGeneInfoRegion.close();
 			}
 			Cure.PlayerNodeCollection.sync();
 		}
@@ -464,7 +488,7 @@ Cure.updatepositions = function(NodeCollection) {
 	{
 		d3nodes = Cure.cluster.nodes(NodeCollection.toJSON()[0]);
 	}
-	
+	Cure.cluster.nodes(NodeCollection.toJSON()[0]);
 	d3nodes.forEach(function(d) {
 		d.y = d.depth * 130;
 	});
