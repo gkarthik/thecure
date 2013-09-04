@@ -54,7 +54,8 @@ $.widget("my.genequery_autocomplete", $.ui.autocomplete, {
                         sort:_options.sort,
                         limit:_options.limit,
                         fields: _options.fields,
-                        species: _options.species
+                        species: _options.species,
+                        userfilter:_options.userfilter//Added to send userfilter parameter
                     },
                     success: function( data ) {
                         var species_d = {3702: 'thale-cress',
