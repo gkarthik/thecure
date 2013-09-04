@@ -194,6 +194,8 @@ Node = Backbone.RelationalModel.extend({
 //
 // -- Defining our views
 //
+var node_html = $("#nodeTemplate").html();
+var splitvaluenode_html = $("#splitValueTemplate").html();
 NodeView = Backbone.Marionette.ItemView.extend({
 	// -- View to manipulate each single node
 	tagName : 'div',
@@ -202,7 +204,25 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		input : ".edit",
 		addgeneinfo: ".addgeneinfo"
 	},
-	template : "#nodeTemplate",
+	template : function(serialized_model){
+		if(serialized_model.options.kind == "split_value")
+		{
+			return _.template(splitvaluenode_html, {
+				name : serialized_model.name,
+				options : serialized_model.options,
+				cid : serialized_model.cid
+			}, {
+				variable : 'args'
+			});
+		}
+			return _.template(node_html, {
+				name : serialized_model.name,
+				options : serialized_model.options,
+				cid : serialized_model.cid
+			}, {
+			variable : 'args'
+		});
+	},
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'remove',
