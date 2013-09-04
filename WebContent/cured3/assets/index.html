@@ -61,16 +61,21 @@
   </script>
   <script id="nodeTemplate" type="text/template">  
     <span class="name attrvalue">
-      <@= name @>
+      <@= args.name @>
     </span>
-    <input type="text" class="edit d3edit" value="<@- name @>">
+    <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>
     </button>
     <button class="btn btn-small btn-link delete" href="#">
       <i class="icon-remove"></i>
     </button>
-	<div class="addgeneinfo" id="addgeneinfo<@= cid @>"></div>
+	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
+  </script>
+  <script id="splitValueTemplate" type="text/template">  
+    <span class="name attrvalue">
+      <@= args.name @>
+    </span>
   </script>
   <script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
