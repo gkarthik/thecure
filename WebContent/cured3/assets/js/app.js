@@ -41,7 +41,71 @@ NodeCollection = Backbone.Collection.extend({
       error:        this.error
 		});
   },
-  updateCollection: function(data,parent){
+  updateCollection: function(json_node,node,parent){
+  	console.log(json_node.name);
+  	if(node!=null && json_node!=null)
+  	{
+  		for ( var key in json_node) {
+				if(key!="children"){
+					node.set(key, json_node[key]);
+				}
+			}
+  		if(json_node.children.length>0&&json_node.children.length==node.get('children').length)
+  		{
+  			for(var temp in json_node.children)
+  			{
+  				console.log(json_node.children[temp].name+"==");
+  				this.updateCollection(json_node.children[temp],node.get('children').models[temp]);
+  			}
+  		}
+  		else if(json_node.children.length > node.get('children').length)
+  		{
+  			for(var temp in json_node.children)
+  			{
+  				console.log(json_node.children[temp].name+">");
+  				this.updateCollection(json_node.children[temp],null,node);
+  			} 
+  		}
+  		else if(json_node.children.length < node.get('children').length)
+  		{
+  			var temp = 0;
+  			for(temp in json_node.children)
+  			{
+  				this.updateCollection(json_node.children[temp],node.get('children').models[temp]);
+  			}
+  			temp++;
+  			for(var i = temp; i<node.get('children').length; i++)
+  			{
+  				delete_all_children(node.get('children')[temp]);
+  				node.get('children')[temp].destroy();
+  			}
+  		}
+  	}
+  	else if(node == null)
+  	{
+  		var newNode = new Node({
+  			'name' : "",
+  			"options" : {
+  			},
+  			"created_by": "player"
+  		});
+  		for ( var key in json_node) {
+				if(key!="children"){
+					newNode.set(key, json_node[key]);
+				}
+			}
+  		newNode.set("cid", newNode.cid);
+  		if(parent!=null)
+  		{
+  			parent.get('children').add(newNode);
+  		}
+  		for(var temp in json_node.children)
+			{
+				console.log(json_node.children[temp].name+" new");
+  			this.updateCollection(json_node.children[temp],null,newNode);
+			}
+  	}
+  	/*
   	Cure.modelcount++;
   	var json = data;
   	var increment = 0;
@@ -121,11 +185,10 @@ NodeCollection = Backbone.Collection.extend({
   			this.updateCollection(json.children[temp],newNode);
 			}
   	}
+  	*/
   },
   parseResponse: function(data){
-  	Cure.modelcount = -1;
-  	console.log(Cure.modelcount);
-  	Cure.PlayerNodeCollection.updateCollection(data,null);
+  	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
   },
   error: function(data){
 
@@ -293,6 +356,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 
 AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
+	},
+	ui: {
+		'input': '.mygene_query_target'
 	},
 	template: "#AddRootNode",
 	render: function(){
