@@ -3,6 +3,9 @@
  */
 package org.scripps.combo;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -10,16 +13,20 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
-import org.apache.commons.math.stat.inference.TestUtils;
+//import org.apache.commons.math3.MathException;
+//import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+//import org.apache.commons.math.stat.inference.TestUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
+import org.apache.commons.math3.stat.inference.TestUtils;
+import org.scripps.StatUtil;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Game;
@@ -82,9 +89,12 @@ public class Stats {
 		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
 		//					Player.describePlayers(only_first_per_board, outfile, dataset);
 		//				}
-			outfile = output_dir+"players/player_agreeability.txt";
+			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
 			boolean first_hand_only = true;
-			outputPlayerAgreeability(outfile, first_hand_only);
+			String dataset = "griffith_breast_cancer_1";
+			outputPlayerAgreeability(outfile, first_hand_only, dataset);
+//			String inforchart = outfile;
+//			buildAgreeabilityCharts(inforchart, output_dir);
 //		outfile = output_dir+"board_consensus.txt";
 //		boolean first_hand_only = true;
 //		outputBoardConsensus(outfile, first_hand_only);
@@ -127,11 +137,90 @@ public class Stats {
 		}
 	}
 
+	
+	public static void buildAgreeabilityCharts(String input_file, String output_dir){
+		
+		try {
+			int n = 0;
+			DescriptiveStatistics phd = new DescriptiveStatistics();
+			DescriptiveStatistics nophd = new DescriptiveStatistics();
+			DescriptiveStatistics cancerk = new DescriptiveStatistics(); DescriptiveStatistics nocancerk = new DescriptiveStatistics();
+			DescriptiveStatistics biok = new DescriptiveStatistics(); DescriptiveStatistics nobiok = new DescriptiveStatistics();
+			BufferedReader f = new BufferedReader(new FileReader(input_file));
+			f.readLine();//skip header
+			String line = f.readLine();
+			while(line!=null){
+				n++;
+				String[] data = line.trim().split("\t");
+				if(data!=null&&data.length==8){
+					if(!data[5].equals("0")){
+						double count = Double.parseDouble(data[5]);
+						double mean = Double.parseDouble(data[6]);
+						double median = Double.parseDouble(data[7]);
+						if(data[2].equals("yes")){
+							biok.addValue(median);
+						}else{
+							nobiok.addValue(median);
+						}
+						
+						if(data[3].equals("yes")){
+							cancerk.addValue(median);
+						}else{
+							nocancerk.addValue(median);
+						}
+						if(data[4].equals("phd")){
+							phd.addValue(median);
+						}else{
+							nophd.addValue(median);
+						}
+					}
+				}
+				line = f.readLine();
+			}
+			//sanity check
+			MannWhitneyUTest mw = new MannWhitneyUTest();
+			double know_cancer_diff_agree_w = mw.mannWhitneyUTest(nocancerk.getSortedValues(), cancerk.getSortedValues());
+			double phd_diff_agree_w = mw.mannWhitneyUTest(nophd.getSortedValues(), phd.getSortedValues());
+			double bio_diff_agree_w = mw.mannWhitneyUTest(nobiok.getSortedValues(), biok.getSortedValues());
+			System.out.println(
+					"MW for cancer knowledge and agreeability:"+know_cancer_diff_agree_w+" " +
+					" mean know: "+cancerk.getMean()+" "+cancerk.getN()+" "+
+					" mean don't know: "+nocancerk.getMean()+" "+nocancerk.getN());
+			System.out.println(
+					"w for phd and agreeability:"+phd_diff_agree_w +
+					" mean phd: "+phd.getMean()+" "+phd.getN()+" "+
+					" mean without phd: "+nophd.getMean()+" "+nophd.getN());
+			System.out.println(
+					"w for bioK and agreeability:"+bio_diff_agree_w +
+					" mean with bio k: "+biok.getMean()+" "+biok.getN()+" "+
+					" mean without bio K: "+nobiok.getMean()+" "+nobiok.getN());			
+			//histos
+//			Map<String,double[]> datas = new HashMap<String, double[]>();
+//			datas.put("PhD", phd.getValues());
+//			datas.put("No PhD", nophd.getValues());
+//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/PhD_agreeability", true);
+//			datas = new HashMap<String, double[]>();
+//			datas.put("Cancer Knowledge", phd.getValues());
+//			datas.put("No Cancer Knowledge", nophd.getValues());
+//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/CancerK_agreeability", true);
+		
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+
+	}
+	
 	/**
 	 * Quantify how similar the player's gene selections are to the community consensus
 	 * @param outfile
 	 */
-	public static void outputPlayerAgreeability(String outfile, boolean first_hand_only){
+	public static void outputPlayerAgreeability(String outfile, boolean first_hand_only, String dataset){
 		List<Player> players = Player.getAllPlayers();
 		
 		try {
@@ -144,7 +233,7 @@ public class Stats {
 			DescriptiveStatistics without_phd = new DescriptiveStatistics();
 			for(Player player : players){
 				i++;
-				DescriptiveStatistics pc = Player.measurePCscore(player.getId(), first_hand_only);
+				DescriptiveStatistics pc = Player.measurePCscore(player.getId(), first_hand_only, dataset);
 				out.write(player.getId()+"\t"+player.getName()+"\t"+player.getBiologist()+"\t"+player.getCancer()+"\t"+player.getDegree()+"\t");
 				out.write(pc.getN()+"\t"+pc.getMean()+"\t"+pc.getPercentile(50)+"\n");
 				System.out.println(i);
@@ -161,6 +250,7 @@ public class Stats {
 					}
 				}
 			}
+			//tests
 			double know_cancer_diff_agree_t = TestUtils.tTest(without_cancer_knowledge, with_cancer_knowledge);
 			double phd_diff_agree_t = TestUtils.tTest(without_phd, with_phd);
 			
@@ -180,9 +270,6 @@ public class Stats {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MathException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
