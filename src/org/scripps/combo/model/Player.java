@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.GameLog.high_score;
@@ -227,8 +227,8 @@ public class Player {
 	 * Estimate how close this player generally picks genes compared to the consensus
 	 * @param player_id
 	 */
-	public static DescriptiveStatistics measurePCscore(int player_id, boolean first_hand_only){
-		Set<Integer> boards_played = Board.getBoardsByPlayer(player_id);
+	public static DescriptiveStatistics measurePCscore(int player_id, boolean first_hand_only, String dataset){
+		Set<Integer> boards_played = Board.getBoardsByPlayer(player_id, dataset);
 		//take out training
 		boards_played.remove(201);boards_played.remove(202);boards_played.remove(203);boards_played.remove(204);
 		System.out.println(boards_played.size()+" boards played");

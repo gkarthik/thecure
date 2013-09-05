@@ -592,9 +592,12 @@ public class Board {
 	}
 	
 	
-	public static Set<Integer> getBoardsByPlayer(int player_id){
+	public static Set<Integer> getBoardsByPlayer(int player_id, String dataset){
 		Set<Integer> boards= new HashSet<Integer>();
 		String getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id";
+		if(dataset!=null){
+			getboards = "select distinct(board.id) from board, game where game.player1_id = "+player_id+" and board.id = game.board_id and board.dataset = '"+dataset+"'";
+		}
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			PreparedStatement p = conn.connection.prepareStatement(getboards);
