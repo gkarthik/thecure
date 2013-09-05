@@ -197,12 +197,14 @@ public class JsonTree {
 			JsonNode unique_id = options.get("id");
 			if(unique_id!=null){
 				List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
-				if(atts!=null){
+				if(atts!=null&&atts.size()>0){
 
 					for(Attribute att : atts){
 						String att_name = att.getName();
 						options.put("attribute_name", att_name);
 					}
+				}else{
+					options.put("error", "no attribute found for given id ");
 				}
 			}
 		}
