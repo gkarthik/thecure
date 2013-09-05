@@ -1038,7 +1038,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
-		if(kind!=null&&kind.equals("split_node")){
+		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
 			//attIndex = data.attribute(node_id.asText()).index();
 			attIndex = data.attribute(att_name.asText()).index();
 			JsonNode split_values = node.get("children");
@@ -1068,7 +1068,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		
 		//stop if input json tree does not contain any more children
 		//replacing Utils.gr(vals[m_Attribute], 0)&&
-		if (kind!=null&&kind.equals("split_node")) {
+		if (kind!=null&&kind.equals("split_node")&&att_name!=null) {
 			// Build subtrees
 			m_SplitPoint = splits[m_Attribute];
 			m_Prop = props[m_Attribute];
