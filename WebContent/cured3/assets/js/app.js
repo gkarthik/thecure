@@ -268,7 +268,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		addgeneinfo: ".addgeneinfo"
 	},
 	template : function(serialized_model){
-		if(serialized_model.options.kind == "split_value")
+		console.log(serialized_model.children.length+" "+serialized_model.name)
+		if(serialized_model.options.kind == "split_value" || serialized_model.children.length>0)
 		{
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
@@ -296,6 +297,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren');
 		this.model.bind('change', this.render);
+		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
 		this.model.on('change:highlight', function() {
 			if (this.model.get('highlight') != 0) {
