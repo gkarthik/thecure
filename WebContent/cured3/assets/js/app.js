@@ -259,6 +259,7 @@ Node = Backbone.RelationalModel.extend({
 //
 var node_html = $("#nodeTemplate").html();
 var splitvaluenode_html = $("#splitValueTemplate").html();
+var splitnode_html = $("#splitNodeTemplate").html();
 NodeView = Backbone.Marionette.ItemView.extend({
 	// -- View to manipulate each single node
 	tagName : 'div',
@@ -269,7 +270,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	template : function(serialized_model){
 		console.log(serialized_model.children.length+" "+serialized_model.name)
-		if(serialized_model.options.kind == "split_value" || serialized_model.children.length>0)
+		if(serialized_model.options.kind == "split_value")
 		{
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
@@ -278,6 +279,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}, {
 				variable : 'args'
 			});
+		}
+		else if(serialized_model.children.length>0 && serialized_model.options.kind == "split_node")
+		{
+			return _.template(splitnode_html, {
+				name : serialized_model.name,
+				options : serialized_model.options,
+				cid : serialized_model.cid
+			}, {
+				variable : 'args'
+			});			
 		}
 			return _.template(node_html, {
 				name : serialized_model.name,
