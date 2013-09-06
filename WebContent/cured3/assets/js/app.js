@@ -268,7 +268,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		addgeneinfo: ".addgeneinfo"
 	},
 	template : function(serialized_model){
-		if(serialized_model.options.kind == "split_value")
+		console.log(serialized_model.children.length+" "+serialized_model.name)
+		if(serialized_model.options.kind == "split_value" || serialized_model.children.length>0)
 		{
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
@@ -288,14 +289,15 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
-		'click button.delete' : 'remove',
+		'click button.delete' : 'removeChildren',
 		'dblclick .name' : 'edit',
 		'keypress .edit' : 'updateOnEnter',
-		'blur .edit' : 'close'
+		'blur .edit' : 'closeInput'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren');
 		this.model.bind('change', this.render);
+		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
 		this.model.on('change:highlight', function() {
 			if (this.model.get('highlight') != 0) {
@@ -323,10 +325,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	updateOnEnter : function(e) {
 		if (e.which == 13) {
-			this.close();
+			this.closeInput();
 		}
 	},
-	close : function() {
+	closeInput : function() {
 		var value = this.ui.input.val().trim();
 		if (value) {
 			this.model.set('name', value);
@@ -339,9 +341,20 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	remove : function() {
 		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
-			$(this.el).remove();
+		this.$el.remove();
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
+		//}
+	},
+	removeChildren : function() {
+		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
+			Cure.delete_all_children(this.model);
+			var prevAttr = this.model.get("previousAttributes");
+			console.log(prevAttr)
+				for ( var key in prevAttr) {
+						this.model.set(key, prevAttr[key]);
+				}
+				this.model.set("previousAtributes", []);
 		//}
 	},
 	addChildren : function() {
@@ -376,6 +389,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	    }catch (exception) {}
 	    if(kind_value=="leaf_node")
 	    {
+	    	model.set("previousAttributes",model.toJSON());
 	    	model.set("name",ui.item.name);
 	    	model.set("options",{id: ui.item.id,"kind": "split_node"});
 	    }
