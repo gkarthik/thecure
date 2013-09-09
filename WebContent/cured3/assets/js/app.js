@@ -42,7 +42,6 @@ NodeCollection = Backbone.Collection.extend({
 		});
   },
   updateCollection: function(json_node,node,parent){
-  	console.log(json_node.name);
   	if(node!=null && json_node!=null)
   	{
   		for ( var key in json_node) {
@@ -54,7 +53,6 @@ NodeCollection = Backbone.Collection.extend({
   		{
   			for(var temp in json_node.children)
   			{
-  				console.log(json_node.children[temp].name+"==");
   				this.updateCollection(json_node.children[temp],node.get('children').models[temp]);
   			}
   		}
@@ -62,7 +60,6 @@ NodeCollection = Backbone.Collection.extend({
   		{
   			for(var temp in json_node.children)
   			{
-  				console.log(json_node.children[temp].name+">");
   				this.updateCollection(json_node.children[temp],null,node);
   			} 
   		}
@@ -101,7 +98,6 @@ NodeCollection = Backbone.Collection.extend({
   		}
   		for(var temp in json_node.children)
 			{
-				console.log(json_node.children[temp].name+" new");
   			this.updateCollection(json_node.children[temp],null,newNode);
 			}
   	}
@@ -115,7 +111,6 @@ NodeCollection = Backbone.Collection.extend({
   	}
   	if(this.models[Cure.modelcount])
   	{
-  		console.log(Cure.modelcount+" "+this.models[Cure.modelcount].get("name"));
 				for ( var key in json) {
 					if(key!="children"&&key!="x"&&key!="y"){
 						this.models[Cure.modelcount].set(key, json[key]);
@@ -163,7 +158,6 @@ NodeCollection = Backbone.Collection.extend({
   	}
   	else
   	{
-  		console.log(Cure.modelcount+" "+json["name"]);
   		var newNode = new Node({
   			'name' : "",
   			"options" : {
@@ -259,6 +253,7 @@ Node = Backbone.RelationalModel.extend({
 //
 var node_html = $("#nodeTemplate").html();
 var splitvaluenode_html = $("#splitValueTemplate").html();
+var splitnode_html = $("#splitNodeTemplate").html();
 NodeView = Backbone.Marionette.ItemView.extend({
 	// -- View to manipulate each single node
 	tagName : 'div',
@@ -268,16 +263,25 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		addgeneinfo: ".addgeneinfo"
 	},
 	template : function(serialized_model){
-		console.log(serialized_model.children.length+" "+serialized_model.name)
-		if(serialized_model.options.kind == "split_value" || serialized_model.children.length>0)
+		if(serialized_model.options.kind == "split_value")
 		{
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
-				variable : 'args'
+				variable : 'args' 
 			});
+		}
+		else if(serialized_model.children.length>0 && serialized_model.options.kind == "split_node")
+		{
+			return _.template(splitnode_html, {
+				name : serialized_model.name,
+				options : serialized_model.options,
+				cid : serialized_model.cid
+			}, {
+				variable : 'args'
+			});			
 		}
 			return _.template(node_html, {
 				name : serialized_model.name,
@@ -350,7 +354,6 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
 			Cure.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
-			console.log(prevAttr)
 				for ( var key in prevAttr) {
 						this.model.set(key, prevAttr[key]);
 				}
@@ -693,6 +696,13 @@ Cure.traverseTree = function(rootNode) {
 // -- Render d3 Network
 //
 Cure.render_network = function(dataset) {
+	var scaleY = d3.scale.linear()
+	     .domain([0, 1])
+	     .rangeRound([0, 100]);
+	
+	var binY = d3.scale.linear()
+  		.domain([0, dataset.options.bin_size])
+  		.rangeRound([0, 10]);
 	var SVG;
 	if(dataset)
 	{
@@ -705,9 +715,71 @@ Cure.render_network = function(dataset) {
 			//SVG = Cure.BarneySvg;
 		}
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
+
 		nodes.forEach(function(d) {
 			d.y = d.depth * 130;
 		});
+
+		var node = SVG.selectAll(".MetaDataNode")
+    .data(nodes);
+
+		var nodeEnter = node.enter().append("svg:g")
+    	.attr("class", "MetaDataNode")
+    	.attr("transform", function(d) { return "translate(" + dataset.x + "," + dataset.y + ")"; });
+		nodeEnter.append("rect")
+    	.attr("width", 10)
+    	.attr("height", function(d){
+    		var height = 0;
+    		if(d.options.pct_correct)
+    		{
+    			height = scaleY(d.options.pct_correct);
+    		}
+    		else if(d.options.infogain)
+    		{
+    			height = scaleY(d.options.infogain);
+    		}
+    		return height;
+    	})
+    	.attr("x",70)
+    	.attr("y", function(d){ 
+    		var height = 0;
+    		if(d.options.pct_correct)
+    		{
+    			height = scaleY(d.options.pct_correct);
+    		}
+    		else if(d.options.infogain)
+    		{
+    			height = scaleY(d.options.infogain);
+    		}
+    		return -1 * height; })
+    	.style("fill", function(d) { return "lightsteelblue"; });
+		
+		nodeEnter.append("svg:text")
+  	.attr("transform", "translate(60, 0) rotate(-90)")
+  	.style("font-size","13")
+  	.style("fill", function(d) { return "lightsteelblue"; })
+  	.text(function(d){
+  		var text = "";
+  		if(d.options.pct_correct)
+  		{
+  			text = "Accuracy: "+d.options.pct_correct;
+  		}
+  		else if(d.options.infogain)
+  		{
+  			text = "Info Gain"+d.options.infogain;
+  		}
+  		return text; }
+  	);
+		
+		var nodeUpdate = node.transition()
+		.duration(Cure.duration)
+		.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });		
+		
+	  var nodeExit = node.exit().transition()
+    									 .duration(Cure.duration)
+    									 .attr("transform", function(d) { return "translate(" + dataset.x + "," + dataset.y + ")"; })
+    									 .remove();
+		
 		var link = SVG.selectAll(".link").data(links);
 		link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
 				function(d) {
@@ -719,8 +791,16 @@ Cure.render_network = function(dataset) {
 						source : o,
 						target : o
 					});
-				});
-		link.transition().duration(Cure.duration).attr("d", Cure.diagonal);
+				}).style("stroke-width",1);
+		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style("stroke-width",function(d){
+			var strokewidth = 1;
+			if(d.target.options.kind!="split_value")
+			{
+				console.log(d.target.name);
+				strokewidth = binY(d.target.options.bin_size);
+			}
+			return strokewidth;
+		});
 		link.exit().transition().duration(Cure.duration).attr("d", function(d) {
 			var o = {
 				x : dataset.x,
