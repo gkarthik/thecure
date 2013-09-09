@@ -106,7 +106,7 @@ public class JsonTree {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String dataset = "griffith_breast_cancer_1";//"griffith_breast_cancer_1" "mammal"; 
+		String dataset = "mammal";//"griffith_breast_cancer_1" "mammal"; 
 		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
 		String input = "/Users/bgood/workspace/aacure/WebContent/test/manualtree/gene_in2.json";
 		if(dataset.equals("mammal")){
