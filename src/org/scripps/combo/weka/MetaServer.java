@@ -335,7 +335,7 @@ public class MetaServer extends HttpServlet {
 	private void getScoreForManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 
 		String dataset = data.get("dataset").asText();
-		Weka weka = name_dataset.get(dataset);
+		Weka weka = name_dataset.get(dataset);	
 		if(weka==null){
 			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
 			return;
