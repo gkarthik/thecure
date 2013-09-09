@@ -702,7 +702,7 @@ Cure.render_network = function(dataset) {
 	
 	var binY = d3.scale.linear()
   		.domain([0, dataset.options.bin_size])
-  		.rangeRound([0, 10]);
+  		.rangeRound([0, 50]);
 	var SVG;
 	if(dataset)
 	{
@@ -796,8 +796,16 @@ Cure.render_network = function(dataset) {
 			var strokewidth = 1;
 			if(d.target.options.kind!="split_value")
 			{
-				console.log(d.target.name);
+				console.log(d.target);
 				strokewidth = binY(d.target.options.bin_size);
+			}
+			else
+			{
+				if(d.target.children[0])
+				{
+					strokewidth = binY(d.target.children[0].options.bin_size);
+				}
+				
 			}
 			return strokewidth;
 		});
