@@ -727,6 +727,7 @@ Cure.render_network = function(dataset) {
     	.attr("class", "MetaDataNode")
     	.attr("transform", function(d) { return "translate(" + dataset.x + "," + dataset.y + ")"; });
 		nodeEnter.append("rect")
+			.attr("class","nodeaccuracy")
     	.attr("width", 10)
     	.attr("height", function(d){
     		var height = 0;
@@ -755,6 +756,7 @@ Cure.render_network = function(dataset) {
     	.style("fill", function(d) { return "lightsteelblue"; });
 		
 		nodeEnter.append("svg:text")
+		.attr("class","nodeaccuracytext")
   	.attr("transform", "translate(60, 0) rotate(-90)")
   	.style("font-size","13")
   	.style("fill", function(d) { return "lightsteelblue"; })
@@ -772,12 +774,13 @@ Cure.render_network = function(dataset) {
   	);
 		//Bin Size
 		nodeEnter.append("rect")
+		.attr("class","binsize")
   	.attr("width", 10)
   	.attr("height", function(d){
   		var height = 0;
   		if(d.options.bin_size)
   		{
-  			height = binY(d.options.pct_correct);
+  			height = binY(d.options.bin_size);
   		}
   		return height;
   	})
@@ -786,12 +789,13 @@ Cure.render_network = function(dataset) {
   		var height = 0;
   		if(d.options.bin_size)
   		{
-  			height = binY(d.options.pct_correct);
+  			height = binY(d.options.bin_size);
   		}
   		return -1 * height; })
   	.style("fill", function(d) { return "lightsteelblue"; });
 	
 	nodeEnter.append("svg:text")
+	.attr("class","binsizetext")
 	.attr("transform", "translate(100, 0) rotate(-90)")
 	.style("font-size","13")
 	.style("fill", function(d) { return "lightsteelblue"; })
@@ -808,6 +812,85 @@ Cure.render_network = function(dataset) {
 		var nodeUpdate = node.transition()
 		.duration(Cure.duration)
 		.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });		
+		
+		nodeUpdate.select(".nodeaccuracy")
+  	.attr("width", 10)
+  	.attr("height", function(d){
+  		var height = 0;
+  		if(d.options.pct_correct)
+  		{
+  			height = scaleY(d.options.pct_correct);
+  		}
+  		else if(d.options.infogain)
+  		{
+  			height = scaleY(d.options.infogain);
+  		}
+  		return height;
+  	})
+  	.attr("x",70)
+  	.attr("y", function(d){ 
+  		var height = 0;
+  		if(d.options.pct_correct)
+  		{
+  			height = scaleY(d.options.pct_correct);
+  		}
+  		else if(d.options.infogain)
+  		{
+  			height = scaleY(d.options.infogain);
+  		}
+  		return -1 * height; })
+  	.style("fill", function(d) { return "lightsteelblue"; });
+	
+	nodeUpdate.select(".nodeaccuracytext")
+	.attr("transform", "translate(60, 0) rotate(-90)")
+	.style("font-size","13")
+	.style("fill", function(d) { return "lightsteelblue"; })
+	.text(function(d){
+		var text = "";
+		if(d.options.pct_correct)
+		{
+			text = "Accuracy: "+d.options.pct_correct;
+		}
+		else if(d.options.infogain)
+		{
+			text = "Info Gain"+d.options.infogain;
+		}
+		return text; }
+	);
+	//Bin Size
+	nodeUpdate.select(".binsize")
+	.attr("width", 10)
+	.attr("height", function(d){
+		var height = 0;
+		if(d.options.bin_size)
+		{
+			height = binY(d.options.bin_size);
+		}
+		return height;
+	})
+	.attr("x",110)
+	.attr("y", function(d){ 
+		var height = 0;
+		if(d.options.bin_size)
+		{
+			height = binY(d.options.bin_size);
+		}
+		return -1 * height; })
+	.style("fill", function(d) { return "lightsteelblue"; });
+
+nodeUpdate.select(".binsizetext")
+.attr("transform", "translate(100, 0) rotate(-90)")
+.style("font-size","13")
+.style("fill", function(d) { return "lightsteelblue"; })
+.text(function(d){
+	var text = "";
+	if(d.options.bin_size)
+	{
+		text = "Bin size: "+d.options.bin_size;
+	}
+	return text; 
+	}
+);
 		
 	  var nodeExit = node.exit().transition()
     									 .duration(Cure.duration)
