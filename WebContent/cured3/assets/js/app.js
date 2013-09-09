@@ -770,6 +770,40 @@ Cure.render_network = function(dataset) {
   		}
   		return text; }
   	);
+		//Bin Size
+		nodeEnter.append("rect")
+  	.attr("width", 10)
+  	.attr("height", function(d){
+  		var height = 0;
+  		if(d.options.bin_size)
+  		{
+  			height = binY(d.options.pct_correct);
+  		}
+  		return height;
+  	})
+  	.attr("x",110)
+  	.attr("y", function(d){ 
+  		var height = 0;
+  		if(d.options.bin_size)
+  		{
+  			height = binY(d.options.pct_correct);
+  		}
+  		return -1 * height; })
+  	.style("fill", function(d) { return "lightsteelblue"; });
+	
+	nodeEnter.append("svg:text")
+	.attr("transform", "translate(100, 0) rotate(-90)")
+	.style("font-size","13")
+	.style("fill", function(d) { return "lightsteelblue"; })
+	.text(function(d){
+		var text = "";
+		if(d.options.bin_size)
+		{
+			text = "Bin size: "+d.options.bin_size;
+		}
+		return text; 
+		}
+	);
 		
 		var nodeUpdate = node.transition()
 		.duration(Cure.duration)
@@ -805,7 +839,10 @@ Cure.render_network = function(dataset) {
 				{
 					strokewidth = binY(d.target.children[0].options.bin_size);
 				}
-				
+			}
+			if(strokewidth<1)
+			{
+				strokewidth = 1;
 			}
 			return strokewidth;
 		});
