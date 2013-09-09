@@ -343,12 +343,16 @@ public class MetaServer extends HttpServlet {
 		//create the weka tree structure
 		JsonTree t = new JsonTree();
 		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
+		int numnodes = readtree.numNodes();
 		//evaluate it on the data
 		Evaluation eval = new Evaluation(weka.getTrain());
 		eval.evaluateModel(readtree, weka.getTrain());
 		
 		ObjectNode result = mapper.createObjectNode();
 		result.put("pct_correct", eval.pctCorrect());
+		result.put("size", numnodes);
+		//TODO replace the random novelty score with a real one driven by the database.
+		result.put("novelty", Math.random());
 		result.put("text_tree", readtree.toString());
 		//serialize and return the result		
 		JsonNode treenode = readtree.getJsontree();
