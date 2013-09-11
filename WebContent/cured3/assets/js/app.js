@@ -351,14 +351,19 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		//}
 	},
 	removeChildren : function() {
-		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
+		if (this.model.get('parentNode') != null) {
 			Cure.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
 				for ( var key in prevAttr) {
 						this.model.set(key, prevAttr[key]);
 				}
-				this.model.set("previousAtributes", []);
-		//}
+				this.model.set("previousAtributes", []);//jdoe@d.com//regular
+		}
+		else
+		{
+			Cure.delete_all_children(this.model);
+			this.model.destroy();
+		}
 	},
 	addChildren : function() {
 		var GeneInfoRegion = new Backbone.Marionette.Region({
@@ -582,12 +587,14 @@ Cure.prettyPrint = function(json) {
 // -- Get JSON from d3 to BackBone
 //
 Cure.updatepositions = function(NodeCollection) {
-	var d3nodes = [];
-	if(NodeCollection.toJSON().length>0)
+	var Collection = [];
+	if(NodeCollection.toJSON()[0])
 	{
-		d3nodes = Cure.cluster.nodes(NodeCollection.toJSON()[0]);
+		Collection = NodeCollection.toJSON()[0];
 	}
-	Cure.cluster.nodes(NodeCollection.toJSON()[0]);
+	var d3nodes = [];
+	d3nodes = Cure.cluster.nodes(Collection);
+	Cure.cluster.nodes(Collection);
 	d3nodes.forEach(function(d) {
 		d.y = d.depth * 130;
 	});
@@ -700,24 +707,42 @@ Cure.render_network = function(dataset) {
 	     .domain([0, 1])
 	     .rangeRound([0, 100]);
 	
-	var binY = d3.scale.linear()
-  		.domain([0, dataset.options.bin_size])
-  		.rangeRound([0, 50]);
+	if(dataset)
+	{
+		var binY = d3.scale.linear()
+		.domain([0, dataset.options.bin_size])
+		.rangeRound([0, 50]);
+	}
+	else
+	{
+		var binY = d3.scale.linear()
+		.domain([0, 100])
+		.rangeRound([0, 50]);
+		dataset = [{
+			'name' : '',
+			'cid' : 0,
+			'options' : {
+	      "id": "",
+	      "kind": "split_node"
+			},
+			edit : 0,
+			highlight : 0,
+			created_by:"",
+			children: []
+		}];
+	}
 	var SVG;
 	if(dataset)
 	{
-		if(dataset["created_by"]=="player")
-		{
-			SVG = Cure.PlayerSvg;
-		}
-		else
-		{
-			//SVG = Cure.BarneySvg;
-		}
+		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
 
 		nodes.forEach(function(d) {
 			d.y = d.depth * 130;
+			if(!d.options)
+			{
+				d.options =[];
+			}
 		});
 
 		var node = SVG.selectAll(".MetaDataNode")
