@@ -9,15 +9,6 @@ Cure = new Backbone.Marionette.Application();
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
-		// This add is for the seed node alone.
-		this.on("add", function(model) {
-			Cure.updatepositions(this);
-			Cure.render_network(this.toJSON()[0]);
-		});
-		this.on("remove", function() {
-			Cure.updatepositions(this);
-			Cure.render_network(this.toJSON()[0]);
-		});
 	},
   url: "/cure/MetaServer",
   sync: function() {
@@ -84,7 +75,6 @@ NodeCollection = Backbone.Collection.extend({
   			'name' : "",
   			"options" : {
   			},
-  			"created_by": "player"
   		});
   		for ( var key in json_node) {
 				if(key!="children"){
@@ -101,88 +91,14 @@ NodeCollection = Backbone.Collection.extend({
   			this.updateCollection(json_node.children[temp],null,newNode);
 			}
   	}
-  	/*
-  	Cure.modelcount++;
-  	var json = data;
-  	var increment = 0;
-  	if(data["treestruct"])
-  	{
-  		json = data["treestruct"];
-  	}
-  	if(this.models[Cure.modelcount])
-  	{
-				for ( var key in json) {
-					if(key!="children"&&key!="x"&&key!="y"){
-						this.models[Cure.modelcount].set(key, json[key]);
-					}
-				}
-			var json_children = {"length":0};
-			if(json.children)
-			{
-				json_children = json.children;
-			}
-			var collection_children = {"length":0};
-			var temp_model;
-			temp_model = Cure.modelcount;
-			if(this.models[Cure.modelcount].get("children"))
-			{
-				collection_children = this.models[Cure.modelcount].get("children");
-			}
-			if(json_children.length == collection_children.length && collection_children.length>0)
-			{//Just sync attributes
-				for(var temp in json_children)
-				{
-					this.updateCollection(json_children[temp],this.models[temp_model]);
-				}
-			}
-  		else if(json_children.length > collection_children.length)
-  		{//Add extra nodes to tree
-  			for(var temp in json_children)
-				{
-  				this.updateCollection(json_children[temp],this.models[temp_model]);
-				}
-  		}
-  		else if(json_children.length < collection_children.length)
-  		{//Delete excess in tree
-  			for(var temp in json_children)
-				{
-  				this.updateCollection(json_children[temp],this.models[temp_model]);
-				}
-  			temp++;
-  			for(var i=temp;i<collection_children.length;i++)
-  			{
-  				delete_all_children(collection_children[temp]);
-  				collection_children[temp].destroy();
-  			}
-  		}
-  	}
-  	else
-  	{
-  		var newNode = new Node({
-  			'name' : "",
-  			"options" : {
-  			},
-  			"created_by": "player"
-  		});
-  		for ( var key in json) {
-				if(key!="children"&&key!="x"&&key!="y"){
-					newNode.set(key, json[key]);
-				}
-			}
-  		newNode.set("cid", newNode.cid);
-  		if(parent!=null)
-  		{
-  			parent.get('children').add(newNode);
-  		}
-  		for(var temp in json.children)
-			{
-  			this.updateCollection(json.children[temp],newNode);
-			}
-  	}
-  	*/
+		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+		Cure.updatepositions(Cure.PlayerNodeCollection);
   },
   parseResponse: function(data){
   	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
+  	var scoreArray = data;
+  	scoreArray.treestruct = null;
+  	Cure.Score.set(scoreArray);
   },
   error: function(data){
 
@@ -192,6 +108,27 @@ NodeCollection = Backbone.Collection.extend({
 //
 // -- Defining our models
 //
+Score = Backbone.RelationalModel.extend({
+	defaults : {
+		novelty: 0,
+		pct_correct: 0,
+		size: 0
+	},
+	initialize : function() {
+		
+	},
+	relations : [ {
+		type : Backbone.HasOne,
+		key : 'scoreOf',
+		collectionType : 'NodeCollection',
+		relatedModel: 'Node',
+		reverseRelation : {
+			key : 'score',
+			includeInJSON : false
+		}
+	}]
+});
+
 Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',
@@ -202,40 +139,10 @@ Node = Backbone.RelationalModel.extend({
 		},
 		edit : 0,
 		highlight : 0,
-		created_by:"",
 		children: []
 	},
 	initialize : function() {
-		this.bind("add:children", function() {
-			if(this.get("created_by")=="player")
-			{
-				Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
-				Cure.updatepositions(Cure.PlayerNodeCollection);
-			}
-			else if(this.get("created_by")=="barney")
-			{
-				Cure.render_network(Cure.BarneyNodeCollection.toJSON()[0]);
-				Cure.updatepositions(Cure.BarneyNodeCollection);
-			}
-		});
-		this.bind("change", function() {
-			if(this.get("created_by")=="player")
-			{
-				Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
-			}
-			else if(this.get("created_by")=="barney")
-			{
-				Cure.render_network(Cure.BarneyNodeCollection.toJSON()[0]);
-			}
-		});
-		if(this.get("created_by")=="player")
-		{
-			Cure.PlayerNodeCollection.add(this);
-		}
-		else if(this.get("created_by")=="barney")
-		{
-			Cure.BarneyNodeCollection.add(this);
-		}
+		Cure.PlayerNodeCollection.add(this);		
 	},
 	relations : [ {
 		type : Backbone.HasMany,
@@ -318,14 +225,13 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				'margin-top' : this.model.get('y0') + "px"
 			});
 		}
-		$(this.el).stop(true, false)
-				.animate(
+		$(this.el).stop(false,false).animate(
 						{
 							'margin-left' : (this.model.get('x') - (($(this.el)
 									.width()) / 2))
 									+ "px",
 							'margin-top' : (this.model.get('y') + 10) + "px"
-						}, 500);
+						});
 	},
 	updateOnEnter : function(e) {
 		if (e.which == 13) {
@@ -357,13 +263,14 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				for ( var key in prevAttr) {
 						this.model.set(key, prevAttr[key]);
 				}
-				this.model.set("previousAtributes", []);//jdoe@d.com//regular
+				this.model.set("previousAtributes", []);
 		}
 		else
 		{
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
 		}
+		Cure.PlayerNodeCollection.sync();
 	},
 	addChildren : function() {
 		var GeneInfoRegion = new Backbone.Marionette.Region({
@@ -408,8 +315,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					"options" : {
 						id: ui.item.id,
 						"kind": "split_node"
-					},
-					"created_by": "player"
+					}
 				});
 				newNode.set("cid", newNode.cid);
 				if(model.get("children"))
@@ -632,52 +538,6 @@ Cure.delete_all_children = function(seednode) {
 	}
 }
 
-Cure.generateJSON = function(parent, childjson, created_by, Collection) {
-	//var NodesPresent = Collection.getNodeByName(childjson["name"]);
-	//if(NodesPresent.length==0)
-	{
-		var creator = "";
-		if(created_by != null)
-		{
-			creator = created_by;
-		}
-		else
-		{
-			creator = parent.get("created_by");
-		}
-		var newNode = new Node({
-			'name' : childjson["name"],
-			"options" : {},
-			created_by : creator
-		});
-		for ( var temp in childjson) {
-			if (temp == "name") {
-				newNode.set("name", childjson[temp]);
-			} 
-			else if (temp != "children" && temp != "created_by") {
-				var data = newNode.get("options");
-				data[temp] = childjson[temp];
-				newNode.set("options", data);
-			}
-		}
-		newNode.set("cid", newNode.cid);
-		if (parent != null) {
-			parent.get('children').add(newNode);
-		}
-	}
-	var flag = null;
-	try {
-		flag = childjson["children"].length;
-	} catch (exception) {
-
-	}
-	if (flag != null) {
-		for ( var childtemp in childjson["children"]) {
-			Cure.generateJSON(newNode, childjson["children"][childtemp], null, Collection);
-		}
-	}
-}
-
 Cure.traverseTree = function(rootNode) {
 	rootNode.set("highlight", 1);
 	var childnodes = rootNode.get('children').models;
@@ -727,7 +587,6 @@ Cure.render_network = function(dataset) {
 			},
 			edit : 0,
 			highlight : 0,
-			created_by:"",
 			children: []
 		}];
 	}
@@ -938,7 +797,6 @@ nodeUpdate.select(".binsizetext")
 			var strokewidth = 1;
 			if(d.target.options.kind!="split_value")
 			{
-				console.log(d.target);
 				strokewidth = binY(d.target.options.bin_size);
 			}
 			else
@@ -982,8 +840,6 @@ Cure.addInitializer(function(options) {
 	};
 	Backbone.emulateHTTP = true;
 	$(options.regions.PlayerTreeRegion).html("<div id='"+options.regions.PlayerTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.PlayerTreeRegion.replace("#","")+"SVG'></svg>")
-	//$(options.regions.BarneyTreeRegion).html("<div id='"+options.regions.BarneyTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.BarneyTreeRegion.replace("#","")+"SVG'></svg>")
-			// Declaring D3 Variables
 			Cure.width = options["width"];
 			Cure.height = options["height"];	
 			Cure.duration = 500;
@@ -994,21 +850,11 @@ Cure.addInitializer(function(options) {
 			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr(
 					"height", Cure.height).append("svg:g").attr("transform",
 					"translate(0,40)");
-			/*
-			Cure.BarneySvg = d3.select(options.regions.BarneyTreeRegion+"SVG").attr("width", Cure.width).attr(
-					"height", Cure.height).append("svg:g").attr("transform",
-					"translate(0,40)");
-			*/
 			Cure.PlayerNodeCollection = new NodeCollection();
-			//Cure.BarneyNodeCollection = new NodeCollection();
+			Cure.Score = new Score();
 			Cure.PlayerNodeCollectionView = new NodeCollectionView({
 				collection : Cure.PlayerNodeCollection
 			});
-			/*
-			Cure.BarneyNodeCollectionView = new NodeCollectionView({
-				collection : Cure.BarneyNodeCollection
-			})
-			*/
 			
 			Cure.JSONCollectionView = new JSONCollectionView({
 				collection : Cure.PlayerNodeCollection
@@ -1017,23 +863,11 @@ Cure.addInitializer(function(options) {
 			// Assign View to Region
 			Cure.addRegions({
 	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
-	  		//BarneyTreeRegion : options.regions.BarneyTreeRegion+"Tree",
+	  		ScoreRegion: options.regions.ScoreRegion,
 	  		JsonRegion : "#json_structure"
 	  	});
 			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
-			//Cure.BarneyTreeRegion.show(Cure.BarneyNodeCollectionView);
 			Cure.JsonRegion.show(Cure.JSONCollectionView);
-
-			// Add Nodes from JSON
-			//Cure.generateJSON(null, Cure.jsondata["tree"],);			
-			Cure.branch = 1;
-			/*
-			$("#traverse").click(function() {
-				Cure.traverseTree(Cure.NodeCollection.models[0]);
-				$(this).html("Traversing...");
-				$(this).addClass("disabled");
-			});
-			*/
 		});
 
-Cure.start({"height": 600, "width": 800, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion"}});
+Cure.start({"height": 600, "width": 800, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion","ScoreRegion":"#ScoreRegion"}});
