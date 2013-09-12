@@ -23,7 +23,7 @@ div.container {
 	width:100%;
 }
 
-svg{
+#PlayerTreeRegion svg{
   position: absolute;
   height: 100%;
 }
