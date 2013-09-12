@@ -302,71 +302,66 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2*Math.PI/json.length;
 		var ctr = -1;
+		var accuracyScale = d3.scale.linear()
+			.domain([0, 100])
+			.rangeRound([0, 100]);
+		var noveltyScale = d3.scale.linear()
+			.domain([0, 1])
+		.rangeRound([0, 100]);
+		var sizeScale = d3.scale.linear()
+		.domain([0, 1])
+		.rangeRound([0, 100]);
 		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
 							.attr("x1", Cure.width/2)
 							.attr("y1", Cure.height/8)
 							.attr("x2", function(d){
-								var length = 0;
-								if(d.pct_correct)
-								{
-									length = 1000 * d.pct_correct;
-								}
-								else if(d.size)
-								{
-									length = 750 * (1/d.size);
-								}
-								else if(d.novelty)
-								{
-									length = 500 * d.novelty;
-								}
-								ctr++;
-								return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+									var length = 100;
+									ctr++;
+									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
 							})
 							.attr("y2", function(d){
-								if(ctr==2)
-								{
-									ctr = -1;
-								}
-								var length = 0;
-								if(d.pct_correct)
-								{
-									length = 1000 * d.pct_correct;
-								}
-								else if(d.size)
-								{
-									length = 750 * (1/d.size);
-								}
-								else if(d.novelty)
-								{
-									length = 500 * d.novelty;
-								}
-								ctr++;
-								return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+									var length = 100;
+									ctr++;
+									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
 							})
-							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "0.5px");
+							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
 		
 		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition()
 		.duration(Cure.duration)
 		.attr("x1", Cure.width/2)
-		.attr("y1", Cure.height/8)
-		.attr("x2", function(d){
+							.attr("y1", Cure.height/8)
+							.attr("x2", function(d){
+									var length = 100;
+									ctr++;
+									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+							})
+							.attr("y2", function(d){
+									var length = 100;
+									ctr++;
+									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+							})
+							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
+		interval_angle = 2*Math.PI/json.length;
+		ctr = -1;
+		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter().append("circle")
+		.attr("cx", function(d){
 			var length = 0;
 			if(d.pct_correct)
 			{
-				length = 1000 * d.pct_correct;
+				length = accuracyScale(d.pct_correct);
 			}
 			else if(d.size)
 			{
-				length = 750 * (1/d.size);
+				length = sizeScale(1/d.size);
 			}
 			else if(d.novelty)
 			{
-				length = 500 * d.novelty;
+				length = noveltyScale(d.novelty);
 			}
 			ctr++;
 			return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
 		})
-		.attr("y2", function(d){
+		.attr("cy", function(d){
 			if(ctr==2)
 			{
 				ctr = -1;
@@ -374,20 +369,61 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			var length = 0;
 			if(d.pct_correct)
 			{
-				length = 1000 * d.pct_correct;
+				length = accuracyScale(d.pct_correct);
 			}
 			else if(d.size)
 			{
-				length = 750 * (1/d.size);
+				length = sizeScale(1/d.size);
 			}
 			else if(d.novelty)
 			{
-				length = 500 * d.novelty;
+				length = noveltyScale(d.novelty);
 			}
 			ctr++;
 			return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
 		})
-		.attr("class", "axis").style("stroke", "grey").style("stroke-width", "0.5px");
+		.attr("class", "datapoint").attr("r",5);
+		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition().duration(Cure.duration)
+		.attr("cx", function(d){
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+		})
+		.attr("cy", function(d){
+			if(ctr==2)
+			{
+				ctr = -1;
+			}
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			console.log(length);
+			return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+		})
+		.attr("class", "datapoint").attr("r",5);
 	},
 	onRender: function(){
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width).attr("height", Cure.height/4);
