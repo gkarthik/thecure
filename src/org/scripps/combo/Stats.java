@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,44 +90,65 @@ public class Stats {
 		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
 		//					Player.describePlayers(only_first_per_board, outfile, dataset);
 		//				}
-			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
-			boolean first_hand_only = true;
-			String dataset = "griffith_breast_cancer_1";
-			outputPlayerAgreeability(outfile, first_hand_only, dataset);
+//			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
+//			boolean first_hand_only = true;
+//			String dataset = "griffith_breast_cancer_1";
+//			outputPlayerAgreeability(outfile, first_hand_only, dataset);
 //			String inforchart = outfile;
-//			buildAgreeabilityCharts(inforchart, output_dir);
+//			buildAgreeabilityCharts(inforchart, output_dir); 
 //		outfile = output_dir+"board_consensus.txt";
-//		boolean first_hand_only = true;
-//		outputBoardConsensus(outfile, first_hand_only);
+		boolean random = false;
+		boolean first_hand_only = true;
+//		outputBoardConsensus(outfile, first_hand_only, random);
 //		outfile = output_dir+"board_consensus_all_hands.txt";
 //		first_hand_only = false;
-//		outputBoardConsensus(outfile, first_hand_only);
+//		outputBoardConsensus(outfile, first_hand_only, random);
+		random = true;
+		first_hand_only = true;
+		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+		outputBoardConsensus(outfile, first_hand_only, random);
 	}
 
 
-	public static void outputBoardConsensus(String outfile, boolean first_hand_only){
+	public static void outputBoardConsensus(String outfile, boolean first_hand_only, boolean random){
 
 		boolean drop_mammal = true;
 		List<Board> boards = Board.getAllBoards(drop_mammal);
 		try {
 			FileWriter out = new FileWriter(outfile);
 			GeneRanker gr = new GeneRanker();
-			out.write("board_id\tmin_freq\tavg_freq\tmax_freq\tn_cards_counted\tplayer_count\tboard_base_score\tdataset\troom\tcreated\n");
+			out.write("board_id\tmin_freq\tavg_freq\tmax_freq\tn_cards_counted\tplayer_count\tboard_base_score\tdataset\troom\tcreated\tchisquared\tchi_p\tg\tg_p\t");
+			for(int i=1; i<=25; i++){
+				out.write("G"+i+"\t");
+			}
+			out.write("\n");
 			int i = 0;
 			for(Board board : boards){
 				i++;
-				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only);
+				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only, random);
 				DescriptiveStatistics freqs = new DescriptiveStatistics();
 				DescriptiveStatistics votes = new DescriptiveStatistics();
 				float player_count = 0;
-				for(GeneRanker.gene_rank rank : ranks.values()){
+				long[] counts = new long[ranks.size()];//should always be 25 but anyway..
+				int b = 0;	
+				String histo = "";
+				List<GeneRanker.gene_rank> ranked = new ArrayList<GeneRanker.gene_rank>(ranks.values());
+				Collections.sort(ranked);
+				Collections.reverse(ranked);
+				for(GeneRanker.gene_rank rank : ranked){
+					counts[b] = (long)rank.votes;
+					histo+=rank.symbol+"_"+rank.entrez+":"+rank.votes+";"+rank.frequency+"\t";
 					freqs.addValue(rank.frequency);
 					votes.addValue(rank.votes);
 					player_count = rank.players; //inelegant to keep setting, but same for all players..
+					b++;
 				}
+				double[] r_p = StatUtil.chiSquaredTestForUniformDistribution(counts);
+				double[] g_p = StatUtil.gTestForUniformDistribution(counts);
 				String row = board.getId()+"\t"+freqs.getMin()+"\t"+freqs.getMean()+"\t"+freqs.getMax()+"\t"+votes.getSum()+"\t"+player_count;
 					   row+= "\t"+board.getBase_score()+"\t"+board.getDataset()+"\t"+board.getRoom()+"\t"+board.getUpdated();
-					   row = row.replaceAll("NaN", "0");
+					   row+= "\t"+r_p[0]+"\t"+r_p[1]+"\t"+g_p[0]+"\t"+g_p[1]+"\t"+histo;
+					   
 				out.write(row+"\n");
 				System.out.println(i+"\t"+row);
 			}
