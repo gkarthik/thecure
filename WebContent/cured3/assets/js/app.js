@@ -116,17 +116,7 @@ Score = Backbone.RelationalModel.extend({
 	},
 	initialize : function() {
 		
-	},
-	relations : [ {
-		type : Backbone.HasOne,
-		key : 'scoreOf',
-		collectionType : 'NodeCollection',
-		relatedModel: 'Node',
-		reverseRelation : {
-			key : 'score',
-			includeInJSON : false
-		}
-	}]
+	}
 });
 
 Node = Backbone.RelationalModel.extend({
@@ -279,6 +269,77 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		Cure.addRegions({MyGeneInfoRegion:GeneInfoRegion});
 		var ShowGeneInfoWidget = new AddRootNodeView({'model':this.model});
 		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
+	}
+});
+
+ScoreView = Backbone.Marionette.ItemView.extend({
+	initialize : function() {
+		_.bindAll(this, 'updateScore');
+		this.model.bind("change",this.updateScore);
+	},
+	ui: {
+		'svg': "#ScoreSVG"
+	},
+	template: "#ScoreTemplate",
+	updateScore: function(){
+		var json = [];
+		for(var temp in this.model.toJSON())
+		{
+			if(temp!="treestruct"&&temp!="text_tree")
+			{
+				json.push({});
+				json[json.length-1][temp] = this.model.toJSON()[temp];
+			}
+		}
+		var interval_angle = 2*Math.PI/json.length;
+		var ctr = -1;
+		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
+							.attr("x1", Cure.width/2)
+							.attr("y1", Cure.height/8)
+							.attr("x2", function(d){
+								var length = 0;
+								if(d.pct_correct)
+								{
+									length = 1000 * d.pct_correct;
+								}
+								else if(d.size)
+								{
+									length = 750 * (1/d.size);
+								}
+								else if(d.novelty)
+								{
+									length = 500 * d.novelty;
+								}
+								ctr++;
+								console.log(Math.cos(ctr*interval_angle));
+								return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+							})
+							.attr("y2", function(d){
+								if(ctr==2)
+								{
+									ctr = -1;
+								}
+								var length = 0;
+								if(d.pct_correct)
+								{
+									length = 1000 * d.pct_correct;
+								}
+								else if(d.size)
+								{
+									length = 750 * (1/d.size);
+								}
+								else if(d.novelty)
+								{
+									length = 500 * d.novelty;
+								}
+								ctr++;
+								console.log(Math.sin(ctr*interval_angle));
+								return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+							})
+							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "0.5px");
+	},
+	onRender: function(){
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width).attr("height", Cure.height/4);
 	}
 });
 
@@ -852,6 +913,7 @@ Cure.addInitializer(function(options) {
 					"translate(0,40)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
+			Cure.ScoreView = new ScoreView({"model":Cure.Score});
 			Cure.PlayerNodeCollectionView = new NodeCollectionView({
 				collection : Cure.PlayerNodeCollection
 			});
@@ -867,6 +929,7 @@ Cure.addInitializer(function(options) {
 	  		JsonRegion : "#json_structure"
 	  	});
 			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
+			Cure.ScoreRegion.show(Cure.ScoreView);
 			Cure.JsonRegion.show(Cure.JSONCollectionView);
 		});
 
