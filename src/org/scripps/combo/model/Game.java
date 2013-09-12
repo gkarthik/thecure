@@ -120,7 +120,8 @@ public class Game {
 				}
 				hand.setGame_finished(rslt.getTimestamp("game_finished"));
 				hand.setSearch_term(rslt.getString("search_term"));		
-				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
+				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id(), true);
+				hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer2_id(), false);
 				//NOT sure about why this is here...
 				//hand.setPlayer1FeaturesForGameToUniqueIds();
 				if(first_play_only){
@@ -145,14 +146,19 @@ public class Game {
 		return games;
 	}	
 	
-	private void setFeaturesForGameWithDB(int game_id, int player1_id){
+	private void setFeaturesForGameWithDB(int game_id, int player_id, boolean player1){
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet rslt = conn.executeQuery("select * from game_player_feature where game_id = "+game_id+" and player_id = "+player1_id);
-		player1_features = new ArrayList<String>();
+		ResultSet rslt = conn.executeQuery("select * from game_player_feature where game_id = "+game_id+" and player_id = "+player_id);
 		try {
+			List<String> features = new ArrayList<String>();
 			while(rslt.next()){
 				String feature_id = rslt.getString("feature_id");
-				player1_features.add(feature_id);
+				features.add(feature_id);
+			}
+			if(player1){
+				player1_features = features;
+			}else{
+				player2_features = features;
 			}
 			rslt.close();
 			conn.connection.close();
@@ -231,7 +237,7 @@ public class Game {
 				hand.setSearch_term(rslt.getString("search_term"));
 				//no need for this info in current live game
 				if(!forscoreboard){
-					hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id());
+					hand.setFeaturesForGameWithDB(hand.getId(), hand.getPlayer1_id(), true);
 				}
 				long ttest = rslt.getLong("game_started");
 				if(ttest==0){ //"0000-00-00 00:00:00"
