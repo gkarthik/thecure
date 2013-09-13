@@ -311,6 +311,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		var sizeScale = d3.scale.linear()
 		.domain([0, 1])
 		.rangeRound([0, 100]);
+		var datapoints = [{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}];
+		console.log(datapoints)
 		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
 							.attr("x1", Cure.width/2)
 							.attr("y1", Cure.height/8)
@@ -359,7 +361,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			return datapoints[ctr].x;
 		})
 		.attr("cy", function(d){
 			if(ctr==2)
@@ -380,9 +383,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			return datapoints[ctr].y;
 		})
 		.attr("class", "datapoint").attr("r",5);
+		ctr = -1;
 		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition().duration(Cure.duration)
 		.attr("cx", function(d){
 			var length = 0;
@@ -399,7 +404,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			return datapoints[ctr].x;
 		})
 		.attr("cy", function(d){
 			if(ctr==2)
@@ -420,10 +426,53 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			console.log(length);
-			return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			return datapoints[ctr].y;
 		})
 		.attr("class", "datapoint").attr("r",5);
+		
+		var radarchart_lines = [];
+		var point2_temp = 0;
+		for(var temp in datapoints)
+		{
+			point2_temp = parseInt(temp) + 1;
+			if(temp == 2)
+			{
+				point2_temp = 0;
+			}
+			console.log(point2_temp)
+			radarchart_lines.push({"point1":datapoints[temp],"point2":datapoints[point2_temp]});
+		}
+
+		var radarChartLineEnter = Cure.ScoreSVG.selectAll(".RadarChartLine").data(radarchart_lines).enter().append("line")
+		.attr("x1",function(d){
+			console.log(d);
+			return d.point1.x;
+		})
+		.attr("y1",function(d){
+			return d.point1.y;
+		})
+		.attr("x2",function(d){
+			return d.point2.x;
+		})
+		.attr("y2",function(d){
+			return d.point2.y;
+		})
+		.style("stroke", "black").style("stroke-width", "1px").attr("class","RadarChartLine");
+		var radarChartLineUpdate = Cure.ScoreSVG.selectAll(".RadarChartLine").transition().duration(Cure.duration)
+		.attr("x1",function(d){
+			return d.point1.x;
+		})
+		.attr("y1",function(d){
+			return d.point1.y;
+		})
+		.attr("x2",function(d){
+			return d.point2.x;
+		})
+		.attr("y2",function(d){
+			return d.point2.y;
+		})
+		.style("stroke", "grey").style("stroke-width", "1px");
 	},
 	onRender: function(){
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width).attr("height", Cure.height/4);
