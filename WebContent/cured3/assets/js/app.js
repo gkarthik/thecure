@@ -95,7 +95,15 @@ NodeCollection = Backbone.Collection.extend({
 		Cure.updatepositions(Cure.PlayerNodeCollection);
   },
   parseResponse: function(data){
-  	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
+  	if(data["treestruct"].name)
+  	{
+    	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
+  	}
+  	else
+  	{
+  		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+  		Cure.updatepositions(Cure.PlayerNodeCollection);
+  	}
   	var scoreArray = data;
   	scoreArray.treestruct = null;
   	Cure.Score.set(scoreArray);
@@ -129,7 +137,8 @@ Node = Backbone.RelationalModel.extend({
 		},
 		edit : 0,
 		highlight : 0,
-		children: []
+		children: [],
+		gene_summary: "Loading..."
 	},
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);		
@@ -293,50 +302,174 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2*Math.PI/json.length;
 		var ctr = -1;
+		var accuracyScale = d3.scale.linear()
+			.domain([0, 100])
+			.rangeRound([0, 100]);
+		var noveltyScale = d3.scale.linear()
+			.domain([0, 1])
+		.rangeRound([0, 100]);
+		var sizeScale = d3.scale.linear()
+		.domain([0, 1])
+		.rangeRound([0, 100]);
+		var datapoints = [{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}];
 		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
 							.attr("x1", Cure.width/2)
 							.attr("y1", Cure.height/8)
 							.attr("x2", function(d){
-								var length = 0;
-								if(d.pct_correct)
-								{
-									length = 1000 * d.pct_correct;
-								}
-								else if(d.size)
-								{
-									length = 750 * (1/d.size);
-								}
-								else if(d.novelty)
-								{
-									length = 500 * d.novelty;
-								}
-								ctr++;
-								console.log(Math.cos(ctr*interval_angle));
-								return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+									var length = 100;
+									ctr++;
+									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
 							})
 							.attr("y2", function(d){
-								if(ctr==2)
-								{
-									ctr = -1;
-								}
-								var length = 0;
-								if(d.pct_correct)
-								{
-									length = 1000 * d.pct_correct;
-								}
-								else if(d.size)
-								{
-									length = 750 * (1/d.size);
-								}
-								else if(d.novelty)
-								{
-									length = 500 * d.novelty;
-								}
-								ctr++;
-								console.log(Math.sin(ctr*interval_angle));
-								return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+									var length = 100;
+									ctr++;
+									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
 							})
-							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "0.5px");
+							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
+		
+		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition()
+		.duration(Cure.duration)
+		.attr("x1", Cure.width/2)
+							.attr("y1", Cure.height/8)
+							.attr("x2", function(d){
+									var length = 100;
+									ctr++;
+									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+							})
+							.attr("y2", function(d){
+									var length = 100;
+									ctr++;
+									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+							})
+							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
+		interval_angle = 2*Math.PI/json.length;
+		ctr = -1;
+		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter().append("circle")
+		.attr("cx", function(d){
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			return datapoints[ctr].x;
+		})
+		.attr("cy", function(d){
+			if(ctr==2)
+			{
+				ctr = -1;
+			}
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			return datapoints[ctr].y;
+		})
+		.attr("class", "datapoint").attr("r",5);
+		ctr = -1;
+		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition().duration(Cure.duration)
+		.attr("cx", function(d){
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			return datapoints[ctr].x;
+		})
+		.attr("cy", function(d){
+			if(ctr==2)
+			{
+				ctr = -1;
+			}
+			var length = 0;
+			if(d.pct_correct)
+			{
+				length = accuracyScale(d.pct_correct);
+			}
+			else if(d.size)
+			{
+				length = sizeScale(1/d.size);
+			}
+			else if(d.novelty)
+			{
+				length = noveltyScale(d.novelty);
+			}
+			ctr++;
+			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			return datapoints[ctr].y;
+		})
+		.attr("class", "datapoint").attr("r",5);
+		
+		var radarchart_lines = [];
+		var point2_temp = 0;
+		for(var temp in datapoints)
+		{
+			point2_temp = parseInt(temp) + 1;
+			if(temp == 2)
+			{
+				point2_temp = 0;
+			}
+			radarchart_lines.push({"point1":datapoints[temp],"point2":datapoints[point2_temp]});
+		}
+
+		var radarChartLineEnter = Cure.ScoreSVG.selectAll(".RadarChartLine").data(radarchart_lines).enter().append("line")
+		.attr("x1",function(d){
+			return d.point1.x;
+		})
+		.attr("y1",function(d){
+			return d.point1.y;
+		})
+		.attr("x2",function(d){
+			return d.point2.x;
+		})
+		.attr("y2",function(d){
+			return d.point2.y;
+		})
+		.style("stroke", "black").style("stroke-width", "1px").attr("class","RadarChartLine");
+		var radarChartLineUpdate = Cure.ScoreSVG.selectAll(".RadarChartLine").transition().duration(Cure.duration)
+		.attr("x1",function(d){
+			return d.point1.x;
+		})
+		.attr("y1",function(d){
+			return d.point1.y;
+		})
+		.attr("x2",function(d){
+			return d.point2.x;
+		})
+		.attr("y2",function(d){
+			return d.point2.y;
+		})
+		.style("stroke", "grey").style("stroke-width", "1px");
 	},
 	onRender: function(){
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width).attr("height", Cure.height/4);
@@ -366,16 +499,17 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	    if(kind_value=="leaf_node")
 	    {
 	    	model.set("previousAttributes",model.toJSON());
-	    	model.set("name",ui.item.name);
-	    	model.set("options",{id: ui.item.id,"kind": "split_node"});
+	    	model.set("name",ui.item.symbol);
+	    	model.set("options",{id: ui.item.id,"kind": "split_node","full_name":ui.item.name});
 	    }
 	    else
 	    {
 	    	var newNode = new Node({
-					'name' : ui.item.name,
+					'name' : ui.item.symbol,
 					"options" : {
 						id: ui.item.id,
-						"kind": "split_node"
+						"kind": "split_node",
+						"full_name":ui.item.name
 					}
 				});
 				newNode.set("cid", newNode.cid);
@@ -399,13 +533,7 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	itemView : NodeView,
 	emptyView : AddRootNodeView,
 	initialize : function() {
-		this.collection.bind('add', this.onModelAdded);
-	},
-	onModelAdded : function(addedModel) {
-		var newNodeview = new NodeView({
-			model : addedModel
-		});
-		newNodeview.render();
+
 	}
 });
 
@@ -426,14 +554,11 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 		'click .showjson' : 'ShowJSON',
 		'blur .jsonview_data' : 'HideJSON',
 		'click .showattr' : 'ShowAttr',
-		'dblclick .attredit' : 'editAttr',
-		'keypress .edit' : 'onEnter',
-		'blur .edit' : 'updateAttr',
-		'click .editdone' : 'doneEdit'
+		'click .editdone' : 'doneEdit',
 	},
 	tagName : "tr",
 	initialize : function() {
-		// this.model.bind('add:children', this.render);
+		_.bindAll(this, 'getSummary');
 		this.model.bind('change', this.render);
 		this.model.on('change:edit', function() {
 			if (this.model.get('edit') != 0) {
@@ -443,13 +568,24 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
+	getSummary: function(){
+		var thisView = this;
+		if(this.model.get("gene_summary")=="Loading...")
+		{
+			$.getJSON("http://mygene.info/v2/gene/"+this.model.get("options").id,function(data){
+				thisView.model.set("gene_summary",data.summary);
+				thisView.ShowJSON();
+			});
+		}
+	},
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
 		if (serialized_model.edit == 0) {
 			return _.template(shownode_html, {
 				name : name,
-				jsondata : Cure.prettyPrint(serialized_model)
+				summary : serialized_model.gene_summary,
+				kind: serialized_model.options.kind
 			}, {
 				variable : 'args'
 			});
@@ -462,12 +598,8 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			});
 		}
 	},
-	editAttr : function(e) {
-		var field = $(e.currentTarget);
-		field.addClass("editing");
-		$(".edit", field).focus();
-	},
 	ShowJSON : function() {
+		this.getSummary();
 		this.ui.showjson.addClass("disabled");
 		this.ui.jsondata.css({
 			'display' : 'block'
@@ -479,27 +611,6 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			'display' : 'none'
 		});
 		this.ui.showjson.removeClass("disabled");
-	},
-	onEnter : function(e) {
-		if (e.which == 13) {
-			this.updateAttr($(e.currentTarget));
-		}
-	},
-	updateAttr : function(field) {
-		if (field instanceof jQuery.Event) {
-			field = $(field.currentTarget);
-		}
-		if (field.hasClass("modeloption")) {
-			var data = {};
-			data["options"] = this.model.get('options');
-			data["options"][field.attr('id')] = field.val();
-			this.model.set(data);
-		} else {
-			var data = {};
-			data[field.attr('id')] = field.val();
-			this.model.set(data);
-		}
-		this.render();
 	},
 	ShowAttr : function() {
 		this.model.set('edit', 1);
@@ -596,27 +707,6 @@ Cure.delete_all_children = function(seednode) {
 			Cure.delete_all_children(children.models[temp]);
 			children.models[temp].destroy();
 		}
-	}
-}
-
-Cure.traverseTree = function(rootNode) {
-	rootNode.set("highlight", 1);
-	var childnodes = rootNode.get('children').models;
-	if (childnodes.length > 0) {
-		var min_index = 0;
-		var min_value = 100;
-		for ( var temp in childnodes) {
-			if (childnodes[temp].get('options').bin_size < min_value) {
-				min_value = childnodes[temp].get('options').bin_size;
-				min_index = temp;
-			}
-		}
-		window.setTimeout(function() {
-			Cure.traverseTree(childnodes[min_index]);
-		}, 1000);
-	} else {
-		$("#traverse").html("Traverse Tree");
-		$("#traverse").removeClass("disabled");
 	}
 }
 
@@ -901,6 +991,11 @@ Cure.addInitializer(function(options) {
 	};
 	Backbone.emulateHTTP = true;
 	$(options.regions.PlayerTreeRegion).html("<div id='"+options.regions.PlayerTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.PlayerTreeRegion.replace("#","")+"SVG'></svg>")
+				Cure.addRegions({
+	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
+	  		ScoreRegion: options.regions.ScoreRegion,
+	  		JsonRegion : "#json_structure"
+	  	});
 			Cure.width = options["width"];
 			Cure.height = options["height"];	
 			Cure.duration = 500;
@@ -921,13 +1016,6 @@ Cure.addInitializer(function(options) {
 			Cure.JSONCollectionView = new JSONCollectionView({
 				collection : Cure.PlayerNodeCollection
 			});
-			
-			// Assign View to Region
-			Cure.addRegions({
-	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
-	  		ScoreRegion: options.regions.ScoreRegion,
-	  		JsonRegion : "#json_structure"
-	  	});
 			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 			Cure.ScoreRegion.show(Cure.ScoreView);
 			Cure.JsonRegion.show(Cure.JSONCollectionView);
