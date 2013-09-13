@@ -18,8 +18,7 @@
     <div class="container">
       <div class="row">
         <div class="span3">
-          <h2>JSON</h2>
-          <button id="traverse" class="btn btn-primary btn-large">Traverse Tree</button>
+          <h2>Gene Summary</h2>
           <table class="table table-hover" id='json_structure'></table>
         </div>
         <div class="span9">
@@ -39,9 +38,11 @@
   </script>
     <script id="JSONtemplate" type="text/template">
       <td><span class="jsonview_name"><@= args.name @></span></td>
-      <td><span><button class="btn btn-link showattr" >Edit</button></span></td>
-      <td><span><button class="btn btn-link showjson" >JSON</button></span></td>
-      <td><textarea class="jsonview_data"><@ print (args.jsondata); @></textarea></td>
+      <td><span><button class="btn btn-link showattr" >Info</button></span></td>
+	  <@ if(args.kind == "split_node") { @>
+      	<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
+      	<td><textarea readonly class="jsonview_data"><@= args.summary @></textarea></td>
+	  <@  } @>
   </script>
   <script id="Attrtemplate" type="text/template">
     <td colspan="3">
@@ -60,7 +61,7 @@
             </span>
         </li>
       <@ } @>
-      <li><button class="btn btn-link editdone" >Done</button></li>
+<li><button class="btn btn-link editdone" >Close Info</button></li>
     </ul>
     </td>
   </script>
