@@ -97,7 +97,6 @@ NodeCollection = Backbone.Collection.extend({
   parseResponse: function(data){
   	if(data["treestruct"].name)
   	{
-  		console.log("length >0")
     	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
   	}
   	else
@@ -138,7 +137,8 @@ Node = Backbone.RelationalModel.extend({
 		},
 		edit : 0,
 		highlight : 0,
-		children: []
+		children: [],
+		gene_summary: "Loading..."
 	},
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);		
@@ -312,7 +312,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		.domain([0, 1])
 		.rangeRound([0, 100]);
 		var datapoints = [{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}];
-		console.log(datapoints)
 		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
 							.attr("x1", Cure.width/2)
 							.attr("y1", Cure.height/8)
@@ -440,13 +439,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			{
 				point2_temp = 0;
 			}
-			console.log(point2_temp)
 			radarchart_lines.push({"point1":datapoints[temp],"point2":datapoints[point2_temp]});
 		}
 
 		var radarChartLineEnter = Cure.ScoreSVG.selectAll(".RadarChartLine").data(radarchart_lines).enter().append("line")
 		.attr("x1",function(d){
-			console.log(d);
 			return d.point1.x;
 		})
 		.attr("y1",function(d){
@@ -536,13 +533,7 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	itemView : NodeView,
 	emptyView : AddRootNodeView,
 	initialize : function() {
-		this.collection.bind('add', this.onModelAdded);
-	},
-	onModelAdded : function(addedModel) {
-		var newNodeview = new NodeView({
-			model : addedModel
-		});
-		newNodeview.render();
+
 	}
 });
 
@@ -563,14 +554,11 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 		'click .showjson' : 'ShowJSON',
 		'blur .jsonview_data' : 'HideJSON',
 		'click .showattr' : 'ShowAttr',
-		'dblclick .attredit' : 'editAttr',
-		'keypress .edit' : 'onEnter',
-		'blur .edit' : 'updateAttr',
-		'click .editdone' : 'doneEdit'
+		'click .editdone' : 'doneEdit',
 	},
 	tagName : "tr",
 	initialize : function() {
-		// this.model.bind('add:children', this.render);
+		_.bindAll(this, 'getSummary');
 		this.model.bind('change', this.render);
 		this.model.on('change:edit', function() {
 			if (this.model.get('edit') != 0) {
@@ -580,13 +568,24 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
+	getSummary: function(){
+		var thisView = this;
+		if(this.model.get("gene_summary")=="Loading...")
+		{
+			$.getJSON("http://mygene.info/v2/gene/"+this.model.get("options").id,function(data){
+				thisView.model.set("gene_summary",data.summary);
+				thisView.ShowJSON();
+			});
+		}
+	},
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
 		if (serialized_model.edit == 0) {
 			return _.template(shownode_html, {
 				name : name,
-				jsondata : Cure.prettyPrint(serialized_model)
+				summary : serialized_model.gene_summary,
+				kind: serialized_model.options.kind
 			}, {
 				variable : 'args'
 			});
@@ -599,12 +598,8 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			});
 		}
 	},
-	editAttr : function(e) {
-		var field = $(e.currentTarget);
-		field.addClass("editing");
-		$(".edit", field).focus();
-	},
 	ShowJSON : function() {
+		this.getSummary();
 		this.ui.showjson.addClass("disabled");
 		this.ui.jsondata.css({
 			'display' : 'block'
@@ -616,27 +611,6 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			'display' : 'none'
 		});
 		this.ui.showjson.removeClass("disabled");
-	},
-	onEnter : function(e) {
-		if (e.which == 13) {
-			this.updateAttr($(e.currentTarget));
-		}
-	},
-	updateAttr : function(field) {
-		if (field instanceof jQuery.Event) {
-			field = $(field.currentTarget);
-		}
-		if (field.hasClass("modeloption")) {
-			var data = {};
-			data["options"] = this.model.get('options');
-			data["options"][field.attr('id')] = field.val();
-			this.model.set(data);
-		} else {
-			var data = {};
-			data[field.attr('id')] = field.val();
-			this.model.set(data);
-		}
-		this.render();
 	},
 	ShowAttr : function() {
 		this.model.set('edit', 1);
@@ -733,27 +707,6 @@ Cure.delete_all_children = function(seednode) {
 			Cure.delete_all_children(children.models[temp]);
 			children.models[temp].destroy();
 		}
-	}
-}
-
-Cure.traverseTree = function(rootNode) {
-	rootNode.set("highlight", 1);
-	var childnodes = rootNode.get('children').models;
-	if (childnodes.length > 0) {
-		var min_index = 0;
-		var min_value = 100;
-		for ( var temp in childnodes) {
-			if (childnodes[temp].get('options').bin_size < min_value) {
-				min_value = childnodes[temp].get('options').bin_size;
-				min_index = temp;
-			}
-		}
-		window.setTimeout(function() {
-			Cure.traverseTree(childnodes[min_index]);
-		}, 1000);
-	} else {
-		$("#traverse").html("Traverse Tree");
-		$("#traverse").removeClass("disabled");
 	}
 }
 
