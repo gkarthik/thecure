@@ -21,13 +21,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-//import org.apache.commons.math3.MathException;
-//import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
-//import org.apache.commons.math.stat.inference.TestUtils;
+
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.apache.commons.math3.stat.inference.TestUtils;
 import org.scripps.StatUtil;
+import org.scripps.SimulationP;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Game;
@@ -96,13 +95,13 @@ public class Stats {
 //			outputPlayerAgreeability(outfile, first_hand_only, dataset);
 //			String inforchart = outfile;
 //			buildAgreeabilityCharts(inforchart, output_dir); 
-//		outfile = output_dir+"board_consensus.txt";
+		outfile = output_dir+"board_consensus.txt";
 		boolean random = false;
 		boolean first_hand_only = true;
-//		outputBoardConsensus(outfile, first_hand_only, random);
-//		outfile = output_dir+"board_consensus_all_hands.txt";
-//		first_hand_only = false;
-//		outputBoardConsensus(outfile, first_hand_only, random);
+		outputBoardConsensus(outfile, first_hand_only, random);
+		outfile = output_dir+"board_consensus_all_hands.txt";
+		first_hand_only = false;
+		outputBoardConsensus(outfile, first_hand_only, random);
 		random = true;
 		first_hand_only = true;
 		outfile = output_dir+"board_consensus_1st_hand_random.txt";
@@ -111,13 +110,22 @@ public class Stats {
 
 
 	public static void outputBoardConsensus(String outfile, boolean first_hand_only, boolean random){
-
+		//set up tables to get P vlaues from simulated data
+		int n_per_board = 25;
+		int min_players = 1;
+		int max_players = 26;
+		int n_cards = 5;
+		int n_runs = 1000; int n_times = 100;
+		System.out.println("P sim initializing");
+		SimulationP simp = new SimulationP();
+		simp.initCureSim(n_per_board, min_players, max_players, n_cards, n_runs, n_times);
+		System.out.println("P sim initialized");
 		boolean drop_mammal = true;
 		List<Board> boards = Board.getAllBoards(drop_mammal);
 		try {
 			FileWriter out = new FileWriter(outfile);
 			GeneRanker gr = new GeneRanker();
-			out.write("board_id\tmin_freq\tavg_freq\tmax_freq\tn_cards_counted\tplayer_count\tboard_base_score\tdataset\troom\tcreated\tchisquared\tchi_p\tg\tg_p\t");
+			out.write("board_id\tmin_freq\tavg_freq\tmax_freq\tn_cards_counted\tplayer_count\tboard_base_score\tdataset\troom\tcreated\tchisquared\tchi_p\tg\tg_p\tmin_simP\t");
 			for(int i=1; i<=25; i++){
 				out.write("G"+i+"\t");
 			}
@@ -125,6 +133,9 @@ public class Stats {
 			int i = 0;
 			for(Board board : boards){
 				i++;
+				if(i==102){
+					System.out.println("prob..");
+				}
 				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only, random);
 				DescriptiveStatistics freqs = new DescriptiveStatistics();
 				DescriptiveStatistics votes = new DescriptiveStatistics();
@@ -135,9 +146,15 @@ public class Stats {
 				List<GeneRanker.gene_rank> ranked = new ArrayList<GeneRanker.gene_rank>(ranks.values());
 				Collections.sort(ranked);
 				Collections.reverse(ranked);
+				double lowest_p = 1;
 				for(GeneRanker.gene_rank rank : ranked){
+					//grab simP value at this rank.
+					double p = simp.getP((int)rank.players, (double)rank.frequency, b);
+					if(lowest_p > p){
+						lowest_p = p;
+					}
 					counts[b] = (long)rank.votes;
-					histo+=rank.symbol+"_"+rank.entrez+":"+rank.votes+";"+rank.frequency+"\t";
+					histo+=rank.symbol+"_"+rank.entrez+":"+rank.votes+";"+rank.frequency+" p"+p+"\t";
 					freqs.addValue(rank.frequency);
 					votes.addValue(rank.votes);
 					player_count = rank.players; //inelegant to keep setting, but same for all players..
@@ -147,7 +164,7 @@ public class Stats {
 				double[] g_p = StatUtil.gTestForUniformDistribution(counts);
 				String row = board.getId()+"\t"+freqs.getMin()+"\t"+freqs.getMean()+"\t"+freqs.getMax()+"\t"+votes.getSum()+"\t"+player_count;
 					   row+= "\t"+board.getBase_score()+"\t"+board.getDataset()+"\t"+board.getRoom()+"\t"+board.getUpdated();
-					   row+= "\t"+r_p[0]+"\t"+r_p[1]+"\t"+g_p[0]+"\t"+g_p[1]+"\t"+histo;
+					   row+= "\t"+r_p[0]+"\t"+r_p[1]+"\t"+g_p[0]+"\t"+g_p[1]+"\t"+lowest_p+"\t"+histo;
 					   
 				out.write(row+"\n");
 				System.out.println(i+"\t"+row);
