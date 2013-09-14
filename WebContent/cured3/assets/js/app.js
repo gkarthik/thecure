@@ -201,9 +201,6 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
-		'dblclick .name' : 'edit',
-		'keypress .edit' : 'updateOnEnter',
-		'blur .edit' : 'closeInput'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren');
@@ -672,8 +669,21 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 			}
 			Cure.PlayerNodeCollection.sync();
 		}
-	});
-	},
+	});                
+		$(document).mouseup(function (e)
+				{
+				    var container = $("#mygene_addnode");
+
+				    if (!container.is(e.target) // if the target of the click isn't the container...
+				        && container.has(e.target).length === 0) // ... nor a descendant of the container
+				    {
+				  			if(Cure.MyGeneInfoRegion)
+				  			{
+				  				Cure.MyGeneInfoRegion.close();
+				  			}
+				    }
+				});
+	}
 });
 
 NodeCollectionView = Backbone.Marionette.CollectionView.extend({
