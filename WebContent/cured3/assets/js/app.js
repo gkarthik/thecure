@@ -777,11 +777,30 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+EmptyJSONItemView = Backbone.Marionette.ItemView.extend({
+	// -- View to render JSON
+	model : Node,
+	template: "#EmptyTemplate"
+});
+
 JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to render JSON
-	itemView : JSONItemView,
+	getItemView: function(model)
+	{
+		console.log(model.get("options").kind)
+		if(model.get("options").kind == "split_node")
+		{
+			return JSONItemView;
+		}
+		else
+		{
+			return EmptyJSONItemView; 
+		}
+
+	},
 	collection : NodeCollection,
 	initialize : function() {
+		this.collection.bind('add', this.render);
 		this.collection.bind('remove', this.render);
 	}
 });
