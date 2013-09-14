@@ -25,7 +25,7 @@ div.container {
 
 #PlayerTreeRegion svg{
   position: absolute;
-  height: 100%;
+  height: auto;
 }
 
 #svgwrapper{
@@ -139,4 +139,10 @@ input.edit{
 #score{
 	margin-top: 22px;
 margin-left: 5px;
+}
+
+.addgeneinfo{
+	position: relative;
+margin: 1px;
+margin-top: 27px;
 }

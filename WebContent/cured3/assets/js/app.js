@@ -904,14 +904,20 @@ Cure.render_network = function(dataset) {
 	{
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-
+		var maxDepth =0;
 		nodes.forEach(function(d) {
 			d.y = d.depth * 130;
+			if(d.y>maxDepth)
+			{
+				console.log(maxDepth)
+				maxDepth = d.y;
+			}
 			if(!d.options)
 			{
 				d.options =[];
 			}
 		});
+		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+100);
 
 		var node = SVG.selectAll(".MetaDataNode")
     .data(nodes);
@@ -1158,12 +1164,11 @@ Cure.addInitializer(function(options) {
 			Cure.width = options["width"];
 			Cure.height = options["height"];	
 			Cure.duration = 500;
-			Cure.cluster = d3.layout.tree().size([ Cure.width, Cure.height ]);
+			Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr(
-					"height", Cure.height).append("svg:g").attr("transform",
+			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr("height", "auto").append("svg:g").attr("transform",
 					"translate(0,40)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
