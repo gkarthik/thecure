@@ -527,7 +527,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     	.data([datapoints])
     	.enter().append("polygon")
   	.attr("points",function(d) { 
-  		console.log(d);
       return d.map(function(d) {
           return [d.x,d.y].join(",");
       }).join(" ");
@@ -909,7 +908,6 @@ Cure.render_network = function(dataset) {
 			d.y = d.depth * 130;
 			if(d.y>maxDepth)
 			{
-				console.log(maxDepth)
 				maxDepth = d.y;
 			}
 			if(!d.options)
@@ -917,7 +915,7 @@ Cure.render_network = function(dataset) {
 				d.options =[];
 			}
 		});
-		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+100);
+		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+300);
 
 		var node = SVG.selectAll(".MetaDataNode")
     .data(nodes);
@@ -969,7 +967,7 @@ Cure.render_network = function(dataset) {
   		{
   			text = "Info Gain"+d.options.infogain;
   		}
-  		return text; }
+  		return text.substring(0,15); }
   	);
 		//Bin Size
 		nodeEnter.append("rect")
@@ -1004,7 +1002,7 @@ Cure.render_network = function(dataset) {
 		{
 			text = "Bin size: "+d.options.bin_size;
 		}
-		return text; 
+		return text.substring(0,15); 
 		}
 	);
 		
@@ -1054,7 +1052,7 @@ Cure.render_network = function(dataset) {
 		{
 			text = "Info Gain"+d.options.infogain;
 		}
-		return text; }
+		return text.substring(0,15); }
 	);
 	//Bin Size
 	nodeUpdate.select(".binsize")
@@ -1087,7 +1085,7 @@ nodeUpdate.select(".binsizetext")
 	{
 		text = "Bin size: "+d.options.bin_size;
 	}
-	return text; 
+	return text.substring(0,15); 
 	}
 );
 		
@@ -1168,7 +1166,7 @@ Cure.addInitializer(function(options) {
 			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr("height", "auto").append("svg:g").attr("transform",
+			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).append("svg:g").attr("transform",
 					"translate(0,130)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
