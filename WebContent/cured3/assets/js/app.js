@@ -301,7 +301,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			}
 		}
 		var interval_angle = 2*Math.PI/json.length;
-		var center = {"x":Cure.width/4,"y":Cure.height/6};
+		var center = {"x":Cure.width/8,"y":Cure.height/6};
 		var ctr = -1;
 		var accuracyScale = d3.scale.linear()
 			.domain([0, 100])
@@ -361,7 +361,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 							.attr("x", function(d){
 									var length = 100;
 									ctr++;
-									return (center.x)+ (length * Math.cos(ctr*interval_angle));
+									return (center.x)+ (length * Math.cos(ctr*interval_angle))+10;
 							})
 							.attr("y", function(d){
 								if(ctr >= 2)
@@ -370,7 +370,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 								}
 									var length = 100;
 									ctr++;
-									return (center.y)+ (length * Math.sin(ctr*interval_angle));
+									return (center.y)+ (length * Math.sin(ctr*interval_angle))+5;
 							})
 							.attr("class", "axisText").attr("class", "axis").style("stroke", function(){
 								if(ctr >= 2)
@@ -379,7 +379,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 								}
 								ctr++;
 								return Cure.colorScale(ctr);
-							}).style("stroke-width", "1px").text(function(d){
+							}).style("stroke-width", "0.5px").text(function(d){
 								var text = "";
           			if(d.pct_correct)
           			{
@@ -395,6 +395,45 @@ ScoreView = Backbone.Marionette.ItemView.extend({
           			}
           			return text;
 							});
+		ctr = -1;
+		var axesTextUpdate = Cure.ScoreSVG.selectAll(".axisText").transition().duration(Cure.duration)
+		.attr("x", function(d){
+				var length = 100;
+				ctr++;
+				return (center.x)+ (length * Math.cos(ctr*interval_angle))+10;
+		})
+		.attr("y", function(d){
+			if(ctr >= 2)
+			{
+				ctr = -1;
+			}
+				var length = 100;
+				ctr++;
+				return (center.y)+ (length * Math.sin(ctr*interval_angle))+5;
+		})
+		.attr("class", "axisText").attr("class", "axis").style("stroke", function(){
+			if(ctr >= 2)
+			{
+				ctr = -1;
+			}
+			ctr++;
+			return Cure.colorScale(ctr);
+		}).style("stroke-width", "0.5px").text(function(d){
+			var text = "";
+			if(d.pct_correct)
+			{
+				text = "Accuracy";
+			}
+			else if(d.size)
+			{
+				text = "Size";
+			}
+			else if(d.novelty)
+			{
+				text = "Novelty";
+			}
+			return text;
+		});
 		interval_angle = 2*Math.PI/json.length;
 		ctr = -1;
 		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter().append("circle")
@@ -522,7 +561,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     	.attr("fill","rgba(189,189,189,0.25)");
 	},
 	onRender: function(){
-		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width/2).attr("height", Cure.height/3);
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width/3).attr("height", Cure.height/3);
 	}
 });
 
