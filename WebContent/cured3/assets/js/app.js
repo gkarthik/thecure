@@ -227,7 +227,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 							'margin-left' : (this.model.get('x') - (($(this.el)
 									.width()) / 2))
 									+ "px",
-							'margin-top' : (this.model.get('y') + 10) + "px"
+							'margin-top' : (this.model.get('y') + 100) + "px"
 						});
 	},
 	updateOnEnter : function(e) {
@@ -1169,7 +1169,7 @@ Cure.addInitializer(function(options) {
 						return [ d.x, d.y ];
 					});
 			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr("height", "auto").append("svg:g").attr("transform",
-					"translate(0,40)");
+					"translate(0,130)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
 			Cure.ScoreView = new ScoreView({"model":Cure.Score});
