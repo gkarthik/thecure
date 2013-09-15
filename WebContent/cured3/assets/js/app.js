@@ -227,16 +227,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 							'margin-left' : (this.model.get('x') - (($(this.el)
 									.width()) / 2))
 									+ "px",
-							'margin-top' : (this.model.get('y') + 50) + "px"
+							'margin-top' : (this.model.get('y') + 70) + "px"
 						});
-		var color = "";
-		if(this.model.get("options").kind=="split_node")
-  	{color="#9467bd"; }
-  	else if(this.model.get("options").kind=="leaf_node")
-  	{color="#1f77b4";}
-  	else
-  		color = "#d62728";
-		$(this.el).css({"background":color, "border":"2px solid "+color});
+		$(this.el).attr("class","node");
+		$(this.el).addClass(this.model.get("options").kind);
 	},
 	updateOnEnter : function(e) {
 		if (e.which == 13) {
@@ -965,7 +959,7 @@ Cure.render_network = function(dataset) {
     		}
     		return height;
     	})
-    	.attr("x",70)
+    	.attr("x",90)
     	.attr("y", function(d){ 
     		var height = 0;
     		if(d.options.pct_correct)
@@ -980,7 +974,7 @@ Cure.render_network = function(dataset) {
     		.style("fill", function(d) { return "lightsteelblue"; });
 		nodeEnter.append("svg:text")
 		.attr("class","nodeaccuracytext")
-  	.attr("transform", "translate(60, 0) rotate(-90)")
+  	.attr("transform", "translate(80, 0) rotate(-90)")
   	.style("font-size","13")
   	.style("fill", function(d) { return "lightsteelblue"; })
   	.text(function(d){
@@ -1007,7 +1001,7 @@ Cure.render_network = function(dataset) {
   		}
   		return height;
   	})
-  	.attr("x",110)
+  	.attr("x",130)
   	.attr("y", function(d){ 
   		var height = 0;
   		if(d.options.bin_size)
@@ -1019,7 +1013,7 @@ Cure.render_network = function(dataset) {
 	
 	nodeEnter.append("svg:text")
 	.attr("class","binsizetext")
-	.attr("transform", "translate(100, 0) rotate(-90)")
+	.attr("transform", "translate(120, 0) rotate(-90)")
 	.style("font-size","13")
 	.style("fill", function(d) { return "lightsteelblue"; })
 	.text(function(d){
@@ -1050,7 +1044,7 @@ Cure.render_network = function(dataset) {
   		}
   		return height;
   	})
-  	.attr("x",70)
+  	.attr("x",90)
   	.attr("y", function(d){ 
   		var height = 0;
   		if(d.options.pct_correct)
@@ -1065,7 +1059,7 @@ Cure.render_network = function(dataset) {
   	.style("fill", function(d) { return "lightsteelblue"; });
 	
 	nodeUpdate.select(".nodeaccuracytext")
-	.attr("transform", "translate(60, 0) rotate(-90)")
+	.attr("transform", "translate(80, 0) rotate(-90)")
 	.style("font-size","13")
 	.style("fill", function(d) { return "lightsteelblue"; })
 	.text(function(d){
@@ -1091,7 +1085,7 @@ Cure.render_network = function(dataset) {
 		}
 		return height;
 	})
-	.attr("x",110)
+	.attr("x",130)
 	.attr("y", function(d){ 
 		var height = 0;
 		if(d.options.bin_size)
@@ -1102,7 +1096,7 @@ Cure.render_network = function(dataset) {
 	.style("fill", function(d) { return "lightsteelblue"; });
 
 nodeUpdate.select(".binsizetext")
-.attr("transform", "translate(100, 0) rotate(-90)")
+.attr("transform", "translate(120, 0) rotate(-90)")
 .style("font-size","13")
 .style("fill", function(d) { return "lightsteelblue"; })
 .text(function(d){
@@ -1193,7 +1187,7 @@ Cure.addInitializer(function(options) {
 						return [ d.x, d.y ];
 					});
 			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).append("svg:g").attr("transform",
-					"translate(0,80)");
+					"translate(0,100)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
 			Cure.ScoreView = new ScoreView({"model":Cure.Score});
