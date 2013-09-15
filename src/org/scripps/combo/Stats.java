@@ -99,13 +99,13 @@ public class Stats {
 		boolean random = false;
 		boolean first_hand_only = true;
 		outputBoardConsensus(outfile, first_hand_only, random);
-		outfile = output_dir+"board_consensus_all_hands.txt";
-		first_hand_only = false;
-		outputBoardConsensus(outfile, first_hand_only, random);
-		random = true;
-		first_hand_only = true;
-		outfile = output_dir+"board_consensus_1st_hand_random.txt";
-		outputBoardConsensus(outfile, first_hand_only, random);
+//		outfile = output_dir+"board_consensus_all_hands.txt";
+//		first_hand_only = false;
+//		outputBoardConsensus(outfile, first_hand_only, random);
+//		random = true;
+//		first_hand_only = true;
+//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+//		outputBoardConsensus(outfile, first_hand_only, random);
 	}
 
 
@@ -133,9 +133,6 @@ public class Stats {
 			int i = 0;
 			for(Board board : boards){
 				i++;
-				if(i==102){
-					System.out.println("prob..");
-				}
 				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only, random);
 				DescriptiveStatistics freqs = new DescriptiveStatistics();
 				DescriptiveStatistics votes = new DescriptiveStatistics();
