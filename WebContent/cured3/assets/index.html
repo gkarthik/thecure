@@ -18,13 +18,13 @@
     <div class="container">
       <div class="row">
         <div class="span3">
+         <span class="row">
+          <div id="ScoreRegion"></div>
+         </span>
           <h2>Gene Summary</h2>
           <table class="table table-hover" id='json_structure'></table>
         </div>
         <div class="span9">
-        <span class="row">
-          <div id="ScoreRegion"></div>
-         </span>
          <span class="row">
           <div id="PlayerTreeRegion"></div>
           </span>
@@ -32,6 +32,7 @@
       </div>
     </div>
   <script type="text/template" id="AddRootNode">
+<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
   	<div id="mygene_addnode">
   	  <input id="gene_query" style="width:250px" class="mygene_query_target">
   	</div>
@@ -89,7 +90,11 @@
     </button>
 </script>
 <script id="ScoreTemplate" type="text/template">
+<h3>Score</h3>
+<p class="text-info">Your current score is <label class="label label-info" id="score"><@= score @></label></p>
 		<svg id="ScoreSVG"></svg>
+  	</script>
+  	<script id="EmptyTemplate" type="text/template">
   	</script>
   <script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
