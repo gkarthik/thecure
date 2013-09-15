@@ -120,7 +120,8 @@ Score = Backbone.RelationalModel.extend({
 	defaults : {
 		novelty: 0,
 		pct_correct: 0,
-		size: 0
+		size: 1,//Least Size got form server = 1.
+		score: 0,
 	},
 	initialize : function() {
 		
@@ -200,9 +201,6 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
-		'dblclick .name' : 'edit',
-		'keypress .edit' : 'updateOnEnter',
-		'blur .edit' : 'closeInput'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren');
@@ -229,8 +227,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 							'margin-left' : (this.model.get('x') - (($(this.el)
 									.width()) / 2))
 									+ "px",
-							'margin-top' : (this.model.get('y') + 10) + "px"
+							'margin-top' : (this.model.get('y') + 70) + "px"
 						});
+		$(this.el).attr("class","node");
+		$(this.el).addClass(this.model.get("options").kind);
 	},
 	updateOnEnter : function(e) {
 		if (e.which == 13) {
@@ -284,23 +284,136 @@ NodeView = Backbone.Marionette.ItemView.extend({
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
-		this.model.bind("change",this.updateScore);
+		this.model.bind("change:pct_correct",this.updateScore);
+		this.model.bind("change:size",this.updateScore);
+		this.model.bind("change:novelty",this.updateScore);
 	},
 	ui: {
-		'svg': "#ScoreSVG"
+		'svg': "#ScoreSVG",
+		'scoreEL': "#score"
 	},
 	template: "#ScoreTemplate",
-	updateScore: function(){
+	drawAxis: function(){
 		var json = [];
+		var thisModel = this.model;
 		for(var temp in this.model.toJSON())
 		{
-			if(temp!="treestruct"&&temp!="text_tree")
+			if(temp=="pct_correct"||temp=="novelty"||temp=="size")
 			{
 				json.push({});
 				json[json.length-1][temp] = this.model.toJSON()[temp];
 			}
 		}
 		var interval_angle = 2*Math.PI/json.length;
+		var center = {"x":Cure.width/8,"y":Cure.height/6};
+		var ctr = -1;
+		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
+							.attr("x1", center.x)
+							.attr("y1", center.y)
+							.attr("x2", function(d){
+									var length = 100;
+									ctr++;
+									return (center.x)+ (length * Math.cos(ctr*interval_angle));
+							})
+							.attr("y2", function(d){
+									var length = 100;
+									ctr++;
+									return (center.y)+ (length * Math.sin(ctr*interval_angle));
+							})
+							.attr("class", "axis").style("stroke", function(){
+								if(ctr >= 2)
+								{
+									ctr = -1;
+								}
+								ctr++;
+								return Cure.colorScale(ctr);
+							}).style("stroke-width", "1px");
+		
+		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition().duration(Cure.duration)
+		.attr("x1", center.x)
+							.attr("y1", center.y)
+							.attr("x2", function(d){
+									var length = 100;
+									ctr++;
+									return (center.x)+ (length * Math.cos(ctr*interval_angle));
+							})
+							.attr("y2", function(d){
+									var length = 100;
+									ctr++;
+									return (center.y)+ (length * Math.sin(ctr*interval_angle));
+							})
+							.attr("class", "axis").attr("class", "axis").style("stroke", function(){
+								if(ctr >= 2)
+								{
+									ctr = -1;
+								}
+								ctr++;
+								return Cure.colorScale(ctr);
+							}).style("stroke-width", "1px");
+		ctr = -1;
+		var axesText = Cure.ScoreSVG.selectAll(".axisText").data(json).enter().append("svg:text")
+		.attr("x", function(d){
+				var length = 100;
+				ctr++;
+				return (center.x)+ (length * Math.cos(ctr*interval_angle))+10;
+		})
+		.attr("y", function(d){
+			if(ctr >= 2)
+			{
+				ctr = -1;
+			}
+				var length = 100;
+				ctr++;
+				return (center.y)+ (length * Math.sin(ctr*interval_angle))+5;
+		})
+		.attr("class", "axisText").style("stroke", function(){
+			if(ctr >= 2)
+			{
+				ctr = -1;
+			}
+			ctr++;
+			return Cure.colorScale(ctr);
+		}).style("stroke-width", "0.5px").text(function(d){
+			var text = "";
+			if(d.pct_correct != null)
+			{
+				text = "Accuracy";
+			}
+			else if(d.size != null)
+			{
+				text = "Size";
+			}
+			else if(d.novelty != null)
+			{
+				text = "Novelty";
+			}
+			return text;
+		});
+	},
+	updateScore: function(){
+		//1000*pct_correct + 750*1/size_of_tree + 500*feature_novelty
+		if(this.model.get("size") != 1)
+		{
+			var score = 750 * (1/this.model.get("size")) + 500 * this.model.get("novelty") + 1000 * this.model.get("pct_correct");
+			this.model.set("score",score);
+		}
+		else
+		{
+			this.model.set({"score":0,"size":1/0,"pct_correct":0,"novelty":0});
+		}
+		$(this.ui.scoreEL).html(this.model.get("score"));
+		var json = [];
+		var thisModel = this.model;
+		for(var temp in this.model.toJSON())
+		{
+			if(temp=="pct_correct"||temp=="novelty"||temp=="size")
+			{
+				json.push({});
+				json[json.length-1][temp] = this.model.toJSON()[temp];
+			}
+		}
+		var interval_angle = 2*Math.PI/json.length;
+		var center = {"x":Cure.width/8,"y":Cure.height/6};
 		var ctr = -1;
 		var accuracyScale = d3.scale.linear()
 			.domain([0, 100])
@@ -312,38 +425,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		.domain([0, 1])
 		.rangeRound([0, 100]);
 		var datapoints = [{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}];
-		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
-							.attr("x1", Cure.width/2)
-							.attr("y1", Cure.height/8)
-							.attr("x2", function(d){
-									var length = 100;
-									ctr++;
-									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
-							})
-							.attr("y2", function(d){
-									var length = 100;
-									ctr++;
-									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
-							})
-							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
-		
-		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition()
-		.duration(Cure.duration)
-		.attr("x1", Cure.width/2)
-							.attr("y1", Cure.height/8)
-							.attr("x2", function(d){
-									var length = 100;
-									ctr++;
-									return (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
-							})
-							.attr("y2", function(d){
-									var length = 100;
-									ctr++;
-									return (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
-							})
-							.attr("class", "axis").style("stroke", "grey").style("stroke-width", "1px");
-		interval_angle = 2*Math.PI/json.length;
-		ctr = -1;
 		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter().append("circle")
 		.attr("cx", function(d){
 			var length = 0;
@@ -360,7 +441,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			datapoints[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
 			return datapoints[ctr].x;
 		})
 		.attr("cy", function(d){
@@ -382,10 +463,17 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			datapoints[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle));
 			return datapoints[ctr].y;
 		})
-		.attr("class", "datapoint").attr("r",5);
+		.attr("class", "datapoint").attr("fill",function(){
+								if(ctr >= 2)
+								{
+									ctr = -1;
+								}
+								ctr++;
+								return Cure.colorScale(ctr);
+							}).attr("r",5);
 		ctr = -1;
 		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition().duration(Cure.duration)
 		.attr("cx", function(d){
@@ -403,7 +491,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			datapoints[ctr].x = (Cure.width/2)+ (length * Math.cos(ctr*interval_angle));
+			datapoints[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
 			return datapoints[ctr].x;
 		})
 		.attr("cy", function(d){
@@ -425,54 +513,112 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				length = noveltyScale(d.novelty);
 			}
 			ctr++;
-			datapoints[ctr].y = (Cure.height/8)+ (length * Math.sin(ctr*interval_angle));
+			datapoints[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle));
 			return datapoints[ctr].y;
 		})
-		.attr("class", "datapoint").attr("r",5);
-		
-		var radarchart_lines = [];
-		var point2_temp = 0;
-		for(var temp in datapoints)
-		{
-			point2_temp = parseInt(temp) + 1;
-			if(temp == 2)
+		.attr("class", "datapoint").attr("fill",function(){
+			if(ctr >= 2)
 			{
-				point2_temp = 0;
+				ctr = -1;
 			}
-			radarchart_lines.push({"point1":datapoints[temp],"point2":datapoints[point2_temp]});
-		}
-
-		var radarChartLineEnter = Cure.ScoreSVG.selectAll(".RadarChartLine").data(radarchart_lines).enter().append("line")
-		.attr("x1",function(d){
-			return d.point1.x;
-		})
-		.attr("y1",function(d){
-			return d.point1.y;
-		})
-		.attr("x2",function(d){
-			return d.point2.x;
-		})
-		.attr("y2",function(d){
-			return d.point2.y;
-		})
-		.style("stroke", "black").style("stroke-width", "1px").attr("class","RadarChartLine");
-		var radarChartLineUpdate = Cure.ScoreSVG.selectAll(".RadarChartLine").transition().duration(Cure.duration)
-		.attr("x1",function(d){
-			return d.point1.x;
-		})
-		.attr("y1",function(d){
-			return d.point1.y;
-		})
-		.attr("x2",function(d){
-			return d.point2.x;
-		})
-		.attr("y2",function(d){
-			return d.point2.y;
-		})
-		.style("stroke", "grey").style("stroke-width", "1px");
+			ctr++;
+			return Cure.colorScale(ctr);
+		}).attr("r",5);
+		
+		Cure.ScoreSVG.selectAll("polygon")
+    	.data([datapoints])
+    	.enter().append("polygon")
+  	.attr("points",function(d) { 
+      return d.map(function(d) {
+          return [d.x,d.y].join(",");
+      }).join(" ");
+    	})
+    	.attr("stroke","rgba(189,189,189,0.25)")
+    	.attr("stroke-width","0.5px")
+    	.attr("fill","rgba(189,189,189,0.25)")
+    	.on("mouseover",function(d){
+    		var json = [];
+    		for(var temp in thisModel.toJSON())
+    		{
+    			if(temp!="treestruct"&&temp!="text_tree")
+    			{
+    				json.push({});
+    				json[json.length-1][temp] = thisModel.toJSON()[temp];
+    			}
+    		}
+    		Cure.ScoreSVG.selectAll(".hoverRect").data(d).enter().append("rect")
+  			.attr("x",function(d){
+  				return d.x+8;
+  			})
+  			.attr("y",function(d){
+  				return d.y-2;
+  			})
+  			.attr("height","17")
+  			.attr("width","40")
+  			.attr("fill","rgb(255,213,52)")
+  			.attr("class","hoverRect");
+    		ctr = -1;
+    		Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append("svg:text")
+    			.attr("x",function(d){
+    				return d.x+10;
+    			})
+    			.attr("y",function(d){
+    				return d.y+10;
+    			})
+    			.style({"font-size":"10px","background":"#FFF"})
+    			.attr("stroke",function(){
+    				if(ctr>=2)
+    				{
+    					ctr = -1;
+    				}
+    				ctr++;
+    				return Cure.colorScale(ctr);
+    			})
+    			.text(function(){
+    				if(ctr>=2)
+    				{
+    					ctr = -1;
+    				} 
+    				ctr++;
+    				var text = 0;
+    				if(json[ctr].pct_correct)
+    				{
+    					text = json[ctr].pct_correct;
+    				}
+    				else if(json[ctr].size)
+    				{
+    					text = json[ctr].size;
+    				}
+    				else if(json[ctr].novelty)
+    				{
+    					text = json[ctr].novelty;
+    				}
+    				return text.toFixed(3);
+    			}).attr("class","hoverText");
+    		Cure.ScoreSVG.selectAll("polygon").attr("stroke","rgba(189,189,189,0.5)")
+    		.attr("stroke-width","2px");
+    	})
+    	.on("mouseleave",function(d){
+    		Cure.ScoreSVG.selectAll(".hoverText").remove();
+    		Cure.ScoreSVG.selectAll(".hoverRect").remove(); 
+    		Cure.ScoreSVG.selectAll("polygon").attr("stroke","rgba(189,189,189,0.25").attr("stroke-width","0.5px");
+    	});
+		
+		Cure.ScoreSVG.selectAll("polygon")
+  	.transition().duration(Cure.duration)
+  	.attr("points",function(d) { 
+      return d.map(function(d) {
+          return [d.x,d.y].join(",");
+      }).join(" ");
+  	})
+    	.attr("stroke","rgba(189,189,189,0.25)")
+    	.attr("stroke-width","1px")
+    	.attr("fill","rgba(189,189,189,0.25)");
 	},
 	onRender: function(){
-		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width).attr("height", Cure.height/4);
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width/3).attr("height", Cure.height/3);
+		this.drawAxis();
+		this.updateScore();
 	}
 });
 
@@ -524,8 +670,21 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 			}
 			Cure.PlayerNodeCollection.sync();
 		}
-	});
-	},
+	});                
+		$(document).mouseup(function (e)
+				{
+				    var container = $("#mygene_addnode");
+
+				    if (!container.is(e.target) // if the target of the click isn't the container...
+				        && container.has(e.target).length === 0) // ... nor a descendant of the container
+				    {
+				  			if(Cure.MyGeneInfoRegion)
+				  			{
+				  				Cure.MyGeneInfoRegion.close();
+				  			}
+				    }
+				});
+	}
 });
 
 NodeCollectionView = Backbone.Marionette.CollectionView.extend({
@@ -620,11 +779,30 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+EmptyJSONItemView = Backbone.Marionette.ItemView.extend({
+	// -- View to render JSON
+	model : Node,
+	template: "#EmptyTemplate"
+});
+
 JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to render JSON
-	itemView : JSONItemView,
+	getItemView: function(model)
+	{
+		console.log(model.get("options").kind)
+		if(model.get("options").kind == "split_node")
+		{
+			return JSONItemView;
+		}
+		else
+		{
+			return EmptyJSONItemView; 
+		}
+
+	},
 	collection : NodeCollection,
 	initialize : function() {
+		this.collection.bind('add', this.render);
 		this.collection.bind('remove', this.render);
 	}
 });
@@ -674,7 +852,7 @@ Cure.updatepositions = function(NodeCollection) {
 	d3nodes = Cure.cluster.nodes(Collection);
 	Cure.cluster.nodes(Collection);
 	d3nodes.forEach(function(d) {
-		d.y = d.depth * 130;
+		d.y = d.depth * 80;
 	});
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -722,7 +900,7 @@ Cure.render_network = function(dataset) {
 	{
 		var binY = d3.scale.linear()
 		.domain([0, dataset.options.bin_size])
-		.rangeRound([0, 50]);
+		.rangeRound([0, 40]);
 	}
 	else
 	{
@@ -746,14 +924,19 @@ Cure.render_network = function(dataset) {
 	{
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-
+		var maxDepth =0;
 		nodes.forEach(function(d) {
-			d.y = d.depth * 130;
+			d.y = d.depth * 80;
+			if(d.y>maxDepth)
+			{
+				maxDepth = d.y;
+			}
 			if(!d.options)
 			{
 				d.options =[];
 			}
 		});
+		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+300);
 
 		var node = SVG.selectAll(".MetaDataNode")
     .data(nodes);
@@ -776,7 +959,7 @@ Cure.render_network = function(dataset) {
     		}
     		return height;
     	})
-    	.attr("x",70)
+    	.attr("x",90)
     	.attr("y", function(d){ 
     		var height = 0;
     		if(d.options.pct_correct)
@@ -788,11 +971,10 @@ Cure.render_network = function(dataset) {
     			height = scaleY(d.options.infogain);
     		}
     		return -1 * height; })
-    	.style("fill", function(d) { return "lightsteelblue"; });
-		
+    		.style("fill", function(d) { return "lightsteelblue"; });
 		nodeEnter.append("svg:text")
 		.attr("class","nodeaccuracytext")
-  	.attr("transform", "translate(60, 0) rotate(-90)")
+  	.attr("transform", "translate(80, 0) rotate(-90)")
   	.style("font-size","13")
   	.style("fill", function(d) { return "lightsteelblue"; })
   	.text(function(d){
@@ -805,7 +987,7 @@ Cure.render_network = function(dataset) {
   		{
   			text = "Info Gain"+d.options.infogain;
   		}
-  		return text; }
+  		return text.substring(0,15); }
   	);
 		//Bin Size
 		nodeEnter.append("rect")
@@ -819,7 +1001,7 @@ Cure.render_network = function(dataset) {
   		}
   		return height;
   	})
-  	.attr("x",110)
+  	.attr("x",130)
   	.attr("y", function(d){ 
   		var height = 0;
   		if(d.options.bin_size)
@@ -831,7 +1013,7 @@ Cure.render_network = function(dataset) {
 	
 	nodeEnter.append("svg:text")
 	.attr("class","binsizetext")
-	.attr("transform", "translate(100, 0) rotate(-90)")
+	.attr("transform", "translate(120, 0) rotate(-90)")
 	.style("font-size","13")
 	.style("fill", function(d) { return "lightsteelblue"; })
 	.text(function(d){
@@ -840,7 +1022,7 @@ Cure.render_network = function(dataset) {
 		{
 			text = "Bin size: "+d.options.bin_size;
 		}
-		return text; 
+		return text.substring(0,15); 
 		}
 	);
 		
@@ -862,7 +1044,7 @@ Cure.render_network = function(dataset) {
   		}
   		return height;
   	})
-  	.attr("x",70)
+  	.attr("x",90)
   	.attr("y", function(d){ 
   		var height = 0;
   		if(d.options.pct_correct)
@@ -877,7 +1059,7 @@ Cure.render_network = function(dataset) {
   	.style("fill", function(d) { return "lightsteelblue"; });
 	
 	nodeUpdate.select(".nodeaccuracytext")
-	.attr("transform", "translate(60, 0) rotate(-90)")
+	.attr("transform", "translate(80, 0) rotate(-90)")
 	.style("font-size","13")
 	.style("fill", function(d) { return "lightsteelblue"; })
 	.text(function(d){
@@ -890,7 +1072,7 @@ Cure.render_network = function(dataset) {
 		{
 			text = "Info Gain"+d.options.infogain;
 		}
-		return text; }
+		return text.substring(0,15); }
 	);
 	//Bin Size
 	nodeUpdate.select(".binsize")
@@ -903,7 +1085,7 @@ Cure.render_network = function(dataset) {
 		}
 		return height;
 	})
-	.attr("x",110)
+	.attr("x",130)
 	.attr("y", function(d){ 
 		var height = 0;
 		if(d.options.bin_size)
@@ -914,7 +1096,7 @@ Cure.render_network = function(dataset) {
 	.style("fill", function(d) { return "lightsteelblue"; });
 
 nodeUpdate.select(".binsizetext")
-.attr("transform", "translate(100, 0) rotate(-90)")
+.attr("transform", "translate(120, 0) rotate(-90)")
 .style("font-size","13")
 .style("fill", function(d) { return "lightsteelblue"; })
 .text(function(d){
@@ -923,7 +1105,7 @@ nodeUpdate.select(".binsizetext")
 	{
 		text = "Bin size: "+d.options.bin_size;
 	}
-	return text; 
+	return text.substring(0,15); 
 	}
 );
 		
@@ -996,16 +1178,16 @@ Cure.addInitializer(function(options) {
 	  		ScoreRegion: options.regions.ScoreRegion,
 	  		JsonRegion : "#json_structure"
 	  	});
+			Cure.colorScale = d3.scale.category10();
 			Cure.width = options["width"];
 			Cure.height = options["height"];	
 			Cure.duration = 500;
-			Cure.cluster = d3.layout.tree().size([ Cure.width, Cure.height ]);
+			Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 						return [ d.x, d.y ];
 					});
-			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).attr(
-					"height", Cure.height).append("svg:g").attr("transform",
-					"translate(0,40)");
+			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).append("svg:g").attr("transform",
+					"translate(0,100)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
 			Cure.ScoreView = new ScoreView({"model":Cure.Score});
