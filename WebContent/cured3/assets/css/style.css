@@ -20,7 +20,7 @@ div.container {
 
 #mygene_addnode{
 	position:relative;
-	width:100%;
+	width:50%;
 }
 
 #PlayerTreeRegion svg{
@@ -57,7 +57,6 @@ input.edit{
 .node {
   z-index:3;
   position: absolute;
-  border:2px solid steelblue;
   border-radius:5px;
   background-color: white;
 }
@@ -76,7 +75,6 @@ input.edit{
 {
   display:block;
   text-align:center;
-  background: steelblue;
   color: #FFF;
 }
 
