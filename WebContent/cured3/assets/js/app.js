@@ -227,8 +227,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 							'margin-left' : (this.model.get('x') - (($(this.el)
 									.width()) / 2))
 									+ "px",
-							'margin-top' : (this.model.get('y') + 100) + "px"
+							'margin-top' : (this.model.get('y') + 50) + "px"
 						});
+		var color = "";
+		if(this.model.get("options").kind=="split_node")
+  	{color="#9467bd"; }
+  	else if(this.model.get("options").kind=="leaf_node")
+  	{color="#1f77b4";}
+  	else
+  		color = "#d62728";
+		$(this.el).css({"background":color, "border":"2px solid "+color});
 	},
 	updateOnEnter : function(e) {
 		if (e.which == 13) {
@@ -850,7 +858,7 @@ Cure.updatepositions = function(NodeCollection) {
 	d3nodes = Cure.cluster.nodes(Collection);
 	Cure.cluster.nodes(Collection);
 	d3nodes.forEach(function(d) {
-		d.y = d.depth * 130;
+		d.y = d.depth * 80;
 	});
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -898,7 +906,7 @@ Cure.render_network = function(dataset) {
 	{
 		var binY = d3.scale.linear()
 		.domain([0, dataset.options.bin_size])
-		.rangeRound([0, 50]);
+		.rangeRound([0, 40]);
 	}
 	else
 	{
@@ -924,7 +932,7 @@ Cure.render_network = function(dataset) {
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
 		var maxDepth =0;
 		nodes.forEach(function(d) {
-			d.y = d.depth * 130;
+			d.y = d.depth * 80;
 			if(d.y>maxDepth)
 			{
 				maxDepth = d.y;
@@ -969,8 +977,7 @@ Cure.render_network = function(dataset) {
     			height = scaleY(d.options.infogain);
     		}
     		return -1 * height; })
-    	.style("fill", function(d) { return "lightsteelblue"; });
-		
+    		.style("fill", function(d) { return "lightsteelblue"; });
 		nodeEnter.append("svg:text")
 		.attr("class","nodeaccuracytext")
   	.attr("transform", "translate(60, 0) rotate(-90)")
@@ -1186,7 +1193,7 @@ Cure.addInitializer(function(options) {
 						return [ d.x, d.y ];
 					});
 			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).append("svg:g").attr("transform",
-					"translate(0,130)");
+					"translate(0,80)");
 			Cure.PlayerNodeCollection = new NodeCollection();
 			Cure.Score = new Score();
 			Cure.ScoreView = new ScoreView({"model":Cure.Score});
