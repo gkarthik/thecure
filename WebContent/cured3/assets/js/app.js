@@ -599,7 +599,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     		}
     		Cure.ScoreSVG.selectAll(".hoverRect").data(d).enter().append("rect")
   			.attr("x",function(d){
-  				console.log(d);
   				return d.x+8;
   			})
   			.attr("y",function(d){
@@ -770,7 +769,7 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	tagName : "tr",
 	initialize : function() {
-		_.bindAll(this, 'getSummary', 'ShowJSON');
+		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON');
 		this.model.bind('change', this.render);
 		this.model.on('change:edit', function() {
 			if (this.model.get('edit') != 0) {
@@ -801,6 +800,7 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 						"name": data.name
 				};
 				thisView.model.set("gene_summary",summary);
+				thisView.model.set("showJSON",1);
 			});
 		}
 	},
@@ -826,8 +826,8 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	ShowJSON : function() {
 		this.getSummary();
-		$(this.ui.showjson).addClass("disabled");
-		$(this.ui.jsondata).css({
+		this.$el.find(this.ui.showjson).addClass("disabled");
+		this.$el.find(this.ui.jsondata).css({
 			'display' : 'block'
 		});
 	},
@@ -856,7 +856,6 @@ JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to render JSON
 	getItemView: function(model)
 	{
-		console.log(model.get("options").kind)
 		if(model.get("options").kind == "split_node")
 		{
 			return JSONItemView;
