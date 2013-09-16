@@ -179,3 +179,7 @@ margin-left: 5px;
 margin: 1px;
 margin-top: 27px;
 }
+
+#ScoreSVG{
+	border:2px solid steelblue;
+}
