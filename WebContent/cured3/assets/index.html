@@ -43,7 +43,7 @@
 	  <@ if(args.kind == "split_node") { @>
       	<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
       	<td>
-			<div class="jsonview_data">
+			<div class="jsonview_data" id="jsonview_data<@= args.id @>">
 				<button type="button" class="close">&times;</button>
 				<h2><@= args.summary.name @></h2>
 				<@= args.summary.summaryText @>
