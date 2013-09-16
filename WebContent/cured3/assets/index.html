@@ -44,8 +44,12 @@
       	<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
       	<td>
 			<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+<div id="summary_header">
 				<button type="button" class="close">&times;</button>
-				<h2><@= args.summary.name @></h2>
+				<h2><@= args.name @></h2>
+				<h4 class="full_name"><@= args.summary.name @></h4>
+</div>
+<div id="summary_content">
 				<@= args.summary.summaryText @>
 				<@ if(args.summary.goTerms.MF) { @>
 				<h4>Molecular Functions</h4>
@@ -95,6 +99,7 @@ print (args.summary.goTerms.BP.term);
 						<@ }@>
 					</p>
 				<@ } @>
+</div>
 			</div>
 		</td>
 	  <@  } @>

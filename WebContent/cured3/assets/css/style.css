@@ -138,14 +138,13 @@ width: 50%;
 padding: 21px;
 background: #FFF;
 display: none;
-height: 400px;
-overflow: auto;
+height: 450px;
 border: 1px solid lightblue;
 border-radius: 10px;
 box-shadow: 0px 0px 10px 0px lightblue;
 }
 
-#json_structure .jsonview_data h2{
+#json_structure .jsonview_data .full_name{
 	text-transform: capitalize;
 }
 .editnode
@@ -182,4 +181,15 @@ margin-top: 27px;
 
 #ScoreSVG{
 	border:2px solid steelblue;
+}
+
+#summary_header{
+	position:fixed;
+	width:50%;
+}
+
+#summary_content{
+	margin-top:100px;
+	height:350px;
+	overflow: auto;
 }
