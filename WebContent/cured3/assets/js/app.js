@@ -139,7 +139,12 @@ Node = Backbone.RelationalModel.extend({
 		edit : 0,
 		highlight : 0,
 		children: [],
-		gene_summary: "Loading..."
+		gene_summary: {
+			"summaryText": "",
+			"goTerms": {},
+			"name": ""
+	},
+	showJSON: 0
 	},
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);		
@@ -167,7 +172,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	className : 'node',
 	ui : {
 		input : ".edit",
-		addgeneinfo: ".addgeneinfo"
+		addgeneinfo: ".addgeneinfo",
+		name: ".name"
 	},
 	template : function(serialized_model){
 		if(serialized_model.options.kind == "split_value")
@@ -201,6 +207,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
+		'click .name': 'showSummary'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren');
@@ -215,13 +222,12 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
-	onBeforeRender : function() {
-		if (this.model.get('x0') != undefined) {
-			$(this.el).css({
-				'margin-left' : this.model.get('x0') + "px",
-				'margin-top' : this.model.get('y0') + "px"
-			});
+	showSummary: function(){
+		if(this.model.get("options").kind=="split_node"){
+			this.model.set("showJSON",1);
 		}
+	},
+	onBeforeRender : function() {
 		$(this.el).stop(false,false).animate(
 						{
 							'margin-left' : (this.model.get('x') - (($(this.el)
@@ -711,7 +717,7 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
-		'blur .jsonview_data' : 'HideJSON',
+		'click button.close' : 'HideJSON',
 		'click .showattr' : 'ShowAttr',
 		'click .editdone' : 'doneEdit',
 	},
@@ -726,14 +732,28 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 				this.$el.removeClass('editnode');
 			}
 		}, this);
+		this.model.on('change:showJSON', function() {
+			if (this.model.get('showJSON') != 0) {
+				this.ShowJSON();
+			}
+		}, this);
+	},
+	onRender: function(){
+		if (this.model.get('showJSON') != 0) {
+			this.ShowJSON();
+		}
 	},
 	getSummary: function(){
 		var thisView = this;
-		if(this.model.get("gene_summary")=="Loading...")
+		if(this.model.get("gene_summary").summaryText.length==0)
 		{
 			$.getJSON("http://mygene.info/v2/gene/"+this.model.get("options").id,function(data){
-				thisView.model.set("gene_summary",data.summary);
-				thisView.ShowJSON();
+				var summary = {
+						"summaryText": data.summary,
+						"goTerms": data.go,
+						"name": data.name
+				};
+				thisView.model.set("gene_summary",summary);
 			});
 		}
 	},
@@ -759,17 +779,17 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	ShowJSON : function() {
 		this.getSummary();
-		this.ui.showjson.addClass("disabled");
-		this.ui.jsondata.css({
+		$(this.ui.showjson).addClass("disabled");
+		$(this.ui.jsondata).css({
 			'display' : 'block'
 		});
-		this.ui.jsondata.focus();
 	},
 	HideJSON : function() {
-		this.ui.jsondata.css({
+		$(this.ui.jsondata).css({
 			'display' : 'none'
 		});
-		this.ui.showjson.removeClass("disabled");
+		$(this.ui.showjson).removeClass("disabled");
+		this.model.set("showJSON",0);
 	},
 	ShowAttr : function() {
 		this.model.set('edit', 1);
