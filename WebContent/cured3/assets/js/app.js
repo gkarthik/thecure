@@ -139,7 +139,12 @@ Node = Backbone.RelationalModel.extend({
 		edit : 0,
 		highlight : 0,
 		children: [],
-		gene_summary: "Loading..."
+		gene_summary: {
+			"summaryText": "",
+			"goTerms": {},
+			"name": ""
+	},
+	showJSON: 0
 	},
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);		
@@ -167,7 +172,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	className : 'node',
 	ui : {
 		input : ".edit",
-		addgeneinfo: ".addgeneinfo"
+		addgeneinfo: ".addgeneinfo",
+		name: ".name"
 	},
 	template : function(serialized_model){
 		if(serialized_model.options.kind == "split_value")
@@ -201,9 +207,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
+		'click .name': 'showSummary'
 	},
 	initialize : function() {
-		_.bindAll(this, 'remove', 'addChildren');
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
 		this.model.bind('change', this.render);
 		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
@@ -215,13 +222,12 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
-	onBeforeRender : function() {
-		if (this.model.get('x0') != undefined) {
-			$(this.el).css({
-				'margin-left' : this.model.get('x0') + "px",
-				'margin-top' : this.model.get('y0') + "px"
-			});
+	showSummary: function(){
+		if(this.model.get("options").kind=="split_node"){
+			this.model.set("showJSON",1);
 		}
+	},
+	onBeforeRender : function() {
 		$(this.el).stop(false,false).animate(
 						{
 							'margin-left' : (this.model.get('x') - (($(this.el)
@@ -305,20 +311,30 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			}
 		}
 		var interval_angle = 2*Math.PI/json.length;
-		var center = {"x":Cure.width/8,"y":Cure.height/6};
+		var center = {"x":parseInt(Cure.width/8-20),"y":Cure.height/6};
 		var ctr = -1;
+		var maxlimit = [{'x':0,'y':0},{'x':0,'y':0},{'x':0,'y':0}];
+		var maxHalflimit = [{'x':0,'y':0},{'x':0,'y':0},{'x':0,'y':0}];
 		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
 							.attr("x1", center.x)
 							.attr("y1", center.y)
 							.attr("x2", function(d){
 									var length = 100;
 									ctr++;
-									return (center.x)+ (length * Math.cos(ctr*interval_angle));
+									maxlimit[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
+									maxHalflimit[ctr].x = (center.x)+ (length/2 * Math.cos(ctr*interval_angle));
+									return maxlimit[ctr].x;
 							})
 							.attr("y2", function(d){
+								if(ctr >= 2)
+								{
+									ctr = -1;
+								}
 									var length = 100;
 									ctr++;
-									return (center.y)+ (length * Math.sin(ctr*interval_angle));
+									maxlimit[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle)); 
+									maxHalflimit[ctr].y = (center.y)+ (length/2 * Math.sin(ctr*interval_angle));
+									return maxlimit[ctr].y;
 							})
 							.attr("class", "axis").style("stroke", function(){
 								if(ctr >= 2)
@@ -328,19 +344,27 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 								ctr++;
 								return Cure.colorScale(ctr);
 							}).style("stroke-width", "1px");
-		
+		ctr = -1;
 		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition().duration(Cure.duration)
 		.attr("x1", center.x)
 							.attr("y1", center.y)
 							.attr("x2", function(d){
 									var length = 100;
 									ctr++;
-									return (center.x)+ (length * Math.cos(ctr*interval_angle));
+									maxlimit[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle)); 
+									maxHalflimit[ctr].x = (center.x)+ (length/2 * Math.cos(ctr*interval_angle));
+									return maxlimit[ctr].x;
 							})
 							.attr("y2", function(d){
+								if(ctr >= 2)
+								{
+									ctr = -1;
+								}
 									var length = 100;
 									ctr++;
-									return (center.y)+ (length * Math.sin(ctr*interval_angle));
+									maxlimit[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle)); 
+									maxHalflimit[ctr].y = (center.y)+ (length/2 * Math.sin(ctr*interval_angle));
+									return maxlimit[ctr].y;
 							})
 							.attr("class", "axis").attr("class", "axis").style("stroke", function(){
 								if(ctr >= 2)
@@ -377,25 +401,49 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			var text = "";
 			if(d.pct_correct != null)
 			{
-				text = "Accuracy";
+				text = "(100) Accuracy";
 			}
 			else if(d.size != null)
 			{
-				text = "Size";
+				text = "(1) Size";
 			}
 			else if(d.novelty != null)
 			{
-				text = "Novelty";
+				text = "(1) Novelty";
 			}
 			return text;
 		});
+		Cure.ScoreSVG.selectAll(".maxPolygon")
+  	.data([maxlimit])
+  	.enter().append("polygon")
+	.attr("points",function(d) { 
+    return d.map(function(d) {
+        return [d.x,d.y].join(",");
+    }).join(" ");
+  	})
+  	.attr("stroke","rgba(3,3,3,0.15)")
+  	.attr("stroke-width","1px")
+  	.attr("fill","none")
+  	.attr("class","maxPolygon");
+		Cure.ScoreSVG.selectAll(".maxHalfPolygon")
+  	.data([maxHalflimit])
+  	.enter().append("polygon")
+	.attr("points",function(d) { 
+    return d.map(function(d) {
+        return [d.x,d.y].join(",");
+    }).join(" ");
+  	})
+  	.attr("stroke","rgba(3,3,3,0.15)")
+  	.attr("stroke-width","1px")
+  	.attr("fill","none")
+  	.attr("class","maxHalfPolygon");
 	},
 	updateScore: function(){
 		//1000*pct_correct + 750*1/size_of_tree + 500*feature_novelty
 		if(this.model.get("size") != 1)
 		{
 			var score = 750 * (1/this.model.get("size")) + 500 * this.model.get("novelty") + 1000 * this.model.get("pct_correct");
-			this.model.set("score",score);
+			this.model.set("score",Math.round(score));
 		}
 		else
 		{
@@ -413,7 +461,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			}
 		}
 		var interval_angle = 2*Math.PI/json.length;
-		var center = {"x":Cure.width/8,"y":Cure.height/6};
+		var center = {"x":parseInt(Cure.width/8-20),"y":Cure.height/6};
 		var ctr = -1;
 		var accuracyScale = d3.scale.linear()
 			.domain([0, 100])
@@ -524,10 +572,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			ctr++;
 			return Cure.colorScale(ctr);
 		}).attr("r",5);
-		
-		Cure.ScoreSVG.selectAll("polygon")
+  	
+		Cure.ScoreSVG.selectAll(".dataPolygon")
     	.data([datapoints])
     	.enter().append("polygon")
+    	.attr("class","dataPolygon")
   	.attr("points",function(d) { 
       return d.map(function(d) {
           return [d.x,d.y].join(",");
@@ -535,8 +584,10 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     	})
     	.attr("stroke","rgba(189,189,189,0.25)")
     	.attr("stroke-width","0.5px")
-    	.attr("fill","rgba(189,189,189,0.25)")
-    	.on("mouseover",function(d){
+    	.attr("fill","rgba(242,223,191,0.5)");
+    
+    	Cure.ScoreSVG.on("mouseover",function(){
+    		var d = Cure.ScoreSVG.selectAll(".dataPolygon").data()[0];
     		var json = [];
     		for(var temp in thisModel.toJSON())
     		{
@@ -595,16 +646,17 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     				}
     				return text.toFixed(3);
     			}).attr("class","hoverText");
-    		Cure.ScoreSVG.selectAll("polygon").attr("stroke","rgba(189,189,189,0.5)")
+    		
+    		Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke","rgba(189,189,189,0.5)")
     		.attr("stroke-width","2px");
     	})
     	.on("mouseleave",function(d){
     		Cure.ScoreSVG.selectAll(".hoverText").remove();
     		Cure.ScoreSVG.selectAll(".hoverRect").remove(); 
-    		Cure.ScoreSVG.selectAll("polygon").attr("stroke","rgba(189,189,189,0.25").attr("stroke-width","0.5px");
+    		Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke","rgba(189,189,189,0.25").attr("stroke-width","0.5px");
     	});
 		
-		Cure.ScoreSVG.selectAll("polygon")
+		Cure.ScoreSVG.selectAll(".dataPolygon")
   	.transition().duration(Cure.duration)
   	.attr("points",function(d) { 
       return d.map(function(d) {
@@ -613,7 +665,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
   	})
     	.attr("stroke","rgba(189,189,189,0.25)")
     	.attr("stroke-width","1px")
-    	.attr("fill","rgba(189,189,189,0.25)");
+    	.attr("fill","rgba(229,32,30,0.25) ");
 	},
 	onRender: function(){
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width/3).attr("height", Cure.height/3);
@@ -711,13 +763,13 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
-		'blur .jsonview_data' : 'HideJSON',
+		'click button.close' : 'HideJSON',
 		'click .showattr' : 'ShowAttr',
 		'click .editdone' : 'doneEdit',
 	},
 	tagName : "tr",
 	initialize : function() {
-		_.bindAll(this, 'getSummary');
+		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON');
 		this.model.bind('change', this.render);
 		this.model.on('change:edit', function() {
 			if (this.model.get('edit') != 0) {
@@ -726,14 +778,29 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 				this.$el.removeClass('editnode');
 			}
 		}, this);
+		this.model.on('change:showJSON', function() {
+			if (this.model.get('showJSON') != 0) {
+				this.ShowJSON();
+			}
+		}, this);
+	},
+	onRender: function(){
+		if (this.model.get('showJSON') != 0) {
+			this.ShowJSON();
+		}
 	},
 	getSummary: function(){
 		var thisView = this;
-		if(this.model.get("gene_summary")=="Loading...")
+		if(this.model.get("gene_summary").summaryText.length==0)
 		{
 			$.getJSON("http://mygene.info/v2/gene/"+this.model.get("options").id,function(data){
-				thisView.model.set("gene_summary",data.summary);
-				thisView.ShowJSON();
+				var summary = {
+						"summaryText": data.summary,
+						"goTerms": data.go,
+						"name": data.name
+				};
+				thisView.model.set("gene_summary",summary);
+				thisView.model.set("showJSON",1);
 			});
 		}
 	},
@@ -759,17 +826,17 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	},
 	ShowJSON : function() {
 		this.getSummary();
-		this.ui.showjson.addClass("disabled");
-		this.ui.jsondata.css({
+		this.$el.find(this.ui.showjson).addClass("disabled");
+		this.$el.find(this.ui.jsondata).css({
 			'display' : 'block'
 		});
-		this.ui.jsondata.focus();
 	},
 	HideJSON : function() {
-		this.ui.jsondata.css({
+		$(this.ui.jsondata).css({
 			'display' : 'none'
 		});
-		this.ui.showjson.removeClass("disabled");
+		$(this.ui.showjson).removeClass("disabled");
+		this.model.set("showJSON",0);
 	},
 	ShowAttr : function() {
 		this.model.set('edit', 1);
@@ -789,7 +856,6 @@ JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to render JSON
 	getItemView: function(model)
 	{
-		console.log(model.get("options").kind)
 		if(model.get("options").kind == "split_node")
 		{
 			return JSONItemView;
@@ -1203,4 +1269,4 @@ Cure.addInitializer(function(options) {
 			Cure.JsonRegion.show(Cure.JSONCollectionView);
 		});
 
-Cure.start({"height": 600, "width": 800, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion","ScoreRegion":"#ScoreRegion"}});
+Cure.start({"height": 600, "width": 850, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion","ScoreRegion":"#ScoreRegion"}});

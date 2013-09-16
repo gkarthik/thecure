@@ -115,12 +115,12 @@ input.edit{
   float:left;
 }
 
-.jsonview_data{
-  display:none;
-  position:absolute;	
-  width:300px;
-  height: 300px;
-  margin-top:10px;
+.split_node .name{
+	  cursor:pointer;
+}
+
+.split_node .name:hover{
+	  color: #333;
 }
 
 .showjson
@@ -130,11 +130,23 @@ input.edit{
 
 #json_structure .jsonview_data
 {
-  z-index: 4;
-  position:absolute;
-  margin-top: 0px;
+z-index: 4;
+position: fixed;
+margin-top: 40px;
+top: 0px;
+width: 50%;
+padding: 21px;
+background: #FFF;
+display: none;
+height: 450px;
+border: 1px solid lightblue;
+border-radius: 10px;
+box-shadow: 0px 0px 10px 0px lightblue;
 }
 
+#json_structure .jsonview_data .full_name{
+	text-transform: capitalize;
+}
 .editnode
 {
   background:#dff0d8;	
@@ -165,4 +177,19 @@ margin-left: 5px;
 	position: relative;
 margin: 1px;
 margin-top: 27px;
+}
+
+#ScoreSVG{
+	border:2px solid steelblue;
+}
+
+#summary_header{
+	position:fixed;
+	width:50%;
+}
+
+#summary_content{
+	margin-top:100px;
+	height:350px;
+	overflow: auto;
 }

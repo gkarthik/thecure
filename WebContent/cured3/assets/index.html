@@ -42,11 +42,71 @@
       <td><span><button class="btn btn-link showattr" >Info</button></span></td>
 	  <@ if(args.kind == "split_node") { @>
       	<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
-      	<td><textarea readonly class="jsonview_data"><@= args.summary @></textarea></td>
+      	<td>
+			<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+<div id="summary_header">
+				<button type="button" class="close">&times;</button>
+				<h2><@= args.name @></h2>
+				<h4 class="full_name"><@= args.summary.name @></h4>
+</div>
+<div id="summary_content">
+				<@= args.summary.summaryText @>
+				<@ if(args.summary.goTerms.MF) { @>
+				<h4>Molecular Functions</h4>
+					<p>
+						<@ for(var mfunction in args.summary.goTerms.MF) {@>
+							<label class="label label-info"><@ if(args.summary.goTerms.MF[mfunction].term)
+								{
+									print (args.summary.goTerms.MF[mfunction].term);
+}
+else if(mfunction == "term")
+{
+print (args.summary.goTerms.MF.term);
+} 
+								 @></label>
+						<@ }@>
+					</p>
+				<@ } @>
+				<@ if(args.summary.goTerms.CC) { @>
+				<h4>Cellular Component</h4>
+					<p>
+						<@ for(var component in args.summary.goTerms.CC) {@>
+								<label class="label label-info"><@ if(args.summary.goTerms.CC[component].term)
+								{
+									print (args.summary.goTerms.CC[component].term);
+}
+else if(component == "term")
+{
+print (args.summary.goTerms.CC.term);
+} 
+								 @></label>
+						<@ }@>
+					</p>
+				<@ } @>
+				<@ if(args.summary.goTerms.BP) { @>
+				<h4>Biological Process</h4>
+					<p>
+						<@ for(var process in args.summary.goTerms.BP) {@>
+						<label class="label label-info"><@ if(args.summary.goTerms.BP[process].term)
+								{
+									print (args.summary.goTerms.BP[process].term);
+}
+else if(process == "term")
+{
+print (args.summary.goTerms.BP.term);
+} 
+								 @></label>
+						<@ }@>
+					</p>
+				<@ } @>
+</div>
+			</div>
+		</td>
 	  <@  } @>
   </script>
   <script id="Attrtemplate" type="text/template">
     <td colspan="3">
+<button class="btn btn-link editdone" >Close Info</button>
     <ul class="unstyled">
       <li>
             <span class="attredit">
@@ -62,7 +122,6 @@
             </span>
         </li>
       <@ } @>
-<li><button class="btn btn-link editdone" >Close Info</button></li>
     </ul>
     </td>
   </script>
