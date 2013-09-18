@@ -238,8 +238,8 @@ public class Player {
 			double n_cards_board = 0;
 			double sum_agreement_levels = 0;
 			double consensus_agreement_for_board = 0;
-			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0, first_hand_only);
-			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id, first_hand_only);
+			Map<String, GeneRanker.gene_rank> board_consensus = gr.getBoardConsensus(b, 0, first_hand_only, false);
+			Map<String, GeneRanker.gene_rank> player_genes = gr.getBoardConsensus(b, player_id, first_hand_only, false);
 			for(Entry<String, GeneRanker.gene_rank> player_selected : player_genes.entrySet()){
 				if(player_selected.getValue().votes>0){
 					n_cards_board++;

@@ -1029,6 +1029,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		//options child added by web client developer
 		//TODO work with him to make a more meaningful structure...
 		JsonNode options = node.get("options");		
+		if(options==null){
+			return;
+		}
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
 

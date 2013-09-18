@@ -64,10 +64,10 @@ public class GeneRanker {
 	 */
 	public static void main(String[] args) throws Exception {		
 
-		
+
 		/*
 		 * workflow for merging
-		
+
 		String dataset = "dream_breast_cancer";
 		String outfile = "/Users/bgood/workspace/acure/database/ranking_merged_r1r2_only_cancer.txt";
 		boolean only_winning = false;
@@ -83,8 +83,8 @@ public class GeneRanker {
 		List<gene_rank> gr = ranker.mergeGeneRankings(gid_ranked_1, gid_ranked_2);
 		ranker.writeFile(outfile, gr);
 		 */
-		
-/*		String dataset = "griffith_breast_cancer_1";
+
+		/*		String dataset = "griffith_breast_cancer_1";
 		String outfile = "/Users/bgood/workspace/aacure/database/griffith_1_cancer_only.txt";
 		boolean only_winning = false;
 		boolean only_cancer_people = true;
@@ -122,7 +122,7 @@ public class GeneRanker {
 		ranker.weka.setEval_method("training_set");
 		result = ranker.weka.pruneAndExecuteWithUniqueIds(test_fs, model, dataset);
 		System.out.println("training_set_accuracy\t"+result.eval.pctCorrect());
-*/		
+		 */		
 		/**
 		 * workflow for iterating through model building params	and testing	 
 		int runs = 125;
@@ -149,11 +149,11 @@ public class GeneRanker {
 			float cv = ranker.testGeneList(test_fs, dataset, false, model);
 			System.out.println(test_fs.size()+"\t"+cv);
 		}
-		*/
-		
+		 */
+
 		GeneRanker gr = new GeneRanker();
-		boolean first_hand_only = false;
-		Map<String, gene_rank> bg_rank = gr.getBoardConsensus(1001, 0, first_hand_only);
+		boolean first_hand_only = false; boolean barney = false;
+		Map<String, gene_rank> bg_rank = gr.getBoardConsensus(1001, 0, first_hand_only, barney);
 		List<gene_rank> ranked = gr.sortByFrequency(new ArrayList<gene_rank>(bg_rank.values()));
 		Collections.reverse(ranked);
 		for(gene_rank r : ranked){
@@ -296,7 +296,7 @@ public class GeneRanker {
 		Collections.sort(ranked, MergeOrder);
 		return ranked;
 	}
-	
+
 	public List<gene_rank> sortByFrequency(List<gene_rank> ranked){
 		//sort in descending order of the addition of selection frequency
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
@@ -366,9 +366,15 @@ public class GeneRanker {
 		public float relief;
 		public float players;
 		List<Integer> board_id;
+		public float mean_selection_order; // within each 5 card game, is it selected first (5), second (4), ...or 0 //average across all games considered  
 		@Override
 		public int compareTo(gene_rank arg0) {
 			gene_rank compareto = (gene_rank)arg0;
+			if(views==0&&compareto.views==0){
+				Float freq = this.frequency;
+				Float cfreq = compareto.frequency;
+				return freq.compareTo(cfreq);
+			}
 			Float fcomp = compareto.votes/compareto.views;
 			Float f = this.votes/this.views;
 			if(f==fcomp){
@@ -404,13 +410,13 @@ public class GeneRanker {
 		return gene_ranked;
 	}
 
-/**
- * Calculate frequency with which players selected each gene on a given board
- * frequency(gene) = number of players to select that gene / number of players to play board
- * @param board_id
- * @return
- */
-	public Map<String, gene_rank> getBoardConsensus(int board_id, int player_id, boolean first_hand_only){
+	/**
+	 * Calculate frequency with which players selected each gene on a given board
+	 * frequency(gene) = number of players to select that gene / number of players to play board
+	 * @param board_id
+	 * @return
+	 */
+	public Map<String, gene_rank> getBoardConsensus(int board_id, int player_id, boolean first_hand_only, boolean barney){
 		List<Game> games = Game.getGamesForBoard(board_id, first_hand_only, player_id);
 		//this will be the output
 		Map<String, gene_rank> gene_ranked = new HashMap<String, gene_rank>();
@@ -419,13 +425,18 @@ public class GeneRanker {
 		Map<Integer, Set<String>> player_genes = new HashMap<Integer, Set<String>>();
 		for(Game hand : games){
 			List<String> features = hand.getPlayer1_features();
+			if(barney){
+				features = hand.getPlayer2_features();
+			}
 			int p_id = hand.getPlayer1_id();
 			Set<String> genes = player_genes.get(p_id);
 			if(genes==null){
 				genes = new HashSet<String>();
 			}
-			genes.addAll(features);
-			player_genes.put(p_id, genes);
+			if(features!=null){
+				genes.addAll(features);
+				player_genes.put(p_id, genes);
+			}
 		}	
 		//System.out.println(player_genes.keySet().size()+" players");
 		//go through each gene on the board and count occurrences
@@ -461,8 +472,8 @@ public class GeneRanker {
 
 		return gene_ranked;
 	}
-	
-	
+
+
 	/**
 	 * Get data for ranking genes based on selection frequency
 	 * Results returned unsorted
