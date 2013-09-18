@@ -1,55 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
-    <link href='./css/style.css' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css" type="text/css" media="all" />
-    <script type="text/javascript" src="./js/jquery-1.10.1.js"></script>
-    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js" type="text/javascript"></script>
-    <script src="./js/mygene_autocomplete_jqueryui.js" type="text/javascript"></script>
-    <script type="text/javascript" src="./js/underscore.js"></script>
-    <script type="text/javascript" src="./js/backbone.js"></script>
-    <script type="text/javascript" src="./js/backbone-relational.js"></script>
-    <script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
-    <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="row">
-        <div class="span3">
-         <span class="row">
-          <div id="ScoreRegion"></div>
-         </span>
-          <h2>Gene Summary</h2>
-          <table class="table table-hover" id='json_structure'></table>
-        </div>
-        <div class="span9">
-         <span class="row">
-          <div id="PlayerTreeRegion"></div>
-          </span>
-        </div>
-      </div>
-    </div>
-  <script type="text/template" id="AddRootNode">
-<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
-  	<div id="mygene_addnode">
-  	  <input id="gene_query" style="width:250px" class="mygene_query_target">
-  	</div>
-  </script>
-    <script id="JSONtemplate" type="text/template">
-      <td><span class="jsonview_name"><@= args.name @></span></td>
-      <td><span><button class="btn btn-link showattr" >Info</button></span></td>
-	  <@ if(args.kind == "split_node") { @>
-      	<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
-      	<td>
-			<div class="jsonview_data" id="jsonview_data<@= args.id @>">
-<div id="summary_header">
-				<button type="button" class="close">&times;</button>
-				<h2><@= args.name @></h2>
-				<h4 class="full_name"><@= args.summary.name @></h4>
-</div>
-<div id="summary_content">
+<head>
+<meta charset="utf-8">
+<link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+<link href='./css/style.css' rel='stylesheet' type='text/css'>
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
+	type="text/css" media="all" />
+<script type="text/javascript" src="./js/jquery-1.10.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"
+	type="text/javascript"></script>
+<script src="./js/mygene_autocomplete_jqueryui.js"
+	type="text/javascript"></script>
+<script type="text/javascript" src="./js/underscore.js"></script>
+<script type="text/javascript" src="./js/backbone.js"></script>
+<script type="text/javascript" src="./js/backbone-relational.js"></script>
+<script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
+<script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="span3">
+				<span class="row">
+					<div id="ScoreRegion"></div>
+				</span>
+				<h2>Gene Summary</h2>
+				<table class="table table-hover" id='json_structure'></table>
+			</div>
+			<div class="span9">
+				<span class="row">
+					<div id="PlayerTreeRegion"></div>
+				</span>
+			</div>
+		</div>
+	</div>
+	<script type="text/template" id="AddRootNode">
+		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
+  		<div id="mygene_addnode">
+  			<input id="gene_query" style="width:250px" class="mygene_query_target">
+  		</div>
+  	</script>
+	<script id="JSONtemplate" type="text/template">
+      	<td><span class="jsonview_name"><@= args.name @></span></td>
+      	<td><span><button class="btn btn-link showattr" >Info</button></span></td>
+	  	<@ if(args.kind == "split_node") { @>
+      		<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
+      		<td>
+				<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+				<div id="summary_header">
+					<button type="button" class="close">&times;</button>
+					<h2><@= args.name @></h2>
+					<h4 class="full_name"><@= args.summary.name @></h4>
+				</div>
+				<div id="summary_content">
 				<@= args.summary.summaryText @>
 				<@ if(args.summary.goTerms.MF) { @>
 				<h4>Molecular Functions</h4>
@@ -99,12 +103,30 @@ print (args.summary.goTerms.BP.term);
 						<@ }@>
 					</p>
 				<@ } @>
+<@ if(args.summary.generif) { @>
+				<h4>Gene Rifs</h4>
+					<ul>
+						<@ for(var generif in args.summary.generif) {@>
+<li>
+						<@ if(args.summary.generif[generif].text)
+								{
+									print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif[generif].pubmed+'">'+args.summary.generif[generif].text+'</a>');
+}
+else if(generif == "text")
+{
+print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif.pubmed+'">'+args.summary.generif.text+'</a>');
+} 
+								 @>
+</li>
+				<@ } @>
+					</ul>
+				<@ } @>
 </div>
 			</div>
 		</td>
 	  <@  } @>
   </script>
-  <script id="Attrtemplate" type="text/template">
+	<script id="Attrtemplate" type="text/template">
     <td colspan="3">
 <button class="btn btn-link editdone" >Close Info</button>
     <ul class="unstyled">
@@ -125,7 +147,7 @@ print (args.summary.goTerms.BP.term);
     </ul>
     </td>
   </script>
-  <script id="nodeTemplate" type="text/template">  
+	<script id="nodeTemplate" type="text/template">  
     <span class="name attrvalue">
       <@= args.name @>
     </span>
@@ -135,12 +157,12 @@ print (args.summary.goTerms.BP.term);
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
   </script>
-  <script id="splitValueTemplate" type="text/template">  
+	<script id="splitValueTemplate" type="text/template">  
     <span class="name attrvalue">
       <@= args.name @>
     </span>
   </script>
-  <script id="splitNodeTemplate" type="text/template">
+	<script id="splitNodeTemplate" type="text/template">
    <span class="name attrvalue">
       <@= args.name @>
     </span>
@@ -148,13 +170,13 @@ print (args.summary.goTerms.BP.term);
       <i class="icon-remove"></i>
     </button>
 </script>
-<script id="ScoreTemplate" type="text/template">
+	<script id="ScoreTemplate" type="text/template">
 <h3>Score</h3>
 <p class="text-info">Your current score is <label class="label label-info" id="score"><@= score @></label></p>
 		<svg id="ScoreSVG"></svg>
   	</script>
-  	<script id="EmptyTemplate" type="text/template">
+	<script id="EmptyTemplate" type="text/template">
   	</script>
-  <script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
+	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
 </html>

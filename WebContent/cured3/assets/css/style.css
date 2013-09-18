@@ -193,3 +193,7 @@ margin-top: 27px;
 	height:350px;
 	overflow: auto;
 }
+
+#summary_content .label{
+	cursor:default;
+}

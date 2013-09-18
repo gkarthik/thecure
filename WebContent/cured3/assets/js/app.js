@@ -10,107 +10,96 @@ NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
 	},
-  url: "/cure/MetaServer",
-  sync: function() {
-    var tree=[];
-    if(this.models[0])
-    {
-    	tree = this.models[0].toJSON();
-    }
-    var args = {
-      command : "scoretree",
-      dataset : "griffith_breast_cancer_1",
-      treestruct : tree
-    };
+	url : "/cure/MetaServer",
+	sync : function() {
+		//Function to send request to Server with current tree information.
+		var tree = [];
+		if (this.models[0]) {
+			tree = this.models[0].toJSON();
+		}
+		var args = {
+			command : "scoretree",
+			dataset : "griffith_breast_cancer_1",
+			treestruct : tree
+		};
+		//POST request to server.		
 		$.ajax({
 			type : 'POST',
 			url : '/cure/MetaServer',
 			data : JSON.stringify(args),
 			dataType : 'json',
 			contentType : "application/json; charset=utf-8",
-			success:      this.parseResponse,
-      error:        this.error
+			success : this.parseResponse,
+			error : this.error
 		});
-  },
-  updateCollection: function(json_node,node,parent){
-  	if(node!=null && json_node!=null)
-  	{
-  		for ( var key in json_node) {
-				if(key!="children"){
+	},
+	updateCollection : function(json_node, node, parent) {
+		if (node != null && json_node != null) {
+			for ( var key in json_node) {
+				if (key != "children") {
 					node.set(key, json_node[key]);
 				}
 			}
-  		if(json_node.children.length>0&&json_node.children.length==node.get('children').length)
-  		{
-  			for(var temp in json_node.children)
-  			{
-  				this.updateCollection(json_node.children[temp],node.get('children').models[temp]);
-  			}
-  		}
-  		else if(json_node.children.length > node.get('children').length)
-  		{
-  			for(var temp in json_node.children)
-  			{
-  				this.updateCollection(json_node.children[temp],null,node);
-  			} 
-  		}
-  		else if(json_node.children.length < node.get('children').length)
-  		{
-  			var temp = 0;
-  			for(temp in json_node.children)
-  			{
-  				this.updateCollection(json_node.children[temp],node.get('children').models[temp]);
-  			}
-  			temp++;
-  			for(var i = temp; i<node.get('children').length; i++)
-  			{
-  				delete_all_children(node.get('children')[temp]);
-  				node.get('children')[temp].destroy();
-  			}
-  		}
-  	}
-  	else if(node == null)
-  	{
-  		var newNode = new Node({
-  			'name' : "",
-  			"options" : {
-  			},
-  		});
-  		for ( var key in json_node) {
-				if(key!="children"){
+			if (json_node.children.length > 0
+					&& json_node.children.length == node.get('children').length) {
+				for ( var temp in json_node.children) {
+					this.updateCollection(json_node.children[temp],
+							node.get('children').models[temp]);
+				}
+			} else if (json_node.children.length > node.get('children').length) {
+				for ( var temp in json_node.children) {
+					this.updateCollection(json_node.children[temp], null, node);
+				}
+			} else if (json_node.children.length < node.get('children').length) {
+				var temp = 0;
+				for (temp in json_node.children) {
+					this.updateCollection(json_node.children[temp],
+							node.get('children').models[temp]);
+				}
+				temp++;
+				for ( var i = temp; i < node.get('children').length; i++) {
+					delete_all_children(node.get('children')[temp]);
+					node.get('children')[temp].destroy();
+				}
+			}
+		} else if (node == null) {
+			var newNode = new Node({
+				'name' : "",
+				"options" : {},
+			});
+			for ( var key in json_node) {
+				if (key != "children") {
 					newNode.set(key, json_node[key]);
 				}
 			}
-  		newNode.set("cid", newNode.cid);
-  		if(parent!=null)
-  		{
-  			parent.get('children').add(newNode);
-  		}
-  		for(var temp in json_node.children)
-			{
-  			this.updateCollection(json_node.children[temp],null,newNode);
+			newNode.set("cid", newNode.cid);
+			if (parent != null) {
+				parent.get('children').add(newNode);
 			}
-  	}
+			for ( var temp in json_node.children) {
+				this.updateCollection(json_node.children[temp], null, newNode);
+			}
+		}
 		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 		Cure.updatepositions(Cure.PlayerNodeCollection);
-  },
-  parseResponse: function(data){
-  	if(data["treestruct"].name)
-  	{
-    	Cure.PlayerNodeCollection.updateCollection(data["treestruct"],Cure.PlayerNodeCollection.models[0],null);
-  	}
-  	else
-  	{
-  		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
-  		Cure.updatepositions(Cure.PlayerNodeCollection);
-  	}
-  	var scoreArray = data;
-  	scoreArray.treestruct = null;
-  	Cure.Score.set(scoreArray);
-  },
-  error: function(data){
-
-  }
+	},
+	parseResponse : function(data) {
+		//If empty tree is returned, no tree rendered.
+		if (data["treestruct"].name) {
+			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
+		} else {
+		//If server returns json with tree render and update positions of nodes.
+			Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+			Cure.updatepositions(Cure.PlayerNodeCollection);
+		}
+		//Storing Score in a Score Model.
+		var scoreArray = data;
+		scoreArray.treestruct = null;
+		Cure.Score.set(scoreArray);
+	},
+	error : function(data) {
+		console.log("Error Receiving Data From Server.");
+	}
 });
 
 //
@@ -118,13 +107,10 @@ NodeCollection = Backbone.Collection.extend({
 //
 Score = Backbone.RelationalModel.extend({
 	defaults : {
-		novelty: 0,
-		pct_correct: 0,
-		size: 1,//Least Size got form server = 1.
-		score: 0,
-	},
-	initialize : function() {
-		
+		novelty : 0,
+		pct_correct : 0,
+		size : 1,// Least Size got form server = 1.
+		score : 0,
 	}
 });
 
@@ -133,21 +119,22 @@ Node = Backbone.RelationalModel.extend({
 		'name' : '',
 		'cid' : 0,
 		'options' : {
-      "id": "",
-      "kind": "split_node"
+			"id" : "",
+			"kind" : "split_node"
 		},
 		edit : 0,
 		highlight : 0,
-		children: [],
-		gene_summary: {
-			"summaryText": "",
-			"goTerms": {},
-			"name": ""
-	},
-	showJSON: 0
+		children : [],
+		gene_summary : {
+			"summaryText" : "",
+			"goTerms" : {},
+			"generif" : {},
+			"name" : ""
+		},
+		showJSON : 0
 	},
 	initialize : function() {
-		Cure.PlayerNodeCollection.add(this);		
+		Cure.PlayerNodeCollection.add(this);
 	},
 	relations : [ {
 		type : Backbone.HasMany,
@@ -163,51 +150,52 @@ Node = Backbone.RelationalModel.extend({
 //
 // -- Defining our views
 //
+
+//HTML Templates for different types of nodes.
 var node_html = $("#nodeTemplate").html();
 var splitvaluenode_html = $("#splitValueTemplate").html();
 var splitnode_html = $("#splitNodeTemplate").html();
+
+// -- View to manipulate each single node
 NodeView = Backbone.Marionette.ItemView.extend({
-	// -- View to manipulate each single node
 	tagName : 'div',
 	className : 'node',
 	ui : {
 		input : ".edit",
-		addgeneinfo: ".addgeneinfo",
-		name: ".name"
+		addgeneinfo : ".addgeneinfo",
+		name : ".name"
 	},
-	template : function(serialized_model){
-		if(serialized_model.options.kind == "split_value")
-		{
+	template : function(serialized_model) {
+		if (serialized_model.options.kind == "split_value") {
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
-				variable : 'args' 
+				variable : 'args'
 			});
-		}
-		else if(serialized_model.children.length>0 && serialized_model.options.kind == "split_node")
-		{
+		} else if (serialized_model.children.length > 0
+				&& serialized_model.options.kind == "split_node") {
 			return _.template(splitnode_html, {
 				name : serialized_model.name,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
 				variable : 'args'
-			});			
+			});
 		}
-			return _.template(node_html, {
-				name : serialized_model.name,
-				options : serialized_model.options,
-				cid : serialized_model.cid
-			}, {
+		return _.template(node_html, {
+			name : serialized_model.name,
+			options : serialized_model.options,
+			cid : serialized_model.cid
+		}, {
 			variable : 'args'
 		});
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
-		'click .name': 'showSummary'
+		'click .name' : 'showSummary'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
@@ -222,453 +210,424 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
-	showSummary: function(){
-		if(this.model.get("options").kind=="split_node"){
-			this.model.set("showJSON",1);
+	showSummary : function() {
+		//showJSON is used to render the Gene Info POP Up.
+		if (this.model.get("options").kind == "split_node") {
+			this.model.set("showJSON", 1);
 		}
 	},
 	onBeforeRender : function() {
-		$(this.el).stop(false,false).animate(
-						{
-							'margin-left' : (this.model.get('x') - (($(this.el)
-									.width()) / 2))
-									+ "px",
-							'margin-top' : (this.model.get('y') + 70) + "px"
-						});
-		$(this.el).attr("class","node");
+		//Render the positions of each node as obtained from d3.
+		$(this.el).stop(false, false).animate(
+				{
+					'margin-left' : (this.model.get('x') - (($(this.el).width()) / 2))
+							+ "px",
+					'margin-top' : (this.model.get('y') + 70) + "px"
+				});
+		$(this.el).attr("class", "node");
 		$(this.el).addClass(this.model.get("options").kind);
-	},
-	updateOnEnter : function(e) {
-		if (e.which == 13) {
-			this.closeInput();
-		}
-	},
-	closeInput : function() {
-		var value = this.ui.input.val().trim();
-		if (value) {
-			this.model.set('name', value);
-		}
-		this.$el.removeClass('editing');
-	},
-	edit : function() {
-		this.$el.addClass('editing');
-		this.ui.input.focus();
-	},
+	}, 
 	remove : function() {
-		//if (Cure.NodeCollection.length > 1) {//Have to eliminate use of Cure.NodeCollection
+		//Remove and destroy current node.
 		this.$el.remove();
-			Cure.delete_all_children(this.model);
-			this.model.destroy();
-		//}
+		Cure.delete_all_children(this.model);
+		this.model.destroy();
 	},
 	removeChildren : function() {
+		//Remove all children from current node.
 		if (this.model.get('parentNode') != null) {
 			Cure.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
-				for ( var key in prevAttr) {
-						this.model.set(key, prevAttr[key]);
-				}
-				this.model.set("previousAtributes", []);
-		}
-		else
-		{
+			for ( var key in prevAttr) {
+				this.model.set(key, prevAttr[key]);
+			}
+			this.model.set("previousAtributes", []);
+		} else {
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
 		}
 		Cure.PlayerNodeCollection.sync();
 	},
 	addChildren : function() {
+		//Adding new children to the node. This function shows the AddRootNodeView to show mygeneinfo autocomplete.
 		var GeneInfoRegion = new Backbone.Marionette.Region({
-		  el: "#"+$(this.ui.addgeneinfo).attr("id")
+			el : "#" + $(this.ui.addgeneinfo).attr("id")
 		});
-		Cure.addRegions({MyGeneInfoRegion:GeneInfoRegion});
-		var ShowGeneInfoWidget = new AddRootNodeView({'model':this.model});
+		Cure.addRegions({
+			MyGeneInfoRegion : GeneInfoRegion
+		});
+		var ShowGeneInfoWidget = new AddRootNodeView({
+			'model' : this.model
+		});
 		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
 	}
 });
 
+//View to reflect current score and radar chart.
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
-		this.model.bind("change:pct_correct",this.updateScore);
-		this.model.bind("change:size",this.updateScore);
-		this.model.bind("change:novelty",this.updateScore);
+		this.model.bind("change:pct_correct", this.updateScore);
+		this.model.bind("change:size", this.updateScore);
+		this.model.bind("change:novelty", this.updateScore);
 	},
-	ui: {
-		'svg': "#ScoreSVG",
-		'scoreEL': "#score"
+	ui : {
+		'svg' : "#ScoreSVG",
+		'scoreEL' : "#score"
 	},
-	template: "#ScoreTemplate",
-	drawAxis: function(){
+	template : "#ScoreTemplate",
+	drawAxis : function() {
 		var json = [];
 		var thisModel = this.model;
-		for(var temp in this.model.toJSON())
-		{
-			if(temp=="pct_correct"||temp=="novelty"||temp=="size")
-			{
+		for ( var temp in this.model.toJSON()) {
+			if (temp == "pct_correct" || temp == "novelty" || temp == "size") {
 				json.push({});
-				json[json.length-1][temp] = this.model.toJSON()[temp];
+				json[json.length - 1][temp] = this.model.toJSON()[temp];
 			}
 		}
-		var interval_angle = 2*Math.PI/json.length;
-		var center = {"x":parseInt(Cure.width/8-20),"y":Cure.height/6};
+		var interval_angle = 2 * Math.PI / json.length;
+		var center = {
+			"x" : parseInt(Cure.width / 8 - 20),
+			"y" : Cure.height / 6
+		};
 		var ctr = -1;
-		var maxlimit = [{'x':0,'y':0},{'x':0,'y':0},{'x':0,'y':0}];
-		var maxHalflimit = [{'x':0,'y':0},{'x':0,'y':0},{'x':0,'y':0}];
-		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append("svg:line")
-							.attr("x1", center.x)
-							.attr("y1", center.y)
-							.attr("x2", function(d){
-									var length = 100;
-									ctr++;
-									maxlimit[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
-									maxHalflimit[ctr].x = (center.x)+ (length/2 * Math.cos(ctr*interval_angle));
-									return maxlimit[ctr].x;
-							})
-							.attr("y2", function(d){
-								if(ctr >= 2)
-								{
-									ctr = -1;
-								}
-									var length = 100;
-									ctr++;
-									maxlimit[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle)); 
-									maxHalflimit[ctr].y = (center.y)+ (length/2 * Math.sin(ctr*interval_angle));
-									return maxlimit[ctr].y;
-							})
-							.attr("class", "axis").style("stroke", function(){
-								if(ctr >= 2)
-								{
-									ctr = -1;
-								}
-								ctr++;
-								return Cure.colorScale(ctr);
-							}).style("stroke-width", "1px");
-		ctr = -1;
-		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition().duration(Cure.duration)
-		.attr("x1", center.x)
-							.attr("y1", center.y)
-							.attr("x2", function(d){
-									var length = 100;
-									ctr++;
-									maxlimit[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle)); 
-									maxHalflimit[ctr].x = (center.x)+ (length/2 * Math.cos(ctr*interval_angle));
-									return maxlimit[ctr].x;
-							})
-							.attr("y2", function(d){
-								if(ctr >= 2)
-								{
-									ctr = -1;
-								}
-									var length = 100;
-									ctr++;
-									maxlimit[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle)); 
-									maxHalflimit[ctr].y = (center.y)+ (length/2 * Math.sin(ctr*interval_angle));
-									return maxlimit[ctr].y;
-							})
-							.attr("class", "axis").attr("class", "axis").style("stroke", function(){
-								if(ctr >= 2)
-								{
-									ctr = -1;
-								}
-								ctr++;
-								return Cure.colorScale(ctr);
-							}).style("stroke-width", "1px");
-		ctr = -1;
-		var axesText = Cure.ScoreSVG.selectAll(".axisText").data(json).enter().append("svg:text")
-		.attr("x", function(d){
-				var length = 100;
-				ctr++;
-				return (center.x)+ (length * Math.cos(ctr*interval_angle))+10;
-		})
-		.attr("y", function(d){
-			if(ctr >= 2)
-			{
-				ctr = -1;
-			}
-				var length = 100;
-				ctr++;
-				return (center.y)+ (length * Math.sin(ctr*interval_angle))+5;
-		})
-		.attr("class", "axisText").style("stroke", function(){
-			if(ctr >= 2)
-			{
+		var maxlimit = [ {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		} ];
+		var maxHalflimit = [ {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		} ];
+		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append(
+				"svg:line").attr("x1", center.x).attr("y1", center.y).attr(
+				"x2",
+				function(d) {
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].x = (center.x)
+							+ (length * Math.cos(ctr * interval_angle));
+					maxHalflimit[ctr].x = (center.x)
+							+ (length / 2 * Math.cos(ctr * interval_angle));
+					return maxlimit[ctr].x;
+				}).attr(
+				"y2",
+				function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].y = (center.y)
+							+ (length * Math.sin(ctr * interval_angle));
+					maxHalflimit[ctr].y = (center.y)
+							+ (length / 2 * Math.sin(ctr * interval_angle));
+					return maxlimit[ctr].y;
+				}).attr("class", "axis").style("stroke", function() {
+			if (ctr >= 2) {
 				ctr = -1;
 			}
 			ctr++;
 			return Cure.colorScale(ctr);
-		}).style("stroke-width", "0.5px").text(function(d){
-			var text = "";
-			if(d.pct_correct != null)
-			{
-				text = "(100) Accuracy";
-			}
-			else if(d.size != null)
-			{
-				text = "(1) Size";
-			}
-			else if(d.novelty != null)
-			{
-				text = "(1) Novelty";
-			}
-			return text;
-		});
-		Cure.ScoreSVG.selectAll(".maxPolygon")
-  	.data([maxlimit])
-  	.enter().append("polygon")
-	.attr("points",function(d) { 
-    return d.map(function(d) {
-        return [d.x,d.y].join(",");
-    }).join(" ");
-  	})
-  	.attr("stroke","rgba(3,3,3,0.15)")
-  	.attr("stroke-width","1px")
-  	.attr("fill","none")
-  	.attr("class","maxPolygon");
-		Cure.ScoreSVG.selectAll(".maxHalfPolygon")
-  	.data([maxHalflimit])
-  	.enter().append("polygon")
-	.attr("points",function(d) { 
-    return d.map(function(d) {
-        return [d.x,d.y].join(",");
-    }).join(" ");
-  	})
-  	.attr("stroke","rgba(3,3,3,0.15)")
-  	.attr("stroke-width","1px")
-  	.attr("fill","none")
-  	.attr("class","maxHalfPolygon");
+		}).style("stroke-width", "1px");
+		ctr = -1;
+		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition().duration(
+				Cure.duration).attr("x1", center.x).attr("y1", center.y).attr(
+				"x2",
+				function(d) {
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].x = (center.x)
+							+ (length * Math.cos(ctr * interval_angle));
+					maxHalflimit[ctr].x = (center.x)
+							+ (length / 2 * Math.cos(ctr * interval_angle));
+					return maxlimit[ctr].x;
+				}).attr(
+				"y2",
+				function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].y = (center.y)
+							+ (length * Math.sin(ctr * interval_angle));
+					maxHalflimit[ctr].y = (center.y)
+							+ (length / 2 * Math.sin(ctr * interval_angle));
+					return maxlimit[ctr].y;
+				}).attr("class", "axis").attr("class", "axis").style("stroke",
+				function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).style("stroke-width", "1px");
+		ctr = -1;
+		var axesText = Cure.ScoreSVG.selectAll(".axisText").data(json).enter()
+				.append("svg:text").attr("x", function(d) {
+					var length = 100;
+					ctr++;
+					return (center.x) + (length * Math.cos(ctr * interval_angle)) + 10;
+				}).attr("y", function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					return (center.y) + (length * Math.sin(ctr * interval_angle)) + 5;
+				}).attr("class", "axisText").style("stroke", function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).style("stroke-width", "0.5px").text(function(d) {
+					var text = "";
+					if (d.pct_correct != null) {
+						text = "(100) Accuracy";
+					} else if (d.size != null) {
+						text = "(1) Size";
+					} else if (d.novelty != null) {
+						text = "(1) Novelty";
+					}
+					return text;
+				});
+		Cure.ScoreSVG.selectAll(".maxPolygon").data([ maxlimit ]).enter().append(
+				"polygon").attr("points", function(d) {
+			return d.map(function(d) {
+				return [ d.x, d.y ].join(",");
+			}).join(" ");
+		}).attr("stroke", "rgba(3,3,3,0.15)").attr("stroke-width", "1px").attr(
+				"fill", "none").attr("class", "maxPolygon");
+		Cure.ScoreSVG.selectAll(".maxHalfPolygon").data([ maxHalflimit ]).enter()
+				.append("polygon").attr("points", function(d) {
+					return d.map(function(d) {
+						return [ d.x, d.y ].join(",");
+					}).join(" ");
+				}).attr("stroke", "rgba(3,3,3,0.15)").attr("stroke-width", "1px").attr(
+						"fill", "none").attr("class", "maxHalfPolygon");
 	},
-	updateScore: function(){
-		//1000*pct_correct + 750*1/size_of_tree + 500*feature_novelty
-		if(this.model.get("size") != 1)
-		{
-			var score = 750 * (1/this.model.get("size")) + 500 * this.model.get("novelty") + 1000 * this.model.get("pct_correct");
-			this.model.set("score",Math.round(score));
-		}
-		else
-		{
-			this.model.set({"score":0,"size":1/0,"pct_correct":0,"novelty":0});
+	updateScore : function() {
+		// 1000*pct_correct + 750*1/size_of_tree + 500*feature_novelty
+		if (this.model.get("size") != 1) {
+			var score = 750 * (1 / this.model.get("size")) + 500
+					* this.model.get("novelty") + 1000 * this.model.get("pct_correct");
+			this.model.set("score", Math.round(score));
+		} else {
+			this.model.set({
+				"score" : 0,
+				"size" : 1 / 0,
+				"pct_correct" : 0,
+				"novelty" : 0
+			});
 		}
 		$(this.ui.scoreEL).html(this.model.get("score"));
 		var json = [];
 		var thisModel = this.model;
-		for(var temp in this.model.toJSON())
-		{
-			if(temp=="pct_correct"||temp=="novelty"||temp=="size")
-			{
+		for ( var temp in this.model.toJSON()) {
+			if (temp == "pct_correct" || temp == "novelty" || temp == "size") {
 				json.push({});
-				json[json.length-1][temp] = this.model.toJSON()[temp];
+				json[json.length - 1][temp] = this.model.toJSON()[temp];
 			}
 		}
-		var interval_angle = 2*Math.PI/json.length;
-		var center = {"x":parseInt(Cure.width/8-20),"y":Cure.height/6};
+		var interval_angle = 2 * Math.PI / json.length;
+		var center = {
+			"x" : parseInt(Cure.width / 8 - 20),
+			"y" : Cure.height / 6
+		};
 		var ctr = -1;
-		var accuracyScale = d3.scale.linear()
-			.domain([0, 100])
-			.rangeRound([0, 100]);
-		var noveltyScale = d3.scale.linear()
-			.domain([0, 1])
-		.rangeRound([0, 100]);
-		var sizeScale = d3.scale.linear()
-		.domain([0, 1])
-		.rangeRound([0, 100]);
-		var datapoints = [{"x":0,"y":0},{"x":0,"y":0},{"x":0,"y":0}];
-		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter().append("circle")
-		.attr("cx", function(d){
-			var length = 0;
-			if(d.pct_correct)
-			{
-				length = accuracyScale(d.pct_correct);
-			}
-			else if(d.size)
-			{
-				length = sizeScale(1/d.size);
-			}
-			else if(d.novelty)
-			{
-				length = noveltyScale(d.novelty);
-			}
-			ctr++;
-			datapoints[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
-			return datapoints[ctr].x;
-		})
-		.attr("cy", function(d){
-			if(ctr==2)
-			{
-				ctr = -1;
-			}
-			var length = 0;
-			if(d.pct_correct)
-			{
-				length = accuracyScale(d.pct_correct);
-			}
-			else if(d.size)
-			{
-				length = sizeScale(1/d.size);
-			}
-			else if(d.novelty)
-			{
-				length = noveltyScale(d.novelty);
-			}
-			ctr++;
-			datapoints[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle));
-			return datapoints[ctr].y;
-		})
-		.attr("class", "datapoint").attr("fill",function(){
-								if(ctr >= 2)
-								{
-									ctr = -1;
-								}
-								ctr++;
-								return Cure.colorScale(ctr);
-							}).attr("r",5);
+		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).rangeRound(
+				[ 0, 100 ]);
+		var noveltyScale = d3.scale.linear().domain([ 0, 1 ])
+				.rangeRound([ 0, 100 ]);
+		var sizeScale = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
+		var datapoints = [ {
+			"x" : 0,
+			"y" : 0
+		}, {
+			"x" : 0,
+			"y" : 0
+		}, {
+			"x" : 0,
+			"y" : 0
+		} ];
+		var points = Cure.ScoreSVG.selectAll(".datapoint").data(json).enter()
+				.append("circle").attr(
+						"cx",
+						function(d) {
+							var length = 0;
+							if (d.pct_correct) {
+								length = accuracyScale(d.pct_correct);
+							} else if (d.size) {
+								length = sizeScale(1 / d.size);
+							} else if (d.novelty) {
+								length = noveltyScale(d.novelty);
+							}
+							ctr++;
+							datapoints[ctr].x = (center.x)
+									+ (length * Math.cos(ctr * interval_angle));
+							return datapoints[ctr].x;
+						}).attr(
+						"cy",
+						function(d) {
+							if (ctr == 2) {
+								ctr = -1;
+							}
+							var length = 0;
+							if (d.pct_correct) {
+								length = accuracyScale(d.pct_correct);
+							} else if (d.size) {
+								length = sizeScale(1 / d.size);
+							} else if (d.novelty) {
+								length = noveltyScale(d.novelty);
+							}
+							ctr++;
+							datapoints[ctr].y = (center.y)
+									+ (length * Math.sin(ctr * interval_angle));
+							return datapoints[ctr].y;
+						}).attr("class", "datapoint").attr("fill", function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).attr("r", 5);
 		ctr = -1;
-		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition().duration(Cure.duration)
-		.attr("cx", function(d){
-			var length = 0;
-			if(d.pct_correct)
-			{
-				length = accuracyScale(d.pct_correct);
-			}
-			else if(d.size)
-			{
-				length = sizeScale(1/d.size);
-			}
-			else if(d.novelty)
-			{
-				length = noveltyScale(d.novelty);
-			}
-			ctr++;
-			datapoints[ctr].x = (center.x)+ (length * Math.cos(ctr*interval_angle));
-			return datapoints[ctr].x;
-		})
-		.attr("cy", function(d){
-			if(ctr==2)
-			{
-				ctr = -1;
-			}
-			var length = 0;
-			if(d.pct_correct)
-			{
-				length = accuracyScale(d.pct_correct);
-			}
-			else if(d.size)
-			{
-				length = sizeScale(1/d.size);
-			}
-			else if(d.novelty)
-			{
-				length = noveltyScale(d.novelty);
-			}
-			ctr++;
-			datapoints[ctr].y = (center.y)+ (length * Math.sin(ctr*interval_angle));
-			return datapoints[ctr].y;
-		})
-		.attr("class", "datapoint").attr("fill",function(){
-			if(ctr >= 2)
-			{
-				ctr = -1;
-			}
-			ctr++;
-			return Cure.colorScale(ctr);
-		}).attr("r",5);
-  	
-		Cure.ScoreSVG.selectAll(".dataPolygon")
-    	.data([datapoints])
-    	.enter().append("polygon")
-    	.attr("class","dataPolygon")
-  	.attr("points",function(d) { 
-      return d.map(function(d) {
-          return [d.x,d.y].join(",");
-      }).join(" ");
-    	})
-    	.attr("stroke","rgba(189,189,189,0.25)")
-    	.attr("stroke-width","0.5px")
-    	.attr("fill","rgba(242,223,191,0.5)");
-    
-    	Cure.ScoreSVG.on("mouseover",function(){
-    		var d = Cure.ScoreSVG.selectAll(".dataPolygon").data()[0];
-    		var json = [];
-    		for(var temp in thisModel.toJSON())
-    		{
-    			if(temp!="treestruct"&&temp!="text_tree")
-    			{
-    				json.push({});
-    				json[json.length-1][temp] = thisModel.toJSON()[temp];
-    			}
-    		}
-    		Cure.ScoreSVG.selectAll(".hoverRect").data(d).enter().append("rect")
-  			.attr("x",function(d){
-  				return d.x+8;
-  			})
-  			.attr("y",function(d){
-  				return d.y-2;
-  			})
-  			.attr("height","17")
-  			.attr("width","40")
-  			.attr("fill","rgb(255,213,52)")
-  			.attr("class","hoverRect");
-    		ctr = -1;
-    		Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append("svg:text")
-    			.attr("x",function(d){
-    				return d.x+10;
-    			})
-    			.attr("y",function(d){
-    				return d.y+10;
-    			})
-    			.style({"font-size":"10px","background":"#FFF"})
-    			.attr("stroke",function(){
-    				if(ctr>=2)
-    				{
-    					ctr = -1;
-    				}
-    				ctr++;
-    				return Cure.colorScale(ctr);
-    			})
-    			.text(function(){
-    				if(ctr>=2)
-    				{
-    					ctr = -1;
-    				} 
-    				ctr++;
-    				var text = 0;
-    				if(json[ctr].pct_correct)
-    				{
-    					text = json[ctr].pct_correct;
-    				}
-    				else if(json[ctr].size)
-    				{
-    					text = json[ctr].size;
-    				}
-    				else if(json[ctr].novelty)
-    				{
-    					text = json[ctr].novelty;
-    				}
-    				return text.toFixed(3);
-    			}).attr("class","hoverText");
-    		
-    		Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke","rgba(189,189,189,0.5)")
-    		.attr("stroke-width","2px");
-    	})
-    	.on("mouseleave",function(d){
-    		Cure.ScoreSVG.selectAll(".hoverText").remove();
-    		Cure.ScoreSVG.selectAll(".hoverRect").remove(); 
-    		Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke","rgba(189,189,189,0.25").attr("stroke-width","0.5px");
-    	});
-		
-		Cure.ScoreSVG.selectAll(".dataPolygon")
-  	.transition().duration(Cure.duration)
-  	.attr("points",function(d) { 
-      return d.map(function(d) {
-          return [d.x,d.y].join(",");
-      }).join(" ");
-  	})
-    	.attr("stroke","rgba(189,189,189,0.25)")
-    	.attr("stroke-width","1px")
-    	.attr("fill","rgba(229,32,30,0.25) ");
+		var pointsUpdate = Cure.ScoreSVG.selectAll(".datapoint").transition()
+				.duration(Cure.duration).attr(
+						"cx",
+						function(d) {
+							var length = 0;
+							if (d.pct_correct) {
+								length = accuracyScale(d.pct_correct);
+							} else if (d.size) {
+								length = sizeScale(1 / d.size);
+							} else if (d.novelty) {
+								length = noveltyScale(d.novelty);
+							}
+							ctr++;
+							datapoints[ctr].x = (center.x)
+									+ (length * Math.cos(ctr * interval_angle));
+							return datapoints[ctr].x;
+						}).attr(
+						"cy",
+						function(d) {
+							if (ctr == 2) {
+								ctr = -1;
+							}
+							var length = 0;
+							if (d.pct_correct) {
+								length = accuracyScale(d.pct_correct);
+							} else if (d.size) {
+								length = sizeScale(1 / d.size);
+							} else if (d.novelty) {
+								length = noveltyScale(d.novelty);
+							}
+							ctr++;
+							datapoints[ctr].y = (center.y)
+									+ (length * Math.sin(ctr * interval_angle));
+							return datapoints[ctr].y;
+						}).attr("class", "datapoint").attr("fill", function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).attr("r", 5);
+
+		Cure.ScoreSVG.selectAll(".dataPolygon").data([ datapoints ]).enter()
+				.append("polygon").attr("class", "dataPolygon").attr("points",
+						function(d) {
+							return d.map(function(d) {
+								return [ d.x, d.y ].join(",");
+							}).join(" ");
+						}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width",
+						"0.5px").attr("fill", "rgba(242,223,191,0.5)");
+
+		Cure.ScoreSVG.on(
+				"mouseover",
+				function() {
+					var d = Cure.ScoreSVG.selectAll(".dataPolygon").data()[0];
+					var json = [];
+					for ( var temp in thisModel.toJSON()) {
+						if (temp != "treestruct" && temp != "text_tree") {
+							json.push({});
+							json[json.length - 1][temp] = thisModel.toJSON()[temp];
+						}
+					}
+					Cure.ScoreSVG.selectAll(".hoverRect").data(d).enter().append("rect")
+							.attr("x", function(d) {
+								return d.x + 8;
+							}).attr("y", function(d) {
+								return d.y - 2;
+							}).attr("height", "17").attr("width", "40").attr("fill",
+									"rgb(255,213,52)").attr("class", "hoverRect");
+					ctr = -1;
+					Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append(
+							"svg:text").attr("x", function(d) {
+						return d.x + 10;
+					}).attr("y", function(d) {
+						return d.y + 10;
+					}).style({
+						"font-size" : "10px",
+						"background" : "#FFF"
+					}).attr("stroke", function() {
+						if (ctr >= 2) {
+							ctr = -1;
+						}
+						ctr++;
+						return Cure.colorScale(ctr);
+					}).text(function() {
+						if (ctr >= 2) {
+							ctr = -1;
+						}
+						ctr++;
+						var text = 0;
+						if (json[ctr].pct_correct) {
+							text = json[ctr].pct_correct;
+						} else if (json[ctr].size) {
+							text = json[ctr].size;
+						} else if (json[ctr].novelty) {
+							text = json[ctr].novelty;
+						}
+						return text.toFixed(3);
+					}).attr("class", "hoverText");
+
+					Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke",
+							"rgba(189,189,189,0.5)").attr("stroke-width", "2px");
+				}).on(
+				"mouseleave",
+				function(d) {
+					Cure.ScoreSVG.selectAll(".hoverText").remove();
+					Cure.ScoreSVG.selectAll(".hoverRect").remove();
+					Cure.ScoreSVG.selectAll(".dataPolygon").attr("stroke",
+							"rgba(189,189,189,0.25").attr("stroke-width", "0.5px");
+				});
+
+		Cure.ScoreSVG.selectAll(".dataPolygon").transition()
+				.duration(Cure.duration).attr("points", function(d) {
+					return d.map(function(d) {
+						return [ d.x, d.y ].join(",");
+					}).join(" ");
+				}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width", "1px")
+				.attr("fill", "rgba(229,32,30,0.25) ");
 	},
-	onRender: function(){
-		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width/3).attr("height", Cure.height/3);
+	onRender : function() {
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width / 3)
+				.attr("height", Cure.height / 3);
 		this.drawAxis();
 		this.updateScore();
 	}
@@ -677,65 +636,64 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 	},
-	ui: {
-		'input': '.mygene_query_target'
+	ui : {
+		'input' : '.mygene_query_target'
 	},
-	template: "#AddRootNode",
-	render: function(){
-		if(this.model)
-		{
+	template : "#AddRootNode",
+	render : function() {
+		if (this.model) {
 			var model = this.model;
 		}
-		var html_template= $("#AddRootNode").html();
+		var html_template = $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
-	    select: function(event, ui) {
-	    var kind_value="";
-	    try{
-	    	kind_value= model.get("options").kind;
-	    }catch (exception) {}
-	    if(kind_value=="leaf_node")
-	    {
-	    	model.set("previousAttributes",model.toJSON());
-	    	model.set("name",ui.item.symbol);
-	    	model.set("options",{id: ui.item.id,"kind": "split_node","full_name":ui.item.name});
-	    }
-	    else
-	    {
-	    	var newNode = new Node({
-					'name' : ui.item.symbol,
-					"options" : {
-						id: ui.item.id,
-						"kind": "split_node",
-						"full_name":ui.item.name
-					}
-				});
-				newNode.set("cid", newNode.cid);
-				if(model.get("children"))
-				{
-					model.get("children").add(newNode);
+			select : function(event, ui) {
+				var kind_value = "";
+				try {
+					kind_value = model.get("options").kind;
+				} catch (exception) {
 				}
-	    }
-			if(Cure.MyGeneInfoRegion)
-			{
-				Cure.MyGeneInfoRegion.close();
+				if (kind_value == "leaf_node") {
+					model.set("previousAttributes", model.toJSON());
+					model.set("name", ui.item.symbol);
+					model.set("options", {
+						id : ui.item.id,
+						"kind" : "split_node",
+						"full_name" : ui.item.name
+					});
+				} else {
+					var newNode = new Node({
+						'name' : ui.item.symbol,
+						"options" : {
+							id : ui.item.id,
+							"kind" : "split_node",
+							"full_name" : ui.item.name
+						}
+					});
+					newNode.set("cid", newNode.cid);
+					if (model.get("children")) {
+						model.get("children").add(newNode);
+					}
+				}
+				if (Cure.MyGeneInfoRegion) {
+					Cure.MyGeneInfoRegion.close();
+				}
+				Cure.PlayerNodeCollection.sync();
 			}
-			Cure.PlayerNodeCollection.sync();
-		}
-	});                
-		$(document).mouseup(function (e)
-				{
-				    var container = $("#mygene_addnode");
+		});
+		$(document).mouseup(function(e) {
+			var container = $("#mygene_addnode");
 
-				    if (!container.is(e.target) // if the target of the click isn't the container...
-				        && container.has(e.target).length === 0) // ... nor a descendant of the container
-				    {
-				  			if(Cure.MyGeneInfoRegion)
-				  			{
-				  				Cure.MyGeneInfoRegion.close();
-				  			}
-				    }
-				});
+			if (!container.is(e.target) // if the target of the click isn't the
+																	// container...
+					&& container.has(e.target).length === 0) // ... nor a descendant of
+																										// the container
+			{
+				if (Cure.MyGeneInfoRegion) {
+					Cure.MyGeneInfoRegion.close();
+				}
+			}
+		});
 	}
 });
 
@@ -748,10 +706,12 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	}
 });
 
+//HTML Templates for rendering Gene SUmary Pop Up and Node Information. 
 var shownode_html = $("#JSONtemplate").html();
 var nodeedit_html = $('#Attrtemplate').html();
+
+// -- View to render Gene SUmmary List
 JSONItemView = Backbone.Marionette.ItemView.extend({
-	// -- View to render JSON
 	model : Node,
 	ui : {
 		jsondata : ".jsonview_data",
@@ -784,24 +744,25 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			}
 		}, this);
 	},
-	onRender: function(){
+	onRender : function() {
 		if (this.model.get('showJSON') != 0) {
 			this.ShowJSON();
 		}
 	},
-	getSummary: function(){
+	getSummary : function() {
 		var thisView = this;
-		if(this.model.get("gene_summary").summaryText.length==0)
-		{
-			$.getJSON("http://mygene.info/v2/gene/"+this.model.get("options").id,function(data){
-				var summary = {
-						"summaryText": data.summary,
-						"goTerms": data.go,
-						"name": data.name
-				};
-				thisView.model.set("gene_summary",summary);
-				thisView.model.set("showJSON",1);
-			});
+		if (this.model.get("gene_summary").summaryText.length == 0) {
+			$.getJSON("http://mygene.info/v2/gene/" + this.model.get("options").id,
+					function(data) {
+						var summary = {
+							"summaryText" : data.summary,
+							"goTerms" : data.go,
+							"generif" : data.generif,
+							"name" : data.name
+						};
+						thisView.model.set("gene_summary", summary);
+						thisView.model.set("showJSON", 1);
+					});
 		}
 	},
 	template : function(serialized_model) {
@@ -811,7 +772,7 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			return _.template(shownode_html, {
 				name : name,
 				summary : serialized_model.gene_summary,
-				kind: serialized_model.options.kind
+				kind : serialized_model.options.kind
 			}, {
 				variable : 'args'
 			});
@@ -836,7 +797,7 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 			'display' : 'none'
 		});
 		$(this.ui.showjson).removeClass("disabled");
-		this.model.set("showJSON",0);
+		this.model.set("showJSON", 0);
 	},
 	ShowAttr : function() {
 		this.model.set('edit', 1);
@@ -846,23 +807,19 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+// -- View to render empty Gene SUmmar List for genes not of type "split_node"
 EmptyJSONItemView = Backbone.Marionette.ItemView.extend({
-	// -- View to render JSON
 	model : Node,
-	template: "#EmptyTemplate"
+	template : "#EmptyTemplate"
 });
 
+//Collection View to render gene summary list.
 JSONCollectionView = Backbone.Marionette.CollectionView.extend({
-	// -- View to render JSON
-	getItemView: function(model)
-	{
-		if(model.get("options").kind == "split_node")
-		{
+	getItemView : function(model) {
+		if (model.get("options").kind == "split_node") {
 			return JSONItemView;
-		}
-		else
-		{
-			return EmptyJSONItemView; 
+		} else {
+			return EmptyJSONItemView;
 		}
 
 	},
@@ -872,19 +829,21 @@ JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 		this.collection.bind('remove', this.render);
 	}
 });
+
 //
 // -- Utilities / Helpers
 //
 
-// -- Pretty Print JSON.
+// -- Pretty Print JSON. Function NOT being used in code but can be used for rendering JSON for testing purposes.
 // -- Ref :
 // http://stackoverflow.com/questions/4810841/json-pchildjson["children"].length>0retty-print-using-javascript
+
 Cure.prettyPrint = function(json) {
 	if (typeof json != 'string') {
 		json = JSON.stringify(json, undefined, 2);
 	}
-	json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g,
-			'&gt;');
+	json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;');
 	return json
 			.replace(
 					/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
@@ -906,12 +865,11 @@ Cure.prettyPrint = function(json) {
 }
 
 //
-// -- Get JSON from d3 to BackBone
+// -- Function to get positions from d3 and update the attributes of the NodeCollection.
 //
 Cure.updatepositions = function(NodeCollection) {
 	var Collection = [];
-	if(NodeCollection.toJSON()[0])
-	{
+	if (NodeCollection.toJSON()[0]) {
 		Collection = NodeCollection.toJSON()[0];
 	}
 	var d3nodes = [];
@@ -928,14 +886,10 @@ Cure.updatepositions = function(NodeCollection) {
 		for ( var innerTemp in d3nodes) {
 			if (String(d3nodes[innerTemp].cid) == String(NodeCollection["models"][temp]
 					.get('cid'))) {
-				NodeCollection["models"][temp].set("x",
-						d3nodes[innerTemp].x);
-				NodeCollection["models"][temp].set("y",
-						d3nodes[innerTemp].y);
-				NodeCollection["models"][temp].set("x0",
-						d3nodes[innerTemp].x0);
-				NodeCollection["models"][temp].set("y0",
-						d3nodes[innerTemp].y0);
+				NodeCollection["models"][temp].set("x", d3nodes[innerTemp].x);
+				NodeCollection["models"][temp].set("y", d3nodes[innerTemp].y);
+				NodeCollection["models"][temp].set("x0", d3nodes[innerTemp].x0);
+				NodeCollection["models"][temp].set("y0", d3nodes[innerTemp].y0);
 			}
 		}
 	}
@@ -958,228 +912,183 @@ Cure.delete_all_children = function(seednode) {
 // -- Render d3 Network
 //
 Cure.render_network = function(dataset) {
-	var scaleY = d3.scale.linear()
-	     .domain([0, 1])
-	     .rangeRound([0, 100]);
-	
-	if(dataset)
-	{
-		var binY = d3.scale.linear()
-		.domain([0, dataset.options.bin_size])
-		.rangeRound([0, 40]);
-	}
-	else
-	{
-		var binY = d3.scale.linear()
-		.domain([0, 100])
-		.rangeRound([0, 50]);
-		dataset = [{
+	var scaleY = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
+
+	if (dataset) {
+		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
+				.rangeRound([ 0, 40 ]);
+	} else {
+		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 50 ]);
+		dataset = [ {
 			'name' : '',
 			'cid' : 0,
 			'options' : {
-	      "id": "",
-	      "kind": "split_node"
+				"id" : "",
+				"kind" : "split_node"
 			},
 			edit : 0,
 			highlight : 0,
-			children: []
-		}];
+			children : []
+		} ];
 	}
 	var SVG;
-	if(dataset)
-	{
+	if (dataset) {
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-		var maxDepth =0;
+		var maxDepth = 0;
 		nodes.forEach(function(d) {
 			d.y = d.depth * 80;
-			if(d.y>maxDepth)
-			{
+			if (d.y > maxDepth) {
 				maxDepth = d.y;
 			}
-			if(!d.options)
-			{
-				d.options =[];
+			if (!d.options) {
+				d.options = [];
 			}
 		});
-		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+300);
+		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
 
-		var node = SVG.selectAll(".MetaDataNode")
-    .data(nodes);
+		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
-		var nodeEnter = node.enter().append("svg:g")
-    	.attr("class", "MetaDataNode")
-    	.attr("transform", function(d) { return "translate(" + dataset.x + "," + dataset.y + ")"; });
-		nodeEnter.append("rect")
-			.attr("class","nodeaccuracy")
-    	.attr("width", 10)
-    	.attr("height", function(d){
-    		var height = 0;
-    		if(d.options.pct_correct)
-    		{
-    			height = scaleY(d.options.pct_correct);
-    		}
-    		else if(d.options.infogain)
-    		{
-    			height = scaleY(d.options.infogain);
-    		}
-    		return height;
-    	})
-    	.attr("x",90)
-    	.attr("y", function(d){ 
-    		var height = 0;
-    		if(d.options.pct_correct)
-    		{
-    			height = scaleY(d.options.pct_correct);
-    		}
-    		else if(d.options.infogain)
-    		{
-    			height = scaleY(d.options.infogain);
-    		}
-    		return -1 * height; })
-    		.style("fill", function(d) { return "lightsteelblue"; });
-		nodeEnter.append("svg:text")
-		.attr("class","nodeaccuracytext")
-  	.attr("transform", "translate(80, 0) rotate(-90)")
-  	.style("font-size","13")
-  	.style("fill", function(d) { return "lightsteelblue"; })
-  	.text(function(d){
-  		var text = "";
-  		if(d.options.pct_correct)
-  		{
-  			text = "Accuracy: "+d.options.pct_correct;
-  		}
-  		else if(d.options.infogain)
-  		{
-  			text = "Info Gain"+d.options.infogain;
-  		}
-  		return text.substring(0,15); }
-  	);
-		//Bin Size
-		nodeEnter.append("rect")
-		.attr("class","binsize")
-  	.attr("width", 10)
-  	.attr("height", function(d){
-  		var height = 0;
-  		if(d.options.bin_size)
-  		{
-  			height = binY(d.options.bin_size);
-  		}
-  		return height;
-  	})
-  	.attr("x",130)
-  	.attr("y", function(d){ 
-  		var height = 0;
-  		if(d.options.bin_size)
-  		{
-  			height = binY(d.options.bin_size);
-  		}
-  		return -1 * height; })
-  	.style("fill", function(d) { return "lightsteelblue"; });
-	
-	nodeEnter.append("svg:text")
-	.attr("class","binsizetext")
-	.attr("transform", "translate(120, 0) rotate(-90)")
-	.style("font-size","13")
-	.style("fill", function(d) { return "lightsteelblue"; })
-	.text(function(d){
-		var text = "";
-		if(d.options.bin_size)
-		{
-			text = "Bin size: "+d.options.bin_size;
-		}
-		return text.substring(0,15); 
-		}
-	);
-		
-		var nodeUpdate = node.transition()
-		.duration(Cure.duration)
-		.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });		
-		
-		nodeUpdate.select(".nodeaccuracy")
-  	.attr("width", 10)
-  	.attr("height", function(d){
-  		var height = 0;
-  		if(d.options.pct_correct)
-  		{
-  			height = scaleY(d.options.pct_correct);
-  		}
-  		else if(d.options.infogain)
-  		{
-  			height = scaleY(d.options.infogain);
-  		}
-  		return height;
-  	})
-  	.attr("x",90)
-  	.attr("y", function(d){ 
-  		var height = 0;
-  		if(d.options.pct_correct)
-  		{
-  			height = scaleY(d.options.pct_correct);
-  		}
-  		else if(d.options.infogain)
-  		{
-  			height = scaleY(d.options.infogain);
-  		}
-  		return -1 * height; })
-  	.style("fill", function(d) { return "lightsteelblue"; });
-	
-	nodeUpdate.select(".nodeaccuracytext")
-	.attr("transform", "translate(80, 0) rotate(-90)")
-	.style("font-size","13")
-	.style("fill", function(d) { return "lightsteelblue"; })
-	.text(function(d){
-		var text = "";
-		if(d.options.pct_correct)
-		{
-			text = "Accuracy: "+d.options.pct_correct;
-		}
-		else if(d.options.infogain)
-		{
-			text = "Info Gain"+d.options.infogain;
-		}
-		return text.substring(0,15); }
-	);
-	//Bin Size
-	nodeUpdate.select(".binsize")
-	.attr("width", 10)
-	.attr("height", function(d){
-		var height = 0;
-		if(d.options.bin_size)
-		{
-			height = binY(d.options.bin_size);
-		}
-		return height;
-	})
-	.attr("x",130)
-	.attr("y", function(d){ 
-		var height = 0;
-		if(d.options.bin_size)
-		{
-			height = binY(d.options.bin_size);
-		}
-		return -1 * height; })
-	.style("fill", function(d) { return "lightsteelblue"; });
+		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode")
+				.attr("transform", function(d) {
+					return "translate(" + dataset.x + "," + dataset.y + ")";
+				});
+		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("width", 10)
+				.attr("height", function(d) {
+					var height = 0;
+					if (d.options.pct_correct) {
+						height = scaleY(d.options.pct_correct);
+					} else if (d.options.infogain) {
+						height = scaleY(d.options.infogain);
+					}
+					return height;
+				}).attr("x", 90).attr("y", function(d) {
+					var height = 0;
+					if (d.options.pct_correct) {
+						height = scaleY(d.options.pct_correct);
+					} else if (d.options.infogain) {
+						height = scaleY(d.options.infogain);
+					}
+					return -1 * height;
+				}).style("fill", function(d) {
+					return "lightsteelblue";
+				});
+		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
+				"transform", "translate(80, 0) rotate(-90)").style("font-size", "13")
+				.style("fill", function(d) {
+					return "lightsteelblue";
+				}).text(function(d) {
+					var text = "";
+					if (d.options.pct_correct) {
+						text = "Accuracy: " + d.options.pct_correct;
+					} else if (d.options.infogain) {
+						text = "Info Gain" + d.options.infogain;
+					}
+					return text.substring(0, 15);
+				});
+		// Bin Size
+		nodeEnter.append("rect").attr("class", "binsize").attr("width", 10).attr(
+				"height", function(d) {
+					var height = 0;
+					if (d.options.bin_size) {
+						height = binY(d.options.bin_size);
+					}
+					return height;
+				}).attr("x", 130).attr("y", function(d) {
+			var height = 0;
+			if (d.options.bin_size) {
+				height = binY(d.options.bin_size);
+			}
+			return -1 * height;
+		}).style("fill", function(d) {
+			return "lightsteelblue";
+		});
 
-nodeUpdate.select(".binsizetext")
-.attr("transform", "translate(120, 0) rotate(-90)")
-.style("font-size","13")
-.style("fill", function(d) { return "lightsteelblue"; })
-.text(function(d){
-	var text = "";
-	if(d.options.bin_size)
-	{
-		text = "Bin size: "+d.options.bin_size;
-	}
-	return text.substring(0,15); 
-	}
-);
-		
-	  var nodeExit = node.exit().transition()
-    									 .duration(Cure.duration)
-    									 .attr("transform", function(d) { return "translate(" + dataset.x + "," + dataset.y + ")"; })
-    									 .remove();
-		
+		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
+				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
+				function(d) {
+					return "lightsteelblue";
+				}).text(function(d) {
+			var text = "";
+			if (d.options.bin_size) {
+				text = "Bin size: " + d.options.bin_size;
+			}
+			return text.substring(0, 15);
+		});
+
+		var nodeUpdate = node.transition().duration(Cure.duration).attr(
+				"transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")";
+				});
+
+		nodeUpdate.select(".nodeaccuracy").attr("width", 10).attr("height",
+				function(d) {
+					var height = 0;
+					if (d.options.pct_correct) {
+						height = scaleY(d.options.pct_correct);
+					} else if (d.options.infogain) {
+						height = scaleY(d.options.infogain);
+					}
+					return height;
+				}).attr("x", 90).attr("y", function(d) {
+			var height = 0;
+			if (d.options.pct_correct) {
+				height = scaleY(d.options.pct_correct);
+			} else if (d.options.infogain) {
+				height = scaleY(d.options.infogain);
+			}
+			return -1 * height;
+		}).style("fill", function(d) {
+			return "lightsteelblue";
+		});
+
+		nodeUpdate.select(".nodeaccuracytext").attr("transform",
+				"translate(80, 0) rotate(-90)").style("font-size", "13").style("fill",
+				function(d) {
+					return "lightsteelblue";
+				}).text(function(d) {
+			var text = "";
+			if (d.options.pct_correct) {
+				text = "Accuracy: " + d.options.pct_correct;
+			} else if (d.options.infogain) {
+				text = "Info Gain" + d.options.infogain;
+			}
+			return text.substring(0, 15);
+		});
+		// Bin Size
+		nodeUpdate.select(".binsize").attr("width", 10).attr("height", function(d) {
+			var height = 0;
+			if (d.options.bin_size) {
+				height = binY(d.options.bin_size);
+			}
+			return height;
+		}).attr("x", 130).attr("y", function(d) {
+			var height = 0;
+			if (d.options.bin_size) {
+				height = binY(d.options.bin_size);
+			}
+			return -1 * height;
+		}).style("fill", function(d) {
+			return "lightsteelblue";
+		});
+
+		nodeUpdate.select(".binsizetext").attr("transform",
+				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
+				function(d) {
+					return "lightsteelblue";
+				}).text(function(d) {
+			var text = "";
+			if (d.options.bin_size) {
+				text = "Bin size: " + d.options.bin_size;
+			}
+			return text.substring(0, 15);
+		});
+
+		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
+				"transform", function(d) {
+					return "translate(" + dataset.x + "," + dataset.y + ")";
+				}).remove();
+
 		var link = SVG.selectAll(".link").data(links);
 		link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
 				function(d) {
@@ -1191,26 +1100,22 @@ nodeUpdate.select(".binsizetext")
 						source : o,
 						target : o
 					});
-				}).style("stroke-width",1);
-		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style("stroke-width",function(d){
-			var strokewidth = 1;
-			if(d.target.options.kind!="split_value")
-			{
-				strokewidth = binY(d.target.options.bin_size);
-			}
-			else
-			{
-				if(d.target.children[0])
-				{
-					strokewidth = binY(d.target.children[0].options.bin_size);
-				}
-			}
-			if(strokewidth<1)
-			{
-				strokewidth = 1;
-			}
-			return strokewidth;
-		});
+				}).style("stroke-width", 1);
+		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style(
+				"stroke-width", function(d) {
+					var strokewidth = 1;
+					if (d.target.options.kind != "split_value") {
+						strokewidth = binY(d.target.options.bin_size);
+					} else {
+						if (d.target.children[0]) {
+							strokewidth = binY(d.target.children[0].options.bin_size);
+						}
+					}
+					if (strokewidth < 1) {
+						strokewidth = 1;
+					}
+					return strokewidth;
+				});
 		link.exit().transition().duration(Cure.duration).attr("d", function(d) {
 			var o = {
 				x : dataset.x,
@@ -1226,47 +1131,62 @@ nodeUpdate.select(".binsizetext")
 			d.y0 = d.y;
 		});
 	}
-	}
+}
 
 //
 // -- App init!
 //    
 Cure.addInitializer(function(options) {
+	//JSP Uses <% %> to render elements and this clashes with default underscore templates.
 	_.templateSettings = {
-	    interpolate: /\<\@\=(.+?)\@\>/gim,
-	    evaluate: /\<\@([\s\S]+?)\@\>/gim,
-	    escape: /\<\@\-(.+?)\@\>/gim
+		interpolate : /\<\@\=(.+?)\@\>/gim,
+		evaluate : /\<\@([\s\S]+?)\@\>/gim,
+		escape : /\<\@\-(.+?)\@\>/gim
 	};
 	Backbone.emulateHTTP = true;
-	$(options.regions.PlayerTreeRegion).html("<div id='"+options.regions.PlayerTreeRegion.replace("#","")+"Tree'></div><svg id='"+options.regions.PlayerTreeRegion.replace("#","")+"SVG'></svg>")
-				Cure.addRegions({
-	  		PlayerTreeRegion : options.regions.PlayerTreeRegion+"Tree",
-	  		ScoreRegion: options.regions.ScoreRegion,
-	  		JsonRegion : "#json_structure"
-	  	});
-			Cure.colorScale = d3.scale.category10();
-			Cure.width = options["width"];
-			Cure.height = options["height"];	
-			Cure.duration = 500;
-			Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
-			Cure.diagonal = d3.svg.diagonal().projection(function(d) {
-						return [ d.x, d.y ];
-					});
-			Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion+"SVG").attr("width", Cure.width).append("svg:g").attr("transform",
-					"translate(0,100)");
-			Cure.PlayerNodeCollection = new NodeCollection();
-			Cure.Score = new Score();
-			Cure.ScoreView = new ScoreView({"model":Cure.Score});
-			Cure.PlayerNodeCollectionView = new NodeCollectionView({
-				collection : Cure.PlayerNodeCollection
-			});
-			
-			Cure.JSONCollectionView = new JSONCollectionView({
-				collection : Cure.PlayerNodeCollection
-			});
-			Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
-			Cure.ScoreRegion.show(Cure.ScoreView);
-			Cure.JsonRegion.show(Cure.JSONCollectionView);
-		});
+	$(options.regions.PlayerTreeRegion).html(
+			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
+					+ "Tree'></div><svg id='"
+					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>")
+	Cure.addRegions({
+		PlayerTreeRegion : options.regions.PlayerTreeRegion + "Tree",
+		ScoreRegion : options.regions.ScoreRegion,
+		JsonRegion : "#json_structure"
+	});
+	Cure.colorScale = d3.scale.category10();
+	Cure.width = options["width"];
+	Cure.height = options["height"];
+	Cure.duration = 500;
+	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
+	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
+		return [ d.x, d.y ];
+	});
+	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
+			"width", Cure.width).append("svg:g")
+			.attr("transform", "translate(0,100)");
+	Cure.PlayerNodeCollection = new NodeCollection();
+	Cure.Score = new Score();
+	Cure.ScoreView = new ScoreView({
+		"model" : Cure.Score
+	});
+	Cure.PlayerNodeCollectionView = new NodeCollectionView({
+		collection : Cure.PlayerNodeCollection
+	});
 
-Cure.start({"height": 600, "width": 850, "regions":{"PlayerTreeRegion":"#PlayerTreeRegion","ScoreRegion":"#ScoreRegion"}});
+	Cure.JSONCollectionView = new JSONCollectionView({
+		collection : Cure.PlayerNodeCollection
+	});
+	Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
+	Cure.ScoreRegion.show(Cure.ScoreView);
+	Cure.JsonRegion.show(Cure.JSONCollectionView);
+});
+
+//App Start
+Cure.start({
+	"height" : 600,
+	"width" : 850,
+	"regions" : {
+		"PlayerTreeRegion" : "#PlayerTreeRegion",
+		"ScoreRegion" : "#ScoreRegion"
+	}
+});
