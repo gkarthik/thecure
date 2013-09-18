@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
 import org.scripps.combo.weka.GeneRanker;
+import org.scripps.combo.weka.GeneRanker.gene_rank;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 
@@ -61,13 +63,16 @@ public class Stats {
 		/// Time and quantity
 		////////////////////////////////////////
 		//games
+		////////////////////////////////////////
 		//		outfile = output_dir+"games_day.txt";
 		//		String day_or_month = "day";
 		//		outputGamesPerTime(day_or_month, outfile);
 		//		outfile = output_dir+"games_month.txt";
 		//		day_or_month = "month";
 		//		outputGamesPerTime(day_or_month, outfile);
+		///////////////////////////////////////
 		//players
+		//////////////////////////////////////
 		//		outfile = output_dir+"players_month";
 		//		outputNewPlayersPerTime(outfile);
 		//		outfile = output_dir+"global_player_info.txt";
@@ -89,27 +94,165 @@ public class Stats {
 		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
 		//					Player.describePlayers(only_first_per_board, outfile, dataset);
 		//				}
-//			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
-//			boolean first_hand_only = true;
-//			String dataset = "griffith_breast_cancer_1";
-//			outputPlayerAgreeability(outfile, first_hand_only, dataset);
-//			String inforchart = outfile;
-//			buildAgreeabilityCharts(inforchart, output_dir); 
-		outfile = output_dir+"board_consensus.txt";
-		boolean random = false;
-		boolean first_hand_only = true;
-		outputBoardConsensus(outfile, first_hand_only, random);
-//		outfile = output_dir+"board_consensus_all_hands.txt";
-//		first_hand_only = false;
-//		outputBoardConsensus(outfile, first_hand_only, random);
-//		random = true;
-//		first_hand_only = true;
-//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
-//		outputBoardConsensus(outfile, first_hand_only, random);
+		//			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
+		//			boolean first_hand_only = true;
+		//			String dataset = "griffith_breast_cancer_1";
+		//			outputPlayerAgreeability(outfile, first_hand_only, dataset);
+		//			String inforchart = outfile;
+		//			buildAgreeabilityCharts(inforchart, output_dir); 
+		///////////////////////////////////////
+		//Boards (and genes)
+		//////////////////////////////////////		
+		//				outfile = output_dir+"board_consensus.txt";
+		//				boolean random = false;
+		//				boolean first_hand_only = true;
+		//				outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
+		//		outfile = output_dir+"board_consensus_all_hands.txt";
+		//		first_hand_only = false;
+		//		outputBoardConsensus(outfile, first_hand_only, random);
+		//		random = true;
+		//		first_hand_only = true;
+		//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+		//		outputBoardConsensus(outfile, first_hand_only, random);
+		///////////////////////////////////////
+		//genes
+		//////////////////////////////////////
+		//outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
+
+		double p = getSimPerGeneP(28, 12);
+		System.out.println("full sim "+p);
+		p = StatUtil.getSimpleP(28, 12, 0.2);
+		System.out.println("Simple sim "+p);
 	}
 
+	public static void computeOverlapMetrics(String testgenefile, String againstgenefile){
+		Set<String> testgenes = new HashSet<String>();
+		Set<String> against = new HashSet<String>();
+		//load in both gene sets
 
-	public static void outputBoardConsensus(String outfile, boolean first_hand_only, boolean random){
+		//build 2 by 2 table
+		//a tp = n genes in both sets
+		//b fp = n genes in the testset and not in the against set
+		//c fn = n genes in against set and not in the test set
+		//d tn = n genes not in the test set and not in the against set
+		//test with fisherexact
+
+	}
+
+	public static double getSimPerGeneP(int n_views, int n_votes){
+		double p = 1;
+		int times = 10;
+		int runs = 1000;
+		int n_sim_votes = 0;
+		int board_size = 25; int hand_size = 5;
+		Set<Integer> bboard = new HashSet<Integer>(board_size);
+		List<Integer> board = null;
+		for(int i=0; i<board_size; i++){
+			bboard.add(i);
+		}
+		double sumP = 0;
+		for(int t=0; t<times; t++){
+			n_sim_votes = 0;
+			for(int r=0; r<runs; r++){
+				int sim_votes = 0;
+				// one game = one view
+				for(int o=0; o<n_views; o++){
+					board = new ArrayList<Integer>(bboard);
+					Collections.shuffle(board);
+					//in each round two cards are selected
+					//player 1 (human) always goes first
+					for(int g=0; g<hand_size*2; g++){
+						int test = board.get(g); 
+						if(test==0){ //0 is the target gene
+							if(g%2==0){
+								sim_votes++;
+							}else{
+								break; //barney got the card
+							}
+						}
+						board.remove(g); //take the selected card off the board
+					}
+				}
+				if(sim_votes>n_votes){
+					n_sim_votes++;
+				}
+			}
+			p = (double)n_sim_votes/runs;
+			sumP+=p;
+		}
+		return sumP/times;
+	}
+
+	public static void outputFrequencyBasedGeneRankings(String outfileroot){
+		GeneRanker gr = new GeneRanker();
+		String dataset = null;
+		String outfile = outfileroot+"all_players.txt";
+		boolean only_winning = false;
+		boolean only_cancer_people = false;
+		boolean only_bio_people = false;
+		boolean only_phd = false;
+		for(int i=0; i< 4; i++){
+			if(i==0){
+				System.out.println("Running all.. ");
+			}
+			else if(i==1){
+				only_cancer_people = true;
+				outfile = outfileroot+"only_cancer_f.txt";
+				System.out.println("Running with cancer knowledge.. ");
+			}else if(i==2){
+				only_cancer_people = false;
+				only_phd = true;
+				outfile = outfileroot+"only_phd_f.txt";
+				System.out.println("Running with phd.. ");
+			}else if(i==3){
+				only_cancer_people = true;
+				only_phd = true;
+				outfile = outfileroot+"only_cancer_and_phd_f.txt";
+				System.out.println("Running with cancer knowledge and phd.. ");
+			}
+			Map<String, gene_rank> bg_rank = gr.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
+			List<gene_rank> ranked = new ArrayList<gene_rank>(bg_rank.values());
+			ranked = gr.setFrequencyByViews(ranked);
+			ranked = gr.sortByFrequency(ranked);
+			try {
+				FileWriter f = new FileWriter(outfile);
+				f.write("entrez_id\tlocal_id\tsymbol\tviews\tvotes\tfrequency\tSimP\n");
+				int count_p_sig = 0;
+				for(gene_rank r : ranked){
+					long[] data = new long[2];
+					if(r.views > 4){
+						data[0] = (long)r.votes; data[1] = (long)(r.views-r.votes);
+						double sp = getSimPerGeneP((int)r.views,(int)r.votes);
+						if(sp<0.01){
+							count_p_sig++;
+						}
+						f.write(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.views+"\t"+r.votes+"\t"+r.frequency+"\t"+sp+"\n");
+					}
+				}
+				System.out.println("N sig genes = "+count_p_sig);
+				f.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Summarizes the results on a per-board basis across all players.
+	 * Also outputs 2 gene lists (one at p < 0.05 and one < 0.01)
+	 * The genes in the list are members of boards that contained significantly different distributions of responses than random (based on a simulation).
+	 * Only the genes with a within-board frequency of selection >= to the gene with the lowest p value in the board are kept.
+	 * Typically, a gene with a very high frequency of selection will also have a low p value.  The strategy taken here is meant to cover 
+	 * cases where a board may contain multiple good genes hence making their individual frequencies lower.  So, a gene that has the 
+	 * second highest frequency may actually have a lower p value (based on its rank) than the gene with the higher frequency. In that case, both 
+	 * of the genes are kept.
+	 * @param outfile
+	 * @param genefile
+	 * @param first_hand_only
+	 * @param random
+	 */
+	public static void outputBoardConsensus(String outfile, String genefile, boolean first_hand_only, boolean random){
 		//set up tables to get P vlaues from simulated data
 		int n_per_board = 25;
 		int min_players = 1;
@@ -120,8 +263,9 @@ public class Stats {
 		SimulationP simp = new SimulationP();
 		simp.initCureSim(n_per_board, min_players, max_players, n_cards, n_runs, n_times);
 		System.out.println("P sim initialized");
-		boolean drop_mammal = true;
-		List<Board> boards = Board.getAllBoards(drop_mammal);
+		boolean drop_mammal = true; boolean setfeatures = false;
+		List<Board> boards = Board.getAllBoards(drop_mammal, setfeatures);
+
 		try {
 			FileWriter out = new FileWriter(outfile);
 			GeneRanker gr = new GeneRanker();
@@ -131,6 +275,8 @@ public class Stats {
 			}
 			out.write("\n");
 			int i = 0;
+			Set<String> p05_genes = new HashSet<String>();
+			Set<String> p01_genes = new HashSet<String>();
 			for(Board board : boards){
 				i++;
 				Map<String, GeneRanker.gene_rank> ranks = gr.getBoardConsensus(board.getId(), 0, first_hand_only, random);
@@ -144,11 +290,19 @@ public class Stats {
 				Collections.sort(ranked);
 				Collections.reverse(ranked);
 				double lowest_p = 1;
+				Set<String> p_genes_tmp = new HashSet<String>();
 				for(GeneRanker.gene_rank rank : ranked){
 					//grab simP value at this rank.
 					double p = simp.getP((int)rank.players, (double)rank.frequency, b);
+					p_genes_tmp.add(rank.symbol+"\t"+rank.entrez+"\t");
 					if(lowest_p > p){
 						lowest_p = p;
+						if(lowest_p<0.01){
+							p01_genes.addAll(p_genes_tmp);
+						}
+						if(lowest_p<0.05){
+							p05_genes.addAll(p_genes_tmp);
+						}
 					}
 					counts[b] = (long)rank.votes;
 					histo+=rank.symbol+"_"+rank.entrez+":"+rank.votes+";"+rank.frequency+" p"+p+"\t";
@@ -160,22 +314,37 @@ public class Stats {
 				double[] r_p = StatUtil.chiSquaredTestForUniformDistribution(counts);
 				double[] g_p = StatUtil.gTestForUniformDistribution(counts);
 				String row = board.getId()+"\t"+freqs.getMin()+"\t"+freqs.getMean()+"\t"+freqs.getMax()+"\t"+votes.getSum()+"\t"+player_count;
-					   row+= "\t"+board.getBase_score()+"\t"+board.getDataset()+"\t"+board.getRoom()+"\t"+board.getUpdated();
-					   row+= "\t"+r_p[0]+"\t"+r_p[1]+"\t"+g_p[0]+"\t"+g_p[1]+"\t"+lowest_p+"\t"+histo;
-					   
+				row+= "\t"+board.getBase_score()+"\t"+board.getDataset()+"\t"+board.getRoom()+"\t"+board.getUpdated();
+				row+= "\t"+r_p[0]+"\t"+r_p[1]+"\t"+g_p[0]+"\t"+g_p[1]+"\t"+lowest_p+"\t"+histo;
+
 				out.write(row+"\n");
 				System.out.println(i+"\t"+row);
 			}
 			out.close();
+
+			//write the significant gene sets
+			FileWriter gene05 = new FileWriter(genefile+"p05.txt");
+			for(String gene : p05_genes){
+				gene05.write(gene+"\n");
+			}
+			gene05.close();
+
+			FileWriter gene01 = new FileWriter(genefile+"p01.txt");
+			for(String gene : p01_genes){
+				gene01.write(gene+"\n");
+			}
+			gene01.close();
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	
+
 	public static void buildAgreeabilityCharts(String input_file, String output_dir){
-		
+
 		try {
 			int n = 0;
 			DescriptiveStatistics phd = new DescriptiveStatistics();
@@ -198,7 +367,7 @@ public class Stats {
 						}else{
 							nobiok.addValue(median);
 						}
-						
+
 						if(data[3].equals("yes")){
 							cancerk.addValue(median);
 						}else{
@@ -231,15 +400,15 @@ public class Stats {
 					" mean with bio k: "+biok.getMean()+" "+biok.getN()+" "+
 					" mean without bio K: "+nobiok.getMean()+" "+nobiok.getN());			
 			//histos
-//			Map<String,double[]> datas = new HashMap<String, double[]>();
-//			datas.put("PhD", phd.getValues());
-//			datas.put("No PhD", nophd.getValues());
-//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/PhD_agreeability", true);
-//			datas = new HashMap<String, double[]>();
-//			datas.put("Cancer Knowledge", phd.getValues());
-//			datas.put("No Cancer Knowledge", nophd.getValues());
-//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/CancerK_agreeability", true);
-		
+			//			Map<String,double[]> datas = new HashMap<String, double[]>();
+			//			datas.put("PhD", phd.getValues());
+			//			datas.put("No PhD", nophd.getValues());
+			//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/PhD_agreeability", true);
+			//			datas = new HashMap<String, double[]>();
+			//			datas.put("Cancer Knowledge", phd.getValues());
+			//			datas.put("No Cancer Knowledge", nophd.getValues());
+			//			StatUtil.plotHistograms(datas, 10, "Agreeability Estimates", "Bin Mean (count)", "Frequency", output_dir+"players/CancerK_agreeability", true);
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -247,18 +416,18 @@ public class Stats {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 
 
 	}
-	
+
 	/**
 	 * Quantify how similar the player's gene selections are to the community consensus
 	 * @param outfile
 	 */
 	public static void outputPlayerAgreeability(String outfile, boolean first_hand_only, String dataset){
 		List<Player> players = Player.getAllPlayers();
-		
+
 		try {
 			FileWriter out = new FileWriter(outfile);
 			out.write("player.getId()\tplayer.getName()\tplayer.getBiologist()\tplayer.getCancer()\tplayer.getDegree()\tpc.getN()\tpc.getMean()\tpc.getPercentile(50)\n");
@@ -289,7 +458,7 @@ public class Stats {
 			//tests
 			double know_cancer_diff_agree_t = TestUtils.tTest(without_cancer_knowledge, with_cancer_knowledge);
 			double phd_diff_agree_t = TestUtils.tTest(without_phd, with_phd);
-			
+
 			MannWhitneyUTest mw = new MannWhitneyUTest();
 			double know_cancer_diff_agree_w = mw.mannWhitneyUTest(without_cancer_knowledge.getSortedValues(), with_cancer_knowledge.getSortedValues());
 			double phd_diff_agree_w = mw.mannWhitneyUTest(without_phd.getSortedValues(), with_phd.getSortedValues());

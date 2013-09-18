@@ -521,7 +521,7 @@ public class Board {
 //	}
 
 	
-	public static List<Board> getAllBoards(boolean drop_mammal){
+	public static List<Board> getAllBoards(boolean drop_mammal, boolean setfeatures){
 		List<Board> boards= new ArrayList<Board>();
 		String getboards = "select * from board order by dataset, base_score desc";
 		if(drop_mammal){
@@ -538,13 +538,14 @@ public class Board {
 				board.setRoom(rslt.getString("room"));
 				board.setUpdated(rslt.getTimestamp("updated"));
 				board.setBase_score(rslt.getFloat("base_score"));
-				
-//				ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
-//				List<Feature> fs = new ArrayList<Feature>();
-//				while(f_list.next()){
-//					fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
-//				}
-//				board.setFeatures(fs);
+				if(setfeatures){
+					ResultSet f_list = conn.executeQuery("select * from board_feature where board_id = "+board.getId());
+					List<Feature> fs = new ArrayList<Feature>();
+					while(f_list.next()){
+						fs.add(Feature.getByDbId(f_list.getInt("feature_id")));
+					}
+					board.setFeatures(fs);
+				}
 				boards.add(board);
 			}
 			rslt.close();

@@ -297,6 +297,17 @@ public class GeneRanker {
 		return ranked;
 	}
 
+	public List<gene_rank> setFrequencyByViews(List<gene_rank> ranked){
+		for(gene_rank gene : ranked){
+			if(gene.views==0){
+				gene.frequency = 0;
+			}else{
+				gene.frequency = gene.votes/gene.views;
+			}
+		}
+		return ranked;
+	}
+	
 	public List<gene_rank> sortByFrequency(List<gene_rank> ranked){
 		//sort in descending order of the addition of selection frequency
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
@@ -478,7 +489,7 @@ public class GeneRanker {
 	 * Get data for ranking genes based on selection frequency
 	 * Results returned unsorted
 	 * Returns map with the feature id in our database as the key and a gene_rank object as the value
-	 * @param dataset
+	 * @param dataset (if null, will get them all)
 	 * @param only_winning
 	 * @param only_cancer_people
 	 * @param only_bio_people
@@ -487,11 +498,25 @@ public class GeneRanker {
 	 */
 	public Map<String, gene_rank> getRankedGenes(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 
-		List<Game> hands = getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
-
+		List<Game> hands = new ArrayList<Game>();
+		//get rid of the mammal hands
+		for(Game hand : getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd)){
+			if(hand.getBoard_id()<201||hand.getBoard_id()>204){
+				hands.add(hand);
+			}
+		}
+		
 		//this will be the output
 		Map<String, gene_rank> gene_ranked = new HashMap<String, gene_rank>();
 
+		//get the boards ready
+		boolean drop_mammal = true; boolean setfeatures = true;
+		List<Board> boards = Board.getAllBoards(drop_mammal, setfeatures);
+		Map<Integer, Board> id_board = new HashMap<Integer, Board>();
+		for(Board board : boards){
+			id_board.put(board.getId(), board);
+		}
+		
 		//count the votes
 		int c = 0;
 		for(Game hand : hands){
@@ -509,8 +534,7 @@ public class GeneRanker {
 				}
 			}
 			//increase view count for all the features in the board for this hand
-			//todo cache this to make it faster
-			Board board = Board.getBoardById(""+hand.getBoard_id(), false);
+			Board board = id_board.get(hand.getBoard_id());
 			for(Feature f : board.getFeatures()){
 				String f_id = ""+f.getId();
 				gene_rank gr = gene_ranked.get(f_id);
