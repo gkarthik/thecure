@@ -186,6 +186,7 @@ margin-top: 27px;
 #summary_header{
 	position:fixed;
 	width:50%;
+	padding-left:10px;
 }
 
 #summary_content{
@@ -196,4 +197,48 @@ margin-top: 27px;
 
 #summary_content .label{
 	cursor:default;
+}
+
+#SpeechBubble{
+	position: fixed;
+	z-index:4;
+	background: #FFF;
+	top:0px;
+	left:0px;
+	display: none;	
+	border: 1px solid steelblue;
+	box-shadow: 0px 0px 10px 0px #333;
+	border-radius:10px;
+	width: auto;
+	font-size:10px;
+	margin-left:5px;
+	text-align:center;
+}
+
+.speechWrapper{	
+	overflow: auto;
+	height:90%;
+	width:95%;
+	margin-top:10px;
+}
+
+
+#SpeechBubble .summary_header{
+position: fixed;
+padding: 2px;
+padding-left:10px;
+background: #FFF;
+width: auto;
+z-index: 1;
+text-align:left;
+}
+
+#SpeechBubble .summary_content{
+	padding: 3%;
+	position:relative;
+	width:90%;
+	overflow:none;
+	height: auto;
+	margin-top:70px;
+	text-align:left;
 }
