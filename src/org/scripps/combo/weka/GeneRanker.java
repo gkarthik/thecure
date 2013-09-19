@@ -27,6 +27,7 @@ import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.combination.simple.SimpleCombinationGenerator;
 import org.scripps.combo.Boardroom;
 import org.scripps.combo.GameLog;
+import org.scripps.combo.Stats;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.Boardroom.boardview;
 import org.scripps.combo.model.Attribute;
@@ -308,6 +309,17 @@ public class GeneRanker {
 		return ranked;
 	}
 	
+	public List<gene_rank> setEstimatedPvalue(List<gene_rank> ranked){
+		for(gene_rank gene : ranked){
+			if(gene.views==0){
+				gene.p = 1;
+			}else{
+				gene.p = Stats.getSimPerGeneP((int)gene.views,(int)gene.votes);
+			}
+		}
+		return ranked;
+	}
+	
 	public List<gene_rank> sortByFrequency(List<gene_rank> ranked){
 		//sort in descending order of the addition of selection frequency
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
@@ -315,6 +327,19 @@ public class GeneRanker {
 				Float r2 = compareto.frequency;
 				Float r1 = compare.frequency;
 				return r2.compareTo(r1);
+			}
+		};
+		Collections.sort(ranked, MergeOrder);
+		return ranked;
+	}
+	
+	public List<gene_rank> sortByP(List<gene_rank> ranked){
+		//sort in descending order of significance
+		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
+			public int compare(gene_rank compare, gene_rank compareto) {
+				Double r2 = compareto.p;
+				Double r1 = compare.p;
+				return r1.compareTo(r2);
 			}
 		};
 		Collections.sort(ranked, MergeOrder);
@@ -376,6 +401,7 @@ public class GeneRanker {
 		public float votes;
 		public float relief;
 		public float players;
+		public double p;
 		List<Integer> board_id;
 		public float mean_selection_order; // within each 5 card game, is it selected first (5), second (4), ...or 0 //average across all games considered  
 		@Override
