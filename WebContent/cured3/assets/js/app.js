@@ -131,7 +131,11 @@ Node = Backbone.RelationalModel.extend({
 			"generif" : {},
 			"name" : ""
 		},
-		showJSON : 0
+		showJSON : 0,
+		x: 0,
+		y: 0,
+		x0 : 0,
+		y0: 0
 	},
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);
@@ -633,6 +637,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+var geneinfosummary = $("#GeneInfoSummary").html();
 AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 	},
@@ -647,7 +652,46 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		var html_template = $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
+			focus: function( event, ui ) {
+				$.getJSON("http://mygene.info/v2/gene/"+ui.item.id,function(data){
+					var summary = {
+							summaryText: data.summary,
+							goTerms: data.go,
+							generif: data.generif,
+							name: data.name
+					};
+					var html = _.template(geneinfosummary, {
+						symbol : data.symbol,
+						summary : summary
+					}, {
+						variable : 'args'
+					});
+					var offset = $(".ui-autocomplete").offset();
+					var uiwidth = $(".ui-autocomplete").width();
+					var width = 0.9 * (offset.left);
+					var left = 0;
+					if(window.innerWidth - (offset.left+uiwidth) > offset.left ){
+						left = offset.left+uiwidth+10;
+						width = 0.9 * (window.innerWidth - (offset.left+uiwidth));
+					}
+					$("#SpeechBubble").css({
+						"top": "10%",
+						"left": left,
+						"height": "50%",
+						"width": width,
+						"display": "block"
+					});
+					$("#SpeechBubble").html(html);
+					$("#SpeechBubble .summary_header").css({
+						"width": (0.9*width)
+					});
+				});
+			},
+			search: function( event, ui ) {
+				$("#SpeechBubble").css({"display": "none"});
+			},
 			select : function(event, ui) {
+				$("#SpeechBubble").css({"display": "none"});
 				var kind_value = "";
 				try {
 					kind_value = model.get("options").kind;
@@ -681,13 +725,16 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				Cure.PlayerNodeCollection.sync();
 			}
 		});
+		
+		$("body").delegate(".close","click",function(){
+			$(this).parent().parent().parent().css({"display": "none"});
+		})
+		
 		$(document).mouseup(function(e) {
 			var container = $("#mygene_addnode");
+			var geneList = $(".ui-autocomplete");
 
-			if (!container.is(e.target) // if the target of the click isn't the
-																	// container...
-					&& container.has(e.target).length === 0) // ... nor a descendant of
-																										// the container
+			if (!container.is(e.target)	&& container.has(e.target).length === 0 && !geneList.is(e.target)	&& geneList.has(e.target).length === 0) 
 			{
 				if (Cure.MyGeneInfoRegion) {
 					Cure.MyGeneInfoRegion.close();
