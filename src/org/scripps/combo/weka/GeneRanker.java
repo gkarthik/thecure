@@ -52,7 +52,7 @@ import weka.classifiers.trees.RandomForest;
  *
  */
 public class GeneRanker {
-	Weka weka;
+	public Weka weka;
 	public void initWeka(String trainfile, String dataset) throws FileNotFoundException, Exception{
 		weka = new Weka();
 		weka.buildWeka(new FileInputStream(trainfile), null, dataset);
@@ -702,7 +702,8 @@ public class GeneRanker {
 		return cv;
 	}
 
-
+	
+	
 	/**
 	 * Get an id what random sampling would look like
 	 * @param n_genes

@@ -165,9 +165,31 @@ public class Weka {
 			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
+	
+	public execution pruneAndExecuteWithEntrezIds(List<Integer> entrez_ids, Classifier wekamodel, String dataset, boolean all_probes) {
+		String indices = "";
+		for(Integer entrezid : entrez_ids){
+			List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
+			if(atts!=null&&atts.size()>0){
+				for(org.scripps.combo.model.Attribute a : atts){
+					if(a.getDataset().equals(dataset)){
+						indices+=a.getCol_index()+",";
+						if(!all_probes){
+							break;
+						}
+					}
+				}
+			}else{
+				System.out.println("Alert! entrez_id "+entrezid+" did not map to any attributes in dataset: "+dataset+" !!");
+			}
+		}
+		return pruneAndExecute(indices, wekamodel);
+	}
+	
+	
 	/**
-	 * unique ids match are used for the keys in the features table
-	 * they are external unique ids
+	 * unique ids match are the keys in the features table
+	 * they are not external unique ids
 	 * @param unique_ids
 	 * @param wekamodel
 	 * @param dataset

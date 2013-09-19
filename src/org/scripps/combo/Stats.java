@@ -5,6 +5,7 @@ package org.scripps.combo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -34,11 +35,18 @@ import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
+import org.scripps.combo.weka.ClassifierEvaluation;
 import org.scripps.combo.weka.GeneRanker;
+import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.GeneRanker.gene_rank;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 import org.scripps.util.StatFun;
+
+import weka.classifiers.Classifier;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 
 /**
  * @author bgood
@@ -66,79 +74,140 @@ public class Stats {
 		////////////////////////////////////////
 		//games
 		////////////////////////////////////////
-		System.out.println("Starting game analysis...");
-		outfile = output_dir+"games_day.txt";
-		String day_or_month = "day";
-		outputGamesPerTime(day_or_month, outfile);
-		outfile = output_dir+"games_month.txt";
-		day_or_month = "month";
-		outputGamesPerTime(day_or_month, outfile);
-		///////////////////////////////////////
-		//players
-		//////////////////////////////////////
-		System.out.println("Starting players analysis...");
-		outfile = output_dir+"players_month";
-		outputNewPlayersPerTime(outfile);
-		outfile = output_dir+"global_player_info.txt";
-		outputGlobalPlayerInfo(outfile);
-		outfile = output_dir+"player_game_counts.txt";
-		outputPlayerGames(outfile);
-		outfile = output_dir+"players/players_all_games.txt";
-		boolean only_first_per_board = false;
-		Player.describePlayers(only_first_per_board, outfile, null);
-		List<String> datasets = getDatasets();				
-		for(String dataset : datasets){
-			outfile = output_dir+"players/players_"+dataset+".txt";
-			Player.describePlayers(only_first_per_board, outfile, dataset);
-		}
-		only_first_per_board = true;
-		outfile = output_dir+"players/players_all_first_games.txt";
-		Player.describePlayers(only_first_per_board, outfile, null);
-		for(String dataset : datasets){
-			outfile = output_dir+"players/players_first_"+dataset+".txt";
-			Player.describePlayers(only_first_per_board, outfile, dataset);
-		}
-		outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
-		boolean first_hand_only = true;
-		String dataset = "griffith_breast_cancer_1";
-		outputPlayerAgreeability(outfile, first_hand_only, dataset);
-		String inforchart = outfile;
-		buildAgreeabilityCharts(inforchart, output_dir); 
-		///////////////////////////////////////
-		//Boards (and genes)
-		//////////////////////////////////////		
-		System.out.println("Starting board analysis...");
-		outfile = output_dir+"board_consensus.txt";
-		boolean random = false;
-		first_hand_only = true;
-		outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
-		random = true;
-		outfile = output_dir+"board_consensus_1st_hand_random.txt";
-		outputBoardConsensus(outfile, output_dir+"generankings/BarneyBoardConsensus", first_hand_only, random);
-		///////////////////////////////////////
-		//genes
-		//////////////////////////////////////
-		System.out.println("Starting gene-centric analysis...");
-		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
-		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		String gamegenefiledir = output_dir+"generankings/OneYear/";
-		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-		int maxdepth = 0;
-		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+//		System.out.println("Starting game analysis...");
+//		outfile = output_dir+"games_day.txt";
+//		String day_or_month = "day";
+//		outputGamesPerTime(day_or_month, outfile);
+//		outfile = output_dir+"games_month.txt";
+//		day_or_month = "month";
+//		outputGamesPerTime(day_or_month, outfile);
+//		///////////////////////////////////////
+//		//players
+//		//////////////////////////////////////
+//		System.out.println("Starting players analysis...");
+//		outfile = output_dir+"players_month";
+//		outputNewPlayersPerTime(outfile);
+//		outfile = output_dir+"global_player_info.txt";
+//		outputGlobalPlayerInfo(outfile);
+//		outfile = output_dir+"player_game_counts.txt";
+//		outputPlayerGames(outfile);
+//		outfile = output_dir+"players/players_all_games.txt";
+//		boolean only_first_per_board = false;
+//		Player.describePlayers(only_first_per_board, outfile, null);
+//		List<String> datasets = getDatasets();				
+//		for(String dataset : datasets){
+//			outfile = output_dir+"players/players_"+dataset+".txt";
+//			Player.describePlayers(only_first_per_board, outfile, dataset);
+//		}
+//		only_first_per_board = true;
+//		outfile = output_dir+"players/players_all_first_games.txt";
+//		Player.describePlayers(only_first_per_board, outfile, null);
+//		for(String dataset : datasets){
+//			outfile = output_dir+"players/players_first_"+dataset+".txt";
+//			Player.describePlayers(only_first_per_board, outfile, dataset);
+//		}
+//		outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
+//		boolean first_hand_only = true;
+//		String dataset = "griffith_breast_cancer_1";
+//		outputPlayerAgreeability(outfile, first_hand_only, dataset);
+//		String inforchart = outfile;
+//		buildAgreeabilityCharts(inforchart, output_dir); 
+//		///////////////////////////////////////
+//		//Boards (and genes)
+//		//////////////////////////////////////		
+//		System.out.println("Starting board analysis...");
+//		outfile = output_dir+"board_consensus.txt";
+//		boolean random = false;
+//		first_hand_only = true;
+//		outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
+//		random = true;
+//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+//		outputBoardConsensus(outfile, output_dir+"generankings/BarneyBoardConsensus", first_hand_only, random);
+//		///////////////////////////////////////
+//		//genes
+//		//////////////////////////////////////
+//		System.out.println("Starting gene-centric analysis...");
+//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
+//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
+//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+//		String gamegenefiledir = output_dir+"generankings/OneYear/";
+//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+//		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+		int maxdepth = 404;
+//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
 		///////////////////////////////////////
 		//classifiers
-		//////////////////////////////////////		
+		//////////////////////////////////////	
+		maxdepth = 404;
+		outfile = output_dir+"generankings/classifier_eval_d404.txt";
+		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		String dataset = "griffith_breast_cancer_full_train";
+		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/",maxdepth, train_file, dataset, outfile);
 	}
 
+	//TODO fix situation where dataset being tested does not contain the genes in the test set
+	// e.g. Alert! entrez_id 114569 did not map to any attributes in dataset: griffith_breast_cancer_full_train !!
+	// Alert! entrez_id 222166 did not map to any attributes in dataset: griffith_breast_cancer_full_train !!
+	
+	public static void testGeneSetsInClassifiers(String genesetdir, int maxdepth, String train_file, String dataset, String fileout){
+		boolean all_probes = true;
+		Classifier model = null;
+		try {
+			Weka weka = new Weka();
+			System.out.println("loading... "+train_file);
+			weka.buildWeka(new FileInputStream(train_file), null, dataset);
+			System.out.println("Weka initialized ");
+			FileWriter out = new FileWriter(fileout);			
+			float cv = 0;
+			File d = new File(genesetdir);
+			if(d.isDirectory()){
+				for(String testgenefile : d.list()){
+					if(testgenefile.startsWith(".")){
+						continue;
+					}else{
+						int colindex = 0; String delimiter = "\t";
+						Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, maxdepth, delimiter);
+						List<Integer> entrez_ids = new ArrayList<Integer>(genes);
+						int c = 0;
+						String cmodel = "";
+						for(int cm=0; cm<3; cm++){
+							if(c==0){
+								model = new J48();
+								cmodel = "J48";
+							}else if(c==1){
+								model = new SMO();
+								cmodel = "SVM";
+							}else if(c==2){
+								model = new RandomForest();
+								cmodel = "RF";
+							}
+							Weka.execution result = weka.pruneAndExecuteWithEntrezIds(entrez_ids, model, dataset, all_probes);
+							ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+							cv = short_result.getAccuracy();
+							String row = testgenefile+"\t"+cmodel+"_cv\t"+cv;
+							System.out.println(row);
+							out.write(testgenefile+"\t"+cmodel+"_cv\t"+cv+"\n");
+							c++;
+						}
+					}
+				}	
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 /**
  * get the genes that always show up.. limited to the top 200 of ranked lists
  * @param gamegenesetdir
  */
 	public static void outputIntersectionOfDiffRankingMethods(String gamegenesetdir){
 		File d = new File(gamegenesetdir);
-		Set<String> intersect = new HashSet<String>();
+		Set<Integer> intersect = new HashSet<Integer>();
 		if(d.isDirectory()){
 			int i=0;
 			for(String testgenefile : d.list()){
@@ -146,16 +215,16 @@ public class Stats {
 					continue;
 				}else{
 					if(i==0){
-						intersect = readOneColFromFile(gamegenesetdir+testgenefile, 0, 200, "\t");
+						intersect = readEntrezIdsFromFile(gamegenesetdir+testgenefile, 0, 200, "\t");
 					}else{
-						intersect.retainAll(readOneColFromFile(gamegenesetdir+testgenefile, 0, 200, "\t"));
+						intersect.retainAll(readEntrezIdsFromFile(gamegenesetdir+testgenefile, 0, 200, "\t"));
 					}
 				}				
 				i++;
 			}			
 			try {
 				FileWriter w = new FileWriter(gamegenesetdir+"intersection.txt");
-				for(String gene : intersect){
+				for(Integer gene : intersect){
 					w.write(gene+"\n");
 				}
 				w.close();
@@ -175,7 +244,7 @@ public class Stats {
 	 * @param depth
 	 * @param outfile
 	 */
-	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int depth, String outfile){
+	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int maxdepth, String outfile){
 		File d = new File(gamegenesetdir);
 		if(d.isDirectory()){
 			FileWriter w;
@@ -190,14 +259,15 @@ public class Stats {
 				if(testgenefile.startsWith(".")){
 					continue;
 				}
-				Map<String, Double> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, depth);
+				Map<String, TwoByTwo> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, maxdepth);
 				try {
 					w = new FileWriter(outfile, true);
 					w.write("\n"+testgenefile+"\n");
 					System.out.println("\n"+testgenefile);
 					for(String key : p.keySet()){
 						System.out.println(key+"\t"+p.get(key));
-						w.write(key+"\t"+p.get(key)+"\n");
+						TwoByTwo t = p.get(key);
+						w.write(key+"\t"+t.fisherP+"\t"+t.a+"\t"+t.b+"\t"+t.c+"\t"+t.d+"\n");
 					}
 					w.close();
 				} catch (IOException e) {
@@ -208,6 +278,10 @@ public class Stats {
 		}
 	}
 
+	static class TwoByTwo {
+		int a, b, c, d;
+		double fisherP;
+	}
 	/**
 	 * Does the set comparisons to produce a 2 * 2 table
 	 * Responds with a map of the files used to compare against and the p value from a Fisher's exact test on the table
@@ -217,11 +291,11 @@ public class Stats {
 	 * @param depth
 	 * @return
 	 */
-	public static Map<String, Double> computeOverlapMetrics(String backgroundgenefile, String testgenefile, String againstgenefiledir, int depth){
-		Map<String, Double> p_map = new HashMap<String, Double>();
-		Set<String> background = readOneColFromFile(backgroundgenefile, 0, 0, ",");
+	public static Map<String, TwoByTwo> computeOverlapMetrics(String backgroundgenefile, String testgenefile, String againstgenefiledir, int depth){
+		Map<String, TwoByTwo> p_map = new HashMap<String, TwoByTwo>();
+		Set<Integer> background = readEntrezIdsFromFile(backgroundgenefile, 0, 0, "\t");
 		//		System.out.println("Background contains: "+background.size());
-		Set<String> testgenes = readOneColFromFile(testgenefile, 0, depth, "\t");
+		Set<Integer> testgenes = readEntrezIdsFromFile(testgenefile, 0, depth, "\t");
 		//		System.out.println("test set contains: "+testgenes.size());
 
 		File d = new File(againstgenefiledir);
@@ -230,7 +304,7 @@ public class Stats {
 				if(againstgenefile.startsWith(".")){
 					continue;
 				}
-				Set<String> against = readOneColFromFile(againstgenefiledir+againstgenefile, 3, 0, ",");
+				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, 0, "\t");
 				//			System.out.println("compareto contains: "+against.size());
 				//load in gene sets
 
@@ -243,22 +317,25 @@ public class Stats {
 
 				//build 2 by 2 table
 				//a tp = n genes in both sets
-				Set<String> tp_a = new HashSet<String>(against);
+				Set<Integer> tp_a = new HashSet<Integer>(against);
 				tp_a.retainAll(testgenes);
 				//b fp = n genes in the testset and not in the against set
-				Set<String> fp_b = new HashSet<String>(testgenes);
+				Set<Integer> fp_b = new HashSet<Integer>(testgenes);
 				fp_b.removeAll(against);
 				//c fn = n genes in against set and not in the test set
-				Set<String> fn_c = new HashSet<String>(against);
+				Set<Integer> fn_c = new HashSet<Integer>(against);
 				fn_c.removeAll(testgenes);
 				//d tn = n genes not in the test set and not in the against set
-				Set<String> tn_d = new HashSet<String>(background);
+				Set<Integer> tn_d = new HashSet<Integer>(background);
 				tn_d.removeAll(against);  tn_d.removeAll(testgenes);
 				//test with fisherexact
 				double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
 				System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
 				System.out.println(p);
-				p_map.put(againstgenefile, p);
+				TwoByTwo t = new TwoByTwo();
+				t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
+				t.fisherP = p;
+				p_map.put(againstgenefile, t);
 			}
 		}
 		return p_map;
@@ -729,28 +806,31 @@ public class Stats {
 		}
 	}
 
-	public static Set<String> readOneColFromFile(String file, int colindex, int limit, String delimiter){
-		Set<String> item = new HashSet<String>();
+	public static Set<Integer> readEntrezIdsFromFile(String file, int colindex, int limit, String delimiter){
+		System.out.println("parsing file "+file);
+		Set<Integer> item = new HashSet<Integer>();
 		try {
 			int n = 0;
 			BufferedReader f = new BufferedReader(new FileReader(file));
 			String line = f.readLine().trim();
 			while(line!=null&&(n<limit||limit==0)){				
-				n++;
-				int c = colindex;
-				if(!line.startsWith("#")&&line.length()>0&&!line.startsWith("Gene")&&!line.startsWith("\"Gene Id")){
+				if(!line.startsWith("#")&&line.length()>0&&!line.startsWith("Gene")&&!line.startsWith("\"Gene Id")&&!line.startsWith("entrez")){
 					String[] s = line.split(delimiter);
-					if(s!=null&&s.length>=colindex){
-						String thing = s[c].trim();
-						//check for true csv.. 
+					if(s!=null&&s.length>colindex){
+						String thing = s[colindex].trim();
+						//check for "" grouped csv.. 
 						if(thing.startsWith("\"")&&thing.endsWith("\"")){
-							thing = thing.replace("\"", "");
-							String[] insidecell = thing.split(delimiter);
-							for(String inside : insidecell){
-								item.add(inside);
-							}
+							System.out.println("sorry, can't do the \"\"s with this csv.  try tab delimited..");
+							return null;
 						}else{
-							item.add(thing);
+							try{
+								int id = Integer.parseInt(thing);
+								item.add(id);
+								n++;
+							}catch(Exception e){
+								System.out.println("Tried to add "+thing+" whish is clearly not an entrez id from "+file);
+								return null;
+							}
 						}
 					}
 				}
