@@ -63,11 +63,14 @@ public class Attribute {
 //		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
 //		setReliefValue(dataset, weka_data);
 		
-		String att_info_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_meta.txt";
+		String att_info_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_meta.txt";
 		//there also needs to be a weka-structured dataset so we can pull out the column index
-		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";	
-		String dataset_name = "griffith_breast_cancer_1";
-		load(dataset_name, weka_data, att_info_file);
+		//the filtered set used in the game
+		//String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";	
+		//the whole thing
+		String weka_data = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";
+		String dataset_name = "griffith_breast_cancer_full_train";
+		//load(dataset_name, weka_data, att_info_file);
 		setReliefValue(dataset_name, weka_data);
 	}
 
