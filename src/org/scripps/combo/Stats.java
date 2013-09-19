@@ -4,6 +4,7 @@
 package org.scripps.combo;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -37,6 +38,7 @@ import org.scripps.combo.weka.GeneRanker;
 import org.scripps.combo.weka.GeneRanker.gene_rank;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
+import org.scripps.util.StatFun;
 
 /**
  * @author bgood
@@ -64,125 +66,208 @@ public class Stats {
 		////////////////////////////////////////
 		//games
 		////////////////////////////////////////
-		//		outfile = output_dir+"games_day.txt";
-		//		String day_or_month = "day";
-		//		outputGamesPerTime(day_or_month, outfile);
-		//		outfile = output_dir+"games_month.txt";
-		//		day_or_month = "month";
-		//		outputGamesPerTime(day_or_month, outfile);
+		System.out.println("Starting game analysis...");
+		outfile = output_dir+"games_day.txt";
+		String day_or_month = "day";
+		outputGamesPerTime(day_or_month, outfile);
+		outfile = output_dir+"games_month.txt";
+		day_or_month = "month";
+		outputGamesPerTime(day_or_month, outfile);
 		///////////////////////////////////////
 		//players
 		//////////////////////////////////////
-		//		outfile = output_dir+"players_month";
-		//		outputNewPlayersPerTime(outfile);
-		//		outfile = output_dir+"global_player_info.txt";
-		//		outputGlobalPlayerInfo(outfile);
-		//		outfile = output_dir+"player_game_counts.txt";
-		//		outputPlayerGames(outfile);
-		//				outfile = output_dir+"players/players_all_games.txt";
-		//				boolean only_first_per_board = false;
-		//				Player.describePlayers(only_first_per_board, outfile, null);
-		//				List<String> datasets = getDatasets();				
-		//				for(String dataset : datasets){
-		//					outfile = output_dir+"players/players_"+dataset+".txt";
-		//					Player.describePlayers(only_first_per_board, outfile, dataset);
-		//				}
-		//				only_first_per_board = true;
-		//				outfile = output_dir+"players/players_all_first_games.txt";
-		//				Player.describePlayers(only_first_per_board, outfile, null);
-		//				for(String dataset : datasets){
-		//					outfile = output_dir+"players/players_first_"+dataset+".txt";
-		//					Player.describePlayers(only_first_per_board, outfile, dataset);
-		//				}
-		//			outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
-		//			boolean first_hand_only = true;
-		//			String dataset = "griffith_breast_cancer_1";
-		//			outputPlayerAgreeability(outfile, first_hand_only, dataset);
-		//			String inforchart = outfile;
-		//			buildAgreeabilityCharts(inforchart, output_dir); 
+		System.out.println("Starting players analysis...");
+		outfile = output_dir+"players_month";
+		outputNewPlayersPerTime(outfile);
+		outfile = output_dir+"global_player_info.txt";
+		outputGlobalPlayerInfo(outfile);
+		outfile = output_dir+"player_game_counts.txt";
+		outputPlayerGames(outfile);
+		outfile = output_dir+"players/players_all_games.txt";
+		boolean only_first_per_board = false;
+		Player.describePlayers(only_first_per_board, outfile, null);
+		List<String> datasets = getDatasets();				
+		for(String dataset : datasets){
+			outfile = output_dir+"players/players_"+dataset+".txt";
+			Player.describePlayers(only_first_per_board, outfile, dataset);
+		}
+		only_first_per_board = true;
+		outfile = output_dir+"players/players_all_first_games.txt";
+		Player.describePlayers(only_first_per_board, outfile, null);
+		for(String dataset : datasets){
+			outfile = output_dir+"players/players_first_"+dataset+".txt";
+			Player.describePlayers(only_first_per_board, outfile, dataset);
+		}
+		outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
+		boolean first_hand_only = true;
+		String dataset = "griffith_breast_cancer_1";
+		outputPlayerAgreeability(outfile, first_hand_only, dataset);
+		String inforchart = outfile;
+		buildAgreeabilityCharts(inforchart, output_dir); 
 		///////////////////////////////////////
 		//Boards (and genes)
 		//////////////////////////////////////		
-		//				outfile = output_dir+"board_consensus.txt";
-		//				boolean random = false;
-		//				boolean first_hand_only = true;
-		//				outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
-		//		outfile = output_dir+"board_consensus_all_hands.txt";
-		//		first_hand_only = false;
-		//		outputBoardConsensus(outfile, first_hand_only, random);
-		//		random = true;
-		//		first_hand_only = true;
-		//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
-		//		outputBoardConsensus(outfile, first_hand_only, random);
+		System.out.println("Starting board analysis...");
+		outfile = output_dir+"board_consensus.txt";
+		boolean random = false;
+		first_hand_only = true;
+		outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
+		random = true;
+		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+		outputBoardConsensus(outfile, output_dir+"generankings/BarneyBoardConsensus", first_hand_only, random);
 		///////////////////////////////////////
 		//genes
 		//////////////////////////////////////
-		//outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
-
-		double p = getSimPerGeneP(28, 12);
-		System.out.println("full sim "+p);
-		p = StatUtil.getSimpleP(28, 12, 0.2);
-		System.out.println("Simple sim "+p);
+		System.out.println("Starting gene-centric analysis...");
+		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
+		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
+		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		String gamegenefiledir = output_dir+"generankings/OneYear/";
+		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+		int maxdepth = 0;
+		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+		///////////////////////////////////////
+		//classifiers
+		//////////////////////////////////////		
 	}
 
-	public static void computeOverlapMetrics(String testgenefile, String againstgenefile){
-		Set<String> testgenes = new HashSet<String>();
-		Set<String> against = new HashSet<String>();
-		//load in both gene sets
-
-		//build 2 by 2 table
-		//a tp = n genes in both sets
-		//b fp = n genes in the testset and not in the against set
-		//c fn = n genes in against set and not in the test set
-		//d tn = n genes not in the test set and not in the against set
-		//test with fisherexact
-
-	}
-
-	public static double getSimPerGeneP(int n_views, int n_votes){
-		double p = 1;
-		int times = 10;
-		int runs = 1000;
-		int n_sim_votes = 0;
-		int board_size = 25; int hand_size = 5;
-		Set<Integer> bboard = new HashSet<Integer>(board_size);
-		List<Integer> board = null;
-		for(int i=0; i<board_size; i++){
-			bboard.add(i);
-		}
-		double sumP = 0;
-		for(int t=0; t<times; t++){
-			n_sim_votes = 0;
-			for(int r=0; r<runs; r++){
-				int sim_votes = 0;
-				// one game = one view
-				for(int o=0; o<n_views; o++){
-					board = new ArrayList<Integer>(bboard);
-					Collections.shuffle(board);
-					//in each round two cards are selected
-					//player 1 (human) always goes first
-					for(int g=0; g<hand_size*2; g++){
-						int test = board.get(g); 
-						if(test==0){ //0 is the target gene
-							if(g%2==0){
-								sim_votes++;
-							}else{
-								break; //barney got the card
-							}
-						}
-						board.remove(g); //take the selected card off the board
+/**
+ * get the genes that always show up.. limited to the top 200 of ranked lists
+ * @param gamegenesetdir
+ */
+	public static void outputIntersectionOfDiffRankingMethods(String gamegenesetdir){
+		File d = new File(gamegenesetdir);
+		Set<String> intersect = new HashSet<String>();
+		if(d.isDirectory()){
+			int i=0;
+			for(String testgenefile : d.list()){
+				if(testgenefile.startsWith(".")||testgenefile.startsWith("intersect")){
+					continue;
+				}else{
+					if(i==0){
+						intersect = readOneColFromFile(gamegenesetdir+testgenefile, 0, 200, "\t");
+					}else{
+						intersect.retainAll(readOneColFromFile(gamegenesetdir+testgenefile, 0, 200, "\t"));
 					}
+				}				
+				i++;
+			}			
+			try {
+				FileWriter w = new FileWriter(gamegenesetdir+"intersection.txt");
+				for(String gene : intersect){
+					w.write(gene+"\n");
 				}
-				if(sim_votes>n_votes){
-					n_sim_votes++;
+				w.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+	/**
+	 * Iterates through the gene sets produced by this analysis and compares them to several references gene sets fore predicting breast cancer prognosis.
+	 * @param backgroundgenefile
+	 * @param gamegenesetdir
+	 * @param comparetodir
+	 * @param depth
+	 * @param outfile
+	 */
+	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int depth, String outfile){
+		File d = new File(gamegenesetdir);
+		if(d.isDirectory()){
+			FileWriter w;
+			try {
+				w = new FileWriter(outfile);
+				w.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			for(String testgenefile : d.list()){
+				if(testgenefile.startsWith(".")){
+					continue;
+				}
+				Map<String, Double> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, depth);
+				try {
+					w = new FileWriter(outfile, true);
+					w.write("\n"+testgenefile+"\n");
+					System.out.println("\n"+testgenefile);
+					for(String key : p.keySet()){
+						System.out.println(key+"\t"+p.get(key));
+						w.write(key+"\t"+p.get(key)+"\n");
+					}
+					w.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
-			p = (double)n_sim_votes/runs;
-			sumP+=p;
 		}
-		return sumP/times;
 	}
 
+	/**
+	 * Does the set comparisons to produce a 2 * 2 table
+	 * Responds with a map of the files used to compare against and the p value from a Fisher's exact test on the table
+	 * @param backgroundgenefile
+	 * @param testgenefile
+	 * @param againstgenefiledir
+	 * @param depth
+	 * @return
+	 */
+	public static Map<String, Double> computeOverlapMetrics(String backgroundgenefile, String testgenefile, String againstgenefiledir, int depth){
+		Map<String, Double> p_map = new HashMap<String, Double>();
+		Set<String> background = readOneColFromFile(backgroundgenefile, 0, 0, ",");
+		//		System.out.println("Background contains: "+background.size());
+		Set<String> testgenes = readOneColFromFile(testgenefile, 0, depth, "\t");
+		//		System.out.println("test set contains: "+testgenes.size());
+
+		File d = new File(againstgenefiledir);
+		if(d.isDirectory()){
+			for(String againstgenefile : d.list()){
+				if(againstgenefile.startsWith(".")){
+					continue;
+				}
+				Set<String> against = readOneColFromFile(againstgenefiledir+againstgenefile, 3, 0, ",");
+				//			System.out.println("compareto contains: "+against.size());
+				//load in gene sets
+
+				//remove any genes not in background
+				against.retainAll(background);
+				//				System.out.println("After removing non-background, compareto contains: "+against.size());
+				//this should not be necessary, but just to b sure
+				testgenes.retainAll(background);
+				//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
+
+				//build 2 by 2 table
+				//a tp = n genes in both sets
+				Set<String> tp_a = new HashSet<String>(against);
+				tp_a.retainAll(testgenes);
+				//b fp = n genes in the testset and not in the against set
+				Set<String> fp_b = new HashSet<String>(testgenes);
+				fp_b.removeAll(against);
+				//c fn = n genes in against set and not in the test set
+				Set<String> fn_c = new HashSet<String>(against);
+				fn_c.removeAll(testgenes);
+				//d tn = n genes not in the test set and not in the against set
+				Set<String> tn_d = new HashSet<String>(background);
+				tn_d.removeAll(against);  tn_d.removeAll(testgenes);
+				//test with fisherexact
+				double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
+				System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
+				System.out.println(p);
+				p_map.put(againstgenefile, p);
+			}
+		}
+		return p_map;
+	}
+	/**
+	 * Considers all the games on all the boards from gene-centric view.
+	 * Results are sorted with lowest p values on top.
+	 * @param outfileroot
+	 */
 	public static void outputFrequencyBasedGeneRankings(String outfileroot){
 		GeneRanker gr = new GeneRanker();
 		String dataset = null;
@@ -213,20 +298,19 @@ public class Stats {
 			Map<String, gene_rank> bg_rank = gr.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 			List<gene_rank> ranked = new ArrayList<gene_rank>(bg_rank.values());
 			ranked = gr.setFrequencyByViews(ranked);
+			ranked = gr.setEstimatedPvalue(ranked);
 			ranked = gr.sortByFrequency(ranked);
+			ranked = gr.sortByP(ranked);
 			try {
 				FileWriter f = new FileWriter(outfile);
 				f.write("entrez_id\tlocal_id\tsymbol\tviews\tvotes\tfrequency\tSimP\n");
 				int count_p_sig = 0;
 				for(gene_rank r : ranked){
-					long[] data = new long[2];
 					if(r.views > 4){
-						data[0] = (long)r.votes; data[1] = (long)(r.views-r.votes);
-						double sp = getSimPerGeneP((int)r.views,(int)r.votes);
-						if(sp<0.01){
+						if(r.p<0.01){
 							count_p_sig++;
 						}
-						f.write(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.views+"\t"+r.votes+"\t"+r.frequency+"\t"+sp+"\n");
+						f.write(r.entrez+"\t"+r.f_id+"\t"+r.symbol+"\t"+r.views+"\t"+r.votes+"\t"+r.frequency+"\t"+r.p+"\n");
 					}
 				}
 				System.out.println("N sig genes = "+count_p_sig);
@@ -294,7 +378,7 @@ public class Stats {
 				for(GeneRanker.gene_rank rank : ranked){
 					//grab simP value at this rank.
 					double p = simp.getP((int)rank.players, (double)rank.frequency, b);
-					p_genes_tmp.add(rank.symbol+"\t"+rank.entrez+"\t");
+					p_genes_tmp.add(rank.entrez+"\t"+rank.symbol+"\t");
 					if(lowest_p > p){
 						lowest_p = p;
 						if(lowest_p<0.01){
@@ -645,4 +729,90 @@ public class Stats {
 		}
 	}
 
+	public static Set<String> readOneColFromFile(String file, int colindex, int limit, String delimiter){
+		Set<String> item = new HashSet<String>();
+		try {
+			int n = 0;
+			BufferedReader f = new BufferedReader(new FileReader(file));
+			String line = f.readLine().trim();
+			while(line!=null&&(n<limit||limit==0)){				
+				n++;
+				int c = colindex;
+				if(!line.startsWith("#")&&line.length()>0&&!line.startsWith("Gene")&&!line.startsWith("\"Gene Id")){
+					String[] s = line.split(delimiter);
+					if(s!=null&&s.length>=colindex){
+						String thing = s[c].trim();
+						//check for true csv.. 
+						if(thing.startsWith("\"")&&thing.endsWith("\"")){
+							thing = thing.replace("\"", "");
+							String[] insidecell = thing.split(delimiter);
+							for(String inside : insidecell){
+								item.add(inside);
+							}
+						}else{
+							item.add(thing);
+						}
+					}
+				}
+				line = f.readLine();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return item;
+	}
+
+	/**
+	 * Simulate game play to estimate p values for n views / n selections of a gene
+	 * @param n_views
+	 * @param n_votes
+	 * @return
+	 */
+	public static double getSimPerGeneP(int n_views, int n_votes){
+		double p = 1;
+		int times = 1;
+		int runs = 10000;
+		int n_sim_votes = 0;
+		int board_size = 25; int hand_size = 5;
+		Set<Integer> bboard = new HashSet<Integer>(board_size);
+		List<Integer> board = null;
+		for(int i=0; i<board_size; i++){
+			bboard.add(i);
+		}
+		double sumP = 0;
+		for(int t=0; t<times; t++){
+			n_sim_votes = 0;
+			for(int r=0; r<runs; r++){
+				int sim_votes = 0;
+				// one game = one view
+				for(int o=0; o<n_views; o++){
+					board = new ArrayList<Integer>(bboard);
+					Collections.shuffle(board);
+					//in each round two cards are selected
+					//player 1 (human) always goes first
+					for(int g=0; g<hand_size*2; g++){
+						int test = board.get(g); 
+						if(test==0){ //0 is the target gene
+							if(g%2==0){
+								sim_votes++;
+							}else{
+								break; //barney got the card
+							}
+						}
+						board.remove(g); //take the selected card off the board
+					}
+				}
+				if(sim_votes>n_votes){
+					n_sim_votes++;
+				}
+			}
+			p = (double)n_sim_votes/runs;
+			sumP+=p;
+		}
+		return sumP/times;
+	}
 }
