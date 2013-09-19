@@ -19,6 +19,7 @@
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
 </head>
 <body>
+			<div id="SpeechBubble"></div>
 	<div class="container">
 		<div class="row">
 			<div class="span3">
@@ -40,6 +41,84 @@
   		<div id="mygene_addnode">
   			<input id="gene_query" style="width:250px" class="mygene_query_target">
   		</div>
+  	</script>
+  	<script id="GeneInfoSummary" type="text/template">
+	<div class="speechWrapper">
+		<div class="summary_header">
+			<button type="button" class="close">&times;</button>
+			<h4><@= args.symbol @></h4>
+			<h4 class="full_name"><@= args.summary.name @></h4>
+		</div>
+		<div class="summary_content">
+		<@= args.summary.summaryText @>
+		<@ if(args.summary.goTerms.MF) { @>
+			<h4>Molecular Functions</h4>
+			<p>
+				<@ for(var mfunction in args.summary.goTerms.MF) {@>
+					<label class="label label-info"><@ if(args.summary.goTerms.MF[mfunction].term)
+					{
+						print (args.summary.goTerms.MF[mfunction].term);
+					}
+					else if(mfunction == "term")
+					{
+						print (args.summary.goTerms.MF.term);
+					} 
+					 @></label>
+				<@ }@>
+			</p>
+		<@ } @>
+		<@ if(args.summary.goTerms.CC) { @>
+			<h4>Cellular Component</h4>
+			<p>
+				<@ for(var component in args.summary.goTerms.CC) {@>
+					<label class="label label-info"><@ if(args.summary.goTerms.CC[component].term)
+					{
+						print (args.summary.goTerms.CC[component].term);
+					}
+					else if(component == "term")
+					{
+						print (args.summary.goTerms.CC.term);
+					} 
+					 @></label>
+				<@ }@>
+			</p>
+		<@ } @>
+			<@ if(args.summary.goTerms.BP) { @>
+				<h4>Biological Process</h4>
+				<p>
+					<@ for(var process in args.summary.goTerms.BP) {@>
+						<label class="label label-info"><@ if(args.summary.goTerms.BP[process].term)
+						{
+							print (args.summary.goTerms.BP[process].term);
+						}
+						else if(process == "term")
+						{
+							print (args.summary.goTerms.BP.term);
+						} 
+						 @></label>
+					<@ }@>
+				</p>
+			<@ } @>
+			<@ if(args.summary.generif) { @>
+			<h4>Gene Rifs</h4>
+			<ul>
+				<@ for(var generif in args.summary.generif) {@>
+					<li>
+						<@ if(args.summary.generif[generif].text)
+						{
+							print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif[generif].pubmed+'">'+args.summary.generif[generif].text+'</a>');
+						}
+						else if(generif == "text")
+						{
+							print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif.pubmed+'">'+args.summary.generif.text+'</a>');
+						} 
+						 @>
+					</li>
+				<@ } @>
+			</ul>
+		<@ } @>
+	</div>
+</div>
   	</script>
 	<script id="JSONtemplate" type="text/template">
       	<td><span class="jsonview_name"><@= args.name @></span></td>
