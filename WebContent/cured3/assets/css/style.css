@@ -4,8 +4,8 @@ html, body{
   height:100%;
 }
 
-div.container {
-  margin-top: 40px;
+.CureContainer {
+  padding-top:40px;
 }
 
 #mygene_wrapper{
