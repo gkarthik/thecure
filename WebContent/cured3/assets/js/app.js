@@ -652,7 +652,14 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		var html_template = $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
+			minLength: 1,
 			focus: function( event, ui ) {
+				console.log(event);
+				focueElement = $(event.currentTarget);//Adding PopUp to .ui-auocomplete
+				if($("#SpeechBubble")){
+					$("#SpeechBubble").remove();
+				}
+				focueElement.append("<div id='SpeechBubble'></div>")
 				$.getJSON("http://mygene.info/v2/gene/"+ui.item.id,function(data){
 					var summary = {
 							summaryText: data.summary,
@@ -685,13 +692,16 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					$("#SpeechBubble .summary_header").css({
 						"width": (0.9*width)
 					});
+					$("#SpeechBubble .summary_content").css({
+						"margin-top": $("#SpeechBubble .summary_header").height()+10
+					});
 				});
 			},
 			search: function( event, ui ) {
-				$("#SpeechBubble").hide();
+				$("#SpeechBubble").remove();
 			},
 			select : function(event, ui) {
-				$("#SpeechBubble").hide();
+				$("#SpeechBubble").remove();
 				var kind_value = "";
 				try {
 					kind_value = model.get("options").kind;

@@ -210,7 +210,7 @@ margin-top: 27px;
 	box-shadow: 0px 0px 10px 0px #333;
 	border-radius:10px;
 	width: auto;
-	font-size:10px;
+	font-size:12px;
 	margin-left:5px;
 	text-align:center;
 }
@@ -241,4 +241,8 @@ text-align:left;
 	height: auto;
 	margin-top:70px;
 	text-align:left;
+}
+
+#SpeechBubble .close{
+	font-size:20px;
 }
