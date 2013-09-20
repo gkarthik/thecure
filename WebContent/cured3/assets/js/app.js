@@ -688,10 +688,10 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				});
 			},
 			search: function( event, ui ) {
-				$("#SpeechBubble").css({"display":"none"});
+				$("#SpeechBubble").hide();
 			},
 			select : function(event, ui) {
-				$("#SpeechBubble").css({"display":"none"});
+				$("#SpeechBubble").hide();
 				var kind_value = "";
 				try {
 					kind_value = model.get("options").kind;
@@ -727,7 +727,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		});
 		
 		$("body").delegate(".close","click",function(){
-			$(this).parent().parent().parent().remove();
+			$(this).parent().parent().parent().hide();
 		})
 		
 		$(document).mouseup(function(e) {
@@ -736,6 +736,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 
 			if (!container.is(e.target)	&& container.has(e.target).length === 0 && !geneList.is(e.target)	&& geneList.has(e.target).length === 0) 
 			{
+				$("input.mygene_query_target").val("");
 				if (Cure.MyGeneInfoRegion) {
 					Cure.MyGeneInfoRegion.close();
 				}
@@ -799,9 +800,8 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	getSummary : function() {
 		var thisView = this,
 			summary = this.model.get("gene_summary").summaryText || "";
-		
-		if (summary && summary.length == 0) {
-			$.getJSON("http://mygene.info/v2/gene/" + this.model.get("options").id,
+		if (summary.length == 0) {
+			$.getJSON("http://mygene.info/v2/gene/" + thisView.model.get("options").id,
 					function(data) {
 						var summary = {
 							"summaryText" : data.summary,
