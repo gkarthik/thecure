@@ -688,10 +688,10 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				});
 			},
 			search: function( event, ui ) {
-				$("#SpeechBubble").css({"display":"none"});
+				$("#SpeechBubble").hide();
 			},
 			select : function(event, ui) {
-				$("#SpeechBubble").css({"display":"none"});
+				$("#SpeechBubble").hide();
 				var kind_value = "";
 				try {
 					kind_value = model.get("options").kind;
@@ -727,7 +727,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		});
 		
 		$("body").delegate(".close","click",function(){
-			$(this).parent().parent().parent().remove();
+			$(this).parent().parent().parent().hide();
 		})
 		
 		$(document).mouseup(function(e) {
