@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link rel="stylesheet"
 	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
 	type="text/css" media="all" />
@@ -19,8 +20,29 @@
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
 </head>
 <body>
-	<div id="SpeechBubble"></div>
-	<div class="container">
+<div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/cure/">The Cure</a>
+            <div class="nav-collapse">
+              <ul class="nav">
+                <li><a href="/cure/round1.jsp">DREAM R1</a></li>
+                <li><a href="/cure/round2.jsp">DREAM R2</a></li>
+                <li><a href="/cure/round3.jsp">Griffith R3</a></li>
+                <li><a href="/cure/contact.jsp">Contact</a></li>
+                <li><a href="/cure/logout.jsp">Logout</a></li>
+                <li><a href="/cure/help.jsp">Help</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+	<div class="container CureContainer">
 		<div class="row">
 			<div class="span3">
 				<span class="row">
@@ -36,6 +58,7 @@
 			</div>
 		</div>
 	</div>
+	<jsp:include page="/footer.jsp" />
 	<script type="text/template" id="AddRootNode">
 		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
   		<div id="mygene_addnode">
