@@ -797,8 +797,10 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 		}
 	},
 	getSummary : function() {
-		var thisView = this;
-		if (this.model.get("gene_summary").summaryText.length == 0) {
+		var thisView = this,
+			summary = this.model.get("gene_summary").summaryText || "";
+		
+		if (summary && summary.length == 0) {
 			$.getJSON("http://mygene.info/v2/gene/" + this.model.get("options").id,
 					function(data) {
 						var summary = {
