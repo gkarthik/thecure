@@ -1005,6 +1005,11 @@ Cure.render_network = function(dataset) {
 			}
 		});
 		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
+		var marginTop = maxDepth-160;
+		if(marginTop<0){
+			marginTop = 0;
+		}
+		$("#footer").css("margin-top",marginTop);
 
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
