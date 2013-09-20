@@ -7,7 +7,7 @@ An auto complete feature exists to help in choosing the relevant gene. The auto 
 
 #Functions
  - Hit + to add nodes and x to delete them.
- - A iist of genes in the tree is displayed on the left with further information regarding split values. 
+ - A list of genes in the tree is displayed on the left with further information regarding split values. 
  - Clicking on the gene node displays gene summary.
  - Hovering or focussing on the gene list in the autocomplete also throws up a Gene Summary bubble.
 
