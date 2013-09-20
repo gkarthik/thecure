@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<title>The Cure</title>
 <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
@@ -31,12 +32,7 @@
             <a class="brand" href="/cure/">The Cure</a>
             <div class="nav-collapse">
               <ul class="nav">
-                <li><a href="/cure/round1.jsp">DREAM R1</a></li>
-                <li><a href="/cure/round2.jsp">DREAM R2</a></li>
-                <li><a href="/cure/round3.jsp">Griffith R3</a></li>
                 <li><a href="/cure/contact.jsp">Contact</a></li>
-                <li><a href="/cure/logout.jsp">Logout</a></li>
-                <li><a href="/cure/help.jsp">Help</a></li>
               </ul>
             </div>
           </div>
