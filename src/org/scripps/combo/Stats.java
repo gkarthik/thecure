@@ -32,6 +32,7 @@ import org.scripps.StatUtil;
 import org.scripps.SimulationP;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Board;
+import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
@@ -74,137 +75,189 @@ public class Stats {
 		////////////////////////////////////////
 		//games
 		////////////////////////////////////////
-//		System.out.println("Starting game analysis...");
-//		outfile = output_dir+"games_day.txt";
-//		String day_or_month = "day";
-//		outputGamesPerTime(day_or_month, outfile);
-//		outfile = output_dir+"games_month.txt";
-//		day_or_month = "month";
-//		outputGamesPerTime(day_or_month, outfile);
-//		///////////////////////////////////////
-//		//players
-//		//////////////////////////////////////
-//		System.out.println("Starting players analysis...");
-//		outfile = output_dir+"players_month";
-//		outputNewPlayersPerTime(outfile);
-//		outfile = output_dir+"global_player_info.txt";
-//		outputGlobalPlayerInfo(outfile);
-//		outfile = output_dir+"player_game_counts.txt";
-//		outputPlayerGames(outfile);
-//		outfile = output_dir+"players/players_all_games.txt";
-//		boolean only_first_per_board = false;
-//		Player.describePlayers(only_first_per_board, outfile, null);
-//		List<String> datasets = getDatasets();				
-//		for(String dataset : datasets){
-//			outfile = output_dir+"players/players_"+dataset+".txt";
-//			Player.describePlayers(only_first_per_board, outfile, dataset);
-//		}
-//		only_first_per_board = true;
-//		outfile = output_dir+"players/players_all_first_games.txt";
-//		Player.describePlayers(only_first_per_board, outfile, null);
-//		for(String dataset : datasets){
-//			outfile = output_dir+"players/players_first_"+dataset+".txt";
-//			Player.describePlayers(only_first_per_board, outfile, dataset);
-//		}
-//		outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
-//		boolean first_hand_only = true;
-//		String dataset = "griffith_breast_cancer_1";
-//		outputPlayerAgreeability(outfile, first_hand_only, dataset);
-//		String inforchart = outfile;
-//		buildAgreeabilityCharts(inforchart, output_dir); 
-//		///////////////////////////////////////
-//		//Boards (and genes)
-//		//////////////////////////////////////		
-//		System.out.println("Starting board analysis...");
-//		outfile = output_dir+"board_consensus.txt";
-//		boolean random = false;
-//		first_hand_only = true;
-//		outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
-//		random = true;
-//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
-//		outputBoardConsensus(outfile, output_dir+"generankings/BarneyBoardConsensus", first_hand_only, random);
-//		///////////////////////////////////////
-//		//genes
-//		//////////////////////////////////////
-//		System.out.println("Starting gene-centric analysis...");
-//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
-//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-//		String gamegenefiledir = output_dir+"generankings/OneYear/";
-//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-//		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+		//		System.out.println("Starting game analysis...");
+		//		outfile = output_dir+"games_day.txt";
+		//		String day_or_month = "day";
+		//		outputGamesPerTime(day_or_month, outfile);
+		//		outfile = output_dir+"games_month.txt";
+		//		day_or_month = "month";
+		//		outputGamesPerTime(day_or_month, outfile);
+		//		///////////////////////////////////////
+		//		//players
+		//		//////////////////////////////////////
+		//		System.out.println("Starting players analysis...");
+		//		outfile = output_dir+"players_month";
+		//		outputNewPlayersPerTime(outfile);
+		//		outfile = output_dir+"global_player_info.txt";
+		//		outputGlobalPlayerInfo(outfile);
+		//		outfile = output_dir+"player_game_counts.txt";
+		//		outputPlayerGames(outfile);
+		//		outfile = output_dir+"players/players_all_games.txt";
+		//		boolean only_first_per_board = false;
+		//		Player.describePlayers(only_first_per_board, outfile, null);
+		//		List<String> datasets = getDatasets();				
+		//		for(String dataset : datasets){
+		//			outfile = output_dir+"players/players_"+dataset+".txt";
+		//			Player.describePlayers(only_first_per_board, outfile, dataset);
+		//		}
+		//		only_first_per_board = true;
+		//		outfile = output_dir+"players/players_all_first_games.txt";
+		//		Player.describePlayers(only_first_per_board, outfile, null);
+		//		for(String dataset : datasets){
+		//			outfile = output_dir+"players/players_first_"+dataset+".txt";
+		//			Player.describePlayers(only_first_per_board, outfile, dataset);
+		//		}
+		//		outfile = output_dir+"players/player_agreeability_dream_griffith_breast_cancer_1.txt";
+		//		boolean first_hand_only = true;
+		//		String dataset = "griffith_breast_cancer_1";
+		//		outputPlayerAgreeability(outfile, first_hand_only, dataset);
+		//		String inforchart = outfile;
+		//		buildAgreeabilityCharts(inforchart, output_dir); 
+		//		///////////////////////////////////////
+		//		//Boards (and genes)
+		//		//////////////////////////////////////		
+		//		System.out.println("Starting board analysis...");
+		//		outfile = output_dir+"board_consensus.txt";
+		//		boolean random = false;
+		//		first_hand_only = true;
+		//		outputBoardConsensus(outfile, output_dir+"generankings/OneYear/Sgene", first_hand_only, random);
+		//		random = true;
+		//		outfile = output_dir+"board_consensus_1st_hand_random.txt";
+		//		outputBoardConsensus(outfile, output_dir+"generankings/BarneyBoardConsensus", first_hand_only, random);
+		//		///////////////////////////////////////
+		//		//genes
+		//		//////////////////////////////////////
+		//		System.out.println("Starting gene-centric analysis...");
+		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
+		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
+		//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
+		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+		//		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
 		int maxdepth = 404;
-//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+		//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
 		///////////////////////////////////////
 		//classifiers
 		//////////////////////////////////////	
-		maxdepth = 404;
-		outfile = output_dir+"generankings/classifier_eval_d404.txt";
-		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		outfile = output_dir+"generankings/classifier_eval.txt";
+		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
 		String dataset = "griffith_breast_cancer_full_train";
-		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/",maxdepth, train_file, dataset, outfile);
+		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);
 	}
 
-	//TODO fix situation where dataset being tested does not contain the genes in the test set
-	// e.g. Alert! entrez_id 114569 did not map to any attributes in dataset: griffith_breast_cancer_full_train !!
-	// Alert! entrez_id 222166 did not map to any attributes in dataset: griffith_breast_cancer_full_train !!
-	
-	public static void testGeneSetsInClassifiers(String genesetdir, int maxdepth, String train_file, String dataset, String fileout){
+
+	public static void testGeneSetsInClassifiers(String genesetdir, String train_file, String test_file, String dataset, String fileout){
 		boolean all_probes = true;
 		Classifier model = null;
 		try {
 			Weka weka = new Weka();
 			System.out.println("loading... "+train_file);
-			weka.buildWeka(new FileInputStream(train_file), null, dataset);
+			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset);
 			System.out.println("Weka initialized ");
-			FileWriter out = new FileWriter(fileout);			
-			float cv = 0;
-			File d = new File(genesetdir);
-			if(d.isDirectory()){
-				for(String testgenefile : d.list()){
-					if(testgenefile.startsWith(".")){
-						continue;
-					}else{
-						int colindex = 0; String delimiter = "\t";
-						Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, maxdepth, delimiter);
-						List<Integer> entrez_ids = new ArrayList<Integer>(genes);
-						int c = 0;
-						String cmodel = "";
-						for(int cm=0; cm<3; cm++){
-							if(c==0){
-								model = new J48();
-								cmodel = "J48";
-							}else if(c==1){
-								model = new SMO();
-								cmodel = "SVM";
-							}else if(c==2){
-								model = new RandomForest();
-								cmodel = "RF";
+			FileWriter out = new FileWriter(fileout);	
+			out.write("testgenefile\tmaxdepth\tcmodel\teval_method\taccuracy\tgenes.size()\tgenecell\tmissing.size()\tmissingcell");
+			//iterate through different set sizes
+			int maxdepth = 0;
+			for(int s=0; s<3; s++){
+				if(s==0){
+					maxdepth = 404;
+				}else if(s==1){
+					maxdepth = 100;
+				}else if(s==2){
+					maxdepth = 25;
+				}
+				float accuracy = 0;
+				File d = new File(genesetdir);
+				if(d.isDirectory()){
+					for(String testgenefile : d.list()){
+						if(testgenefile.startsWith(".")){
+							continue;
+						}else{
+							int colindex = 0; String delimiter = "\t";
+							Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, maxdepth, delimiter);
+							Set<Integer> missing = new HashSet<Integer>();
+							String indices = "";
+							for(Integer entrezid : genes){
+								boolean present = false;
+								List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
+								if(atts!=null&&atts.size()>0){
+									for(org.scripps.combo.model.Attribute a : atts){
+										if(a.getDataset().equals(dataset)){
+											indices+=a.getCol_index()+",";
+											if(!all_probes){
+												break;
+											}
+											present = true;
+										}
+									}
+								}
+								if(!present){
+									missing.add(entrezid);
+								}
 							}
-							Weka.execution result = weka.pruneAndExecuteWithEntrezIds(entrez_ids, model, dataset, all_probes);
-							ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-							cv = short_result.getAccuracy();
-							String row = testgenefile+"\t"+cmodel+"_cv\t"+cv;
-							System.out.println(row);
-							out.write(testgenefile+"\t"+cmodel+"_cv\t"+cv+"\n");
-							c++;
+							genes.removeAll(missing);
+							String genecell = "";
+							for(Integer gene : genes){
+								Feature f = Feature.getByUniqueId(gene+"");
+								genecell+=(gene+":"+f.getShort_name()+",");
+							}
+							String missingcell = "";
+							for(Integer gene : missing){
+								Feature f = Feature.getByUniqueId(gene+"");
+								if(f!=null){
+									missingcell+=(f.getShort_name()+",");
+								}else{
+									missingcell+=(gene+",");
+								}
+							}
+							int c = 0;
+							String cmodel = "";
+							for(int cm=0; cm<3; cm++){
+								if(c==0){
+									model = new J48();
+									cmodel = "J48";
+								}else if(c==1){
+									model = new SMO();
+									cmodel = "SVM";
+								}else if(c==2){
+									model = new RandomForest();
+									cmodel = "RF";
+								}
+								for(int e=0; e<3; e++){
+									if(e==0){ // cross_validation, test_set,
+										weka.setEval_method("training_set");
+									}else if(e==1){
+										weka.setEval_method("cross_validation");
+									}else if(e==2){
+										weka.setEval_method("test_set");
+									}
+									Weka.execution result = weka.pruneAndExecute(indices, model);
+									ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+									accuracy = short_result.getAccuracy();
+									String row = testgenefile+"\t"+maxdepth+"\t"+cmodel+"\t"+weka.getEval_method()+"\t"+accuracy+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
+									System.out.println(row);
+									out.write(row+"\n");
+								}
+								c++;
+							}
 						}
-					}
-				}	
+					}	
+				}
 			}
 			out.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
-/**
- * get the genes that always show up.. limited to the top 200 of ranked lists
- * @param gamegenesetdir
- */
+
+
+	/**
+	 * get the genes that always show up.. limited to the top 200 of ranked lists
+	 * @param gamegenesetdir
+	 */
 	public static void outputIntersectionOfDiffRankingMethods(String gamegenesetdir){
 		File d = new File(gamegenesetdir);
 		Set<Integer> intersect = new HashSet<Integer>();
