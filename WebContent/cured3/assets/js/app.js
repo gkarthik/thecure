@@ -654,7 +654,6 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
 			minLength: 1,
 			focus: function( event, ui ) {
-				console.log(event);
 				focueElement = $(event.currentTarget);//Adding PopUp to .ui-auocomplete
 				if($("#SpeechBubble")){
 					$("#SpeechBubble").remove();
