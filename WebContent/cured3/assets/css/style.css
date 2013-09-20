@@ -246,3 +246,14 @@ text-align:left;
 #SpeechBubble .close{
 	font-size:20px;
 }
+
+/*
+Style for header links
+*/
+body div.navbar-inner div.container div.nav-collapse ul.nav li a{
+	color: #FFF;
+}
+
+body div.navbar-inner div.container a.brand{
+	color: #FFF;
+}
