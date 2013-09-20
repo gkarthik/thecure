@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link rel="stylesheet"
 	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
 	type="text/css" media="all" />
@@ -35,6 +36,7 @@
 			</div>
 		</div>
 	</div>
+	<jsp:include page="/footer.jsp" />
 	<script type="text/template" id="AddRootNode">
 		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
   		<div id="mygene_addnode">
