@@ -13,6 +13,7 @@ An auto complete feature exists to help in choosing the relevant gene. The auto 
 
 #Score Chart
 The score is determined by three factors.
+
  - Size of tree
  - Novelty
  - Accuracy
