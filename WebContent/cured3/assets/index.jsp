@@ -20,7 +20,29 @@
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
 </head>
 <body>
-	<div class="container">
+<div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/cure/">The Cure</a>
+            <div class="nav-collapse">
+              <ul class="nav">
+                <li><a href="/cure/round1.jsp">DREAM R1</a></li>
+                <li><a href="/cure/round2.jsp">DREAM R2</a></li>
+                <li><a href="/cure/round3.jsp">Griffith R3</a></li>
+                <li><a href="/cure/contact.jsp">Contact</a></li>
+                <li><a href="/cure/logout.jsp">Logout</a></li>
+                <li><a href="/cure/help.jsp">Help</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+	<div class="container CureContainer">
 		<div class="row">
 			<div class="span3">
 				<span class="row">
