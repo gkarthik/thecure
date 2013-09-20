@@ -54,49 +54,55 @@
 		<@ if(args.summary.goTerms.MF) { @>
 			<h4>Molecular Functions</h4>
 			<p>
+<ul>
 				<@ for(var mfunction in args.summary.goTerms.MF) {@>
-					<label class="label label-info"><@ if(args.summary.goTerms.MF[mfunction].term)
+					<@ if(args.summary.goTerms.MF[mfunction].term)
 					{
-						print (args.summary.goTerms.MF[mfunction].term);
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.MF[mfunction].id+"'>"+args.summary.goTerms.MF[mfunction].term+"</a></li>");
 					}
 					else if(mfunction == "term")
 					{
-						print (args.summary.goTerms.MF.term);
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.MF.id+"'>"+args.summary.goTerms.MF.term+"</a></li>");
 					} 
-					 @></label>
+					 @>
 				<@ }@>
+</ul>
 			</p>
 		<@ } @>
 		<@ if(args.summary.goTerms.CC) { @>
 			<h4>Cellular Component</h4>
 			<p>
+<ul>
 				<@ for(var component in args.summary.goTerms.CC) {@>
-					<label class="label label-info"><@ if(args.summary.goTerms.CC[component].term)
+					<@ if(args.summary.goTerms.CC[component].term)
 					{
-						print (args.summary.goTerms.CC[component].term);
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.CC[component].id+"'>"+args.summary.goTerms.CC[component].term+"</a></li>");
 					}
 					else if(component == "term")
 					{
-						print (args.summary.goTerms.CC.term);
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.CC.id+"'>"+args.summary.goTerms.CC.term+"</a></li>");
 					} 
-					 @></label>
+					 @>
 				<@ }@>
+</ul>
 			</p>
 		<@ } @>
 			<@ if(args.summary.goTerms.BP) { @>
 				<h4>Biological Process</h4>
 				<p>
+					<ul>
 					<@ for(var process in args.summary.goTerms.BP) {@>
-						<label class="label label-info"><@ if(args.summary.goTerms.BP[process].term)
+						<@ if(args.summary.goTerms.BP[process].term)
 						{
-							print (args.summary.goTerms.BP[process].term);
+							print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.BP[process].id+"'>"+args.summary.goTerms.BP[process].term+"</a></li>");
 						}
 						else if(process == "term")
 						{
-							print (args.summary.goTerms.BP.term);
+							print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.BP.id+"'>"+args.summary.goTerms.BP.term+"</a></li>");
 						} 
-						 @></label>
+						 @>
 					<@ }@>
+					</ul>
 				</p>
 			<@ } @>
 			<@ if(args.summary.generif) { @>
@@ -135,71 +141,77 @@
 				<div id="summary_content">
 				<@= args.summary.summaryText @>
 				<@ if(args.summary.goTerms.MF) { @>
-				<h4>Molecular Functions</h4>
-					<p>
-						<@ for(var mfunction in args.summary.goTerms.MF) {@>
-							<label class="label label-info"><@ if(args.summary.goTerms.MF[mfunction].term)
-								{
-									print (args.summary.goTerms.MF[mfunction].term);
-}
-else if(mfunction == "term")
-{
-print (args.summary.goTerms.MF.term);
-} 
-								 @></label>
-						<@ }@>
-					</p>
-				<@ } @>
-				<@ if(args.summary.goTerms.CC) { @>
-				<h4>Cellular Component</h4>
-					<p>
-						<@ for(var component in args.summary.goTerms.CC) {@>
-								<label class="label label-info"><@ if(args.summary.goTerms.CC[component].term)
-								{
-									print (args.summary.goTerms.CC[component].term);
-}
-else if(component == "term")
-{
-print (args.summary.goTerms.CC.term);
-} 
-								 @></label>
-						<@ }@>
-					</p>
-				<@ } @>
-				<@ if(args.summary.goTerms.BP) { @>
+			<h4>Molecular Functions</h4>
+			<p>
+<ul>
+				<@ for(var mfunction in args.summary.goTerms.MF) {@>
+					<@ if(args.summary.goTerms.MF[mfunction].term)
+					{
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.MF[mfunction].id+"'>"+args.summary.goTerms.MF[mfunction].term+"</a></li>");
+					}
+					else if(mfunction == "term")
+					{
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.MF.id+"'>"+args.summary.goTerms.MF.term+"</a></li>");
+					} 
+					 @>
+				<@ }@>
+</ul>
+			</p>
+		<@ } @>
+		<@ if(args.summary.goTerms.CC) { @>
+			<h4>Cellular Component</h4>
+			<p>
+<ul>
+				<@ for(var component in args.summary.goTerms.CC) {@>
+					<@ if(args.summary.goTerms.CC[component].term)
+					{
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.CC[component].id+"'>"+args.summary.goTerms.CC[component].term+"</a></li>");
+					}
+					else if(component == "term")
+					{
+						print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.CC.id+"'>"+args.summary.goTerms.CC.term+"</a></li>");
+					} 
+					 @>
+				<@ }@>
+</ul>
+			</p>
+		<@ } @>
+			<@ if(args.summary.goTerms.BP) { @>
 				<h4>Biological Process</h4>
-					<p>
-						<@ for(var process in args.summary.goTerms.BP) {@>
-						<label class="label label-info"><@ if(args.summary.goTerms.BP[process].term)
-								{
-									print (args.summary.goTerms.BP[process].term);
-}
-else if(process == "term")
-{
-print (args.summary.goTerms.BP.term);
-} 
-								 @></label>
-						<@ }@>
-					</p>
-				<@ } @>
-<@ if(args.summary.generif) { @>
-				<h4>Gene Rifs</h4>
+				<p>
 					<ul>
-						<@ for(var generif in args.summary.generif) {@>
-<li>
-						<@ if(args.summary.generif[generif].text)
-								{
-									print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif[generif].pubmed+'">'+args.summary.generif[generif].text+'</a>');
-}
-else if(generif == "text")
-{
-print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif.pubmed+'">'+args.summary.generif.text+'</a>');
-} 
-								 @>
-</li>
-				<@ } @>
+					<@ for(var process in args.summary.goTerms.BP) {@>
+						<@ if(args.summary.goTerms.BP[process].term)
+						{
+							print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.BP[process].id+"'>"+args.summary.goTerms.BP[process].term+"</a></li>");
+						}
+						else if(process == "term")
+						{
+							print ("<li><a target='_blank' href='http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="+args.summary.goTerms.BP.id+"'>"+args.summary.goTerms.BP.term+"</a></li>");
+						} 
+						 @>
+					<@ }@>
 					</ul>
+				</p>
+			<@ } @>
+			<@ if(args.summary.generif) { @>
+			<h4>Gene Rifs</h4>
+			<ul>
+				<@ for(var generif in args.summary.generif) {@>
+					<li>
+						<@ if(args.summary.generif[generif].text)
+						{
+							print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif[generif].pubmed+'">'+args.summary.generif[generif].text+'</a>');
+						}
+						else if(generif == "text")
+						{
+							print ('<a target="blank" href="http://www.ncbi.nlm.nih.gov/pubmed/'+args.summary.generif.pubmed+'">'+args.summary.generif.text+'</a>');
+						} 
+						 @>
+					</li>
 				<@ } @>
+			</ul>
+		<@ } @>
 </div>
 			</div>
 		</td>
