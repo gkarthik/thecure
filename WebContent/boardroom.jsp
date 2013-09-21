@@ -61,18 +61,25 @@ Player player = (Player) session.getAttribute("player");
       <div class="container boardroom">
         <div class="hero-unit">
           <div class="row">
+          <h2>The Cure is paused for an update...</h2>
+          <p>Please have a look at a protoype part of the new version that allows you to <a href="cured3/assets/">interactively construct decision trees</a> for predicting breast cancer prognosis based on gene expression.</p>
+      	  <p>We would love to hear what you think of the new tool and ideas for improving all aspects of this system. Please <a href="contact.jsp">get in touch</a></p>	
+       <!--    
             <h2>Your challenge: predict breast cancer survival</h2>
               <p>Your objective is to identify genes that can be used to classify tumor samples into one of two prognostic groups: 'poor' and 'good'.  'Good' suggests that the patient is likely to survive more than 10 years from the time of diagnosis. Poor suggests that, without major intervention, the patient is not likely to survive beyond 10 years. (We did mention that this was a serious game...) To win, you must pick the right genes before Barney <img width="25" src="images/barney.png">.
 
               <p>Click on the numbered tiles below to play. Take your time, ask your friends or search the internet for help if you get stuck. This is not going to be easy, give it your best shot! <a href="help.jsp"><span style="color: #B2365F;">(help)</span></a></p>
               <br/>
+           -->      
           </div>
+          <!--  
           <div class="row">
             <div id="boards" class="span7"></div>
             <div id="back" class="span3">
               <jsp:include page="scoreboard_table.jsp" />
             </div>
           </div>
+          -->
         </div>
       </div>
 
