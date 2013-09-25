@@ -130,20 +130,122 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-		//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
 		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
 		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
 		//		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-		int maxdepth = 404;
+		//int maxdepth = 404;
 		//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
 		///////////////////////////////////////
 		//classifiers
 		//////////////////////////////////////	
-		outfile = output_dir+"generankings/classifier_eval.txt";
+		//		outfile = output_dir+"generankings/classifier_eval.txt";
 		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+		//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
 		String dataset = "griffith_breast_cancer_full_train";
-		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);
+		//		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);
+
+		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
+		buildPvalTableForRandomGeneSets(backgroundgenefile, train_file, dataset, outfile);		
+	}
+
+
+	public static void buildPvalTableForRandomGeneSets(String backgroundgenefile, String train_file, String dataset, String fileout){
+		boolean all_probes = true;
+		Classifier model = null;
+		Map<Integer, Integer> cv_count = new TreeMap<Integer, Integer>();
+		int runs = 1000;
+		int nper = 100;	
+		try {
+			FileWriter w = new FileWriter(fileout);
+			w.write("r\tnper\tgenes.size()\tagainst.size()\ta\tb\tc\td\tfisherP\tcv_accuracy\tgenes\n");
+			Weka weka = new Weka();
+			System.out.println("loading... "+train_file);
+			weka.buildWeka(new FileInputStream(train_file), null, dataset, false);
+			System.out.println("Weka initialized ");		
+			Set<Integer> backgroundset = readEntrezIdsFromFile(backgroundgenefile, 0, 0, "\t");
+			List<Integer> backgroundgenes = new ArrayList<Integer>(backgroundset);
+			//use to benchmark likelihood of matching up with a particular set
+			Set<Integer> against = new HashSet<Integer>(nper);
+			for(int g=0; g<nper; g++){
+				against.add(backgroundgenes.get(g));
+			}
+			for(int r=0; r< runs; r++){
+				Set<Integer> missing = new HashSet<Integer>();
+				Set<Integer> _genes = new HashSet<Integer>();
+				Set<Integer> genes = new HashSet<Integer>();
+				String genecell = "";
+				Collections.shuffle(backgroundgenes);
+				String indices = "";
+				//select the genes
+				for(int g=0; g<nper; g++){
+					Integer entrezid = backgroundgenes.get(g);
+					_genes.add(entrezid);
+				}
+				//look them up
+				boolean present = false;
+				Map<Integer, List<org.scripps.combo.model.Attribute>> gene_atts = org.scripps.combo.model.Attribute.getByFeatureUniqueIds(_genes, dataset);
+				for(Integer gene : _genes){
+					present = false;
+					List<org.scripps.combo.model.Attribute> atts = gene_atts.get(gene);
+					if(atts!=null&&atts.size()>0){
+						for(org.scripps.combo.model.Attribute a : atts){
+							if(a.getDataset().equals(dataset)){
+								indices+=a.getCol_index()+",";
+								if(!all_probes){
+									break;
+								}
+								present = true;
+							}
+						}
+					}
+					if(!present){
+						missing.add(gene);
+					}else{
+						genes.add(gene);
+					}
+				}
+				//keep track of which genes were selected
+				for(Integer gene : genes){
+					Feature f = Feature.getByUniqueId(gene+"");
+					genecell+=(gene+":"+f.getShort_name()+",");
+				}
+				//test them
+				int c = 0;
+				int accuracy = 0;
+				String cmodel = "RF";
+				model = new RandomForest();
+				weka.setEval_method("cross_validation");
+				Weka.execution result = weka.pruneAndExecute(indices, model);
+				accuracy = Math.round((float)result.eval.pctCorrect());
+				Integer cvcount = cv_count.get(accuracy);
+				if(cvcount==null){
+					cvcount = new Integer(0);
+				}
+				cvcount++;
+				cv_count.put(accuracy, cvcount);
+				TwoByTwo setcompare = compareSets(genes, against, backgroundset);
+				String row = r+"\t"+nper+"\t"+genes.size()+"\t"+against.size()+"\t"+setcompare.getString()+"\t"+accuracy;
+				w.write(row+"\t"+genecell+"\n");
+				System.out.println(row);
+			}
+			w.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//write out the empirical p for the gene sets
+		for(Entry<Integer,Integer> cvcount : cv_count.entrySet()){
+			int cv = cvcount.getKey();
+			int n_greater = 0;
+			for(Entry<Integer,Integer> cvcountin : cv_count.entrySet()){
+				int cvin = cvcountin.getKey();
+				if(cvin>=cv){
+					n_greater+=cvcountin.getValue();
+				}
+			}
+			System.out.println(cv+"\t"+cvcount.getValue()+"\t"+(float)cvcount.getValue()/(float)runs+"\t"+n_greater+"\t"+n_greater/(float)runs);
+		}
 	}
 
 
@@ -334,6 +436,11 @@ public class Stats {
 	static class TwoByTwo {
 		int a, b, c, d;
 		double fisherP;
+		
+		public String getString(){
+			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP;
+			return row;
+		}
 	}
 	/**
 	 * Does the set comparisons to produce a 2 * 2 table
@@ -358,41 +465,74 @@ public class Stats {
 					continue;
 				}
 				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, 0, "\t");
-				//			System.out.println("compareto contains: "+against.size());
-				//load in gene sets
-
-				//remove any genes not in background
-				against.retainAll(background);
-				//				System.out.println("After removing non-background, compareto contains: "+against.size());
-				//this should not be necessary, but just to b sure
-				testgenes.retainAll(background);
-				//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
-
-				//build 2 by 2 table
-				//a tp = n genes in both sets
-				Set<Integer> tp_a = new HashSet<Integer>(against);
-				tp_a.retainAll(testgenes);
-				//b fp = n genes in the testset and not in the against set
-				Set<Integer> fp_b = new HashSet<Integer>(testgenes);
-				fp_b.removeAll(against);
-				//c fn = n genes in against set and not in the test set
-				Set<Integer> fn_c = new HashSet<Integer>(against);
-				fn_c.removeAll(testgenes);
-				//d tn = n genes not in the test set and not in the against set
-				Set<Integer> tn_d = new HashSet<Integer>(background);
-				tn_d.removeAll(against);  tn_d.removeAll(testgenes);
-				//test with fisherexact
-				double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
-				System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
-				System.out.println(p);
-				TwoByTwo t = new TwoByTwo();
-				t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
-				t.fisherP = p;
+				//				//			System.out.println("compareto contains: "+against.size());
+				//				//load in gene sets
+				//
+				//				//remove any genes not in background
+				//				against.retainAll(background);
+				//				//				System.out.println("After removing non-background, compareto contains: "+against.size());
+				//				//this should not be necessary, but just to b sure
+				//				testgenes.retainAll(background);
+				//				//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
+				//
+				//				//build 2 by 2 table
+				//				//a tp = n genes in both sets
+				//				Set<Integer> tp_a = new HashSet<Integer>(against);
+				//				tp_a.retainAll(testgenes);
+				//				//b fp = n genes in the testset and not in the against set
+				//				Set<Integer> fp_b = new HashSet<Integer>(testgenes);
+				//				fp_b.removeAll(against);
+				//				//c fn = n genes in against set and not in the test set
+				//				Set<Integer> fn_c = new HashSet<Integer>(against);
+				//				fn_c.removeAll(testgenes);
+				//				//d tn = n genes not in the test set and not in the against set
+				//				Set<Integer> tn_d = new HashSet<Integer>(background);
+				//				tn_d.removeAll(against);  tn_d.removeAll(testgenes);
+				//				//test with fisherexact
+				//				double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
+				//				System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
+				//				System.out.println(p);
+				//				TwoByTwo t = new TwoByTwo();
+				//				t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
+				//				t.fisherP = p;
+				TwoByTwo t = compareSets(testgenes, against, background);
 				p_map.put(againstgenefile, t);
 			}
 		}
 		return p_map;
 	}
+
+	public static TwoByTwo compareSets(Set<Integer> testgenes, Set<Integer> against, Set<Integer> background){
+		//remove any genes not in background
+		against.retainAll(background);
+		//				System.out.println("After removing non-background, compareto contains: "+against.size());
+		//this should not be necessary, but just to b sure
+		testgenes.retainAll(background);
+		//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
+		//build 2 by 2 table
+		//a tp = n genes in both sets
+		Set<Integer> tp_a = new HashSet<Integer>(against);
+		tp_a.retainAll(testgenes);
+		//b fp = n genes in the testset and not in the against set
+		Set<Integer> fp_b = new HashSet<Integer>(testgenes);
+		fp_b.removeAll(against);
+		//c fn = n genes in against set and not in the test set
+		Set<Integer> fn_c = new HashSet<Integer>(against);
+		fn_c.removeAll(testgenes);
+		//d tn = n genes not in the test set and not in the against set
+		Set<Integer> tn_d = new HashSet<Integer>(background);
+		tn_d.removeAll(against);  tn_d.removeAll(testgenes);
+		//test with fisherexact
+		double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
+		//		System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
+		//		System.out.println(p);
+		TwoByTwo t = new TwoByTwo();
+		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
+		t.fisherP = p;		
+		return t;
+	}
+
+
 	/**
 	 * Considers all the games on all the boards from gene-centric view.
 	 * Results are sorted with lowest p values on top.
@@ -467,7 +607,7 @@ public class Stats {
 	 * @param random
 	 */
 	public static void outputBoardConsensus(String outfile, String genefile, boolean first_hand_only, boolean random){
-		//set up tables to get P vlaues from simulated data
+		//set up tables to get P values from simulated data
 		int n_per_board = 25;
 		int min_players = 1;
 		int max_players = 26;
