@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.scripps.combo.weka.Weka;
 import org.scripps.util.JdbcConnection;
@@ -233,6 +234,48 @@ public class Attribute {
 		return atts;
 	}
 
+	public static Map<Integer, List<Attribute>> getByFeatureUniqueIds(Set<Integer> genes, String dataset) {
+		Map<Integer, List<Attribute>> gene_atts = new HashMap<Integer, List<Attribute>>();
+		JdbcConnection conn = new JdbcConnection();
+		String gq = "(";
+		for(Integer gene : genes){
+			gq+="feature.unique_id = '"+gene+"' or ";
+		}
+		gq = gq.substring(0,gq.length()-3);
+		gq+=")";
+		String q = "select feature.unique_id, attribute.* from attribute, feature where "+gq+" and attribute.feature_id = feature.id";
+		if(dataset!=null){
+			q += " and dataset = '"+dataset+"'";	
+		}
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			while(rslt.next()){
+				int gene = rslt.getInt("unique_id");
+				List<Attribute> atts = gene_atts.get(gene);
+				if(atts==null){
+					atts = new ArrayList<Attribute>();
+				}
+				Attribute a = new Attribute();
+				a.setName(rslt.getString("name"));
+				a.setCol_index(rslt.getInt("col_index"));
+				a.setCreated(rslt.getDate("created"));
+				a.setFeature_id(rslt.getInt("feature_id"));
+				a.setId(rslt.getInt("id"));
+				a.setUpdated(rslt.getTimestamp("updated"));
+				a.setDataset(rslt.getString("dataset"));
+				a.setReliefF(rslt.getFloat("reliefF"));
+				atts.add(a);
+				gene_atts.put(gene, atts);
+			}
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return gene_atts;
+	}
+	
 	public static List<Attribute> getByFeatureDbId(String db_id){
 		List<Attribute> atts = new ArrayList<Attribute>();
 		JdbcConnection conn = new JdbcConnection();

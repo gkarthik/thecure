@@ -56,8 +56,12 @@ public class Weka {
 	String eval_method;
 	Map<String, Feature> features;
 	String dataset;
-	
+
 	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset) throws Exception{
+		buildWeka(train_stream, test_stream, dataset, true);
+	}
+		
+	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset, boolean setFeatures) throws Exception{
 		setDataset(dataset);
 		//get the data 
 		DataSource source = new DataSource(train_stream);
@@ -79,7 +83,9 @@ public class Weka {
 		eval_method = "cross_validation";//"training_set";
 		//assumes that feature table has already been loaded
 		//get the features related to this weka dataset
-		setFeatures(Feature.getByDataset(dataset));
+		if(setFeatures){
+			setFeatures(Feature.getByDataset(dataset));
+		}
 	} 
 
 	
