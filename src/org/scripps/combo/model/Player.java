@@ -270,8 +270,9 @@ public class Player {
 
 		GameLog log = new GameLog();
 		List<Game> hands = null;
+		boolean keep_mammal = true;
 		if(only_first_per_board){
-			hands = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, for_scoreboard_in_game, room);
+			hands = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, for_scoreboard_in_game, room, keep_mammal);
 		}else{
 			hands = Game.getAllGames(false, dataset);
 		}
