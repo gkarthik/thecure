@@ -194,9 +194,12 @@ public class Game {
 	 * @param dataset 
 	 * @return
 	 */
-	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset, boolean forscoreboard, int room){
+	public static List<Game> getTheFirstGamePerPlayerPerBoard(boolean only_winning, String dataset, boolean forscoreboard, int room, boolean keep_mammal){
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select * from game order by game_finished asc";
+		if(!keep_mammal){
+			q = "select * from game where board_id < 201 or board_id > 204 order by game_finished asc";
+		}
 		if(only_winning){
 			q = "select * from game where win > 0 order by game_finished asc";
 		}

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -57,8 +58,9 @@ public class Stats {
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		String output_dir = "/Users/bgood/workspace/aacure/database/stats/";
 		generateAllStats(output_dir);
 	}
@@ -67,14 +69,14 @@ public class Stats {
 	 * Track the generation of results data to be used for presentation and publication
 	 * 
 	 * @param output_dir
+	 * @throws IOException 
 	 */
-	public static void generateAllStats(String output_dir){
+	public static void generateAllStats(String output_dir) throws IOException{
 		String outfile = "";
-		//////////////////////////////////////////
-		/// Time and quantity
 		////////////////////////////////////////
 		//games
 		////////////////////////////////////////
+		/// Time and quantity
 		//		System.out.println("Starting game analysis...");
 		//		outfile = output_dir+"games_day.txt";
 		//		String day_or_month = "day";
@@ -82,6 +84,13 @@ public class Stats {
 		//		outfile = output_dir+"games_month.txt";
 		//		day_or_month = "month";
 		//		outputGamesPerTime(day_or_month, outfile);
+		////////////////////////////////////////
+		/// Bias detection
+
+//		outfile = output_dir+"generankings/genesets_for_classifiers/breast_cancer_in_description.txt";	
+//		String search = "breast cancer";
+//		testForGeneSelectionRules(outfile, search);
+		
 		//		///////////////////////////////////////
 		//		//players
 		//		//////////////////////////////////////
@@ -130,26 +139,100 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
-		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-		//		outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-		//int maxdepth = 404;
-		//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
-		///////////////////////////////////////
-		//classifiers
-		//////////////////////////////////////	
-		//		outfile = output_dir+"generankings/classifier_eval.txt";
-		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-		//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-		String dataset = "griffith_breast_cancer_full_train";
-		//		testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);
-
-		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
-		buildPvalTableForRandomGeneSets(backgroundgenefile, train_file, dataset, outfile);		
+//				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+//						String gamegenefiledir = output_dir+"generankings/OneYear/";
+//						String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+//						outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+//				int maxdepth = 404;
+//						outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+				///////////////////////////////////////
+				//classifiers
+				//////////////////////////////////////	
+				//		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
+				//		buildPvalTableForRandomGeneSets(backgroundgenefile, train_file, dataset, outfile);			
+				outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
+				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+				String dataset = "griffith_breast_cancer_full_train";
+				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
+				testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
 	}
 
 
+	/**
+	 * @throws IOException 
+	 * 
+	 */
+
+	public static void testForGeneSelectionRules(String specialsetoutfile, String search) throws IOException{
+		int board_size = 25; int hand_size = 5; long seed = 1; int gamesim = 10000; boolean first_play = true;
+		double sig_p = 0.05;
+		Map<Integer, Map<Integer, Double>> size_ptable = getDistributionsForCardSelectionType(board_size, hand_size, seed, gamesim);
+		boolean drop_mammal = true; boolean setfeatures = true;
+		List<Board> boards = Board.getAllBoards(drop_mammal, setfeatures);
+		int N_biased = 0; //games where people picked genes with cancer n their text more often than expected by random at given p threshold
+		int N_unknown = 0;
+		Set<String> specialset = new HashSet<String>();
+		Map<Integer, Integer> player_scount = new HashMap<Integer, Integer>();
+		for(Board board: boards){
+			List<Feature> genes = board.getFeatures();
+			//get the "special" set
+			List<String> special = new ArrayList<String>();
+			for(Feature gene : genes){
+				if((gene.getShort_name()!=null&&gene.getShort_name().contains(search))
+					||(gene.getLong_name()!=null&&gene.getLong_name().contains(search))
+					||(gene.getDescription()!=null && gene.getDescription().contains(search))){
+					special.add(gene.getId()+""); //note in db feature id (not entrez) feature id space
+					specialset.add(gene.getUnique_id());
+				}
+			}
+			int specials = special.size();
+			Map<Integer, Double> ptable = size_ptable.get(specials);
+			//check to see how many times per game, players selected from this set
+			List<Game> games = Game.getGamesForBoard(board.getId(), first_play, 0);
+			for(Game game : games){
+				List<String> picked = game.getPlayer1_features(); //again in db feature id space
+				picked.retainAll(special);
+				int picked_special = picked.size();
+				double p = ptable.get(picked_special);
+				if(p<=sig_p){
+					N_biased++;
+					int pid = game.getPlayer1_id();
+					Integer c = player_scount.get(pid);
+					if(c==null){
+						c= new Integer(0);
+					}
+					c++;
+					player_scount.put(pid, c);
+				}else{
+					N_unknown++;
+				}
+			}
+		}
+		System.out.println("N_biased:\t"+N_biased+"\tN_unknown\t"+N_unknown);
+		System.out.println("Special genes across all boards: "+specialset.size());
+		
+		List<Integer> keys = MapFun.sortMapByValue(player_scount);
+		for(Integer key : keys){
+			System.out.println(key+"\t"+player_scount.get(key));
+		}
+		// N_biased:	76	N_unknown	4238  p<=0.05 1.8% of games
+		// N_biased:	127	N_unknown	4187  p<= 0.1 2.9% of games
+		FileWriter f = new FileWriter(specialsetoutfile);
+		for(String id : specialset){
+			f.write(id+"\n");
+		}
+		f.close();
+	}
+	
+
+	/**
+	 * Using this we can estimate the chances of observing a particular value in a cross-validation experiment given a random selection of genes.
+	 * @param backgroundgenefile
+	 * @param train_file
+	 * @param dataset
+	 * @param fileout
+	 */
 	public static void buildPvalTableForRandomGeneSets(String backgroundgenefile, String train_file, String dataset, String fileout){
 		boolean all_probes = true;
 		Classifier model = null;
@@ -248,17 +331,26 @@ public class Stats {
 		}
 	}
 
-
+	
+	/**
+	 * Given a collection of gene sets, evaluate them using several different classifiers on particular dataset using training set, cross-validation, and test set
+	 * @param genesetdir
+	 * @param train_file
+	 * @param test_file
+	 * @param dataset
+	 * @param fileout
+	 */
 	public static void testGeneSetsInClassifiers(String genesetdir, String train_file, String test_file, String dataset, String fileout){
 		boolean all_probes = true;
 		Classifier model = null;
 		try {
 			Weka weka = new Weka();
 			System.out.println("loading... "+train_file);
-			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset);
+			boolean setFeatures = false;
+			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
 			System.out.println("Weka initialized ");
 			FileWriter out = new FileWriter(fileout);	
-			out.write("testgenefile\tmaxdepth\tcmodel\teval_method\taccuracy\tgenes.size()\tgenecell\tmissing.size()\tmissingcell");
+			out.write("testgenefile\tmaxdepth\tcmodel\teval_method\taccuracy\tgenes.size()\tgenecell\tmissing.size()\tmissingcell\n");
 			//iterate through different set sizes
 			int maxdepth = 0;
 			for(int s=0; s<3; s++){
@@ -436,7 +528,7 @@ public class Stats {
 	static class TwoByTwo {
 		int a, b, c, d;
 		double fisherP;
-		
+
 		public String getString(){
 			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP;
 			return row;
@@ -465,36 +557,6 @@ public class Stats {
 					continue;
 				}
 				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, 0, "\t");
-				//				//			System.out.println("compareto contains: "+against.size());
-				//				//load in gene sets
-				//
-				//				//remove any genes not in background
-				//				against.retainAll(background);
-				//				//				System.out.println("After removing non-background, compareto contains: "+against.size());
-				//				//this should not be necessary, but just to b sure
-				//				testgenes.retainAll(background);
-				//				//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
-				//
-				//				//build 2 by 2 table
-				//				//a tp = n genes in both sets
-				//				Set<Integer> tp_a = new HashSet<Integer>(against);
-				//				tp_a.retainAll(testgenes);
-				//				//b fp = n genes in the testset and not in the against set
-				//				Set<Integer> fp_b = new HashSet<Integer>(testgenes);
-				//				fp_b.removeAll(against);
-				//				//c fn = n genes in against set and not in the test set
-				//				Set<Integer> fn_c = new HashSet<Integer>(against);
-				//				fn_c.removeAll(testgenes);
-				//				//d tn = n genes not in the test set and not in the against set
-				//				Set<Integer> tn_d = new HashSet<Integer>(background);
-				//				tn_d.removeAll(against);  tn_d.removeAll(testgenes);
-				//				//test with fisherexact
-				//				double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
-				//				System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
-				//				System.out.println(p);
-				//				TwoByTwo t = new TwoByTwo();
-				//				t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
-				//				t.fisherP = p;
 				TwoByTwo t = compareSets(testgenes, against, background);
 				p_map.put(againstgenefile, t);
 			}
@@ -502,6 +564,13 @@ public class Stats {
 		return p_map;
 	}
 
+	/**
+	 * Given 2 sets and a background set, measure the overlap between the two sets using fishers exact test
+	 * @param testgenes
+	 * @param against
+	 * @param background
+	 * @return
+	 */
 	public static TwoByTwo compareSets(Set<Integer> testgenes, Set<Integer> against, Set<Integer> background){
 		//remove any genes not in background
 		against.retainAll(background);
@@ -974,7 +1043,7 @@ public class Stats {
 	}
 
 	public static void printDatasetScoreboard(String dataset, boolean only_winning){
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0, true);
 		//get a scoreboard
 		GameLog log = new GameLog();
 		high_score sb = log.getScoreBoard(whs, dataset);
@@ -1088,4 +1157,82 @@ public class Stats {
 		}
 		return sumP/times;
 	}
+
+	
+/**
+ * Fill in the chances of drawing a particular type of card N times in a game given the total number of that type of card on the board	
+ * @param board_size
+ * @param hand_size
+ * @param seed
+ * @param games
+ * @return
+ */
+	public static Map<Integer, Map<Integer, Double>> getDistributionsForCardSelectionType(int board_size, int hand_size, long seed, int games){
+		Map<Integer, Map<Integer, Double>> size_ptable = new TreeMap<Integer, Map<Integer, Double>>();
+		for(int special_set_size=0; special_set_size<board_size; special_set_size++){
+			Map<Integer, Double> size_dist = getDistributionForCardSelectionType(board_size, special_set_size, hand_size, seed, games);
+			size_ptable.put(special_set_size, size_dist);
+		}
+		
+//		for(int special_set_size=0; special_set_size<board_size; special_set_size++){
+//			Map<Integer, Double> n_p = size_ptable.get(special_set_size);
+//			for(Entry<Integer, Double> p : n_p.entrySet()){
+//				System.out.println(special_set_size+"\t"+p.getKey()+"\t"+p.getValue());
+//			}
+//		}
+		
+		return size_ptable;
+	}
+	
+	/**
+	 * Assuming we have a board containing a "special" set of genes.  e.g. a genes that have "cancer" in their names.
+	 * Estimate the chances of picking a certain number of these genes at random.
+	 * If the special set size = board size, chances of drawing a 5 special cards = 1.  
+	 * If special set size = 0, chances are 0.
+	 * @param board_size
+	 * @param special_set_size
+	 * @param hand_size
+	 * @param seed
+	 * @return
+	 */
+	public static Map<Integer, Double> getDistributionForCardSelectionType(int board_size, int special_set_size, int hand_size, long seed, int games){
+		Map<Integer, Integer> n_count = new HashMap<Integer, Integer>();
+		for(int c=0; c<=hand_size; c++){
+			n_count.put(c, 0);
+		}
+		Random r = new Random(seed);
+		List<Integer> boardbase = new ArrayList<Integer>(board_size);
+		for(int i=0; i<special_set_size; i++){
+			boardbase.add(i);
+		}
+		for(int i=special_set_size; i<board_size; i++){
+			boardbase.add(-i);
+		}
+		for(int game=0; game<games; game++){
+			List<Integer> board = new ArrayList<Integer>(boardbase);
+			Collections.shuffle(board, r);
+			//in each round two cards are selected
+			//player 1 (human) always goes first
+			//this loop completes one game
+			int biased_selections = 0; int other_selections = 0;
+			for(int g=0; g<hand_size*2; g++){
+				int test = board.get(g); 
+				if(g%2==0){ //if g is odd then barney got the card
+					if(test>=0){ //then its a member of the biased set				
+						biased_selections++;
+					}else{
+						other_selections++;
+					}
+				}
+				board.remove(g); //take the selected card off the board
+			}
+			Integer c = n_count.get(biased_selections);
+			c++;
+			//for this game we observed 'biased_selections' out of 5 cards.  
+			n_count.put(biased_selections, c);
+		}
+		Map<Integer, Double> n_p = MapFun.convertCountsToEmpiricalPtable(n_count);
+		return n_p;
+	}
+
 }

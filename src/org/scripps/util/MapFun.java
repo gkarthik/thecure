@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 
 /**
@@ -66,6 +67,38 @@ public class MapFun {
 		return keys;
 	}
 
+	public static Map<Integer, Double> convertCountsToEmpiricalPtable(Map<Integer, Integer> count_map){
+		Map<Integer, Double> count_p = new TreeMap<Integer, Double>();
+		int runs = 0;
+		for(Entry<Integer,Integer> countin : count_map.entrySet()){
+			runs+= countin.getValue();
+		}
+		for(Entry<Integer,Integer> inmap : count_map.entrySet()){
+			int k = inmap.getKey();
+			int n_greater = 0;
+			for(Entry<Integer,Integer> countin : count_map.entrySet()){
+				int cvin = countin.getKey();
+				if(cvin>=k){
+					n_greater+=countin.getValue();
+				}
+			}
+			count_p.put(k, n_greater/(double)runs);
+		}
+		return count_p;
+	}
+	
+	public static Map<Object, Double> convertCountsToPercentagesGeneric(Map<Object, Integer> inmap){
+		Map<Object, Double> outmap = new HashMap<Object,Double>();
+		float sum = 0;
+		for(Integer i : inmap.values()){
+			sum+= i;
+		}
+		for(Object key : inmap.keySet()){
+			outmap.put(key, (double)inmap.get(key)/sum);
+		}
+		return outmap;
+	}
+	
 	public static Map<String, Float> convertCountsToPercentages(Map<String, Integer> inmap){
 		Map<String, Float> outmap = new HashMap<String, Float>();
 		float sum = 0;
