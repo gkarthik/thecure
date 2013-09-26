@@ -139,23 +139,25 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-//				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-//						String gamegenefiledir = output_dir+"generankings/OneYear/";
-//						String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-//						outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-//				int maxdepth = 404;
-//						outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+				String gamegenefiledir = output_dir+"generankings/OneYear/";
+				String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+	//			String againstgenefiledir = output_dir+"generankings/rulebased/";
+	//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
+				outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+				int maxdepth = 404;
+						outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
 				///////////////////////////////////////
 				//classifiers
 				//////////////////////////////////////	
 				//		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
 				//		buildPvalTableForRandomGeneSets(backgroundgenefile, train_file, dataset, outfile);			
-				outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
-				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-				String dataset = "griffith_breast_cancer_full_train";
-				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
-				testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
+//				outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
+//				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+//				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+//				String dataset = "griffith_breast_cancer_full_train";
+//				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
+//				testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
 	}
 
 
@@ -514,7 +516,7 @@ public class Stats {
 					for(String key : p.keySet()){
 						System.out.println(key+"\t"+p.get(key));
 						TwoByTwo t = p.get(key);
-						w.write(key+"\t"+t.fisherP+"\t"+t.a+"\t"+t.b+"\t"+t.c+"\t"+t.d+"\n");
+						w.write(key+"\t"+t.getString()+"\n");
 					}
 					w.close();
 				} catch (IOException e) {
@@ -528,9 +530,50 @@ public class Stats {
 	static class TwoByTwo {
 		int a, b, c, d;
 		double fisherP;
+		double pct_agreement;
+		double kappa;
+		double pct_agreement_positive;
+		double pct_agreement_negative;
+		
+		public TwoByTwo(int a, int b, int c, int d) {
+			super();
+			this.a = a;
+			this.b = b;
+			this.c = c;
+			this.d = d;
+			setFisherP();
+			setPctAgree();
+			setKappa();
+			setPctAgreePositive();
+			setPctAgreeNegative();
+		}
 
+		
+		public void setFisherP(){
+			//test with fisherexact
+			fisherP = StatUtil.fishersExact2tailed(a, b, c, d);
+		}
+		
+		public void setPctAgreePositive(){
+			pct_agreement_positive = (double)(a)/(double)(a+b+c);
+		}
+		
+		public void setPctAgreeNegative(){
+			pct_agreement_negative = (double)(d)/(double)(d+b+c);
+		}
+		
+		public void setPctAgree(){
+			pct_agreement = (double)(a+d)/(double)(a+b+c+d);
+		}
+		
+		public void setKappa(){
+			double prA = (double)(a+d)/(double)(a+b+c+d); //actual prob of agreement
+			double prE = ((double)(a+b)/(double)(a+b+c+d))*((double)(a+c)/(double)(a+b+c+d)); //chance of random agreement based on + rates
+			kappa = (prA - prE)/(1 - prE);
+		}
+		
 		public String getString(){
-			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP;
+			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP+"\t"+pct_agreement+"\t"+kappa+"\t"+pct_agreement_positive+"\t"+pct_agreement_negative;
 			return row;
 		}
 	}
@@ -591,13 +634,12 @@ public class Stats {
 		//d tn = n genes not in the test set and not in the against set
 		Set<Integer> tn_d = new HashSet<Integer>(background);
 		tn_d.removeAll(against);  tn_d.removeAll(testgenes);
-		//test with fisherexact
-		double p = StatUtil.fishersExact2tailed(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
 		//		System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
 		//		System.out.println(p);
-		TwoByTwo t = new TwoByTwo();
-		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
-		t.fisherP = p;		
+		TwoByTwo t = new TwoByTwo(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
+//		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
+//		t.setFisherP();		
+		
 		return t;
 	}
 
