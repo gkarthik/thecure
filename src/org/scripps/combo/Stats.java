@@ -140,24 +140,54 @@ public class Stats {
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
 				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-				String gamegenefiledir = output_dir+"generankings/OneYear/";
-				String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
+		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
+		//		String gamegenefiledir = output_dir+"generankings/test/";
+		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
 	//			String againstgenefiledir = output_dir+"generankings/rulebased/";
 	//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
-				outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-				int maxdepth = 404;
-						outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+	//			outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+	//			outfile = output_dir+"PublicPredictorGeneSets/CompareToSanford.txt";
+	//			int maxdepth = 404;
+	//					outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
 				///////////////////////////////////////
 				//classifiers
 				//////////////////////////////////////	
+				//random
 				//		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
-				//		buildPvalTableForRandomGeneSets(backgroundgenefile, train_file, dataset, outfile);			
-//				outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
+		
+				//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
+				//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
 //				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
 //				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
 //				String dataset = "griffith_breast_cancer_full_train";
-//				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
-//				testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
+//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
+				int roundscv = 10; long seed = 1;
+				int nruns = 100; int ngenes = 100;
+//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);	
+				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
+				//testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
+				//testGeneSetsInClassifiers(output_dir+"generankings/test/", train_file, test_file, dataset, outfile);	
+				
+				//metabric
+				String indices_keep = "";// "0,1,2,3,4,5,6,7,8,9,10,11,"; //the metabric clinical features
+//				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_overall_survival.txt";
+//				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Metabric_expression_no_sampleid.arff";		
+//				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Oslo_expression_no_sampleid.arff";		
+//				String dataset = "metabric_expression_all";
+
+				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_ds_survival.txt";
+				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+				String dataset = "metabric_with_clinical";
+				testGeneSetsInClassifiers(indices_keep, output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile, roundscv);		
+//				outfile = output_dir+"generankings/cv_rand_metabric_no_clinical_overall_survival.txt";
+//				long seed = 1;
+//				int nruns = 100; int ngenes = 100;
+
+//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
+//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
+				
+				
 	}
 
 
@@ -235,12 +265,11 @@ public class Stats {
 	 * @param dataset
 	 * @param fileout
 	 */
-	public static void buildPvalTableForRandomGeneSets(String backgroundgenefile, String train_file, String dataset, String fileout){
+	public static void buildPvalTableForRandomGeneSets(String indices_keep, String backgroundgenefile, String train_file, String dataset, String fileout, long seed, int runs, int ngenes, int ncv){
+		Random ran = new Random(seed);
 		boolean all_probes = true;
 		Classifier model = null;
 		Map<Integer, Integer> cv_count = new TreeMap<Integer, Integer>();
-		int runs = 1000;
-		int nper = 100;	
 		try {
 			FileWriter w = new FileWriter(fileout);
 			w.write("r\tnper\tgenes.size()\tagainst.size()\ta\tb\tc\td\tfisherP\tcv_accuracy\tgenes\n");
@@ -251,8 +280,8 @@ public class Stats {
 			Set<Integer> backgroundset = readEntrezIdsFromFile(backgroundgenefile, 0, 0, "\t");
 			List<Integer> backgroundgenes = new ArrayList<Integer>(backgroundset);
 			//use to benchmark likelihood of matching up with a particular set
-			Set<Integer> against = new HashSet<Integer>(nper);
-			for(int g=0; g<nper; g++){
+			Set<Integer> against = new HashSet<Integer>(ngenes);
+			for(int g=0; g<ngenes; g++){
 				against.add(backgroundgenes.get(g));
 			}
 			for(int r=0; r< runs; r++){
@@ -260,10 +289,10 @@ public class Stats {
 				Set<Integer> _genes = new HashSet<Integer>();
 				Set<Integer> genes = new HashSet<Integer>();
 				String genecell = "";
-				Collections.shuffle(backgroundgenes);
-				String indices = "";
+				Collections.shuffle(backgroundgenes, ran);
+				String indices = indices_keep;
 				//select the genes
-				for(int g=0; g<nper; g++){
+				for(int g=0; g<ngenes; g++){
 					Integer entrezid = backgroundgenes.get(g);
 					_genes.add(entrezid);
 				}
@@ -301,7 +330,7 @@ public class Stats {
 				String cmodel = "RF";
 				model = new RandomForest();
 				weka.setEval_method("cross_validation");
-				Weka.execution result = weka.pruneAndExecute(indices, model);
+				Weka.execution result = weka.pruneAndExecute(indices, model, ncv);
 				accuracy = Math.round((float)result.eval.pctCorrect());
 				Integer cvcount = cv_count.get(accuracy);
 				if(cvcount==null){
@@ -310,7 +339,7 @@ public class Stats {
 				cvcount++;
 				cv_count.put(accuracy, cvcount);
 				TwoByTwo setcompare = compareSets(genes, against, backgroundset);
-				String row = r+"\t"+nper+"\t"+genes.size()+"\t"+against.size()+"\t"+setcompare.getString()+"\t"+accuracy;
+				String row = r+"\t"+ngenes+"\t"+genes.size()+"\t"+against.size()+"\t"+setcompare.getString()+"\t"+accuracy;
 				w.write(row+"\t"+genecell+"\n");
 				System.out.println(row);
 			}
@@ -342,7 +371,7 @@ public class Stats {
 	 * @param dataset
 	 * @param fileout
 	 */
-	public static void testGeneSetsInClassifiers(String genesetdir, String train_file, String test_file, String dataset, String fileout){
+	public static void testGeneSetsInClassifiers(String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv){
 		boolean all_probes = true;
 		Classifier model = null;
 		try {
@@ -355,7 +384,7 @@ public class Stats {
 			out.write("testgenefile\tmaxdepth\tcmodel\teval_method\taccuracy\tgenes.size()\tgenecell\tmissing.size()\tmissingcell\n");
 			//iterate through different set sizes
 			int maxdepth = 0;
-			for(int s=0; s<3; s++){
+			for(int s=0; s<1; s++){
 				if(s==0){
 					maxdepth = 404;
 				}else if(s==1){
@@ -373,7 +402,7 @@ public class Stats {
 							int colindex = 0; String delimiter = "\t";
 							Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, maxdepth, delimiter);
 							Set<Integer> missing = new HashSet<Integer>();
-							String indices = "";
+							String indices = indices_keep;
 							for(Integer entrezid : genes){
 								boolean present = false;
 								List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
@@ -409,16 +438,16 @@ public class Stats {
 							}
 							int c = 0;
 							String cmodel = "";
-							for(int cm=0; cm<3; cm++){
+							for(int cm=2; cm<3; cm++){
 								if(c==0){
-									model = new J48();
-									cmodel = "J48";
+									model = new RandomForest();
+									cmodel = "RF";
 								}else if(c==1){
 									model = new SMO();
 									cmodel = "SVM";
 								}else if(c==2){
-									model = new RandomForest();
-									cmodel = "RF";
+									model = new J48();
+									cmodel = "J48";
 								}
 								for(int e=0; e<3; e++){
 									if(e==0){ // cross_validation, test_set,
@@ -428,7 +457,7 @@ public class Stats {
 									}else if(e==2){
 										weka.setEval_method("test_set");
 									}
-									Weka.execution result = weka.pruneAndExecute(indices, model);
+									Weka.execution result = weka.pruneAndExecute(indices, model, ncv);
 									ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 									accuracy = short_result.getAccuracy();
 									String row = testgenefile+"\t"+maxdepth+"\t"+cmodel+"\t"+weka.getEval_method()+"\t"+accuracy+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
@@ -1156,7 +1185,8 @@ public class Stats {
 	 * @param n_votes
 	 * @return
 	 */
-	public static double getSimPerGeneP(int n_views, int n_votes){
+	public static double getSimPerGeneP(int n_views, int n_votes, long seed){
+		Random ran = new Random(seed);
 		double p = 1;
 		int times = 1;
 		int runs = 10000;
@@ -1175,7 +1205,7 @@ public class Stats {
 				// one game = one view
 				for(int o=0; o<n_views; o++){
 					board = new ArrayList<Integer>(bboard);
-					Collections.shuffle(board);
+					Collections.shuffle(board, ran);
 					//in each round two cards are selected
 					//player 1 (human) always goes first
 					for(int g=0; g<hand_size*2; g++){

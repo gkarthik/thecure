@@ -314,7 +314,7 @@ public class GeneRanker {
 			if(gene.views==0){
 				gene.p = 1;
 			}else{
-				gene.p = Stats.getSimPerGeneP((int)gene.views,(int)gene.votes);
+				gene.p = Stats.getSimPerGeneP((int)gene.views,(int)gene.votes, 1);
 			}
 		}
 		return ranked;
@@ -683,7 +683,7 @@ public class GeneRanker {
 	 */
 	public float testGeneList(List<String> unique_ids, String dataset, boolean printoutput) throws Exception {
 		float cv = 0;
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset);
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		if(printoutput){
 			System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
@@ -694,7 +694,7 @@ public class GeneRanker {
 
 	public float testGeneList(List<String> unique_ids, String dataset, boolean printoutput, Classifier model) throws Exception {
 		float cv = 0;
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, model, dataset);
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, model, dataset, 1);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		if(printoutput){
 			System.out.println("cv_accuracy\t"+short_result.getAccuracy()+"\n"+short_result.getModelrep());
@@ -739,7 +739,7 @@ public class GeneRanker {
 				genes+=gh+",";
 			}
 			//test group
-			execution base = weka.pruneAndExecuteWithUniqueIds(geneids, null, dataset);
+			execution base = weka.pruneAndExecuteWithUniqueIds(geneids, null, dataset, 1);
 			double cv = base.eval.pctCorrect();
 			cvs.addValue(cv);
 			System.out.println(i+"\t"+cv);

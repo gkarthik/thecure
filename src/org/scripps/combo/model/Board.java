@@ -270,7 +270,7 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset);
+			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -296,7 +296,7 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset);
+			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -365,7 +365,7 @@ public class Board {
 			}
 			board.setFeatures(bfs);
 			//test it
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset);
+			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.insert();
@@ -393,7 +393,7 @@ public class Board {
 				unique_ids.add(gene_ids.get(i));
 				bfs.add(weka.getFeatures().get(gene_ids.get(i)));
 			}
-			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset);
+			execution base = weka.pruneAndExecuteWithUniqueIds(unique_ids, null, dataset, 1);
 			float base_score = (float)base.eval.pctCorrect();
 			board.setBase_score(base_score);
 			board.setFeatures(bfs);
@@ -415,7 +415,7 @@ public class Board {
 			f.getAllMetadataFromDb();
 			bfs.add(f);
 		}
-		execution base = weka.pruneAndExecuteWithUniqueIds(feature_ids, null, dataset);
+		execution base = weka.pruneAndExecuteWithUniqueIds(feature_ids, null, dataset, 1);
 		float base_score = (float)base.eval.pctCorrect();
 		board.setBase_score(base_score);
 		board.setFeatures(bfs);

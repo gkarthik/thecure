@@ -60,7 +60,7 @@ public class Weka {
 	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset) throws Exception{
 		buildWeka(train_stream, test_stream, dataset, true);
 	}
-		
+
 	public void buildWeka(InputStream train_stream, InputStream test_stream, String dataset, boolean setFeatures) throws Exception{
 		setDataset(dataset);
 		//get the data 
@@ -88,7 +88,7 @@ public class Weka {
 		}
 	} 
 
-	
+
 	public Map<String, Float> getRelief(){
 		Map<String, Float> index_value = new HashMap<String, Float>();
 		//set the reliefF value for the attribute
@@ -118,7 +118,7 @@ public class Weka {
 		}
 		return index_value;
 	}
-	
+
 	public void exportArff(Instances dataset, String outfile){
 		ArffSaver saver = new ArffSaver();
 		saver.setInstances(dataset);
@@ -171,8 +171,8 @@ public class Weka {
 			return "Meta Accuracy on test set:"+eval.pctCorrect();
 		}
 	}
-	
-	public execution pruneAndExecuteWithEntrezIds(List<Integer> entrez_ids, Classifier wekamodel, String dataset, boolean all_probes) {
+
+	public execution pruneAndExecuteWithEntrezIds(List<Integer> entrez_ids, Classifier wekamodel, String dataset, boolean all_probes, int nruns_cv) {
 		String indices = "";
 		for(Integer entrezid : entrez_ids){
 			List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
@@ -189,10 +189,10 @@ public class Weka {
 				System.out.println("Alert! entrez_id "+entrezid+" did not map to any attributes in dataset: "+dataset+" !!");
 			}
 		}
-		return pruneAndExecute(indices, wekamodel);
+		return pruneAndExecute(indices, wekamodel, nruns_cv);
 	}
-	
-	
+
+
 	/**
 	 * unique ids match are the keys in the features table
 	 * they are not external unique ids
@@ -201,7 +201,7 @@ public class Weka {
 	 * @param dataset
 	 * @return
 	 */
-	public execution pruneAndExecuteWithUniqueIds(List<String> unique_ids, Classifier wekamodel, String dataset) {
+	public execution pruneAndExecuteWithUniqueIds(List<String> unique_ids, Classifier wekamodel, String dataset, int nruns_cv) {
 		String indices = "";
 		for(String fid : unique_ids){
 			Feature f = features.get(fid);
@@ -215,14 +215,14 @@ public class Weka {
 				}
 			}
 		}
-		return pruneAndExecute(indices, wekamodel);
+		return pruneAndExecute(indices, wekamodel, nruns_cv);
 	}
 
-	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel){
+	public execution pruneAndExecute(String indicesoff1, Classifier wekamodel, int n_runs_of_cv){
 		if(wekamodel==null){
 			wekamodel = new J48();
 		}
-		
+
 		String indices = "";
 		for(String a : indicesoff1.split(",")){
 			if(!a.equals("")){
@@ -248,14 +248,11 @@ public class Weka {
 			eval = new Evaluation(getTrain());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
-				//		for(int r=0; r<10; r++){
-				int r = 0;
-				Random keep_same = new Random();
-				keep_same.setSeed(r);
-				eval.crossValidateModel(fc, getTrain(), 10, keep_same);
-				avg_pct_correct += eval.pctCorrect();
-				//		}
-				avg_pct_correct = avg_pct_correct/10;
+				for(int r=0; r<n_runs_of_cv; r++){
+					eval.crossValidateModel(fc, getTrain(), 10, rand);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
 			}else if(eval_method.equals("test_set")){
 				eval.evaluateModel(fc, test);
 			}else {
@@ -290,17 +287,17 @@ public class Weka {
 			for(String fid : id_set){
 				Feature f = features.get(fid);
 				if(f!=null&&f.getDataset_attributes()!=null){
-				for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
-					if(a.getDataset().equals(dataset)){
-						//note the correction is being made here for the index problem
-						indices+=a.getCol_index()+1+",";
-						Attribute test = train.attribute(a.getCol_index());
-						Attribute test2 = train.attribute(a.getName());
-						if(test!=test2){
-							System.out.println("indexing problem");
+					for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
+						if(a.getDataset().equals(dataset)){
+							//note the correction is being made here for the index problem
+							indices+=a.getCol_index()+1+",";
+							Attribute test = train.attribute(a.getCol_index());
+							Attribute test2 = train.attribute(a.getName());
+							if(test!=test2){
+								System.out.println("indexing problem");
+							}
 						}
 					}
-				}
 				}else{
 					System.out.println("No attribute found for geneid "+fid+" in "+dataset);
 				}
@@ -362,7 +359,7 @@ public class Weka {
 		return new metaExecution(voter,eval,avg_pct_correct);
 
 	}
-	
+
 	/***
 	 * build and test a meta classifier - a non-random forest in this case
 	 * input, a set of feature sets and a classifier model

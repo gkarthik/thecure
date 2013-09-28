@@ -64,15 +64,18 @@ public class Attribute {
 //		String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff";
 //		setReliefValue(dataset, weka_data);
 		
-		String att_info_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_meta.txt";
+//		String att_info_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_meta.txt";
+		String att_info_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Oslo_mapping.txt";
 		//there also needs to be a weka-structured dataset so we can pull out the column index
 		//the filtered set used in the game
 		//String weka_data = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/griffith/griffith_breast_cancer_1.arff";	
 		//the whole thing
-		String weka_data = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";
-		String dataset_name = "griffith_breast_cancer_full_train";
-		//load(dataset_name, weka_data, att_info_file);
-		setReliefValue(dataset_name, weka_data);
+//		String weka_data = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";
+//		String weka_data = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Metabric_expression_no_sampleid.arff";
+		String weka_data = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";
+		String dataset_name = "metabric_with_clinical"; //"metabric_expression_all";//"griffith_breast_cancer_full_train";
+		load(dataset_name, weka_data, att_info_file);
+		//setReliefValue(dataset_name, weka_data);
 	}
 
 	//set the relief value for all attributes
@@ -102,7 +105,7 @@ public class Attribute {
 	 * @throws Exception 
 	 */
 	public static void load(String dataset_name, String weka_data, String att_info_file) throws Exception {
-		//Att_name	Entrez	Gene_symbol
+		//local_id_attribute	symbol	geneid
 		Map<String, String> att_uni = new HashMap<String, String>();
 		BufferedReader f;
 		try {			
@@ -139,6 +142,7 @@ public class Attribute {
 				int col = att.index();
 				String unique_id = att_uni.get(name);
 				if(att.index()!=data.classIndex()){
+					int feat_id = -1;
 					if(unique_id!=null){
 						Feature feat = Feature.getByUniqueId(unique_id);
 						if(feat==null){//meaning that the mapping table presented here is not aligned with the feature database
@@ -148,19 +152,27 @@ public class Attribute {
 								feat = Feature.getByDbId(v1.getFeature_id());
 							}
 						}
-						if(feat!=null){
-							Attribute a = new Attribute();
-							a.setCol_index(col);
-							a.setDataset(dataset_name);
-							a.setName(name);
-							//					a.setReliefF(c.getPower());
-							a.setFeature_id(feat.getId());
-							a.insert();
-						}else{
-							System.out.println("No feature 1 for "+name);
-						}
+						feat_id = feat.getId();
 					}else{
-						System.out.println("No feature in mapping table for "+name);
+						System.out.println("No feature in mapping table for "+name+" adding generic");
+						//adding generic feature e.g. for clinical parameters
+						Feature feat = new Feature();
+						feat.setUnique_id(dataset_name+"_"+att.index());
+						feat.setShort_name(att.name());
+						feat.setLong_name(att.name());
+						feat.setDescription("");
+						feat_id = feat.insert();
+					}
+					//add the mapping
+					if(feat_id!=-1){
+						Attribute a = new Attribute();
+						a.setCol_index(col);
+						a.setDataset(dataset_name);
+						a.setName(name);
+						a.setFeature_id(feat_id);
+						a.insert();
+					}else{
+						System.out.println("No feature mapping loaded for "+name);
 					}
 				}
 			}
