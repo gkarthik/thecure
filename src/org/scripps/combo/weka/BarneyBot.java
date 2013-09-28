@@ -66,7 +66,7 @@ public class BarneyBot {
 				CombinatoricsVector<String> combination = itr.next();
 				for(String gh : combination.getVector()){
 					//test it
-					execution base = weka.pruneAndExecute(gh, null);
+					execution base = weka.pruneAndExecute(gh, null, 1);
 					if(base.eval.pctCorrect()>max){
 						max = (float)base.eval.pctCorrect();
 					}

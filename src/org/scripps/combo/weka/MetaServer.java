@@ -297,7 +297,8 @@ public class MetaServer extends HttpServlet {
 		unique_ids = (List<String>)data.get("unique_ids");
 
 		J48 wekamodel = new J48();
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset());
+		int nruns_cv = 1;
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset(), nruns_cv);
 		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
 		//serialize and return the result
 		JSONObject r = new JSONObject(short_result);
