@@ -309,12 +309,12 @@ public class GeneRanker {
 		return ranked;
 	}
 	
-	public List<gene_rank> setEstimatedPvalue(List<gene_rank> ranked){
+	public List<gene_rank> setEstimatedPvalue(List<gene_rank> ranked, long seed){
 		for(gene_rank gene : ranked){
 			if(gene.views==0){
 				gene.p = 1;
 			}else{
-				gene.p = Stats.getSimPerGeneP((int)gene.views,(int)gene.votes, 1);
+				gene.p = Stats.getSimPerGeneP((int)gene.views,(int)gene.votes, seed);
 			}
 		}
 		return ranked;
@@ -402,8 +402,11 @@ public class GeneRanker {
 		public float relief;
 		public float players;
 		public double p;
+		public double board_centric_p;
+		public double gene_centric_p;
 		List<Integer> board_id;
 		public float mean_selection_order; // within each 5 card game, is it selected first (5), second (4), ...or 0 //average across all games considered  
+		
 		@Override
 		public int compareTo(gene_rank arg0) {
 			gene_rank compareto = (gene_rank)arg0;
