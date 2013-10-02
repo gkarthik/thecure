@@ -30,7 +30,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.apache.commons.math3.stat.inference.TestUtils;
 import org.scripps.StatUtil;
-import org.scripps.SimulationP;
 import org.scripps.combo.GameLog.high_score;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Feature;
@@ -41,6 +40,7 @@ import org.scripps.combo.weka.ClassifierEvaluation;
 import org.scripps.combo.weka.GeneRanker;
 import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.GeneRanker.gene_rank;
+import org.scripps.util.GameSim;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 import org.scripps.util.StatFun;
@@ -49,6 +49,7 @@ import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
+import weka.core.Utils;
 
 /**
  * @author bgood
@@ -87,10 +88,10 @@ public class Stats {
 		////////////////////////////////////////
 		/// Bias detection
 
-//		outfile = output_dir+"generankings/genesets_for_classifiers/breast_cancer_in_description.txt";	
-//		String search = "breast cancer";
-//		testForGeneSelectionRules(outfile, search);
-		
+		//		outfile = output_dir+"generankings/genesets_for_classifiers/breast_cancer_in_description.txt";	
+		//		String search = "breast cancer";
+		//		testForGeneSelectionRules(outfile, search);
+
 		//		///////////////////////////////////////
 		//		//players
 		//		//////////////////////////////////////
@@ -139,55 +140,67 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
-				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
 		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
 		//		String gamegenefiledir = output_dir+"generankings/test/";
 		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-	//			String againstgenefiledir = output_dir+"generankings/rulebased/";
-	//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
-	//			outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-	//			outfile = output_dir+"PublicPredictorGeneSets/CompareToSanford.txt";
-	//			int maxdepth = 404;
-	//					outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
-				///////////////////////////////////////
-				//classifiers
-				//////////////////////////////////////	
-				//random
-				//		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
-		
-				//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
-				//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
-//				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-//				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-//				String dataset = "griffith_breast_cancer_full_train";
-//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
-				int roundscv = 10; long seed = 1;
-				int nruns = 100; int ngenes = 100;
-//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);	
-				//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
-				//testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
-				//testGeneSetsInClassifiers(output_dir+"generankings/test/", train_file, test_file, dataset, outfile);	
-				
-				//metabric
-				String indices_keep = "";// "0,1,2,3,4,5,6,7,8,9,10,11,"; //the metabric clinical features
-//				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_overall_survival.txt";
-//				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Metabric_expression_no_sampleid.arff";		
-//				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Oslo_expression_no_sampleid.arff";		
-//				String dataset = "metabric_expression_all";
+		//			String againstgenefiledir = output_dir+"generankings/rulebased/";
+		//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
+		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
+		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToSanford.txt";
+		//			int maxdepth = 404;
+		//					outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+		///////////////////////////////////////
+		//classifiers
+		//////////////////////////////////////	
+		//random
+		//		outfile = output_dir+"generankings/cv_rand_griffith_full.txt";
 
-				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_ds_survival.txt";
-				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
-				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
-				String dataset = "metabric_with_clinical";
-				testGeneSetsInClassifiers(indices_keep, output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile, roundscv);		
-//				outfile = output_dir+"generankings/cv_rand_metabric_no_clinical_overall_survival.txt";
-//				long seed = 1;
-//				int nruns = 100; int ngenes = 100;
+		//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
+		//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
+		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+		String dataset = "griffith_breast_cancer_full_train";
+		//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
+		int roundscv = 1; long seed = 4;
+		int nruns = 100; int ngenes = 100;
+		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);	
+		//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
+		//testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
+		//testGeneSetsInClassifiers(output_dir+"generankings/test/", train_file, test_file, dataset, outfile);	
 
-//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
-//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
-				
-				
+		//metabric
+		//				String indices_keep = "";// "0,1,2,3,4,5,6,7,8,9,10,11,"; //the metabric clinical features
+		//				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_overall_survival.txt";
+		//				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Metabric_expression_no_sampleid.arff";		
+		//				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/processed/Oslo_expression_no_sampleid.arff";		
+		//				String dataset = "metabric_expression_all";
+
+		//				outfile = output_dir+"generankings/classifier_eval_metabric_no_clinical_ds_survival.txt";
+		//				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+		//				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+		//				String dataset = "metabric_with_clinical";
+		//				testGeneSetsInClassifiers(indices_keep, output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile, roundscv);		
+		//				outfile = output_dir+"generankings/cv_rand_metabric_no_clinical_overall_survival.txt";
+		//				long seed = 1;
+		//				int nruns = 100; int ngenes = 100;
+
+		//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
+		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
+
+		String indices_keep = "";
+		String genesetdir = output_dir+"generankings/test/";
+		String fileout =  output_dir+"generankings/griffith_rf101.txt";
+		int numTrees = 1001; int nsimforp = 10;
+		//		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+		//				roundscv, numTrees, nsimforp, seed);
+
+		train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+		test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+		dataset = "metabric_with_clinical";
+		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";		
+		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+				roundscv, numTrees, nsimforp, seed);
 	}
 
 
@@ -212,8 +225,8 @@ public class Stats {
 			List<String> special = new ArrayList<String>();
 			for(Feature gene : genes){
 				if((gene.getShort_name()!=null&&gene.getShort_name().contains(search))
-					||(gene.getLong_name()!=null&&gene.getLong_name().contains(search))
-					||(gene.getDescription()!=null && gene.getDescription().contains(search))){
+						||(gene.getLong_name()!=null&&gene.getLong_name().contains(search))
+						||(gene.getDescription()!=null && gene.getDescription().contains(search))){
 					special.add(gene.getId()+""); //note in db feature id (not entrez) feature id space
 					specialset.add(gene.getUnique_id());
 				}
@@ -243,7 +256,7 @@ public class Stats {
 		}
 		System.out.println("N_biased:\t"+N_biased+"\tN_unknown\t"+N_unknown);
 		System.out.println("Special genes across all boards: "+specialset.size());
-		
+
 		List<Integer> keys = MapFun.sortMapByValue(player_scount);
 		for(Integer key : keys){
 			System.out.println(key+"\t"+player_scount.get(key));
@@ -256,7 +269,7 @@ public class Stats {
 		}
 		f.close();
 	}
-	
+
 
 	/**
 	 * Using this we can estimate the chances of observing a particular value in a cross-validation experiment given a random selection of genes.
@@ -362,7 +375,213 @@ public class Stats {
 		}
 	}
 
-	
+	public static class classifierTestResult {
+		//observed
+		double oobe = 0; 
+		double train_acc = 0; double train_auc = 0; double train_f = 0; 
+		double cv_acc = 0; double cv_auc = 0; double cv_f = 0; 
+		double test_acc = 0; double test_auc = 0; double test_f = 0;
+		//chance of random observation
+		double oobe_p = 0; 
+		double train_acc_p = 0; double train_auc_p = 0; double train_f_p = 0; 
+		double cv_acc_p = 0; double cv_auc_p = 0; double cv_f_p = 0; 
+		double test_acc_p = 0; double test_auc_p = 0; double test_f_p = 0;
+
+		public String toString(){
+			String r = oobe+"\t"+oobe_p+"\t" +
+			train_acc+"\t"+train_acc_p+"\t"+train_auc_p+"\t"+train_f+"\t"+train_f_p+"\t"+
+			cv_acc+"\t"+cv_acc_p+"\t"+cv_auc+"\t"+cv_auc_p+"\t"+cv_f+"\t"+cv_f_p+"\t"+
+			test_acc+"\t"+test_acc_p+"\t"+test_auc+"\t"+test_auc_p+"\t"+test_f+"\t"+test_f_p;
+			return r;
+		}
+
+		public static String names(){
+			String n = "oobe\toobe_p\t" +
+			"train_acc\ttrain_acc_p\ttrain_auc_p\ttrain_f\ttrain_f_p\t"+
+			"cv_acc\tcv_acc_p\tcv_auc\tcv_auc_p\tcv_f\tcv_f_p\t"+
+			"test_acc\ttest_acc_p\ttest_auc\ttest_auc_p\ttest_f\ttest_f_p";
+			return n;
+		}
+
+	}
+
+	public static void testGeneSetsWithForests(String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv, int numTrees, int nsimforp, long seed){
+		Random random = new Random(seed);
+		RandomForest model = null;
+		boolean all_probes = true;
+		try {
+			Weka weka = new Weka();
+			System.out.println("loading... "+train_file);
+			boolean setFeatures = false;
+			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
+			System.out.println("Weka initialized ");
+			FileWriter out = new FileWriter(fileout);	
+			out.write("testgenefile\tn_atts\tn_features_per_tree\t"+classifierTestResult.names()+
+			"\tn_genes\tgenecell\tmissing.size()\tmissingcell\n");
+			File d = new File(genesetdir);
+			if(d.isDirectory()){
+				for(String testgenefile : d.list()){
+					if(testgenefile.startsWith(".")){
+						continue;
+					}else{ 
+						int colindex = 0; String delimiter = "\t";
+						Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, 0, delimiter);
+						Set<Integer> missing = new HashSet<Integer>();
+
+						String indices = indices_keep;
+						int n_atts = 0;
+						for(Integer entrezid : genes){
+							boolean present = false;
+							List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
+							if(atts!=null&&atts.size()>0){
+								for(org.scripps.combo.model.Attribute a : atts){
+									if(a.getDataset().equals(dataset)){
+										indices+=a.getCol_index()+",";
+										n_atts++;
+										if(!all_probes){
+											break;
+										}
+										present = true;
+									}
+								}
+							}
+							if(!present){
+								missing.add(entrezid);
+							}
+						}
+						genes.removeAll(missing);
+						String genecell = "";
+						for(Integer gene : genes){
+							Feature f = Feature.getByUniqueId(gene+"");
+							genecell+=(gene+":"+f.getShort_name()+",");
+						}
+						String missingcell = "";
+						for(Integer gene : missing){
+							Feature f = Feature.getByUniqueId(gene+"");
+							if(f!=null){
+								missingcell+=(f.getShort_name()+",");
+							}else{
+								missingcell+=(gene+",");
+							}
+						}
+						//loop here to embed a simulation of random var selection
+						//with n_atts from above
+						List<classifierTestResult> scores = new ArrayList<classifierTestResult>();
+						classifierTestResult test_score = new classifierTestResult();
+						int numFeaturesPerTree = 0;
+						for(int sim=0; sim<nsimforp+1; sim++){
+							classifierTestResult score = new classifierTestResult();
+							model= new RandomForest();
+							model.setSeed((int)seed+1);
+							model.setNumTrees(numTrees);
+							String test_indices = indices_keep;
+							if(sim<nsimforp){ //on the last one we run the real genes 
+								for(int s=0; s<n_atts; s++){
+									int ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
+									if(!indices_keep.equals("")){//hack to skip the clinical features of the metabric data
+										while(ranindex<12){
+											ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
+										}
+									}
+									test_indices+= ranindex+",";
+								}
+							}else{
+								test_indices = indices;
+							}
+							numFeaturesPerTree = (int) Utils.log2(n_atts)+1;
+							model.setNumFeatures(numFeaturesPerTree);
+							//train_accuracy, train_auc, cv_acc, cv_auc, test_acc, test_auc = 0;
+							for(int e=0; e<3; e++){
+								if(e==0){ // cross_validation, test_set,
+									weka.setEval_method("training_set");
+								}else if(e==1){
+									weka.setEval_method("cross_validation");
+								}else if(e==2){
+									weka.setEval_method("test_set");
+								}
+								Weka.execution result = weka.pruneAndExecute(test_indices, model, ncv);
+								if(e==0){ // train, cross_validation, test_set,
+									score.train_acc = result.eval.pctCorrect();
+									score.train_auc = result.eval.areaUnderROC(0);
+									score.train_f = result.eval.fMeasure(0);
+									score.oobe = model.measureOutOfBagError();
+								}else if(e==1){
+									score.cv_acc = result.eval.pctCorrect();
+									score.cv_auc = result.eval.areaUnderROC(0);
+									score.cv_f = result.eval.fMeasure(0);
+								}else if(e==2){
+									score.test_acc = result.eval.pctCorrect();
+									score.test_auc = result.eval.areaUnderROC(0);
+									score.test_f = result.eval.fMeasure(0);
+								}
+							}
+							//save for sim test or run test..
+							if(sim==nsimforp-1){
+								//do the test, this one is real
+								for(classifierTestResult simscore : scores){
+									if(simscore.cv_acc>=score.cv_acc){
+										score.cv_acc_p++;
+									}
+									if(simscore.cv_auc>=score.cv_auc){
+										score.cv_auc_p++;
+									}
+									if(simscore.cv_f>=score.cv_f){
+										score.cv_f_p++;
+									}
+									if(simscore.train_acc>=score.train_acc){
+										score.train_acc_p++;
+									}
+									if(simscore.train_auc>=score.train_auc){
+										score.train_auc_p++;
+									}
+									if(simscore.train_f>=score.train_f){
+										score.train_f_p++;
+									}
+									if(simscore.test_acc>=score.test_acc){
+										score.test_acc_p++;
+									}
+									if(simscore.test_auc>=score.test_auc){
+										score.test_auc_p++;
+									}
+									if(simscore.test_f>=score.test_f){
+										score.test_f_p++;
+									}
+									if(simscore.oobe<=score.oobe){
+										score.oobe_p++;
+									}
+								}
+								double ssize = (double)scores.size();
+								score.cv_acc_p = score.cv_acc_p/ssize;
+								score.cv_auc_p = score.cv_auc_p/ssize;
+								score.cv_f_p = score.cv_f_p/ssize;
+								score.train_acc_p = score.train_acc_p/ssize;
+								score.train_auc_p = score.train_auc_p/ssize;
+								score.train_f_p = score.train_f_p/ssize;
+								score.test_acc_p = score.test_acc_p/ssize;
+								score.test_auc_p = score.test_auc_p/ssize;
+								score.test_f_p = score.test_f_p/ssize;
+								score.oobe_p = score.oobe_p/ssize;
+								test_score = score;
+							}else{
+								scores.add(score);
+								String simrow = sim+" sim_"+testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+score.toString()+"\t"+genes.size()+"\t"+test_indices;
+								System.out.println(simrow);
+							}
+						}
+						String row = testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+test_score.toString()+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
+						System.out.println(row);
+						out.write(row+"\n");
+					}
+				}
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 	/**
 	 * Given a collection of gene sets, evaluate them using several different classifiers on particular dataset using training set, cross-validation, and test set
 	 * @param genesetdir
@@ -563,7 +782,7 @@ public class Stats {
 		double kappa;
 		double pct_agreement_positive;
 		double pct_agreement_negative;
-		
+
 		public TwoByTwo(int a, int b, int c, int d) {
 			super();
 			this.a = a;
@@ -577,30 +796,30 @@ public class Stats {
 			setPctAgreeNegative();
 		}
 
-		
+
 		public void setFisherP(){
 			//test with fisherexact
 			fisherP = StatUtil.fishersExact2tailed(a, b, c, d);
 		}
-		
+
 		public void setPctAgreePositive(){
 			pct_agreement_positive = (double)(a)/(double)(a+b+c);
 		}
-		
+
 		public void setPctAgreeNegative(){
 			pct_agreement_negative = (double)(d)/(double)(d+b+c);
 		}
-		
+
 		public void setPctAgree(){
 			pct_agreement = (double)(a+d)/(double)(a+b+c+d);
 		}
-		
+
 		public void setKappa(){
 			double prA = (double)(a+d)/(double)(a+b+c+d); //actual prob of agreement
 			double prE = ((double)(a+b)/(double)(a+b+c+d))*((double)(a+c)/(double)(a+b+c+d)); //chance of random agreement based on + rates
 			kappa = (prA - prE)/(1 - prE);
 		}
-		
+
 		public String getString(){
 			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP+"\t"+pct_agreement+"\t"+kappa+"\t"+pct_agreement_positive+"\t"+pct_agreement_negative;
 			return row;
@@ -666,9 +885,9 @@ public class Stats {
 		//		System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
 		//		System.out.println(p);
 		TwoByTwo t = new TwoByTwo(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
-//		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
-//		t.setFisherP();		
-		
+		//		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
+		//		t.setFisherP();		
+
 		return t;
 	}
 
@@ -678,7 +897,7 @@ public class Stats {
 	 * Results are sorted with lowest p values on top.
 	 * @param outfileroot
 	 */
-	public static void outputFrequencyBasedGeneRankings(String outfileroot){
+	public static void outputFrequencyBasedGeneRankings(String outfileroot, long seed){
 		GeneRanker gr = new GeneRanker();
 		String dataset = null;
 		String outfile = outfileroot+"all_players.txt";
@@ -708,7 +927,7 @@ public class Stats {
 			Map<String, gene_rank> bg_rank = gr.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 			List<gene_rank> ranked = new ArrayList<gene_rank>(bg_rank.values());
 			ranked = gr.setFrequencyByViews(ranked);
-			ranked = gr.setEstimatedPvalue(ranked);
+			ranked = gr.setEstimatedPvalue(ranked, seed);
 			ranked = gr.sortByFrequency(ranked);
 			ranked = gr.sortByP(ranked);
 			try {
@@ -741,12 +960,16 @@ public class Stats {
 	 * cases where a board may contain multiple good genes hence making their individual frequencies lower.  So, a gene that has the 
 	 * second highest frequency may actually have a lower p value (based on its rank) than the gene with the higher frequency. In that case, both 
 	 * of the genes are kept.
+	 * 
+	 * TODO Return a map by entrez_id of all the genes considered
 	 * @param outfile
 	 * @param genefile
 	 * @param first_hand_only
 	 * @param random
 	 */
-	public static void outputBoardConsensus(String outfile, String genefile, boolean first_hand_only, boolean random){
+	public static Map<Integer, gene_rank> outputBoardConsensus(String outfile, String genefile, boolean first_hand_only, boolean random, long seed){
+		Map<Integer, gene_rank> gene_weights = new HashMap<Integer, gene_rank>();
+
 		//set up tables to get P values from simulated data
 		int n_per_board = 25;
 		int min_players = 1;
@@ -754,8 +977,8 @@ public class Stats {
 		int n_cards = 5;
 		int n_runs = 1000; int n_times = 100;
 		System.out.println("P sim initializing");
-		SimulationP simp = new SimulationP();
-		simp.initCureSim(n_per_board, min_players, max_players, n_cards, n_runs, n_times);
+		GameSim simp = new GameSim();
+		simp.initCureSim(n_per_board, min_players, max_players, n_cards, n_runs, n_times, seed);
 		System.out.println("P sim initialized");
 		boolean drop_mammal = true; boolean setfeatures = false;
 		List<Board> boards = Board.getAllBoards(drop_mammal, setfeatures);
@@ -803,6 +1026,8 @@ public class Stats {
 					freqs.addValue(rank.frequency);
 					votes.addValue(rank.votes);
 					player_count = rank.players; //inelegant to keep setting, but same for all players..
+					//save all the genes
+
 					b++;
 				}
 				double[] r_p = StatUtil.chiSquaredTestForUniformDistribution(counts);
@@ -834,6 +1059,7 @@ public class Stats {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return gene_weights;
 	}
 
 
@@ -1230,32 +1456,32 @@ public class Stats {
 		return sumP/times;
 	}
 
-	
-/**
- * Fill in the chances of drawing a particular type of card N times in a game given the total number of that type of card on the board	
- * @param board_size
- * @param hand_size
- * @param seed
- * @param games
- * @return
- */
+
+	/**
+	 * Fill in the chances of drawing a particular type of card N times in a game given the total number of that type of card on the board	
+	 * @param board_size
+	 * @param hand_size
+	 * @param seed
+	 * @param games
+	 * @return
+	 */
 	public static Map<Integer, Map<Integer, Double>> getDistributionsForCardSelectionType(int board_size, int hand_size, long seed, int games){
 		Map<Integer, Map<Integer, Double>> size_ptable = new TreeMap<Integer, Map<Integer, Double>>();
 		for(int special_set_size=0; special_set_size<board_size; special_set_size++){
 			Map<Integer, Double> size_dist = getDistributionForCardSelectionType(board_size, special_set_size, hand_size, seed, games);
 			size_ptable.put(special_set_size, size_dist);
 		}
-		
-//		for(int special_set_size=0; special_set_size<board_size; special_set_size++){
-//			Map<Integer, Double> n_p = size_ptable.get(special_set_size);
-//			for(Entry<Integer, Double> p : n_p.entrySet()){
-//				System.out.println(special_set_size+"\t"+p.getKey()+"\t"+p.getValue());
-//			}
-//		}
-		
+
+		//		for(int special_set_size=0; special_set_size<board_size; special_set_size++){
+		//			Map<Integer, Double> n_p = size_ptable.get(special_set_size);
+		//			for(Entry<Integer, Double> p : n_p.entrySet()){
+		//				System.out.println(special_set_size+"\t"+p.getKey()+"\t"+p.getValue());
+		//			}
+		//		}
+
 		return size_ptable;
 	}
-	
+
 	/**
 	 * Assuming we have a board containing a "special" set of genes.  e.g. a genes that have "cancer" in their names.
 	 * Estimate the chances of picking a certain number of these genes at random.
