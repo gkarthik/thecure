@@ -12,6 +12,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -142,17 +144,19 @@ public class Stats {
 		//		//////////////////////////////////////
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
-		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/OneYear/");
+		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/test/");
 		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		//		String gamegenefiledir = output_dir+"generankings/OneYear/";
+		String gamegenefiledir = output_dir+"genesets_for_classifiers/";
 		//		String gamegenefiledir = output_dir+"generankings/test/";
 		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
 		//			String againstgenefiledir = output_dir+"generankings/rulebased/";
 		//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
 		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
 		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToSanford.txt";
-		//			int maxdepth = 404;
-		//					outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, againstgenefiledir, maxdepth, outfile);
+		outfile = output_dir+"SetComparisons/AllvsAll.txt";
+		int maxdepth = 403;
+		boolean asmatrix = true;
+		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
 		///////////////////////////////////////
 		//classifiers
 		//////////////////////////////////////	
@@ -191,37 +195,37 @@ public class Stats {
 		//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
 		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
 
-		int roundscv = 10; long seed = 8;
-		String indices_keep = "";
-		String genesetdir = output_dir+"generankings/test/";
-		String fileout =  output_dir+"generankings/griffith_rf11.txt";
-		int nsimforp = 1000;
+		//		int roundscv = 10; long seed = 8;
+		//		String indices_keep = "";
+		//		String genesetdir = output_dir+"generankings/test/";
+		//		String fileout =  output_dir+"generankings/griffith_rf11.txt";
+		//		int nsimforp = 1000;
 		//		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
 		//				roundscv, numTrees, nsimforp, seed);
 
-		String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
-		String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
-		String dataset = "metabric_with_clinical";
+		//		String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+		//		String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+		//		String dataset = "metabric_with_clinical";
 
 		//		Classifier model = new NaiveBayes();
 		//		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p100.txt";
 		//		wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
 		//				roundscv, nsimforp, seed);
-		Classifier model = new NaiveBayes();
-		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p1000.txt";
-		int skip_in_rand = 12;
-		wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-				roundscv, nsimforp, seed);
-//		int numTrees = 101; 
-//		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";	
-//		for(int i=(int)seed; i<seed+10; i++){
-			
-//			Classifier model= new RandomForest();
-//			((RandomForest) model).setSeed((int)seed+i);
-//			((RandomForest) model).setNumTrees(numTrees);
-//			wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-//					roundscv, nsimforp, i);
-//		}
+		//		Classifier model = new NaiveBayes();
+		//		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p1000.txt";
+		//		int skip_in_rand = 12;
+		//		wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+		//				roundscv, nsimforp, seed);
+		//		int numTrees = 101; 
+		//		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";	
+		//		for(int i=(int)seed; i<seed+10; i++){
+
+		//			Classifier model= new RandomForest();
+		//			((RandomForest) model).setSeed((int)seed+i);
+		//			((RandomForest) model).setNumTrees(numTrees);
+		//			wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+		//					roundscv, nsimforp, i);
+		//		}
 	}
 
 
@@ -500,7 +504,7 @@ public class Stats {
 									while(ranindex<skip_first){
 										ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
 									}
-									
+
 									test_indices+= ranindex+",";
 								}
 							}else{
@@ -762,35 +766,67 @@ public class Stats {
 	 * @param depth
 	 * @param outfile
 	 */
-	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int maxdepth, String outfile){
+	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int maxdepth, String outfile, boolean asmatrix){
 		File d = new File(gamegenesetdir);
 		if(d.isDirectory()){
+			List<String> testfiles = new ArrayList<String>();
+			for(String tfile : d.list()){
+				if(tfile.startsWith(".")){
+					continue;
+				}
+				testfiles.add(tfile);
+			}
 			FileWriter w;
 			try {
-				w = new FileWriter(outfile);
+				w = new FileWriter(outfile);				
+				if(asmatrix){//write the row header
+					w.write("gene_set\tset_size\t");
+					for(String testgenefile : testfiles){
+						w.write(testgenefile+"\t");
+					}
+					w.write("\n");
+				}
 				w.close();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			for(String testgenefile : d.list()){
-				if(testgenefile.startsWith(".")){
-					continue;
-				}
+			for(String testgenefile : testfiles){
 				Map<String, TwoByTwo> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, maxdepth);
-				try {
-					w = new FileWriter(outfile, true);
-					w.write("\n"+testgenefile+"\n");
-					System.out.println("\n"+testgenefile);
-					for(String key : p.keySet()){
-						System.out.println(key+"\t"+p.get(key));
-						TwoByTwo t = p.get(key);
-						w.write(key+"\t"+t.getString()+"\n");
+				if(asmatrix){
+					try {
+						w = new FileWriter(outfile, true);
+						//get the size of the test for this row 
+						TwoByTwo tbt = p.values().iterator().next();
+						int row_set_size = tbt.a+tbt.b; //note same for all entries
+						//write the descriptor column entry
+						w.write(testgenefile+"\t"+row_set_size+"\t");
+						//write a row
+						for(String key : testfiles){
+							TwoByTwo t = p.get(key);
+							w.write(t.getMatrixCell()+"\t");
+						}
+						w.write("\n");
+						w.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					w.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				}else{
+					try {
+						w = new FileWriter(outfile, true);
+						w.write("\n"+testgenefile+"\n");
+						System.out.println("\n"+testgenefile);
+						for(String key : p.keySet()){
+							System.out.println(key+"\t"+p.get(key));
+							TwoByTwo t = p.get(key);
+							w.write(key+"\t"+t.getString()+"\n");
+						}
+						w.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -845,6 +881,17 @@ public class Stats {
 			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP+"\t"+pct_agreement+"\t"+kappa+"\t"+pct_agreement_positive+"\t"+pct_agreement_negative;
 			return row;
 		}
+
+		public String getMatrixCell(){
+			NumberFormat percentForm = NumberFormat.getPercentInstance();
+			DecimalFormat sci = (DecimalFormat) DecimalFormat.getNumberInstance();
+			sci.applyPattern("0.###E0");
+			String cell = a+", "+percentForm.format(pct_agreement_positive)+", "+sci.format(fisherP);
+			if(fisherP<=0.05){
+				cell+= "__";
+			}
+			return cell;
+		}
 	}
 	/**
 	 * Does the set comparisons to produce a 2 * 2 table
@@ -868,7 +915,7 @@ public class Stats {
 				if(againstgenefile.startsWith(".")){
 					continue;
 				}
-				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, 0, "\t");
+				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, depth, "\t");
 				TwoByTwo t = compareSets(testgenes, against, background);
 				p_map.put(againstgenefile, t);
 			}
@@ -1387,7 +1434,7 @@ public class Stats {
 	}
 
 	public static Set<Integer> readEntrezIdsFromFile(String file, int colindex, int limit, String delimiter){
-		System.out.println("parsing file "+file);
+		//System.out.println("parsing file "+file);
 		Set<Integer> item = new HashSet<Integer>();
 		try {
 			int n = 0;
