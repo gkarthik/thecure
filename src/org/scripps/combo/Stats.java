@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +46,9 @@ import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
 import org.scripps.util.StatFun;
 
+import weka.attributeSelection.CfsSubsetEval;
 import weka.classifiers.Classifier;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
@@ -158,13 +161,13 @@ public class Stats {
 
 		//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
 		//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
-		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-		String dataset = "griffith_breast_cancer_full_train";
+		//		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+		//		String dataset = "griffith_breast_cancer_full_train";
 		//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
-		int roundscv = 1; long seed = 4;
-		int nruns = 100; int ngenes = 100;
-		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);	
+		//int roundscv = 1; long seed = 5;
+		//int nruns = 100; int ngenes = 100;
+		//buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);	
 		//testGeneSetsInClassifiers(output_dir+"generankings/genesets_for_classifiers/", train_file, test_file, dataset, outfile);	
 		//testGeneSetsInClassifiers(output_dir+"generankings/rulebased/", train_file, test_file, dataset, outfile);	
 		//testGeneSetsInClassifiers(output_dir+"generankings/test/", train_file, test_file, dataset, outfile);	
@@ -188,19 +191,37 @@ public class Stats {
 		//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
 		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
 
+		int roundscv = 10; long seed = 8;
 		String indices_keep = "";
 		String genesetdir = output_dir+"generankings/test/";
-		String fileout =  output_dir+"generankings/griffith_rf101.txt";
-		int numTrees = 1001; int nsimforp = 10;
+		String fileout =  output_dir+"generankings/griffith_rf11.txt";
+		int nsimforp = 1000;
 		//		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
 		//				roundscv, numTrees, nsimforp, seed);
 
-		train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
-		test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
-		dataset = "metabric_with_clinical";
-		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";		
-		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-				roundscv, numTrees, nsimforp, seed);
+		String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+		String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+		String dataset = "metabric_with_clinical";
+
+		//		Classifier model = new NaiveBayes();
+		//		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p100.txt";
+		//		wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+		//				roundscv, nsimforp, seed);
+		Classifier model = new NaiveBayes();
+		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p1000.txt";
+		int skip_in_rand = 12;
+		wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+				roundscv, nsimforp, seed);
+//		int numTrees = 101; 
+//		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";	
+//		for(int i=(int)seed; i<seed+10; i++){
+			
+//			Classifier model= new RandomForest();
+//			((RandomForest) model).setSeed((int)seed+i);
+//			((RandomForest) model).setNumTrees(numTrees);
+//			wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+//					roundscv, nsimforp, i);
+//		}
 	}
 
 
@@ -405,9 +426,8 @@ public class Stats {
 
 	}
 
-	public static void testGeneSetsWithForests(String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv, int numTrees, int nsimforp, long seed){
+	public static void wrapperGeneSetEvaluation(int skip_first, Classifier model, String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv, int nsimforp, long seed){
 		Random random = new Random(seed);
-		RandomForest model = null;
 		boolean all_probes = true;
 		try {
 			Weka weka = new Weka();
@@ -416,7 +436,7 @@ public class Stats {
 			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
 			System.out.println("Weka initialized ");
 			FileWriter out = new FileWriter(fileout);	
-			out.write("testgenefile\tn_atts\tn_features_per_tree\t"+classifierTestResult.names()+
+			out.write("seed\tmodel\ttestgenefile\tn_atts\tn_features_per_tree\t"+classifierTestResult.names()+
 			"\tn_genes\tgenecell\tmissing.size()\tmissingcell\n");
 			File d = new File(genesetdir);
 			if(d.isDirectory()){
@@ -469,27 +489,24 @@ public class Stats {
 						List<classifierTestResult> scores = new ArrayList<classifierTestResult>();
 						classifierTestResult test_score = new classifierTestResult();
 						int numFeaturesPerTree = 0;
-						for(int sim=0; sim<nsimforp+1; sim++){
+						for(int sim=0; sim<nsimforp; sim++){
 							classifierTestResult score = new classifierTestResult();
-							model= new RandomForest();
-							model.setSeed((int)seed+1);
-							model.setNumTrees(numTrees);
 							String test_indices = indices_keep;
-							if(sim<nsimforp){ //on the last one we run the real genes 
+							if(sim<nsimforp-1){ //on the last one we run the real genes 
 								for(int s=0; s<n_atts; s++){
 									int ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
-									if(!indices_keep.equals("")){//hack to skip the clinical features of the metabric data
-										while(ranindex<12){
-											ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
-										}
+									//hack to skip the clinical features of the metabric data
+									// pick from th remaining thousands of attributes.
+									while(ranindex<skip_first){
+										ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
 									}
+									
 									test_indices+= ranindex+",";
 								}
 							}else{
 								test_indices = indices;
 							}
 							numFeaturesPerTree = (int) Utils.log2(n_atts)+1;
-							model.setNumFeatures(numFeaturesPerTree);
 							//train_accuracy, train_auc, cv_acc, cv_auc, test_acc, test_auc = 0;
 							for(int e=0; e<3; e++){
 								if(e==0){ // cross_validation, test_set,
@@ -500,11 +517,14 @@ public class Stats {
 									weka.setEval_method("test_set");
 								}
 								Weka.execution result = weka.pruneAndExecute(test_indices, model, ncv);
+
 								if(e==0){ // train, cross_validation, test_set,
 									score.train_acc = result.eval.pctCorrect();
 									score.train_auc = result.eval.areaUnderROC(0);
 									score.train_f = result.eval.fMeasure(0);
-									score.oobe = model.measureOutOfBagError();
+									if(model.getClass()==RandomForest.class){
+										score.oobe = ((RandomForest) model).measureOutOfBagError();
+									}
 								}else if(e==1){
 									score.cv_acc = result.eval.pctCorrect();
 									score.cv_auc = result.eval.areaUnderROC(0);
@@ -564,11 +584,12 @@ public class Stats {
 								test_score = score;
 							}else{
 								scores.add(score);
-								String simrow = sim+" sim_"+testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+score.toString()+"\t"+genes.size()+"\t"+test_indices;
+								String simrow = seed+"\t"+model.getClass().getSimpleName()+"\t"+sim+" sim_"+testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+score.toString()+"\t"+genes.size()+"\t"+test_indices;
+								out.write(simrow+"\n");
 								System.out.println(simrow);
 							}
 						}
-						String row = testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+test_score.toString()+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
+						String row = seed+"\t"+model.getClass().getSimpleName()+"\t"+testgenefile+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+test_score.toString()+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
 						System.out.println(row);
 						out.write(row+"\n");
 					}
