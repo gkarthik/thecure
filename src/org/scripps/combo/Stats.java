@@ -307,11 +307,11 @@ public class Stats {
 728	6 Savvak
 204	5 oneoff64
 48	5 gene
-572	5
-362	4
-1079	4
-599	4
-349	4
+572	5 upfeffer
+362	4 Bio_prof
+1079	4 EXcaliboor
+599	4 jreeve
+349	4 poyarkov
 		 */
 		
 		// cancer or tumor or oma:  N_biased:	120	N_unknown	4194	N_boards_no_specials	0	N_boards	400
