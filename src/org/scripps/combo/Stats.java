@@ -94,9 +94,13 @@ public class Stats {
 		////////////////////////////////////////
 		/// Bias detection
 
-		//		outfile = output_dir+"generankings/genesets_for_classifiers/breast_cancer_in_description.txt";	
-		//		String search = "breast cancer";
-		//		testForGeneSelectionRules(outfile, search);
+		outfile = output_dir+"generankings/rulebased/breast_cancer_power.txt";	
+		//String rulegenerated = output_dir+"generankings/rulebased/breast_cancer_in_description.txt";
+		//String rulegenerated = output_dir+"generankings/rulebased/cancer_in_description.txt";
+		String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor.txt";
+		//String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor_or_oma.txt";
+		long seed = 2;
+		testForGeneSelectionRules(outfile, rulegenerated, seed);
 
 		//		///////////////////////////////////////
 		//		//players
@@ -146,13 +150,13 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/test/");
-		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
-		//String againstgenefiledir = output_dir+"generankings/rulebased/";
-		outfile = output_dir+"SetComparisons/AllvsAll.txt";
-		int maxdepth = 10000;
-		boolean asmatrix = true;
-		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
+		//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		//		String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
+		//		//String againstgenefiledir = output_dir+"generankings/rulebased/";
+		//		outfile = output_dir+"SetComparisons/AllvsAll.txt";
+		//		int maxdepth = 10000;
+		//		boolean asmatrix = true;
+		//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
 		///////////////////////////////////////
 		//classifiers
 		//////////////////////////////////////	
@@ -161,9 +165,9 @@ public class Stats {
 
 		//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
 		//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
-//		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-//		String dataset = "griffith_breast_cancer_full_train";
+		//		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+		//		String dataset = "griffith_breast_cancer_full_train";
 		//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
 		//int roundscv = 1; long seed = 5;
 		//int nruns = 100; int ngenes = 100;
@@ -190,7 +194,7 @@ public class Stats {
 
 		//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
 		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
-/**
+		/**
 				int roundscv = 1; long seed = 13;
 				String indices_keep = ""; //"0,1,2,3,4,5,6,7,8,9,10,11,";
 				String genesetdir = output_dir+"genesets_for_classifiers/";
@@ -201,7 +205,7 @@ public class Stats {
 //				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
 //				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
 //				String dataset = "griffith_breast_cancer_full_train";
-				
+
 				Classifier model = new NaiveBayes();
 				String fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_nb_cv1p100_13.txt";
 				int skip_in_rand = 12;//don't pick metabric clinical features
@@ -221,7 +225,7 @@ public class Stats {
 				fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_j48_cv1p100_13.txt";
 				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
 						roundscv, nsimforp, seed);
-**/						
+		 **/						
 	}
 
 
@@ -230,14 +234,17 @@ public class Stats {
 	 * 
 	 */
 
-	public static void testForGeneSelectionRules(String specialsetoutfile, String search) throws IOException{
-		int board_size = 25; int hand_size = 5; long seed = 1; int gamesim = 10000; boolean first_play = true;
+	public static void testForGeneSelectionRules(String specialsetoutfile, String specialsetfile, long seed) throws IOException{
+		//load the genes that are the result of whatever rule we are examining
+		Set<Integer> special_all = readEntrezIdsFromFile(specialsetfile, 0,0,"\t");
+		int board_size = 25; int hand_size = 5; int gamesim = 10000; boolean first_play = true;
 		double sig_p = 0.05;
 		Map<Integer, Map<Integer, Double>> size_ptable = getDistributionsForCardSelectionType(board_size, hand_size, seed, gamesim);
 		boolean drop_mammal = true; boolean setfeatures = true;
 		List<Board> boards = Board.getAllBoards(drop_mammal, setfeatures);
 		int N_biased = 0; //games where people picked genes with cancer n their text more often than expected by random at given p threshold
 		int N_unknown = 0;
+		int N_no_specials = 0;
 		Set<String> specialset = new HashSet<String>();
 		Map<Integer, Integer> player_scount = new HashMap<Integer, Integer>();
 		for(Board board: boards){
@@ -245,14 +252,21 @@ public class Stats {
 			//get the "special" set
 			List<String> special = new ArrayList<String>();
 			for(Feature gene : genes){
-				if((gene.getShort_name()!=null&&gene.getShort_name().contains(search))
-						||(gene.getLong_name()!=null&&gene.getLong_name().contains(search))
-						||(gene.getDescription()!=null && gene.getDescription().contains(search))){
-					special.add(gene.getId()+""); //note in db feature id (not entrez) feature id space
+				if(special_all.contains(Integer.parseInt(gene.getUnique_id()))){
 					specialset.add(gene.getUnique_id());
+					special.add(gene.getId()+"");
 				}
+				//				if((gene.getShort_name()!=null&&gene.getShort_name().contains(search))
+				//						||(gene.getLong_name()!=null&&gene.getLong_name().contains(search))
+				//						||(gene.getDescription()!=null && gene.getDescription().contains(search))){
+				//					special.add(gene.getId()+""); //note in db feature id (not entrez) feature id space
+				//					specialset.add(gene.getUnique_id());
+				//				}
 			}
 			int specials = special.size();
+			if(specials == 0){
+				N_no_specials++;
+			}
 			Map<Integer, Double> ptable = size_ptable.get(specials);
 			//check to see how many times per game, players selected from this set
 			List<Game> games = Game.getGamesForBoard(board.getId(), first_play, 0);
@@ -275,20 +289,33 @@ public class Stats {
 				}
 			}
 		}
-		System.out.println("N_biased:\t"+N_biased+"\tN_unknown\t"+N_unknown);
-		System.out.println("Special genes across all boards: "+specialset.size());
+		System.out.println("N_biased:\t"+N_biased+"\tN_unknown\t"+N_unknown+"\tN_boards_no_specials\t"+N_no_specials+"\tN_boards\t"+boards.size());
 
 		List<Integer> keys = MapFun.sortMapByValue(player_scount);
 		for(Integer key : keys){
 			System.out.println(key+"\t"+player_scount.get(key));
 		}
-		// N_biased:	76	N_unknown	4238  p<=0.05 1.8% of games
-		// N_biased:	127	N_unknown	4187  p<= 0.1 2.9% of games
-		FileWriter f = new FileWriter(specialsetoutfile);
-		for(String id : specialset){
-			f.write(id+"\n");
-		}
-		f.close();
+		// breast cancer N_biased:	12	N_unknown	4302	N_boards_no_specials	288	N_boards	400
+		// cancer N_biased:	76	N_unknown	4238	N_boards_no_specials	93	N_boards	400
+		// cancer or tumor: N_biased:	169	N_unknown	4145	N_boards_no_specials	14	N_boards	400
+		//top players of biased games for cancer or tumor
+		/*
+		 * 980	15 kiefer89
+59	10 kiefer89 ataly
+54	9 ryanM
+566	8 Aee
+728	6 Savvak
+204	5 oneoff64
+48	5 gene
+572	5
+362	4
+1079	4
+599	4
+349	4
+		 */
+		
+		// cancer or tumor or oma:  N_biased:	120	N_unknown	4194	N_boards_no_specials	0	N_boards	400
+
 	}
 
 
@@ -811,9 +838,9 @@ public class Stats {
 						}
 					}
 				}
-				
+
 				distinct_genes += testgenefile+"\t"+distinct.size()+"\t"+distinct+"\n";
-				
+
 				//output full comparison
 				if(asmatrix){
 					try {
@@ -856,10 +883,10 @@ public class Stats {
 				w.write("\nDistinct Genes\n");
 				System.out.println("\n"+distinct_genes);
 				w.write(distinct_genes);
-				
+
 				distinct_cure.removeAll(not_cure);
 				w.write("\nCure Only "+distinct_cure.size()+"\n"+distinct_cure);
-				
+
 				w.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
