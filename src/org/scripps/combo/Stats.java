@@ -46,6 +46,7 @@ import org.scripps.combo.weka.GeneRanker.gene_rank;
 import org.scripps.util.GameSim;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
+import org.scripps.util.SetComparison;
 import org.scripps.util.StatFun;
 
 import weka.attributeSelection.CfsSubsetEval;
@@ -146,15 +147,10 @@ public class Stats {
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/test/");
 		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		String gamegenefiledir = output_dir+"genesets_for_classifiers/";
-		//		String gamegenefiledir = output_dir+"generankings/test/";
-		//		String againstgenefiledir = output_dir+"PublicPredictorGeneSets/GeneSigDB/";
-		//			String againstgenefiledir = output_dir+"generankings/rulebased/";
-		//			outfile = output_dir+"PublicPredictorGeneSets/CompareRulesToCure.txt";
-		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToCure.txt";
-		//			outfile = output_dir+"PublicPredictorGeneSets/CompareToSanford.txt";
+		String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
+		//String againstgenefiledir = output_dir+"generankings/rulebased/";
 		outfile = output_dir+"SetComparisons/AllvsAll.txt";
-		int maxdepth = 403;
+		int maxdepth = 10000;
 		boolean asmatrix = true;
 		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
 		///////////////////////////////////////
@@ -165,9 +161,9 @@ public class Stats {
 
 		//outfile = output_dir+"generankings/classifier_eval_rule_based.txt";
 		//outfile = output_dir+"generankings/classifier_eval_sanford_griffith.txt";		
-		//		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-		//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
-		//		String dataset = "griffith_breast_cancer_full_train";
+//		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+//		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+//		String dataset = "griffith_breast_cancer_full_train";
 		//				outfile = output_dir+"generankings/cv_rand_griffith_full_10cvper.txt";
 		//int roundscv = 1; long seed = 5;
 		//int nruns = 100; int ngenes = 100;
@@ -194,38 +190,38 @@ public class Stats {
 
 		//				outfile = output_dir+"generankings/cv_rand_metabric_with_clinical_ds_survival.txt";
 		//				buildPvalTableForRandomGeneSets(indices_keep, backgroundgenefile, train_file, dataset, outfile, seed, nruns, ngenes, roundscv);		
-
-		//		int roundscv = 10; long seed = 8;
-		//		String indices_keep = "";
-		//		String genesetdir = output_dir+"generankings/test/";
-		//		String fileout =  output_dir+"generankings/griffith_rf11.txt";
-		//		int nsimforp = 1000;
-		//		testGeneSetsWithForests(indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-		//				roundscv, numTrees, nsimforp, seed);
-
-		//		String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
-		//		String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
-		//		String dataset = "metabric_with_clinical";
-
-		//		Classifier model = new NaiveBayes();
-		//		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p100.txt";
-		//		wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-		//				roundscv, nsimforp, seed);
-		//		Classifier model = new NaiveBayes();
-		//		fileout =  output_dir+"generankings/metabric_no_clinical_nb_p1000.txt";
-		//		int skip_in_rand = 12;
-		//		wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-		//				roundscv, nsimforp, seed);
-		//		int numTrees = 101; 
-		//		fileout =  output_dir+"generankings/metabric_no_clinical_rf101p100.txt";	
-		//		for(int i=(int)seed; i<seed+10; i++){
-
-		//			Classifier model= new RandomForest();
-		//			((RandomForest) model).setSeed((int)seed+i);
-		//			((RandomForest) model).setNumTrees(numTrees);
-		//			wrapperGeneSetEvaluation(model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
-		//					roundscv, nsimforp, i);
-		//		}
+/**
+				int roundscv = 1; long seed = 13;
+				String indices_keep = ""; //"0,1,2,3,4,5,6,7,8,9,10,11,";
+				String genesetdir = output_dir+"genesets_for_classifiers/";
+				int nsimforp = 101;
+				String train_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Metabric_clinical_expression_DSS_sample_filtered.arff";		
+				String test_file = "/Users/bgood/genegames/DataForCurePaper/Datasets/metabric_oslo/disease_specific/Oslo_clinical_expression_OS_sample_filt.arff";	
+				String dataset = "metabric_with_clinical";
+//				String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+//				String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";		
+//				String dataset = "griffith_breast_cancer_full_train";
+				
+				Classifier model = new NaiveBayes();
+				String fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_nb_cv1p100_13.txt";
+				int skip_in_rand = 12;//don't pick metabric clinical features
+				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+						roundscv, nsimforp, seed);
+				model = new SMO();
+				fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_smo_cv1p100_13.txt";
+				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+						roundscv, nsimforp, seed);
+				model= new RandomForest();
+				((RandomForest) model).setSeed((int)seed);
+				((RandomForest) model).setNumTrees(101);
+				fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_rf101t_cv1p100_13.txt";
+				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+						roundscv, nsimforp, seed);
+				model = new J48();
+				fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_j48_cv1p100_13.txt";
+				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
+						roundscv, nsimforp, seed);
+**/						
 	}
 
 
@@ -376,7 +372,7 @@ public class Stats {
 				}
 				cvcount++;
 				cv_count.put(accuracy, cvcount);
-				TwoByTwo setcompare = compareSets(genes, against, backgroundset);
+				SetComparison setcompare = new SetComparison(genes, against, backgroundset);
 				String row = r+"\t"+ngenes+"\t"+genes.size()+"\t"+against.size()+"\t"+setcompare.getString()+"\t"+accuracy;
 				w.write(row+"\t"+genecell+"\n");
 				System.out.println(row);
@@ -768,6 +764,9 @@ public class Stats {
 	 */
 	public static void outputGeneSetComparisons(String backgroundgenefile, String gamegenesetdir, String comparetodir, int maxdepth, String outfile, boolean asmatrix){
 		File d = new File(gamegenesetdir);
+		String distinct_genes = "";
+		Set<Integer> distinct_cure = new HashSet<Integer>();
+		Set<Integer> not_cure = new HashSet<Integer>();
 		if(d.isDirectory()){
 			List<String> testfiles = new ArrayList<String>();
 			for(String tfile : d.list()){
@@ -792,18 +791,41 @@ public class Stats {
 				e1.printStackTrace();
 			}
 			for(String testgenefile : testfiles){
-				Map<String, TwoByTwo> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, maxdepth);
+				Map<String, SetComparison> p = computeOverlapMetrics(backgroundgenefile, gamegenesetdir+testgenefile, comparetodir, maxdepth);
+				//capture any distinct elements of the currenet set
+				Set<Integer> distinct = new HashSet<Integer>();
+				boolean first = true;
+				for(String key : testfiles){
+					if(!testgenefile.equals(key)){
+						SetComparison compare = p.get(key);
+						if(first){
+							distinct.addAll(compare.set1notset2);
+							first = false;
+							if(testgenefile.contains("cure")){
+								distinct_cure.addAll(compare.set1);
+							}else{
+								not_cure.addAll(compare.set1);
+							}
+						}else{
+							distinct.retainAll(compare.set1notset2);
+						}
+					}
+				}
+				
+				distinct_genes += testgenefile+"\t"+distinct.size()+"\t"+distinct+"\n";
+				
+				//output full comparison
 				if(asmatrix){
 					try {
 						w = new FileWriter(outfile, true);
 						//get the size of the test for this row 
-						TwoByTwo tbt = p.values().iterator().next();
+						SetComparison tbt = p.values().iterator().next();
 						int row_set_size = tbt.a+tbt.b; //note same for all entries
 						//write the descriptor column entry
 						w.write(testgenefile+"\t"+row_set_size+"\t");
 						//write a row
 						for(String key : testfiles){
-							TwoByTwo t = p.get(key);
+							SetComparison t = p.get(key);
 							w.write(t.getMatrixCell()+"\t");
 						}
 						w.write("\n");
@@ -819,7 +841,7 @@ public class Stats {
 						System.out.println("\n"+testgenefile);
 						for(String key : p.keySet()){
 							System.out.println(key+"\t"+p.get(key));
-							TwoByTwo t = p.get(key);
+							SetComparison t = p.get(key);
 							w.write(key+"\t"+t.getString()+"\n");
 						}
 						w.close();
@@ -829,70 +851,24 @@ public class Stats {
 					}
 				}
 			}
-		}
-	}
-
-	static class TwoByTwo {
-		int a, b, c, d;
-		double fisherP;
-		double pct_agreement;
-		double kappa;
-		double pct_agreement_positive;
-		double pct_agreement_negative;
-
-		public TwoByTwo(int a, int b, int c, int d) {
-			super();
-			this.a = a;
-			this.b = b;
-			this.c = c;
-			this.d = d;
-			setFisherP();
-			setPctAgree();
-			setKappa();
-			setPctAgreePositive();
-			setPctAgreeNegative();
-		}
-
-
-		public void setFisherP(){
-			//test with fisherexact
-			fisherP = StatUtil.fishersExact2tailed(a, b, c, d);
-		}
-
-		public void setPctAgreePositive(){
-			pct_agreement_positive = (double)(a)/(double)(a+b+c);
-		}
-
-		public void setPctAgreeNegative(){
-			pct_agreement_negative = (double)(d)/(double)(d+b+c);
-		}
-
-		public void setPctAgree(){
-			pct_agreement = (double)(a+d)/(double)(a+b+c+d);
-		}
-
-		public void setKappa(){
-			double prA = (double)(a+d)/(double)(a+b+c+d); //actual prob of agreement
-			double prE = ((double)(a+b)/(double)(a+b+c+d))*((double)(a+c)/(double)(a+b+c+d)); //chance of random agreement based on + rates
-			kappa = (prA - prE)/(1 - prE);
-		}
-
-		public String getString(){
-			String row = a+"\t"+b+"\t"+c+"\t"+d+"\t"+fisherP+"\t"+pct_agreement+"\t"+kappa+"\t"+pct_agreement_positive+"\t"+pct_agreement_negative;
-			return row;
-		}
-
-		public String getMatrixCell(){
-			NumberFormat percentForm = NumberFormat.getPercentInstance();
-			DecimalFormat sci = (DecimalFormat) DecimalFormat.getNumberInstance();
-			sci.applyPattern("0.###E0");
-			String cell = a+", "+percentForm.format(pct_agreement_positive)+", "+sci.format(fisherP);
-			if(fisherP<=0.05){
-				cell+= "__";
+			try {
+				w = new FileWriter(outfile, true);
+				w.write("\nDistinct Genes\n");
+				System.out.println("\n"+distinct_genes);
+				w.write(distinct_genes);
+				
+				distinct_cure.removeAll(not_cure);
+				w.write("\nCure Only "+distinct_cure.size()+"\n"+distinct_cure);
+				
+				w.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			return cell;
 		}
 	}
+
+
 	/**
 	 * Does the set comparisons to produce a 2 * 2 table
 	 * Responds with a map of the files used to compare against and the p value from a Fisher's exact test on the table
@@ -902,8 +878,8 @@ public class Stats {
 	 * @param depth
 	 * @return
 	 */
-	public static Map<String, TwoByTwo> computeOverlapMetrics(String backgroundgenefile, String testgenefile, String againstgenefiledir, int depth){
-		Map<String, TwoByTwo> p_map = new HashMap<String, TwoByTwo>();
+	public static Map<String, SetComparison> computeOverlapMetrics(String backgroundgenefile, String testgenefile, String againstgenefiledir, int depth){
+		Map<String, SetComparison> p_map = new HashMap<String, SetComparison>();
 		Set<Integer> background = readEntrezIdsFromFile(backgroundgenefile, 0, 0, "\t");
 		//		System.out.println("Background contains: "+background.size());
 		Set<Integer> testgenes = readEntrezIdsFromFile(testgenefile, 0, depth, "\t");
@@ -916,47 +892,11 @@ public class Stats {
 					continue;
 				}
 				Set<Integer> against = readEntrezIdsFromFile(againstgenefiledir+againstgenefile, 0, depth, "\t");
-				TwoByTwo t = compareSets(testgenes, against, background);
+				SetComparison t = new SetComparison(testgenes, against, background);
 				p_map.put(againstgenefile, t);
 			}
 		}
 		return p_map;
-	}
-
-	/**
-	 * Given 2 sets and a background set, measure the overlap between the two sets using fishers exact test
-	 * @param testgenes
-	 * @param against
-	 * @param background
-	 * @return
-	 */
-	public static TwoByTwo compareSets(Set<Integer> testgenes, Set<Integer> against, Set<Integer> background){
-		//remove any genes not in background
-		against.retainAll(background);
-		//				System.out.println("After removing non-background, compareto contains: "+against.size());
-		//this should not be necessary, but just to b sure
-		testgenes.retainAll(background);
-		//				System.out.println("After removing non-background, test set contains: "+testgenes.size());
-		//build 2 by 2 table
-		//a tp = n genes in both sets
-		Set<Integer> tp_a = new HashSet<Integer>(against);
-		tp_a.retainAll(testgenes);
-		//b fp = n genes in the testset and not in the against set
-		Set<Integer> fp_b = new HashSet<Integer>(testgenes);
-		fp_b.removeAll(against);
-		//c fn = n genes in against set and not in the test set
-		Set<Integer> fn_c = new HashSet<Integer>(against);
-		fn_c.removeAll(testgenes);
-		//d tn = n genes not in the test set and not in the against set
-		Set<Integer> tn_d = new HashSet<Integer>(background);
-		tn_d.removeAll(against);  tn_d.removeAll(testgenes);
-		//		System.out.println("\n"+tp_a.size()+"\t"+fp_b.size()+"\n"+fn_c.size()+"\t"+tn_d.size());
-		//		System.out.println(p);
-		TwoByTwo t = new TwoByTwo(tp_a.size(), fp_b.size(), fn_c.size(), tn_d.size());
-		//		t.a = tp_a.size(); t.b = fp_b.size(); t.c = fn_c.size(); t.d = tn_d.size();
-		//		t.setFisherP();		
-
-		return t;
 	}
 
 
