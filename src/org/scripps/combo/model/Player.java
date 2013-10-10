@@ -264,7 +264,7 @@ public class Player {
 	 */
 	public static void describePlayers(boolean only_first_per_board, String outfile, String dataset){
 		boolean only_winning = false; boolean for_scoreboard_in_game = false;
-		int room = 0; 
+		String room = "0"; 
 		List<Player> players = Player.getAllPlayers();
 		Map<Integer, Player> name_player = Player.playerListToIdMap(players);
 

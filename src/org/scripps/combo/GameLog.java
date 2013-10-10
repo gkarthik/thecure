@@ -63,7 +63,7 @@ public class GameLog {
 	public static void main(String[] args) {
 		GameLog log = new GameLog();
 		boolean keep_mammal = false;
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, null, false, 1, keep_mammal); //"dream_breast_cancer"
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(true, null, false, "1", keep_mammal); //"dream_breast_cancer"
 		
 //		for(Game hand : whs){
 //			System.out.println(hand.getBoard_id()+"\t"+hand.getPlayer1_id()+"\t"+hand.getP1_score());
