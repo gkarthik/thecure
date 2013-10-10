@@ -26,11 +26,13 @@ public class Boardroom {
 	List<boardview> boardviews;
 	ObjectMapper mapper;
 	ObjectNode json_root;
+	int n_won;
 
 	public Boardroom(){
 		boardviews = new ArrayList<boardview>();
 		mapper = new ObjectMapper();
 		json_root = mapper.createObjectNode();
+		n_won = 0;
 	}
 	/**
 	 * @param args
@@ -59,6 +61,7 @@ public class Boardroom {
 			views.add(v);
 		}
 		json_root.put("boards", views);
+		json_root.put("n_won", n_won);
 		try {
 			json = mapper.writeValueAsString(json_root);
 		} catch (JsonGenerationException e) {
@@ -88,7 +91,7 @@ public class Boardroom {
 	
 		List<Board> boards = Board.getBoardsByDatasetRoom(dataset, room); //"dream_breast_cancer"
 		Map<Integer,Integer> player_board_scores = player.getDataset_board_scores().get(dataset);
-
+		n_won = 0;
 		int position = 0;
 		for(Board board : boards){
 			boardview view = new boardview(board, position);
@@ -101,6 +104,7 @@ public class Boardroom {
 				player_score = player_board_scores.get(b_id);									
 				if(player_score!=null){
 					player_won_level = true;
+					n_won++;
 				}
 			}
 			//community

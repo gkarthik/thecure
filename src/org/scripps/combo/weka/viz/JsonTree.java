@@ -42,6 +42,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import weka.classifiers.Evaluation;
+import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
 import weka.classifiers.trees.j48.C45Split;
@@ -267,7 +268,7 @@ public class JsonTree {
 				attname_nodename.put(att.getName(), displayname);			
 			}
 		}
-		//TODO - make this produce hatever is needed for client visualization..		
+		//TODO - make this produce whatever is needed for client visualization..		
 		//		ClassifierTree tree = classifier.getM_root();
 		//		if(tree==null){
 		//			return "";
@@ -277,6 +278,127 @@ public class JsonTree {
 		return null;
 	}
 
+	public String getJsonStumpAllInfo(DecisionStump stump, Weka weka) throws Exception {
+		if(stump==null){
+			return "";
+		}
+		//init the name mappings
+		//get map from attributes to desired output name
+		attname_nodename = new HashMap<String, String>();
+		attindex_nodename = new HashMap<Integer, String>();
+		for(Feature f : weka.getFeatures().values()){
+			for(Attribute att : f.getDataset_attributes()){
+				String displayname = f.getShort_name();
+				attname_nodename.put(att.getName(), displayname);			
+			}
+		}
+		num_leaves = 2;
+		tree_size = 3; 	
+		max_depth = 3;
+		//getJsonTree(tree, json_root, 0);
+
+		double split_point = stump.getM_SplitPoint(); // split.getM_splitPoint();
+		String split_tag = split_point+"";
+		boolean nominal = false;
+		if(split_point == Double.MAX_VALUE){
+			//then we have a nominal data type
+			nominal = true;
+			split_tag = "nominal";
+		}
+
+		//set to -1 to indicate not being set - trying not to break tree renderer
+		double gain_ratio = -1;
+		double infogain = -1;
+		double total_below = -1;
+		double total_below_left = -1;
+		double total_below_right = -1;
+		double errors_left = -1;
+		double errors_right = -1;
+		double pct_correct_below = -1;
+
+		ObjectNode jroot = json_root;
+		jroot.put("split_point", split_tag);
+		String name = "";//attindex_nodename.get(split.attIndex()); //TODO fix this when att)index has changed because of a filter.
+		int attindex = stump.getM_AttIndex();
+		//tree.getM_train().attribute(split.attIndex()).name();
+		//String attribute_name = weka.getTrain().attribute(attindex).name();
+		String attribute_name = stump.getM_Instances().attribute(attindex).name();
+		name = attname_nodename.get(attribute_name);
+		//String longname = attindex_longnodename.get(split.attIndex());
+		jroot.put("name", name);
+		//jroot.put("longname", longname);
+		jroot.put("id", name);
+		jroot.put("attribute_name", attribute_name);
+		jroot.put("kind", "split_node");	
+		jroot.put("gain_ratio", gain_ratio);
+		jroot.put("infogain", infogain);
+		jroot.put("total_below_left", total_below_left);
+		jroot.put("total_below_right", total_below_right);
+		jroot.put("bin_size", -1); //split.getM_distribution().getTotaL()
+		jroot.put("errors_from_left", errors_left);
+		jroot.put("errors_from_right", errors_right);
+		jroot.put("total_errors_here", errors_right+errors_left);
+		jroot.put("pct_correct_here", pct_correct_below);
+		//double[] bag_sizes = split.getM_distribution().getM_perBag();
+		// walk down to collect outgoing edges
+		// each "bag" corresponds to a group of instances following down one edge
+		ArrayNode edge_children = mapper.createArrayNode();
+		for(int i=0; i<2; i++){
+			ObjectNode edgenode = mapper.createObjectNode();
+			String full_edgename = ""; String short_edgename = "";
+			//custom for binary split situation - //TODO needs work to generalize
+			if(i==0){
+				full_edgename = "<= "+split_point;
+				short_edgename = "low";
+			}else if(i==1){
+				full_edgename = "> "+split_point;
+				short_edgename = "high";
+			}
+			//TODO generalize
+			//cure1 specific 
+			if(name.equals("legs")){
+				short_edgename = full_edgename;
+			}
+			//check for nominal values
+			if(nominal){
+				short_edgename = ((Instances)weka.getTrain()).attribute(stump.getM_AttIndex()).value(i);
+				full_edgename = short_edgename;
+			}				
+			//add to json rep
+			edgenode.put("name", short_edgename);
+			edgenode.put("threshold", full_edgename);
+			edgenode.put("bin_size", -1);//bag_sizes[i]);
+			edgenode.put("kind", "split_value");
+
+			//hook up to edge targets (leafs here)
+			ArrayNode edge_target = mapper.createArrayNode();
+			ObjectNode target = mapper.createObjectNode();
+			
+			//ClassifierTree son = tree.getM_sons()[i];		
+			/**
+			 * text.append(att.name() + " <= " + m_SplitPoint + " : ");
+				text.append(printClass(m_Distribution[0]));
+				text.append(att.name() + " > " + m_SplitPoint + " : ");
+				text.append(printClass(m_Distribution[1]));
+			 */
+			
+			String label = stump.printClass(stump.getM_Distribution()[i]);//((Instances)tree.getM_train()).classAttribute().value(split.getM_distribution().maxClass(0));
+			double bin_size = -1;// Utils.roundDouble(split.getM_distribution().perBag(0),2);
+			double errors = -1;//Utils.roundDouble(split.getM_distribution().numIncorrect(0),2);
+			target.put("kind", "leaf_node");
+			target.put("name", label);
+			target.put("bin_size", bin_size);
+			target.put("errors", errors);		
+
+			edge_target.add(target);
+			edgenode.put("children", edge_target);				
+			edge_children.add(edgenode);
+		}
+		jroot.put("children", edge_children);
+		String json = mapper.writeValueAsString(json_root);
+		return json;
+	}
+	
 	/**
 	 * Recursively build a jackson Object model for a weka tree.
 	 * Each split node in the tree is represented by a single ClassifierTree object
@@ -602,6 +724,9 @@ public class JsonTree {
 	public void setTree_size(int tree_size) {
 		this.tree_size = tree_size;
 	}
+
+
+
 
 
 

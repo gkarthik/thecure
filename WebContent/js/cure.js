@@ -878,14 +878,23 @@ CURE.login = {
 //not sure where to set this but need to add that room parameter- this enables multiple boardrooms
 CURE.boardroom = {
   init: function() {
-    var args = {
+	$("#expert").hide();  
+    
+	var args = {
       command : "boardroom",
       user_id : CURE.user_id,
       dataset : CURE.dataset,
       room : "1" //cure dataset room
     }
+    var boardsCompleted = 0;
+    
     $.getJSON("SocialServer", args, function(data) {
       CURE.boardroom.drawGrid("#boards", data, 100);
+      
+      if(data.n_won>3){
+    	  alert("Congratulations, you have unlocked the advanced mode (look above the score board)");
+    	  $("#expert").show();
+      }
     });
   },
 
@@ -910,7 +919,7 @@ CURE.boardroom = {
         margin = Math.floor(hw*.09),
         top_pos = Math.floor(hw*.09),
         pro_height = Math.floor(hw*.15);
-
+    
     _.each(data.boards, function(v, i) {
 
       var scaleAttempt = attempt(v.attempts);
@@ -927,7 +936,7 @@ CURE.boardroom = {
       }
       if ( v.trophy == true) {
         content = "&#9733;";
-        font_size = font_size*0.4;
+        font_size = font_size*1.5; //font_size*0.4;
         top_pos = Math.floor(hw*.2);
       }
       if ( v.enabled == false && v.trophy == true) {

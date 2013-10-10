@@ -55,6 +55,7 @@ import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.rules.JRip;
+import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -296,25 +297,38 @@ public class MetaServer extends HttpServlet {
 		List<String> unique_ids = new ArrayList<String>();
 		unique_ids = (List<String>)data.get("unique_ids");
 
-		J48 wekamodel = new J48();
-		int nruns_cv = 1;
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset(), nruns_cv);
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-		//serialize and return the result
-		JSONObject r = new JSONObject(short_result);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String eval_json = r.toString();
-		String tree_json = "";
+		Classifier model = null;
+		J48 j48 = new J48();
+		int nruns_cv = 10;
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, j48, board.getDataset(), nruns_cv);
+		
+		if(j48.measureNumRules()==1){
+//			System.out.println("Did not return a tree");
+			DecisionStump stump = new DecisionStump();
+			result = weka.pruneAndExecuteWithUniqueIds(unique_ids, stump, board.getDataset(), nruns_cv);
+			model = stump;
+		}else{
+			model = j48;
+		}
 		JsonTree jtree = new JsonTree();
+		String tree_json = "";
 		try {		
-			tree_json = jtree.getJsonJ48AllInfo(wekamodel, weka); 
-			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
+			if(model.getClass().equals(J48.class)){
+				tree_json = jtree.getJsonJ48AllInfo((J48) model, weka); 
+			}else if(model.getClass().equals(DecisionStump.class)){
+				tree_json = jtree.getJsonStumpAllInfo((DecisionStump) model, weka); 
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Died trying to get tree");
 		}
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		JSONObject r = new JSONObject(short_result);
+		String eval_json = r.toString();
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		eval_json = r.toString();
 		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
 		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
 		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
@@ -323,7 +337,6 @@ public class MetaServer extends HttpServlet {
 		//System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
-
 	}
 	
 	/**
