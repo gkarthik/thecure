@@ -130,9 +130,9 @@ public class Boardroom {
 				beat_base = true;
 			}
 
-			if((unique_player_wins > 12)||(player_won_level)){
+			if(!room.contains("edu")&&((unique_player_wins > 12)||(player_won_level))){
 				view.setEnabled(false);
-			}
+			}//for edu rooms, let them play over and over...
 			view.setAttempts(unique_player_wins);
 			if(player_won_level){
 				view.setTrophy(true);

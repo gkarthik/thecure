@@ -598,7 +598,7 @@ public class GeneRanker {
 		//get the hands		
 		List<Game> hands = new ArrayList<Game>();
 		boolean keep_mammal = false;
-		List<Game> handsall = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0, false);
+		List<Game> handsall = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, null, false);
 
 		//		//set up player filter
 		List<Player> playerss = Player.getAllPlayers();

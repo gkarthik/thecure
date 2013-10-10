@@ -885,7 +885,7 @@ CURE.boardroom = {
       room : "1" //cure dataset room
     }
     $.getJSON("SocialServer", args, function(data) {
-      CURE.boardroom.drawGrid("#boards", data, 45);
+      CURE.boardroom.drawGrid("#boards", data, 100);
     });
   },
 
@@ -895,13 +895,13 @@ CURE.boardroom = {
 
     // Check to ensure the board is/can be a grid
     // this will clip the most difficult boards // thoughts?
-    var base = Math.sqrt( data.boards.length );
-    if ( Math.floor(base) !== base) {
-      data.boards = _.first(data.boards, Math.pow( Math.floor(base), 2 ) );
-    }
+   // var base = Math.sqrt( data.boards.length );
+   // if ( Math.floor(base) !== base) {
+   //   data.boards = _.first(data.boards, Math.pow( Math.floor(base), 2 ) );
+   // }
 
     var attempt = d3.scale.linear()
-      .domain([0, 10])
+      .domain([0, 1000])
       .range([0, 100]);
 
     var targetEl = $(targetEl),
@@ -920,7 +920,7 @@ CURE.boardroom = {
           font_size = text_size;
      ( v.enabled == true ) ? isEnabled = "enabled" : isEnabled = "disabled";
 
-     if ( v.enabled == false || v.attempts > 10) {
+     if ( v.enabled == false || v.attempts > 1000) {
         content = "&#8226;";
         font_size = font_size*3;
         top_pos = (hw*.2);
@@ -935,7 +935,7 @@ CURE.boardroom = {
         top_pos = Math.floor(hw*.2);
       }
 
-      if ( v.enabled == true && v.trophy == false && v.attempts <= 10 ) {
+      if ( v.enabled == true && v.trophy == false && v.attempts <= 1000 ) {
         content = (v.position+1);
         top_pos = Math.floor(hw*.2);
       }

@@ -53,6 +53,9 @@ import weka.attributeSelection.CfsSubsetEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
+import weka.classifiers.rules.JRip;
+import weka.classifiers.rules.OneR;
+import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Utils;
@@ -94,13 +97,13 @@ public class Stats {
 		////////////////////////////////////////
 		/// Bias detection
 
-		outfile = output_dir+"generankings/rulebased/breast_cancer_power.txt";	
+		//		outfile = output_dir+"generankings/rulebased/breast_cancer_power.txt";	
 		//String rulegenerated = output_dir+"generankings/rulebased/breast_cancer_in_description.txt";
 		//String rulegenerated = output_dir+"generankings/rulebased/cancer_in_description.txt";
-		String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor.txt";
+		//		String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor.txt";
 		//String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor_or_oma.txt";
-		long seed = 2;
-		testForGeneSelectionRules(outfile, rulegenerated, seed);
+		//		long seed = 2;
+		//		testForGeneSelectionRules(outfile, rulegenerated, seed);
 
 		//		///////////////////////////////////////
 		//		//players
@@ -150,13 +153,13 @@ public class Stats {
 		//		System.out.println("Starting gene-centric analysis...");
 		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/test/");
-		//		String backgroundgenefile = output_dir+"generankings/background_genes.txt";
-		//		String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
-		//		//String againstgenefiledir = output_dir+"generankings/rulebased/";
-		//		outfile = output_dir+"SetComparisons/AllvsAll.txt";
-		//		int maxdepth = 10000;
-		//		boolean asmatrix = true;
-		//		outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
+		//				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
+		//				String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
+		//				//String againstgenefiledir = output_dir+"generankings/rulebased/";
+		//				outfile = output_dir+"SetComparisons/AllvsAll.txt";
+		//				int maxdepth = 10000;
+		//				boolean asmatrix = true;
+		//				outputGeneSetComparisons(backgroundgenefile, gamegenefiledir, gamegenefiledir, maxdepth, outfile, asmatrix);
 		///////////////////////////////////////
 		//classifiers
 		//////////////////////////////////////	
@@ -225,11 +228,56 @@ public class Stats {
 				fileout =  output_dir+"WrapperResults/MetaBricOslo/metabric_no_clinical_j48_cv1p100_13.txt";
 				wrapperGeneSetEvaluation(skip_in_rand, model, indices_keep, genesetdir, train_file, test_file, dataset, fileout, 
 						roundscv, nsimforp, seed);
-		 **/						
+		 **/					
+
+		//measureGenePredictivePower();
+	}
+
+
+	public static void measureGenePredictivePower(){
+		Set<Integer> genes = readEntrezIdsFromFile("/Users/bgood/workspace/aacure/database/stats/generankings/background_genes.txt",0,0,"\t");
+		String out = "/Users/bgood/workspace/aacure/database/stats/singlegene/all_stump.txt";
+		int skip_first = 0;
+		String indices_keep = "";
+		String dataset = "griffith_breast_cancer_full_train";
+		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
+		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";	
+		Classifier model = new DecisionStump();
+		int ncv = 1; int nsimforp = 1; long seed = 1;
+		Weka weka = new Weka();		
+		System.out.println("loading... "+train_file);
+		boolean setFeatures = false;
+		try {
+			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
+			System.out.println("Weka initialized ");
+			String testname = "test123";
+			System.out.println();
+			FileWriter f = new FileWriter(out);
+			for(Integer gene_id : genes){
+				testname = gene_id+"\t"+Feature.getByUniqueId(gene_id+"").getShort_name();
+				Set<Integer> testgenes = new HashSet<Integer>();
+				testgenes.add(gene_id);
+				classifierTestResult result = computeClassifierEvaluation(skip_first, model, indices_keep, dataset, ncv, nsimforp, seed, 
+						testgenes, weka, testname);
+				//System.out.println(model.toString());
+				System.out.println(testname+"\t"+result.train_acc+"\t"+result.cv_acc+"\t"+result.test_acc);
+				f.write("all\tstump\t"+testname+"\t"+result.train_acc+"\t"+result.cv_acc+"\t"+result.test_acc+"\n");
+			}
+			f.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 
 	/**
+	 * Given a set of genes (derived from a particular rule applied externally), measure the number of games where
+	 * genes were preferentially selected based on that set.  For example, a set might be "genes with cancer in their descriptions"
+	 * This measures the probability that a player would select the number of these genes that they did by chance.  
 	 * @throws IOException 
 	 * 
 	 */
@@ -313,7 +361,7 @@ public class Stats {
 599	4 jreeve
 349	4 poyarkov
 		 */
-		
+
 		// cancer or tumor or oma:  N_biased:	120	N_unknown	4194	N_boards_no_specials	0	N_boards	400
 
 	}
@@ -424,6 +472,9 @@ public class Stats {
 	}
 
 	public static class classifierTestResult {
+		//classifier features
+		int n_atts = 0;
+
 		//observed
 		double oobe = 0; 
 		double train_acc = 0; double train_auc = 0; double train_f = 0; 
@@ -434,7 +485,7 @@ public class Stats {
 		double train_acc_p = 0; double train_auc_p = 0; double train_f_p = 0; 
 		double cv_acc_p = 0; double cv_auc_p = 0; double cv_f_p = 0; 
 		double test_acc_p = 0; double test_auc_p = 0; double test_f_p = 0;
-
+		
 		public String toString(){
 			String r = oobe+"\t"+oobe_p+"\t" +
 			train_acc+"\t"+train_acc_p+"\t"+train_auc_p+"\t"+train_f+"\t"+train_f_p+"\t"+
@@ -452,6 +503,232 @@ public class Stats {
 		}
 
 	}
+
+	/**
+	 * Given a weka instance with training/testing data already assigned and set of entrez gene ids,
+	 * evaluate the given genes using the model specified.
+	 * Optionally execute a simulation where random attributes are selected
+	 * @param skip_first
+	 * @param model
+	 * @param indices_keep
+	 * @param dataset
+	 * @param ncv
+	 * @param nsimforp
+	 * @param seed
+	 * @param genes
+	 * @param weka
+	 * @param testname
+	 * @return
+	 */
+	public static classifierTestResult computeClassifierEvaluation(int skip_first, Classifier model, String indices_keep, String dataset, int ncv, int nsimforp, long seed, 
+			Set<Integer> genes, Weka weka, String testname){
+		classifierTestResult score_out = new classifierTestResult();
+		Set<Integer> missing = new HashSet<Integer>();
+		Random random = new Random(seed);
+		boolean all_probes = true;
+		String indices = indices_keep;
+		int n_atts = 0;
+		for(Integer entrezid : genes){
+			boolean present = false;
+			List<org.scripps.combo.model.Attribute> atts = org.scripps.combo.model.Attribute.getByFeatureUniqueId(entrezid+"", dataset);
+			if(atts!=null&&atts.size()>0){
+				for(org.scripps.combo.model.Attribute a : atts){
+					if(a.getDataset().equals(dataset)){
+						indices+=a.getCol_index()+",";
+						n_atts++;
+						if(!all_probes){
+							break;
+						}
+						present = true;
+					}
+				}
+			}
+			if(!present){
+				missing.add(entrezid);
+			}
+		}
+		if(n_atts==0){
+			return score_out;
+		}
+		genes.removeAll(missing);
+		String genecell = "";
+		for(Integer gene : genes){
+			Feature f = Feature.getByUniqueId(gene+"");
+			genecell+=(gene+":"+f.getShort_name()+",");
+		}
+		String missingcell = "";
+		for(Integer gene : missing){
+			Feature f = Feature.getByUniqueId(gene+"");
+			if(f!=null){
+				missingcell+=(f.getShort_name()+",");
+			}else{
+				missingcell+=(gene+",");
+			}
+		}
+		//loop here to embed a simulation of random var selection
+		//with n_atts from above
+		List<classifierTestResult> scores = new ArrayList<classifierTestResult>();
+		classifierTestResult test_score = new classifierTestResult();
+		int numFeaturesPerTree = 0;
+		for(int sim=0; sim<nsimforp; sim++){
+			classifierTestResult score = new classifierTestResult();
+			String test_indices = indices_keep;
+			if(sim<nsimforp-1){ //on the last one we run the real genes 
+				for(int s=0; s<n_atts; s++){
+					int ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
+					//hack to skip the clinical features of the metabric data
+					// pick from th remaining thousands of attributes.
+					while(ranindex<skip_first){
+						ranindex = (int) Math.rint(random.nextDouble()*(weka.getTrain().numAttributes()-1));
+					}
+
+					test_indices+= ranindex+",";
+				}
+			}else{
+				test_indices = indices;
+			}
+			numFeaturesPerTree = (int) Utils.log2(n_atts)+1;
+			//train_accuracy, train_auc, cv_acc, cv_auc, test_acc, test_auc = 0;
+			for(int e=0; e<3; e++){
+				if(e==0){ // cross_validation, test_set,
+					weka.setEval_method("training_set");
+				}else if(e==1){
+					weka.setEval_method("cross_validation");
+				}else if(e==2){
+					weka.setEval_method("test_set");
+				}
+				Weka.execution result = weka.pruneAndExecute(test_indices, model, ncv);
+
+				if(e==0){ // train, cross_validation, test_set,
+					score.train_acc = result.eval.pctCorrect();
+					score.train_auc = result.eval.areaUnderROC(0);
+					score.train_f = result.eval.fMeasure(0);
+					if(model.getClass()==RandomForest.class){
+						score.oobe = ((RandomForest) model).measureOutOfBagError();
+					}
+				}else if(e==1){
+					score.cv_acc = result.eval.pctCorrect();
+					score.cv_auc = result.eval.areaUnderROC(0);
+					score.cv_f = result.eval.fMeasure(0);
+				}else if(e==2){
+					score.test_acc = result.eval.pctCorrect();
+					score.test_auc = result.eval.areaUnderROC(0);
+					score.test_f = result.eval.fMeasure(0);
+				}
+			}
+			//save for sim test or run test..
+			if(sim==nsimforp-1){
+				//do the test, this one is real
+				for(classifierTestResult simscore : scores){
+					if(simscore.cv_acc>=score.cv_acc){
+						score.cv_acc_p++;
+					}
+					if(simscore.cv_auc>=score.cv_auc){
+						score.cv_auc_p++;
+					}
+					if(simscore.cv_f>=score.cv_f){
+						score.cv_f_p++;
+					}
+					if(simscore.train_acc>=score.train_acc){
+						score.train_acc_p++;
+					}
+					if(simscore.train_auc>=score.train_auc){
+						score.train_auc_p++;
+					}
+					if(simscore.train_f>=score.train_f){
+						score.train_f_p++;
+					}
+					if(simscore.test_acc>=score.test_acc){
+						score.test_acc_p++;
+					}
+					if(simscore.test_auc>=score.test_auc){
+						score.test_auc_p++;
+					}
+					if(simscore.test_f>=score.test_f){
+						score.test_f_p++;
+					}
+					if(simscore.oobe<=score.oobe){
+						score.oobe_p++;
+					}
+				}
+				double ssize = (double)scores.size();
+				score.cv_acc_p = score.cv_acc_p/ssize;
+				score.cv_auc_p = score.cv_auc_p/ssize;
+				score.cv_f_p = score.cv_f_p/ssize;
+				score.train_acc_p = score.train_acc_p/ssize;
+				score.train_auc_p = score.train_auc_p/ssize;
+				score.train_f_p = score.train_f_p/ssize;
+				score.test_acc_p = score.test_acc_p/ssize;
+				score.test_auc_p = score.test_auc_p/ssize;
+				score.test_f_p = score.test_f_p/ssize;
+				score.oobe_p = score.oobe_p/ssize;
+				score.n_atts = n_atts;
+				score_out = score;
+			}else{
+				scores.add(score);
+		//		String simrow = seed+"\t"+model.getClass().getSimpleName()+"\t"+sim+" sim_"+testname+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+score.toString()+"\t"+genes.size()+"\t"+test_indices;
+		//		System.out.println(simrow);
+			}
+		}
+	//	String row = seed+"\t"+model.getClass().getSimpleName()+"\t"+testname+"\t"+n_atts+"\t"+numFeaturesPerTree+"\t"+test_score.toString()+"\t"+genes.size()+"\t"+genecell+"\t"+missing.size()+"\t"+missingcell;
+	//	System.out.println(row);
+
+		return score_out;
+	}
+
+	/**
+	 * For each of a set of files where each contains a set of entre gene ids
+	 * 	map the entrez ids to attributes in the dataset specified in the train_file
+	 *  build and evaluate (train, cv, test) the specified classified model given that data
+	 *  Write the results..
+	 * @param skip_first
+	 * @param model
+	 * @param indices_keep
+	 * @param genesetdir
+	 * @param train_file
+	 * @param test_file
+	 * @param dataset
+	 * @param fileout
+	 * @param ncv
+	 * @param nsimforp
+	 * @param seed
+	 */
+	public static void wrapperGeneSetEvaluation(int skip_first, Classifier model, String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv, int nsimforp, long seed){
+		try {
+			Weka weka = new Weka();
+			System.out.println("loading... "+train_file);
+			boolean setFeatures = false;
+			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
+			System.out.println("Weka initialized ");
+			FileWriter out = new FileWriter(fileout);	
+			out.write("seed\tmodel\ttestgenefile\tn_atts\t"+classifierTestResult.names()+
+			"\tn_genes\n");
+			File d = new File(genesetdir);
+			if(d.isDirectory()){
+				for(String testgenefile : d.list()){
+					if(testgenefile.startsWith(".")){
+						continue;
+					}else{ 
+						int colindex = 0; String delimiter = "\t";
+						Set<Integer> genes = readEntrezIdsFromFile(genesetdir+testgenefile, colindex, 0, delimiter);
+
+						classifierTestResult score = computeClassifierEvaluation(skip_first, model, indices_keep, dataset, ncv, nsimforp, seed, genes, weka, testgenefile);
+
+						String row = seed+"\t"+model.getClass().getSimpleName()+"\t"+testgenefile+"\t"+score.n_atts+"\t"+score.toString()+"\t"+genes.size();
+						System.out.println(row);
+						out.write(row+"\n");
+					}
+				}
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
 
 	public static void wrapperGeneSetEvaluation(int skip_first, Classifier model, String indices_keep, String genesetdir, String train_file, String test_file, String dataset, String fileout, int ncv, int nsimforp, long seed){
 		Random random = new Random(seed);
@@ -630,6 +907,7 @@ public class Stats {
 
 	}
 
+	 */
 	/**
 	 * Given a collection of gene sets, evaluate them using several different classifiers on particular dataset using training set, cross-validation, and test set
 	 * @param genesetdir
@@ -886,7 +1164,10 @@ public class Stats {
 
 				distinct_cure.removeAll(not_cure);
 				w.write("\nCure Only "+distinct_cure.size()+"\n"+distinct_cure);
-
+				System.out.println("Cure_only_gene");
+				for(Integer gene : distinct_cure){
+					System.out.println(gene);
+				}
 				w.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -1375,7 +1656,7 @@ public class Stats {
 	}
 
 	public static void printDatasetScoreboard(String dataset, boolean only_winning){
-		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, 0, true);
+		List<Game> whs = Game.getTheFirstGamePerPlayerPerBoard(only_winning, dataset, false, null, true);
 		//get a scoreboard
 		GameLog log = new GameLog();
 		high_score sb = log.getScoreBoard(whs, dataset);
