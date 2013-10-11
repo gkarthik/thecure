@@ -107,7 +107,7 @@ public class JsonTree {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String dataset = "mammal";//"griffith_breast_cancer_1" "mammal"; 
+		String dataset = "griffith_breast_cancer_1";// "mammal"; 
 		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff";
 		String input = "/Users/bgood/workspace/aacure/WebContent/test/manualtree/gene_in2.json";
 		if(dataset.equals("mammal")){
@@ -115,8 +115,12 @@ public class JsonTree {
 			input = "/Users/bgood/workspace/aacure/WebContent/test/manualtree/zoo_in1.json";
 		}
 		JsonTree t = new JsonTree();
-		t.testManualTreeParseCreate(dataset, train_file, input);
-
+		//t.testManualTreeParseCreate(dataset, train_file, input);
+		FileInputStream s = new FileInputStream(input);
+		String json1 = HttpUtil.convertStreamToString(s);
+		JsonNode treedata = t.mapper.readTree(json1);
+		List<String> entrez_ids = t.getEntrezIds(treedata.get("treestruct"), new ArrayList<String>());
+		System.out.println(entrez_ids);
 	}
 
 	/**
@@ -192,6 +196,25 @@ public class JsonTree {
 		return tree;
 	}
 
+	
+	public List<String> getEntrezIds(JsonNode node, List<String> ids){
+		ObjectNode options = (ObjectNode)node.get("options");		
+		if(options!=null){
+			JsonNode unique_id = options.get("id");
+			if(unique_id!=null){
+				ids.add(unique_id.asText());
+			}
+		}
+		ArrayNode children = (ArrayNode)node.get("children");
+		if(children!=null){
+			for(JsonNode child : children){
+				getEntrezIds(child, ids);
+			}
+		}
+		return ids;
+	}
+	
+	
 	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset){
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
