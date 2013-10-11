@@ -72,7 +72,7 @@
             <div id="action">
               <input class="playnow" type="submit" value="Play Now" />
             </div>
-          <h4>Round 3 started! <br/>View results from <a href="round1.jsp"> Round 1</a>, <a href="round2.jsp"> Round 2 </a></h4>
+         <!--  <h4>Round 3 started! <br/>View results from <a href="round1.jsp"> Round 1</a>, <a href="round2.jsp"> Round 2 </a></h4> --> 
           <div id="twitterUserFeed">
               <a class="twitter-timeline" href="https://twitter.com/genegame" data-widget-id="245564915832721410">Tweets by @genegame</a>
               <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
