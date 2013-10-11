@@ -377,7 +377,7 @@ public class MetaServer extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String result_json = mapper.writeValueAsString(result);
 
-		System.out.println(result_json);
+	//	System.out.println(result_json);
 		out.write(result_json);
 		out.close();
 
