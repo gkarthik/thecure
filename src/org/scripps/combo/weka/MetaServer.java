@@ -38,6 +38,7 @@ import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
+import org.scripps.combo.model.Tree;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.JdbcConnection;
@@ -381,6 +382,22 @@ public class MetaServer extends HttpServlet {
 		out.write(result_json);
 		out.close();
 
+		//now store it in the database
+		//TODO only store trees where they have pressed "save"
+		//TODO actually capture the player id and comment
+		String comment = "";
+		int player_id = 0;
+		String ip = request_.getRemoteAddr();
+		List<Feature> features = new ArrayList<Feature>();
+		for(String entrez_id : entrez_ids){
+			Feature f = weka.features.get(entrez_id);
+			features.add(f);
+		}
+		Tree tree = new Tree(0, player_id, ip, features, result_json,comment);
+		int tid = tree.insert();
+		float score = 0;
+		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
+		
 	}
 
 

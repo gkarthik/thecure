@@ -892,8 +892,7 @@ CURE.boardroom = {
       CURE.boardroom.drawGrid("#boards", data, 100);
       
       if(data.n_won>3){
-    	  alert("Congratulations, you have unlocked the advanced mode (look above the score board)");
-    	  $("#expert").show();
+    	  $("#expert").fadeIn("slow");
       }
     });
   },
