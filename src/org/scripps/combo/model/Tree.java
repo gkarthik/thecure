@@ -21,7 +21,9 @@ import org.scripps.util.JdbcConnection;
   CREATE TABLE `tree` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
+  `ip` varchar(50),
   `json_tree` text not NULL,
+  `comment` text,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 )
@@ -35,8 +37,11 @@ import org.scripps.util.JdbcConnection;
   CREATE TABLE `tree_dataset_score` (
   `tree_id` int(11) NOT NULL,
   `dataset` varchar(100) NOT NULL,
+  `percent_correct` float,
+  `size` float,
+  `novelty` float,
   `score` float,
-  UNIQUE KEY `tree_score` (`tree_id`,`dataset`,`score`)
+  UNIQUE KEY `tree_score` (`tree_id`,`dataset`)
 )
  * 
  * @author bgood
@@ -46,25 +51,38 @@ public class Tree {
 
 	int player_id;
 	int id;
+	String ip;
 	List<Feature> features; 
 	String json_tree; // this is the blob used by the javascript client to render the tree and by the ManualTree class to evaluate it
 	Date created;
-	Map<String, Float> dataset_score; // trees could be tried on multiple datasets
+	Map<String, TreeScore> dataset_score; // trees could be tried on multiple datasets
+	String comment;
 
+	public class TreeScore{
+		float size;
+		float novelty;
+		float percent_correct;
+		float score;
+		
+		public String toString(){
+			String s = size+"\t"+novelty+"\t"+percent_correct+"\t"+score;
+			return s;
+		}
+	}
+	
 	public Tree(){
 		this.player_id = 0;
 		this.id = 0;
 		this.features = new ArrayList<Feature>();
-		this.json_tree =  null;
-		this.created = null;
 	}
 
-	public Tree(int player_id, int id, List<Feature> features, String json_tree, Date date) {
+	public Tree (int id, int player_id, String ip, List<Feature> features, String json_tree, String comment) {
 		this.player_id = player_id;
 		this.id = id;
+		this.ip = ip;
 		this.features = features;
 		this.json_tree = json_tree;
-		this.created = date;
+		this.comment = comment;
 	}
 
 	/**
@@ -77,23 +95,23 @@ public class Tree {
 		//Tree test = new Tree(1, 0, features, null,  "{i am the, json tree []}");
 
 		List<String> uniques = new ArrayList<String>();
-		uniques.add("1003");  uniques.add("10002");
+		uniques.add("1009");  uniques.add("10052");
 		List<Feature> fs = new ArrayList<Feature>();
 		for(String u : uniques){
 			fs.add(Feature.getByUniqueId(u));
 		}
-		Tree test = new Tree(48, 0, fs,  "{i bens, great json tree []}", null);
-		//	int tid = test.insert();
-		//	test.insertScore(tid, "datasetname", (float) 68.98);
+		Tree test = new Tree(0, 48, "anip", fs,  "{i bens, great json tree []}", " I love trees");
+		int tid = test.insert();
+		test.insertScore(tid, "datasetname", (float) 68.98, (float) 3, (float) .58, (float) 62.8);
 		List<Tree> trees = test.getAll(); //getForPlayer(48);
 		for(Tree t : trees){
-			System.out.println(t.json_tree);
+			System.out.println(t.json_tree+" comment: "+t.comment);
 			for(Feature f : t.features){
 				System.out.println("\t"+f.getShort_name());
 			}
 			if(t.dataset_score!=null){
 				for(String dataset : t.dataset_score.keySet()){
-					System.out.println("\t\t"+dataset+"\t"+t.dataset_score.get(dataset));
+					System.out.println("\t\t"+dataset+"\t"+t.dataset_score.get(dataset).toString());
 				}
 			}
 		}
@@ -109,7 +127,8 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(player_id, ts.getInt("id"), null, ts.getString("json_tree"), ts.getDate("created"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"));
+				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -124,9 +143,14 @@ public class Tree {
 				//scores
 				ResultSet scores = conn.executeQuery("select * from tree_dataset_score where tree_id="+tree.id);
 				if(scores!=null){
-					Map<String, Float> data_score = new HashMap<String, Float>();
+					Map<String, TreeScore> data_score = new HashMap<String, TreeScore>();
 					while(scores.next()){
-						data_score.put(scores.getString("dataset"), scores.getFloat("score"));
+						TreeScore score = new TreeScore();
+						score.novelty = scores.getFloat("novelty");
+						score.percent_correct = scores.getFloat("percent_correct");
+						score.size = scores.getFloat("size");
+						score.score = scores.getFloat("score");
+						data_score.put(scores.getString("dataset"), score);
 					}
 					tree.dataset_score = data_score;
 				}
@@ -148,7 +172,8 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(player_id, ts.getInt("id"), null, ts.getString("json_tree"), ts.getDate("created"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"));
+				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -174,14 +199,16 @@ public class Tree {
 	public int insert() throws Exception{
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
-		ResultSet generatedKeys = null; PreparedStatement pst = null;
-		String insert = "insert into tree (player_id, json_tree) values(?,?)";
+		ResultSet generatedKeys = null;
+		String insert = "insert into tree (player_id, ip, json_tree, comment) values(?,?,?,?)";
 
 		PreparedStatement p = null;
 		try {
 			p = conn.connection.prepareStatement( insert, Statement.RETURN_GENERATED_KEYS);
 			p.setInt(1, player_id);
-			p.setString(2, json_tree);
+			p.setString(2, ip);
+			p.setString(3, json_tree);
+			p.setString(4, comment);
 			int affectedRows = p.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Creating tree failed, no rows affected.");
@@ -209,10 +236,11 @@ public class Tree {
 		return newid;
 	}
 
-	public void insertScore(int tree_id, String dataset, float score) throws Exception{
+	public void insertScore(int tree_id, String dataset, float percent_correct, float size, float novelty, float score) throws Exception{
 		JdbcConnection conn = new JdbcConnection();
 		try {
-			conn.executeUpdate("insert into tree_dataset_score values("+tree_id+",'"+dataset+"',"+score+")");
+			conn.executeUpdate("insert into tree_dataset_score " +
+					"values("+tree_id+",'"+dataset+"',"+percent_correct+","+size+","+novelty+","+score+")");
 		} finally {
 			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
 		}
