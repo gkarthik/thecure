@@ -65,6 +65,38 @@ public class Card {
 
 	}
 
+	
+	public static double getUniqueIdNovelty(List<String> unique_id){
+		double nov = 1;
+		//select count(*) from card where unique_id = 2261 or unique_id = 1717 or unique_id = 9135;
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select count(*) as total from card";
+		String q2 = "select count(*) as n from card where ";
+		for(String uid : unique_id){
+			q2 += " unique_id = "+uid+" or ";
+		}
+		q2 = q2.substring(0,q2.length()-3);
+		double base = 1; double n = 1;
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			if(rslt.next()){
+				base = rslt.getDouble("total");
+			}
+			rslt.close();
+			rslt = conn.executeQuery(q2);
+			if(rslt.next()){
+				n = rslt.getDouble("n");
+			}
+			nov = (1 - Math.log(n)/Math.log(base));
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return nov;
+	}
+	
 	public static List<Card> getAllPlayedCards(String user_id, String dataset){
 		List<Card> cards = new ArrayList<Card>();
 		JdbcConnection conn = new JdbcConnection();
