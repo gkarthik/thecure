@@ -73,6 +73,9 @@ Player player = (Player) session.getAttribute("player");
           <div class="row">
             <div id="boards" class="span7"></div>
             <div id="back" class="span3">
+              <div id="expert">
+              	<p>Well done, you have earned access to the <a href="cured3/assets/">Interactive Tree Builder</a>!</p>
+              </div>
               <jsp:include page="scoreboard_table.jsp" />
             </div>
           </div>

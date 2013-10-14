@@ -80,7 +80,7 @@ public class Weka {
 		}
 		rand = new Random(1);
 		//specify how hands evaluated {cross_validation, test_set, training_set}
-		eval_method = "cross_validation";//"training_set";
+		eval_method = "training_set"; //"cross_validation";//
 		//assumes that feature table has already been loaded
 		//get the features related to this weka dataset
 		if(setFeatures){

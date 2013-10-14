@@ -38,6 +38,7 @@ import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
+import org.scripps.combo.model.Tree;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.JdbcConnection;
@@ -55,6 +56,7 @@ import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.rules.JRip;
+import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -296,25 +298,38 @@ public class MetaServer extends HttpServlet {
 		List<String> unique_ids = new ArrayList<String>();
 		unique_ids = (List<String>)data.get("unique_ids");
 
-		J48 wekamodel = new J48();
-		int nruns_cv = 1;
-		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, wekamodel, board.getDataset(), nruns_cv);
-		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
-		//serialize and return the result
-		JSONObject r = new JSONObject(short_result);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String eval_json = r.toString();
-		String tree_json = "";
+		Classifier model = null;
+		J48 j48 = new J48();
+		int nruns_cv = 10;
+		Weka.execution result = weka.pruneAndExecuteWithUniqueIds(unique_ids, j48, board.getDataset(), nruns_cv);
+		
+		if(j48.measureNumRules()==1){
+//			System.out.println("Did not return a tree");
+			DecisionStump stump = new DecisionStump();
+			result = weka.pruneAndExecuteWithUniqueIds(unique_ids, stump, board.getDataset(), nruns_cv);
+			model = stump;
+		}else{
+			model = j48;
+		}
 		JsonTree jtree = new JsonTree();
+		String tree_json = "";
 		try {		
-			tree_json = jtree.getJsonJ48AllInfo(wekamodel, weka); 
-			//tree_json = jtree.getJsonTreeStringFromGraph(wekamodel, weka); 
+			if(model.getClass().equals(J48.class)){
+				tree_json = jtree.getJsonJ48AllInfo((J48) model, weka); 
+			}else if(model.getClass().equals(DecisionStump.class)){
+				tree_json = jtree.getJsonStumpAllInfo((DecisionStump) model, weka); 
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Died trying to get tree");
 		}
+		ClassifierEvaluation short_result = new ClassifierEvaluation((int)result.eval.pctCorrect(), result.model.getClassifier().toString());
+		JSONObject r = new JSONObject(short_result);
+		String eval_json = r.toString();
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		eval_json = r.toString();
 		String treeoutput = "{\"evaluation\" : "+eval_json+", " +
 		"\"max_depth\":\""+jtree.getMax_depth()+"\"," +
 		"\"num_leaves\":\""+jtree.getNum_leaves()+"\"," +
@@ -323,7 +338,6 @@ public class MetaServer extends HttpServlet {
 		//System.out.println(treeoutput);
 		out.write(treeoutput);
 		out.close();
-
 	}
 	
 	/**
@@ -344,6 +358,7 @@ public class MetaServer extends HttpServlet {
 		//create the weka tree structure
 		JsonTree t = new JsonTree();
 		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
+		List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
 		int numnodes = readtree.numNodes();
 		//evaluate it on the data
 		Evaluation eval = new Evaluation(weka.getTrain());
@@ -353,7 +368,8 @@ public class MetaServer extends HttpServlet {
 		result.put("pct_correct", eval.pctCorrect());
 		result.put("size", numnodes);
 		//TODO replace the random novelty score with a real one driven by the database.
-		result.put("novelty", Math.random());
+		double nov = Card.getUniqueIdNovelty(entrez_ids);
+		result.put("novelty", nov);// Math.random());
 		result.put("text_tree", readtree.toString());
 		//serialize and return the result		
 		JsonNode treenode = readtree.getJsontree();
@@ -362,10 +378,26 @@ public class MetaServer extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String result_json = mapper.writeValueAsString(result);
 
-		//System.out.println(result_json);
+	//	System.out.println(result_json);
 		out.write(result_json);
 		out.close();
 
+		//now store it in the database
+		//TODO only store trees where they have pressed "save"
+		//TODO actually capture the player id and comment
+		String comment = "";
+		int player_id = 0;
+		String ip = request_.getRemoteAddr();
+		List<Feature> features = new ArrayList<Feature>();
+		for(String entrez_id : entrez_ids){
+			Feature f = weka.features.get(entrez_id);
+			features.add(f);
+		}
+		Tree tree = new Tree(0, player_id, ip, features, result_json,comment);
+		int tid = tree.insert();
+		float score = 0;
+		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
+		
 	}
 
 
