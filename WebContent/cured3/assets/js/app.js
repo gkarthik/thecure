@@ -736,7 +736,13 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		});
 		
 		$("body").delegate(".close","click",function(){
-			$(this).parent().parent().parent().hide();
+			if($(this).parent().attr("class")=="alert")
+			{
+				$(this).parent().hide();
+			}
+			else{
+				$(this).parent().parent().parent().hide();
+			}
 		})
 		
 		$(document).mouseup(function(e) {
@@ -1196,6 +1202,14 @@ Cure.render_network = function(dataset) {
 	}
 }
 
+Cure.showAlert = function(message){
+	$("#alertMsg").html(message);
+	$("#alertWrapper").fadeIn();
+	window.setTimeout(function(){
+		$("#alertWrapper").hide();
+	},2000);
+}
+
 //
 // -- App init!
 //    
@@ -1211,6 +1225,33 @@ Cure.addInitializer(function(options) {
 			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
 					+ "Tree'></div><svg id='"
 					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>")
+	$("#save_tree").on("click",function(){
+		var tree;
+		if(Cure.PlayerNodeCollection.models[0])
+		{
+			tree = Cure.PlayerNodeCollection.models[0].toJSON();
+			var args = {
+					command : "scoretree",
+					dataset : "griffith_breast_cancer_1",
+					treestruct : tree,
+					player_id : cure_user_id
+			};
+			$.ajax({
+				type : 'POST',
+				url : '/cure/MetaServer',
+				data : JSON.stringify(args),
+				dataType : 'json',
+				contentType : "application/json; charset=utf-8",
+				success : Cure.showAlert("saved"),
+				error : Cure.showAlert("Error Occured. Please try again in a while.")
+			});
+		}
+		else
+		{
+			tree = [];
+			Cure.showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
+		}
+	});
 	Cure.addRegions({
 		PlayerTreeRegion : options.regions.PlayerTreeRegion + "Tree",
 		ScoreRegion : options.regions.ScoreRegion,
