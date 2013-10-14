@@ -1,3 +1,21 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@ page import="org.scripps.combo.model.Player"%>
+<%@ page import="org.scripps.combo.model.Board"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Map"%>
+<%@ page import="java.util.ArrayList"%>
+<%
+int player_id = 0;
+int player_experience = 0;
+Player player = (Player) session.getAttribute("player");
+  if (player == null) {
+    /* response.sendRedirect("login.jsp"); */
+  } else {
+    player_id = player.getId();
+    player_experience = 0;
+  }
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,7 +36,7 @@
 <script type="text/javascript" src="./js/backbone.js"></script>
 <script type="text/javascript" src="./js/backbone-relational.js"></script>
 <script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
-<script type="text/javascript" src="./js/d3.v3.js" charset="utf-8">></script>
+<script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
 <div class="navbar navbar-fixed-top">
@@ -39,9 +57,15 @@
         </div>
       </div>
 	<div class="container CureContainer">
+	<div class="alert" id="alertWrapper">
+  		<button type="button" class="close">&times;</button>
+  		<strong id="alertMsg"></strong>
+	</div>
 		<div class="row">
 			<div class="span3">
 				<span class="row">
+				<button class="btn btn-primary" id="save_tree">Save</button>
+				<button class="btn btn-primary">Comment</button>
 					<div id="ScoreRegion"></div>
 				</span>
 				<h2>Gene Summary</h2>
@@ -287,6 +311,10 @@
   	</script>
 	<script id="EmptyTemplate" type="text/template">
   	</script>
+  	<script type="text/javascript">
+    var cure_user_experience = "<%=player_experience%>",
+        cure_user_id = "<%=player_id%>";
+  </script>
 	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
 </html>
