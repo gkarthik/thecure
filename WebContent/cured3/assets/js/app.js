@@ -20,7 +20,8 @@ NodeCollection = Backbone.Collection.extend({
 		var args = {
 			command : "scoretree",
 			dataset : "griffith_breast_cancer_1",
-			treestruct : tree
+			treestruct : tree,
+			comment: Cure.Comment.get("content")
 		};
 		//POST request to server.		
 		$.ajax({
@@ -114,6 +115,13 @@ Score = Backbone.RelationalModel.extend({
 	}
 });
 
+Comment = Backbone.RelationalModel.extend({
+	defaults: {
+		content: "",
+		editView: 0
+	}
+});
+
 Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',
@@ -154,6 +162,30 @@ Node = Backbone.RelationalModel.extend({
 //
 // -- Defining our views
 //
+
+CommentView = Backbone.Marionette.ItemView.extend({
+	tagName: 'div',
+	className: 'commentBox',
+	ui: {
+		commentContent: ".commentContent"
+	},
+	template : "#commentTemplate",
+	events: {
+		"click .enter-comment": 'changeView',
+		"click .save-comment": 'saveComment'
+	},
+	initialize : function(){
+		this.model.bind('change', this.render);
+	},
+	changeView: function(){
+		this.model.set("editView",1);
+	},
+	saveComment: function(){
+		this.model.set("content",$(this.ui.commentContent).val());
+		this.model.set("editView",0);
+		Cure.PlayerNodeCollection.sync();
+	}
+});
 
 //HTML Templates for different types of nodes.
 var node_html = $("#nodeTemplate").html();
@@ -1231,10 +1263,11 @@ Cure.addInitializer(function(options) {
 		{
 			tree = Cure.PlayerNodeCollection.models[0].toJSON();
 			var args = {
-					command : "scoretree",
+					command : "savetree",
 					dataset : "griffith_breast_cancer_1",
 					treestruct : tree,
-					player_id : cure_user_id
+					player_id : cure_user_id,
+					comment: Cure.COmment.get("content")
 			};
 			$.ajax({
 				type : 'POST',
@@ -1255,6 +1288,7 @@ Cure.addInitializer(function(options) {
 	Cure.addRegions({
 		PlayerTreeRegion : options.regions.PlayerTreeRegion + "Tree",
 		ScoreRegion : options.regions.ScoreRegion,
+		CommentRegion : options.regions.CommentRegion,
 		JsonRegion : "#json_structure"
 	});
 	Cure.colorScale = d3.scale.category10();
@@ -1269,10 +1303,12 @@ Cure.addInitializer(function(options) {
 			"width", Cure.width).append("svg:g")
 			.attr("transform", "translate(0,100)");
 	Cure.PlayerNodeCollection = new NodeCollection();
+	Cure.Comment = new Comment();
 	Cure.Score = new Score();
 	Cure.ScoreView = new ScoreView({
 		"model" : Cure.Score
 	});
+	Cure.CommentView = new CommentView({model:Cure.Comment});
 	Cure.PlayerNodeCollectionView = new NodeCollectionView({
 		collection : Cure.PlayerNodeCollection
 	});
@@ -1283,6 +1319,7 @@ Cure.addInitializer(function(options) {
 	Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 	Cure.ScoreRegion.show(Cure.ScoreView);
 	Cure.JsonRegion.show(Cure.JSONCollectionView);
+	Cure.CommentRegion.show(Cure.CommentView);
 });
 
 //App Start
@@ -1291,6 +1328,7 @@ Cure.start({
 	"width" : 850,
 	"regions" : {
 		"PlayerTreeRegion" : "#PlayerTreeRegion",
-		"ScoreRegion" : "#ScoreRegion"
+		"ScoreRegion" : "#ScoreRegion",
+		"CommentRegion" : "#CommentRegion"
 	}
 });
