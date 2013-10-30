@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo.weka;
+package org.scripps.combo.evaluation;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,6 +15,7 @@ import org.paukov.combinatorics.combination.simple.SimpleCombinationGenerator;
 import org.scripps.combo.Boardroom;
 import org.scripps.combo.Boardroom.boardview;
 import org.scripps.combo.model.Board;
+import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.execution;
 
 /**

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo;
+package org.scripps.combo.evaluation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,16 +33,15 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.apache.commons.math3.stat.inference.TestUtils;
 import org.scripps.StatUtil;
+import org.scripps.combo.GameLog;
 import org.scripps.combo.GameLog.high_score;
+import org.scripps.combo.evaluation.GeneRanker.gene_rank;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Player.PlayerSet;
-import org.scripps.combo.weka.ClassifierEvaluation;
-import org.scripps.combo.weka.GeneRanker;
 import org.scripps.combo.weka.Weka;
-import org.scripps.combo.weka.GeneRanker.gene_rank;
 import org.scripps.util.GameSim;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MapFun;
@@ -232,47 +231,6 @@ public class Stats {
 
 		//measureGenePredictivePower();
 	}
-
-
-	public static void measureGenePredictivePower(){
-		Set<Integer> genes = readEntrezIdsFromFile("/Users/bgood/workspace/aacure/database/stats/generankings/background_genes.txt",0,0,"\t");
-		String out = "/Users/bgood/workspace/aacure/database/stats/singlegene/all_stump.txt";
-		int skip_first = 0;
-		String indices_keep = "";
-		String dataset = "griffith_breast_cancer_full_train";
-		String train_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/griffith_breast_cancer_2.arff";		
-		String test_file = "/Users/bgood/workspace/aacure/WebContent/WEB-INF/pubdata/griffith/full_test.arff";	
-		Classifier model = new DecisionStump();
-		int ncv = 1; int nsimforp = 1; long seed = 1;
-		Weka weka = new Weka();		
-		System.out.println("loading... "+train_file);
-		boolean setFeatures = false;
-		try {
-			weka.buildWeka(new FileInputStream(train_file), new FileInputStream(test_file), dataset, setFeatures);
-			System.out.println("Weka initialized ");
-			String testname = "test123";
-			System.out.println();
-			FileWriter f = new FileWriter(out);
-			for(Integer gene_id : genes){
-				testname = gene_id+"\t"+Feature.getByUniqueId(gene_id+"").getShort_name();
-				Set<Integer> testgenes = new HashSet<Integer>();
-				testgenes.add(gene_id);
-				classifierTestResult result = computeClassifierEvaluation(skip_first, model, indices_keep, dataset, ncv, nsimforp, seed, 
-						testgenes, weka, testname);
-				//System.out.println(model.toString());
-				System.out.println(testname+"\t"+result.train_acc+"\t"+result.cv_acc+"\t"+result.test_acc);
-				f.write("all\tstump\t"+testname+"\t"+result.train_acc+"\t"+result.cv_acc+"\t"+result.test_acc+"\n");
-			}
-			f.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 
 	/**
 	 * Given a set of genes (derived from a particular rule applied externally), measure the number of games where

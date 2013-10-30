@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;

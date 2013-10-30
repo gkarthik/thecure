@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.openjena.atlas.json.JsonArray;
+import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Attribute;
 import org.scripps.combo.model.Feature;
-import org.scripps.combo.weka.ClassifierEvaluation;
 import org.scripps.combo.weka.Weka;
 import org.scripps.util.HttpUtil;
 

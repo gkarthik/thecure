@@ -22,7 +22,6 @@ import javax.servlet.ServletContext;
 
 
 import org.scripps.combo.model.Feature;
-import org.scripps.combo.weka.CopyOfWeka.card;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.util.Gene;
 
@@ -90,13 +89,19 @@ public class Weka {
 
 
 	public Map<String, Float> getRelief(){
+		ASEvaluation evaluator = new ReliefFAttributeEval();
+		Map<String, Float> index_value = getAttevalScore(evaluator);
+		return index_value;
+	}
+	
+	public Map<String, Float> getAttevalScore(ASEvaluation evaluator){
 		Map<String, Float> index_value = new HashMap<String, Float>();
 		//set the reliefF value for the attribute
 		AttributeSelection as = new AttributeSelection();
 		Ranker ranker = new Ranker();
 		//keep all
 		//	String[] options = {"-T","0.0","-N","-1"};
-		as.setEvaluator(new ReliefFAttributeEval());
+		as.setEvaluator(evaluator);
 		as.setSearch(ranker);
 		try {
 			as.setInputFormat(getTrain());

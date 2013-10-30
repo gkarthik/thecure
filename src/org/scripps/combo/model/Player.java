@@ -25,7 +25,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.scripps.combo.GameLog;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.GameLog.high_score;
-import org.scripps.combo.weka.GeneRanker;
+import org.scripps.combo.evaluation.GeneRanker;
 import org.scripps.util.JdbcConnection;
 
 /**

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo.weka;
+package org.scripps.combo.evaluation;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,7 +27,6 @@ import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.combination.simple.SimpleCombinationGenerator;
 import org.scripps.combo.Boardroom;
 import org.scripps.combo.GameLog;
-import org.scripps.combo.Stats;
 import org.scripps.combo.TimeCounter;
 import org.scripps.combo.Boardroom.boardview;
 import org.scripps.combo.model.Attribute;
@@ -36,6 +35,7 @@ import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
+import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.Weka.metaExecution;
 import org.scripps.combo.weka.viz.JsonTree;

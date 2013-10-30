@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo.weka;
+package org.scripps.combo.evaluation;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

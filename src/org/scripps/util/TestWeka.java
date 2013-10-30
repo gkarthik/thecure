@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.scripps.combo.weka;
+package org.scripps.util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+import org.scripps.combo.evaluation.ClassifierEvaluation;
+import org.scripps.combo.weka.Weka;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 
