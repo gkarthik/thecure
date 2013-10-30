@@ -209,9 +209,9 @@ public class GeneRanker {
 	 * @param only_phd
 	 * @return
 	 */
-	public List<gene_rank> exportGeneRankings(String dataset, String outfile, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd, boolean no_expertise){
+	public List<gene_rank> exportGeneRankings(String dataset, String outfile, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 		Map<String, gene_rank> gid_ranked = null;
-		gid_ranked = getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd, no_expertise);
+		gid_ranked = getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 		gid_ranked = addReliefToGeneRanking(gid_ranked);
 		gid_ranked = scaleRelief(gid_ranked);
 		List<gene_rank> gr = new ArrayList<gene_rank>(gid_ranked.values());
@@ -234,8 +234,7 @@ public class GeneRanker {
 		boolean only_cancer_people = false;
 		boolean only_bio_people = true;
 		boolean only_phd = false;
-		boolean no_expertise = false;
-		gid_ranked = getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd, no_expertise);
+		gid_ranked = getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 		gid_ranked = addReliefToGeneRanking(gid_ranked);
 		gid_ranked = scaleRelief(gid_ranked);
 		List<gene_rank> gr = new ArrayList<gene_rank>(gid_ranked.values());
@@ -309,7 +308,7 @@ public class GeneRanker {
 		}
 		return ranked;
 	}
-
+	
 	public List<gene_rank> setEstimatedPvalue(List<gene_rank> ranked, long seed){
 		for(gene_rank gene : ranked){
 			if(gene.views==0){
@@ -320,7 +319,7 @@ public class GeneRanker {
 		}
 		return ranked;
 	}
-
+	
 	public List<gene_rank> sortByFrequency(List<gene_rank> ranked){
 		//sort in descending order of the addition of selection frequency
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
@@ -333,7 +332,7 @@ public class GeneRanker {
 		Collections.sort(ranked, MergeOrder);
 		return ranked;
 	}
-
+	
 	public List<gene_rank> sortByP(List<gene_rank> ranked){
 		//sort in descending order of significance
 		Comparator<gene_rank> MergeOrder =  new Comparator<gene_rank>() {
@@ -407,7 +406,7 @@ public class GeneRanker {
 		public double gene_centric_p;
 		List<Integer> board_id;
 		public float mean_selection_order; // within each 5 card game, is it selected first (5), second (4), ...or 0 //average across all games considered  
-
+		
 		@Override
 		public int compareTo(gene_rank arg0) {
 			gene_rank compareto = (gene_rank)arg0;
@@ -526,16 +525,16 @@ public class GeneRanker {
 	 * @param only_phd
 	 * @return
 	 */
-	public Map<String, gene_rank> getRankedGenes(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd, boolean no_expertise){
+	public Map<String, gene_rank> getRankedGenes(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 
 		List<Game> hands = new ArrayList<Game>();
 		//get rid of the mammal hands
-		for(Game hand : getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd, no_expertise)){
+		for(Game hand : getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd)){
 			if(hand.getBoard_id()<201||hand.getBoard_id()>204){
 				hands.add(hand);
 			}
 		}
-
+		
 		//this will be the output
 		Map<String, gene_rank> gene_ranked = new HashMap<String, gene_rank>();
 
@@ -546,7 +545,7 @@ public class GeneRanker {
 		for(Board board : boards){
 			id_board.put(board.getId(), board);
 		}
-
+		
 		//count the votes
 		int c = 0;
 		for(Game hand : hands){
@@ -594,7 +593,7 @@ public class GeneRanker {
 	 * @param only_phd
 	 * @return
 	 */
-	public List<Game> getFilteredGameList(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd, boolean no_expertise){
+	public List<Game> getFilteredGameList(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 
 		//get the hands		
 		List<Game> hands = new ArrayList<Game>();
@@ -605,55 +604,40 @@ public class GeneRanker {
 		List<Player> playerss = Player.getAllPlayers();
 		Map<Integer, Player> name_player = Player.playerListToIdMap(playerss);
 
-		if(no_expertise){
+		if(only_cancer_people){
 			//filter hands by player attributes	
 			for(Game hand : handsall){
 				Player theplayer = name_player.get(hand.getPlayer1_id());
-				if(theplayer!=null&&
-						(!theplayer.getCancer().equals("yes"))&&
-						(!theplayer.getBiologist().equals("yes"))&&
-						(!(theplayer.getDegree().equals("phd")||theplayer.getDegree().equals("md")))){ 
+				if(theplayer!=null&&theplayer.getCancer().equals("yes")){ //player_cardsboard.get(theplayer.getName())<13
 					hands.add(hand);
 				}
 			}
 			handsall = hands;
-		}else{
-			if(only_cancer_people){
-				//filter hands by player attributes	
-				for(Game hand : handsall){
-					Player theplayer = name_player.get(hand.getPlayer1_id());
-					if(theplayer!=null&&theplayer.getCancer().equals("yes")){ //player_cardsboard.get(theplayer.getName())<13
-						hands.add(hand);
-					}
-				}
-				handsall = hands;
-			}
-			if(only_bio_people){
-				hands = new ArrayList<Game>();
-				for(Game hand : handsall){
-					Player theplayer = name_player.get(hand.getPlayer1_id());
-					if(theplayer!=null&&theplayer.getBiologist().equals("yes")){ //player_cardsboard.get(theplayer.getName())<13
-						hands.add(hand);
-					}
-				}
-				handsall = hands;
-			}
-			if(only_phd){
-				hands = new ArrayList<Game>();
-				for(Game hand : handsall){
-					Player theplayer = name_player.get(hand.getPlayer1_id());
-					if(theplayer!=null&&(theplayer.getDegree().equals("phd")||theplayer.getDegree().equals("md"))){ //player_cardsboard.get(theplayer.getName())<13
-						hands.add(hand);
-					}
-				}
-				handsall = hands;
-			}
-
-			if(!only_cancer_people&&!only_bio_people&&!only_phd){
-				hands = handsall;
-			}
 		}
-		System.out.println(hands.size()+" hands used");
+		if(only_bio_people){
+			hands = new ArrayList<Game>();
+			for(Game hand : handsall){
+				Player theplayer = name_player.get(hand.getPlayer1_id());
+				if(theplayer!=null&&theplayer.getBiologist().equals("yes")){ //player_cardsboard.get(theplayer.getName())<13
+					hands.add(hand);
+				}
+			}
+			handsall = hands;
+		}
+		if(only_phd){
+			hands = new ArrayList<Game>();
+			for(Game hand : handsall){
+				Player theplayer = name_player.get(hand.getPlayer1_id());
+				if(theplayer!=null&&(theplayer.getDegree().equals("phd")||theplayer.getDegree().equals("md"))){ //player_cardsboard.get(theplayer.getName())<13
+					hands.add(hand);
+				}
+			}
+			handsall = hands;
+		}
+
+		if(!only_cancer_people&&!only_bio_people&&!only_phd){
+			hands = handsall;
+		}
 		return hands;
 	}
 
@@ -668,9 +652,9 @@ public class GeneRanker {
 	 * @param only_phd
 	 * @return
 	 */
-	public float testHGF(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd, boolean no_expertise){
+	public float testHGF(String dataset, boolean only_winning, boolean only_cancer_people, boolean only_bio_people, boolean only_phd){
 		float cv = 0;
-		List<Game> hands = getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd, no_expertise);
+		List<Game> hands = getFilteredGameList(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
 		List<List<String>> id_sets = new ArrayList<List<String>>();
 		for(Game hand : hands){
 			List<String> entrez = new ArrayList<String>();
@@ -722,8 +706,8 @@ public class GeneRanker {
 		return cv;
 	}
 
-
-
+	
+	
 	/**
 	 * Get an id what random sampling would look like
 	 * @param n_genes

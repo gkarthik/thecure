@@ -236,6 +236,7 @@ public class Tree {
 		return newid;
 	}
 
+	//TODO add flag to indicate whether tree was saved purposefully by the user or captured autoamtically as part of the scoring process.
 	public void insertScore(int tree_id, String dataset, float percent_correct, float size, float novelty, float score) throws Exception{
 		JdbcConnection conn = new JdbcConnection();
 		try {

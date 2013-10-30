@@ -142,7 +142,7 @@ public class GameLog {
 	public class high_score{
 		Map<Calendar, Integer> date_games;
 		Map<String, Integer> player_global_points;
-		Map<String, Integer> player_games;
+		public Map<String, Integer> player_games;
 		Map<String, Integer> player_max;
 		Map<String, Float> player_avg;
 		Map<String, Float> player_avg_win;
