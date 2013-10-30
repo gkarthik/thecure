@@ -64,8 +64,9 @@ Player player = (Player) session.getAttribute("player");
 		<div class="row">
 			<div class="span3">
 				<span class="row">
-				<button class="btn btn-primary" id="save_tree">Save</button>
-				<button class="btn btn-primary">Comment</button>
+				<button class="btn btn-primary" id="save_tree">Save Tree</button>
+				<hr>
+				<div id="CommentRegion"></div>
 					<div id="ScoreRegion"></div>
 				</span>
 				<h2>Gene Summary</h2>
@@ -79,6 +80,19 @@ Player player = (Player) session.getAttribute("player");
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="commentTemplate">
+	<@ if(editView == 0) { @>
+		<@ if(content == "") { @>
+		<button class="btn btn-primary enter-comment">Enter Comment</button>
+		<@ } else { @>
+		<p><@= content @></p>
+		<button class="btn btn-primary enter-comment">Change Comment</button>
+		<@ } @>
+	<@ } else if(editView == 1){@>
+		<textarea class="commentContent"><@= content @></textarea>
+		<button class="btn btn-link save-comment">Save</button>
+	<@ } @>
+	</script>
 	<script type="text/template" id="AddRootNode">
 		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
   		<div id="mygene_addnode">
