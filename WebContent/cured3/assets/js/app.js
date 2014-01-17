@@ -1033,7 +1033,8 @@ Cure.render_network = function(dataset) {
 	var SVG;
 	if (dataset) {
 		SVG = Cure.PlayerSvg;
-		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);		
+		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
+		//console.log(links);
 		var maxDepth = 0;
 		nodes.forEach(function(d) {
 			d.y = d.depth * 80;
@@ -1192,7 +1193,13 @@ Cure.render_network = function(dataset) {
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).remove();
-
+		
+		var node = Cure.PlayerNodeCollection.models[0];
+		Cure.PlayerSvg.selectAll(".link").remove();
+		countEdge = 0;
+		Cure.drawEdges(node,binY,0); 
+		
+		/*
 		var link = SVG.selectAll(".link").data(links);
 		var linkGroup = link.enter().append("g").attr("class","linkGroup");
 		
@@ -1251,6 +1258,7 @@ Cure.render_network = function(dataset) {
 				target : o
 			});
 		}).remove();
+		*/
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
 			d.y0 = d.y;
@@ -1265,18 +1273,31 @@ Cure.showAlert = function(message){
 		$("#alertWrapper").hide();
 	},2000);
 }
-
-Cure.countEdges = function(node,iterationNumber){
-	if(node.options.kind == "leaf_node"){
-		iterationNumber++;
-	}
-	var count = 0;
-	if(node.children){
-		for(var temp in node.children){
-			count += Cure.countEdges(node.children[temp],iterationNumber);
+var countEdge=0;
+Cure.drawEdges = function(node,binY,count){
+	//console.log(node.get('children'));
+	if(node.get('children').models.length == 0){
+		countEdge++;
+		console.log(countEdge);
+		var links = [];
+		var tempNode = node;
+		var bin_size = binY(node.get('options').bin_size);
+		while(tempNode.get('parentNode')!=null){
+			links.push({"source":tempNode.get('parentNode').toJSON(),"target":tempNode.toJSON()});
+			tempNode = tempNode.get('parentNode');
+		}
+		for(var temp in links){
+			Cure.PlayerSvg.append("path").attr("class", "link").attr("transform","translate("+parseInt((countEdge-1)*10)+",0)").attr("d",function(){
+				return Cure.diagonal({
+					source : links[temp].source,
+					target : links[temp].target
+				});
+		}).style("stroke-width", 10).style("stroke",Cure.colorScale(countEdge));
 		}
 	}
-	return iterationNumber+count;
+	for(var temp in node.get('children').models){
+		Cure.drawEdges(node.get('children').models[temp],binY,count);
+	}
 }
 
 //
