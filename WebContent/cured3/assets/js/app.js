@@ -96,6 +96,9 @@ NodeCollection = Backbone.Collection.extend({
 		//Storing Score in a Score Model.
 		var scoreArray = data;
 		scoreArray.treestruct = null;
+		if(scoreArray.novelty == "Infinity"){
+			scoreArray.novelty = 0;
+		}
 		Cure.Score.set(scoreArray);
 	},
 	error : function(data) {
@@ -1030,7 +1033,7 @@ Cure.render_network = function(dataset) {
 	var SVG;
 	if (dataset) {
 		SVG = Cure.PlayerSvg;
-		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
+		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);		
 		var maxDepth = 0;
 		nodes.forEach(function(d) {
 			d.y = d.depth * 80;
@@ -1191,8 +1194,26 @@ Cure.render_network = function(dataset) {
 				}).remove();
 
 		var link = SVG.selectAll(".link").data(links);
-		link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
+		var linkGroup = link.enter().append("g").attr("class","linkGroup");
+		
+		linkGroup.insert("svg:path").attr("class", "link").attr("d",
 				function(d) {
+			var numberEdges = Cure.countEdges(d.target,0);
+			console.log(d.target.name+" "+numberEdges);
+			for(i=0;i<numberEdges-1;i++)
+			{
+				this.append("svg:path").attr("class", "link2").attr("transform","translate(10,0)").attr("d",
+						function(d) {
+					var o = {
+						x : dataset.x0,
+						y : dataset.y0
+					};
+					return Cure.diagonal({
+						source : o,
+						target : o
+					});
+				}).style("stroke-width", 1).style("stroke","black");
+			}
 					var o = {
 						x : dataset.x0,
 						y : dataset.y0
@@ -1202,6 +1223,8 @@ Cure.render_network = function(dataset) {
 						target : o
 					});
 				}).style("stroke-width", 1);
+		
+		
 		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style(
 				"stroke-width", function(d) {
 					var strokewidth = 1;
@@ -1212,6 +1235,7 @@ Cure.render_network = function(dataset) {
 							strokewidth = binY(d.target.children[0].options.bin_size);
 						}
 					}
+					
 					if (strokewidth < 1) {
 						strokewidth = 1;
 					}
@@ -1240,6 +1264,19 @@ Cure.showAlert = function(message){
 	window.setTimeout(function(){
 		$("#alertWrapper").hide();
 	},2000);
+}
+
+Cure.countEdges = function(node,iterationNumber){
+	if(node.options.kind == "leaf_node"){
+		iterationNumber++;
+	}
+	var count = 0;
+	if(node.children){
+		for(var temp in node.children){
+			count += Cure.countEdges(node.children[temp],iterationNumber);
+		}
+	}
+	return iterationNumber+count;
 }
 
 //
@@ -1292,6 +1329,7 @@ Cure.addInitializer(function(options) {
 		JsonRegion : "#json_structure"
 	});
 	Cure.colorScale = d3.scale.category10();
+	Cure.edgeColor = d3.scale.category10();
 	Cure.width = options["width"];
 	Cure.height = options["height"];
 	Cure.duration = 500;
