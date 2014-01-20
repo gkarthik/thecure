@@ -1,11 +1,7 @@
+glob:.hgignore
+glob:.classpath
+glob:.project
 glob:build/*
 glob:src/props/*
+glob:.settings/*
 
-syntax: regexp
-^src/props$
-syntax: regexp
-^src/props$
-syntax: regexp
-^WebContent/WEB-INF/data/dream$
-syntax: regexp
-^database$
