@@ -3,5 +3,6 @@ glob:.classpath
 glob:.project
 glob:build/*
 glob:src/props/*
+glob:database/*
 glob:.settings/*
 
