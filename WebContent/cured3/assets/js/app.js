@@ -1196,7 +1196,8 @@ Cure.render_network = function(dataset) {
 		
 		var node = Cure.PlayerNodeCollection.models[0];
 		Cure.PlayerSvg.selectAll(".link").remove();
-		countEdge = 0;
+		edgeCount = 0;
+		translateLeft = 0;
 		Cure.drawEdges(node,binY,0); 
 		
 		/*
@@ -1273,12 +1274,12 @@ Cure.showAlert = function(message){
 		$("#alertWrapper").hide();
 	},2000);
 }
-var countEdge=0;
+var translateLeft=0;
+var edgeCount=0;
 Cure.drawEdges = function(node,binY,count){
-	//console.log(node.get('children'));
 	if(node.get('children').models.length == 0){
-		countEdge++;
-		console.log(countEdge);
+		translateLeft += binY(node.get('options').bin_size);
+		edgeCount++;
 		var links = [];
 		var tempNode = node;
 		var bin_size = binY(node.get('options').bin_size);
@@ -1287,16 +1288,17 @@ Cure.drawEdges = function(node,binY,count){
 			tempNode = tempNode.get('parentNode');
 		}
 		for(var temp in links){
-			Cure.PlayerSvg.append("path").attr("class", "link").attr("transform","translate("+parseInt((countEdge-1)*10)+",0)").attr("d",function(){
+			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
 				return Cure.diagonal({
 					source : links[temp].source,
 					target : links[temp].target
 				});
-		}).style("stroke-width", 10).style("stroke",Cure.colorScale(countEdge));
+		}).style("stroke-width", binY(node.get('options').bin_size)).style("stroke",Cure.colorScale(edgeCount));
 		}
 	}
-	for(var temp in node.get('children').models){
-		Cure.drawEdges(node.get('children').models[temp],binY,count);
+	var i = 0;
+	for(i = node.get('children').models.length;i>0;i--){
+		Cure.drawEdges(node.get('children').models[i-1],binY,count);
 	}
 }
 
