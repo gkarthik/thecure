@@ -1199,67 +1199,6 @@ Cure.render_network = function(dataset) {
 		edgeCount = 0;
 		translateLeft = 0;
 		Cure.drawEdges(node,binY,0); 
-		
-		/*
-		var link = SVG.selectAll(".link").data(links);
-		var linkGroup = link.enter().append("g").attr("class","linkGroup");
-		
-		linkGroup.insert("svg:path").attr("class", "link").attr("d",
-				function(d) {
-			var numberEdges = Cure.countEdges(d.target,0);
-			console.log(d.target.name+" "+numberEdges);
-			for(i=0;i<numberEdges-1;i++)
-			{
-				this.append("svg:path").attr("class", "link2").attr("transform","translate(10,0)").attr("d",
-						function(d) {
-					var o = {
-						x : dataset.x0,
-						y : dataset.y0
-					};
-					return Cure.diagonal({
-						source : o,
-						target : o
-					});
-				}).style("stroke-width", 1).style("stroke","black");
-			}
-					var o = {
-						x : dataset.x0,
-						y : dataset.y0
-					};
-					return Cure.diagonal({
-						source : o,
-						target : o
-					});
-				}).style("stroke-width", 1);
-		
-		
-		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style(
-				"stroke-width", function(d) {
-					var strokewidth = 1;
-					if (d.target.options.kind != "split_value") {
-						strokewidth = binY(d.target.options.bin_size);
-					} else {
-						if (d.target.children[0]) {
-							strokewidth = binY(d.target.children[0].options.bin_size);
-						}
-					}
-					
-					if (strokewidth < 1) {
-						strokewidth = 1;
-					}
-					return strokewidth;
-				});
-		link.exit().transition().duration(Cure.duration).attr("d", function(d) {
-			var o = {
-				x : dataset.x,
-				y : dataset.y
-			};
-			return Cure.diagonal({
-				source : o,
-				target : o
-			});
-		}).remove();
-		*/
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
 			d.y0 = d.y;
@@ -1293,7 +1232,7 @@ Cure.drawEdges = function(node,binY,count){
 					source : links[temp].source,
 					target : links[temp].target
 				});
-		}).style("stroke-width", binY(node.get('options').bin_size)).style("stroke",Cure.colorScale(edgeCount));
+		}).style("stroke-width", binY(node.get('options').bin_size)).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
 		}
 	}
 	var i = 0;
@@ -1352,7 +1291,7 @@ Cure.addInitializer(function(options) {
 		JsonRegion : "#json_structure"
 	});
 	Cure.colorScale = d3.scale.category10();
-	Cure.edgeColor = d3.scale.category10();
+	Cure.edgeColor = d3.scale.category20();
 	Cure.width = options["width"];
 	Cure.height = options["height"];
 	Cure.duration = 500;
