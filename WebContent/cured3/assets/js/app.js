@@ -208,6 +208,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if (serialized_model.options.kind == "split_value") {
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
+				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
@@ -217,6 +218,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				&& serialized_model.options.kind == "split_node") {
 			return _.template(splitnode_html, {
 				name : serialized_model.name,
+				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
@@ -225,6 +227,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		}
 		return _.template(node_html, {
 			name : serialized_model.name,
+			highlight : serialized_model.highlight,
 			options : serialized_model.options,
 			cid : serialized_model.cid
 		}, {
@@ -234,20 +237,17 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
-		'click .name' : 'showSummary'
+		'click .name' : 'showSummary',
+		'blur .name': 'setHighlight'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
 		this.model.bind('change', this.render);
 		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
-		this.model.on('change:highlight', function() {
-			if (this.model.get('highlight') != 0) {
-				this.$el.addClass('highlight');
-			} else {
-				this.$el.removeClass('highlight');
-			}
-		}, this);
+	},
+	setHighlight: function(){
+		this.model.set('highlight',0);
 	},
 	showSummary : function() {
 		//showJSON is used to render the Gene Info POP Up.
@@ -1077,10 +1077,21 @@ Cure.render_network = function(dataset) {
 				.attr(
 				"transform", function(d) {
 					return "translate(" + d.x + "," + d.y + ")";
+				}).on("click",function(d){
+					var content = "";
+					if(d.options.pct_correct){
+						content+="<span class='text-info'><b>Accuracy[<a>?</a>]</a></span>: "+d.options.pct_correct+"<br />";
+					} else if(d.options.infogain){
+						content+="<span class='text-info'><b>Info Gain[<a>?</a>]</a></span>: "+d.options.infogain+"<br />";
+					}
+					
+					if(d.options.bin_size){
+						content+="<span class='text-info'><b>Bin Size[<a>?</a>]</a></span>: "+d.options.bin_size+"<br />";
+					}
+					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				});
 		
 		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
-			console.log(d.options.kind);
 			if(d.options.kind!="split_value"){
 				return "100";
 			}
@@ -1203,6 +1214,17 @@ Cure.showAlert = function(message){
 		$("#alertWrapper").hide();
 	},2000);
 }
+
+Cure.showDetailsOfNode = function(content, top, left){
+	top = top + 40;
+	left = left + (window.innerWidth-1170)/2;
+	$("#NodeDetailsWrapper").css({
+		"top": top,
+		"left": left,
+		"display": "block"
+	});
+	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
+}
 var translateLeft=0;
 var edgeCount=0;
 Cure.drawEdges = function(node,binY,count){
@@ -1222,14 +1244,19 @@ Cure.drawEdges = function(node,binY,count){
 					links[temp].source.y+=14;
 				}
 				if(links[temp].target.options.kind!="split_value"){
-					console.log(links[temp].target);
 					links[temp].target.y=links[temp].target.y-42;
 				}
 				return Cure.diagonal({
 					source : links[temp].source,
 					target : links[temp].target
 				});
-		}).style("stroke-width", binY(node.get('options').bin_size)).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
+		}).style("stroke-width", function(){
+			var edgeWidth = binY(node.get('options').bin_size);
+			if(edgeWidth<1){
+				edgeWidth = 1;
+			} 
+			return edgeWidth;
+		}).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
 		}
 	}
 	var i = 0;

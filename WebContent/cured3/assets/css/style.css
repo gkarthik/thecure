@@ -268,3 +268,25 @@ body div.navbar-inner div.container div.nav-collapse ul.nav li a{
 body div.navbar-inner div.container a.brand{
 	color: #FFF;
 }
+
+.MetaDataNode{
+	cursor:pointer;
+}
+
+#NodeDetailsWrapper{
+	z-index: 4;
+	position: fixed;
+	margin-top: 40px;
+	top: 0px;
+	min-width: 200px;
+	padding: 21px;
+	background: #FFF;
+	display: none;
+	border: 1px solid lightblue;
+	border-radius: 10px;
+	box-shadow: 0px 0px 10px 0px lightblue;
+}
+
+#NodeDetailsWrapper .close{
+	margin-top:-15px;
+}

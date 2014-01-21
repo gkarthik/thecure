@@ -39,6 +39,10 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
+<div id="NodeDetailsWrapper">
+	<div id="NodeDetailsContent"></div>
+</div>
+
 <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
           <div class="container">
