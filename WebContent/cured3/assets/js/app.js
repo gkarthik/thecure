@@ -257,9 +257,15 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
+		var width = $(this.el).width();
+		
+		if(width<=100 && this.model.get('options').kind!="split_value"){
+			width = 100;;
+		}
+		
 		$(this.el).stop(false, false).animate(
 				{
-					'margin-left' : (this.model.get('x') - (($(this.el).width()) / 2))
+					'margin-left' : (this.model.get('x') - ((width) / 2))
 							+ "px",
 					'margin-top' : (this.model.get('y') + 70) + "px"
 				});
@@ -1012,12 +1018,17 @@ Cure.delete_all_children = function(seednode) {
 //
 Cure.render_network = function(dataset) {
 	var scaleY = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
+	var infoY = d3.scale.log().domain([ 0.00001, 1 ]).rangeRound([ 0, 100 ]);
 
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
 				.rangeRound([ 0, 40 ]);
+		var binsizeY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
+				.rangeRound([ 0, 100 ]);
 	} else {
-		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 50 ]);
+		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 40 ]);
+		var binsizeY = d3.scale.linear().domain([ 0, 100 ])
+			.rangeRound([ 0, 100 ]);
 		dataset = [ {
 			'name' : '',
 			'cid' : 0,
@@ -1034,7 +1045,6 @@ Cure.render_network = function(dataset) {
 	if (dataset) {
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-		//console.log(links);
 		var maxDepth = 0;
 		nodes.forEach(function(d) {
 			d.y = d.depth * 80;
@@ -1051,35 +1061,46 @@ Cure.render_network = function(dataset) {
 			marginTop = 0;
 		}
 		$("#footer").css("margin-top",marginTop);
+		
+		//Drawing Edges
+		var node = Cure.PlayerNodeCollection.models[0];
+		Cure.PlayerSvg.selectAll(".link").remove();
+		edgeCount = 0;
+		translateLeft = 0;
+		if(node){
+			Cure.drawEdges(node,binY,0);
+		}
 
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
 		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode")
-				.attr("transform", function(d) {
-					return "translate(" + dataset.x + "," + dataset.y + ")";
+				.attr(
+				"transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")";
 				});
-		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("width", 10)
-				.attr("height", function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
-					}
-					return height;
-				}).attr("x", 90).attr("y", function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
-					}
-					return -1 * height;
-				}).style("fill", function(d) {
-					return "lightsteelblue";
-				});
+		
+		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
+			console.log(d.options.kind);
+			if(d.options.kind!="split_value"){
+				return "100";
+			}
+		}).attr("height", 10).style("fill", function(d) {
+			return "white";
+		}).attr("stroke","#000").attr("stroke-width","1");
+		
+		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("transform","translate(-50,-40)").attr("width", 0).attr("height", 8).style("fill", function(d) {
+			if (d.options.pct_correct) {
+				return "red";
+			} else if (d.options.infogain) {
+				return "green";
+			}
+		});
+		
+		/*
+		 * Accuracy Text
+		 * 
 		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
-				"transform", "translate(80, 0) rotate(-90)").style("font-size", "13")
+				"transform", "translate(-20, 0)").style("font-size", "13")
 				.style("fill", function(d) {
 					return "lightsteelblue";
 				}).text(function(d) {
@@ -1091,26 +1112,25 @@ Cure.render_network = function(dataset) {
 					}
 					return text.substring(0, 15);
 				});
+		*/
+		
 		// Bin Size
-		nodeEnter.append("rect").attr("class", "binsize").attr("width", 10).attr(
-				"height", function(d) {
-					var height = 0;
-					if (d.options.bin_size) {
-						height = binY(d.options.bin_size);
-					}
-					return height;
-				}).attr("x", 130).attr("y", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
+		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,2)").attr("width",function(d){
+			if(d.options.kind!="split_value"){
+				return "100";
 			}
-			return -1 * height;
-		}).style("fill", function(d) {
+		}).attr("height", 10).style("fill", function(d) {
+			return "white";
+		}).attr("stroke","#000").attr("stroke-width","1");
+		
+		nodeEnter.append("rect").attr("class", "binsize").attr("transform","translate(-50,3)").attr("width", 0).attr(
+				"height", 8).style("fill", function(d) {
 			return "lightsteelblue";
 		});
 
+		/*
 		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
-				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
+				"translate(10, 0)").style("font-size", "13").style("fill",
 				function(d) {
 					return "lightsteelblue";
 				}).text(function(d) {
@@ -1120,35 +1140,35 @@ Cure.render_network = function(dataset) {
 			}
 			return text.substring(0, 15);
 		});
-
+		*/
+		
 		var nodeUpdate = node.transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + d.x + "," + d.y + ")";
 				});
-
-		nodeUpdate.select(".nodeaccuracy").attr("width", 10).attr("height",
-				function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
-					}
-					return height;
-				}).attr("x", 90).attr("y", function(d) {
+		
+		//Update Accuracy Nodes
+		
+		nodeUpdate.select(".nodeaccuracy").transition().duration(Cure.duration).attr("width", function(d) {
 			var height = 0;
 			if (d.options.pct_correct) {
 				height = scaleY(d.options.pct_correct);
 			} else if (d.options.infogain) {
-				height = scaleY(d.options.infogain);
+				height = infoY(d.options.infogain);
 			}
-			return -1 * height;
+			return height;
 		}).style("fill", function(d) {
-			return "lightsteelblue";
+			if (d.options.pct_correct) {
+				return "red";
+			} else if (d.options.infogain) {
+				return "green";
+			}
 		});
 
+		/*
+		 * Accuracy Text Update
 		nodeUpdate.select(".nodeaccuracytext").attr("transform",
-				"translate(80, 0) rotate(-90)").style("font-size", "13").style("fill",
+				"translate(-20, 0)").style("font-size", "13").style("fill",
 				function(d) {
 					return "lightsteelblue";
 				}).text(function(d) {
@@ -1160,33 +1180,16 @@ Cure.render_network = function(dataset) {
 			}
 			return text.substring(0, 15);
 		});
+		
+		*/
+		
 		// Bin Size
-		nodeUpdate.select(".binsize").attr("width", 10).attr("height", function(d) {
+		nodeUpdate.select(".binsize").transition().duration(Cure.duration).attr("width", function(d) {
 			var height = 0;
 			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
+				height = binsizeY(d.options.bin_size);
 			}
 			return height;
-		}).attr("x", 130).attr("y", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
-			}
-			return -1 * height;
-		}).style("fill", function(d) {
-			return "lightsteelblue";
-		});
-
-		nodeUpdate.select(".binsizetext").attr("transform",
-				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
-				function(d) {
-					return "lightsteelblue";
-				}).text(function(d) {
-			var text = "";
-			if (d.options.bin_size) {
-				text = "Bin size: " + d.options.bin_size;
-			}
-			return text.substring(0, 15);
 		});
 
 		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
@@ -1194,11 +1197,6 @@ Cure.render_network = function(dataset) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).remove();
 		
-		var node = Cure.PlayerNodeCollection.models[0];
-		Cure.PlayerSvg.selectAll(".link").remove();
-		edgeCount = 0;
-		translateLeft = 0;
-		Cure.drawEdges(node,binY,0); 
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
 			d.y0 = d.y;
@@ -1228,6 +1226,13 @@ Cure.drawEdges = function(node,binY,count){
 		}
 		for(var temp in links){
 			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
+				if(links[temp].source.options.kind!="split_value"){
+					links[temp].source.y+=11;
+				}
+				if(links[temp].target.options.kind!="split_value"){
+					console.log(links[temp].target);
+					links[temp].target.y=links[temp].target.y-42;
+				}
 				return Cure.diagonal({
 					source : links[temp].source,
 					target : links[temp].target

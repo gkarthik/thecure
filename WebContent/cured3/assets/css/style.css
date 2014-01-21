@@ -55,8 +55,11 @@ input.edit{
 }
 
 .node {
-  z-index:3;
-  position: absolute;
+  	z-index: 3;
+	position: absolute;
+	min-width: 95px;
+	min-height: 23px;
+	border: 0px;
 }
 
 .node .btn{
@@ -79,13 +82,14 @@ input.edit{
 .split_value{
 	border: 0px;
 	background: none;
-	color:red;
+	color:palered;
 	padding:0px;
 	padding-top: 7px;
 	text-align:center;
 	font-weight:bold;
 	border-radius:2px;
-	font-size:22px;
+	font-size:20px;
+	min-width:0px;
 }
 
 .leaf_node{
