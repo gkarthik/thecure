@@ -1022,11 +1022,11 @@ Cure.render_network = function(dataset) {
 
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
-				.rangeRound([ 0, 40 ]);
+				.rangeRound([ 0, 30 ]);
 		var binsizeY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
 				.rangeRound([ 0, 100 ]);
 	} else {
-		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 40 ]);
+		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 30 ]);
 		var binsizeY = d3.scale.linear().domain([ 0, 100 ])
 			.rangeRound([ 0, 100 ]);
 		dataset = [ {
@@ -1096,23 +1096,21 @@ Cure.render_network = function(dataset) {
 			}
 		});
 		
-		/*
-		 * Accuracy Text
-		 * 
+		//Accuracy Text
+		
 		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
-				"transform", "translate(-20, 0)").style("font-size", "13")
+				"transform", "translate(-50, -49)").style("font-size", "10")
 				.style("fill", function(d) {
-					return "lightsteelblue";
+					return "black";
 				}).text(function(d) {
 					var text = "";
 					if (d.options.pct_correct) {
-						text = "Accuracy: " + d.options.pct_correct;
+						text = "Accuracy";
 					} else if (d.options.infogain) {
-						text = "Info Gain" + d.options.infogain;
+						text = "Info Gain";
 					}
-					return text.substring(0, 15);
+					return text;
 				});
-		*/
 		
 		// Bin Size
 		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,2)").attr("width",function(d){
@@ -1125,22 +1123,22 @@ Cure.render_network = function(dataset) {
 		
 		nodeEnter.append("rect").attr("class", "binsize").attr("transform","translate(-50,3)").attr("width", 0).attr(
 				"height", 8).style("fill", function(d) {
-			return "lightsteelblue";
+			return "blue";
 		});
 
-		/*
+		//Bin Size Text 
 		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
-				"translate(10, 0)").style("font-size", "13").style("fill",
+				"translate(-50, 22)").style("font-size", "10").style("fill",
 				function(d) {
-					return "lightsteelblue";
+					return "black";
 				}).text(function(d) {
 			var text = "";
 			if (d.options.bin_size) {
-				text = "Bin size: " + d.options.bin_size;
+				text = "Bin size";
 			}
-			return text.substring(0, 15);
+			return text;
 		});
-		*/
+
 		
 		var nodeUpdate = node.transition().duration(Cure.duration).attr(
 				"transform", function(d) {
@@ -1165,23 +1163,17 @@ Cure.render_network = function(dataset) {
 			}
 		});
 
-		/*
-		 * Accuracy Text Update
-		nodeUpdate.select(".nodeaccuracytext").attr("transform",
-				"translate(-20, 0)").style("font-size", "13").style("fill",
-				function(d) {
-					return "lightsteelblue";
-				}).text(function(d) {
+		//Update Accuracy Text
+		nodeUpdate.select(".nodeaccuracytext").text(function(d) {
 			var text = "";
 			if (d.options.pct_correct) {
-				text = "Accuracy: " + d.options.pct_correct;
+				text = "Accuracy";
 			} else if (d.options.infogain) {
-				text = "Info Gain" + d.options.infogain;
+				text = "Info Gain";
 			}
-			return text.substring(0, 15);
+			return text;
 		});
 		
-		*/
 		
 		// Bin Size
 		nodeUpdate.select(".binsize").transition().duration(Cure.duration).attr("width", function(d) {
@@ -1227,7 +1219,7 @@ Cure.drawEdges = function(node,binY,count){
 		for(var temp in links){
 			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
 				if(links[temp].source.options.kind!="split_value"){
-					links[temp].source.y+=11;
+					links[temp].source.y+=14;
 				}
 				if(links[temp].target.options.kind!="split_value"){
 					console.log(links[temp].target);
