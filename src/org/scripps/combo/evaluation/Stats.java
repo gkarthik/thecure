@@ -101,7 +101,7 @@ public class Stats {
 		//String rulegenerated = output_dir+"generankings/rulebased/cancer_in_description.txt";
 		//		String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor.txt";
 		//String rulegenerated = output_dir+"generankings/rulebased/cancer_or_tumor_or_oma.txt";
-		//		long seed = 2;
+				long seed = 2;
 		//		testForGeneSelectionRules(outfile, rulegenerated, seed);
 
 		//		///////////////////////////////////////
@@ -150,7 +150,8 @@ public class Stats {
 		//		//genes
 		//		//////////////////////////////////////
 		//		System.out.println("Starting gene-centric analysis...");
-		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/");
+		//		outputFrequencyBasedGeneRankings(output_dir+"generankings/OneYear/", seed);
+				outputFrequencyBasedGeneRankings(output_dir+"generankings/test/", seed);
 		//		outputIntersectionOfDiffRankingMethods(output_dir+"generankings/test/");
 		//				String backgroundgenefile = output_dir+"generankings/background_genes.txt";
 		//				String gamegenefiledir = output_dir+"genesets_for_classifiers/";//"generankings/test/";
@@ -1179,7 +1180,8 @@ public class Stats {
 		boolean only_cancer_people = false;
 		boolean only_bio_people = false;
 		boolean only_phd = false;
-		for(int i=0; i< 4; i++){
+		boolean no_expertise = false;
+		for(int i=4; i< 5; i++){
 			if(i==0){
 				System.out.println("Running all.. ");
 			}
@@ -1197,8 +1199,30 @@ public class Stats {
 				only_phd = true;
 				outfile = outfileroot+"only_cancer_and_phd_f.txt";
 				System.out.println("Running with cancer knowledge and phd.. ");
+			}else if(i==4){
+				no_expertise = true;
+				outfile = outfileroot+"no_expertise_f.txt";
+				System.out.println("Running with no expertise.. ");
+			}else if(i==5){
+				only_cancer_people = false;
+				only_phd = false;
+				only_bio_people = true;
+				outfile = outfileroot+"only_bio_f.txt";
+				System.out.println("Running with biologists.. ");
+			}else if(i==6){
+				only_cancer_people = true;
+				only_phd = true;
+				only_bio_people = true;
+				outfile = outfileroot+"only_cancer_bio_phd_f.txt";
+				System.out.println("Running with phd cancer biologists.. ");
+			}else if(i==7){
+				only_cancer_people = true;
+				only_phd = false;
+				only_bio_people = true;
+				outfile = outfileroot+"only_cancer_bio_f.txt";
+				System.out.println("Running with cancer biologists.. ");
 			}
-			Map<String, gene_rank> bg_rank = gr.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd);
+			Map<String, gene_rank> bg_rank = gr.getRankedGenes(dataset, only_winning, only_cancer_people, only_bio_people, only_phd, no_expertise);
 			List<gene_rank> ranked = new ArrayList<gene_rank>(bg_rank.values());
 			ranked = gr.setFrequencyByViews(ranked);
 			ranked = gr.setEstimatedPvalue(ranked, seed);

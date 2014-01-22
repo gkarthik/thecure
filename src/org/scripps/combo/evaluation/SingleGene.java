@@ -45,6 +45,9 @@ public class SingleGene {
 		measureGenePredictivePower();
 	}
 
+	
+	
+	
 	public static void measureGenePredictivePower(){
 		String rankingf = "/Users/bgood/workspace/aacure/database/stats/generankings/OneYear/all_players.txt";
 		Map<Integer, generank> gene_rank = readRanking(rankingf);
