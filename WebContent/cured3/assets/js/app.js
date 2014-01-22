@@ -1078,15 +1078,16 @@ Cure.render_network = function(dataset) {
 				"transform", function(d) {
 					return "translate(" + d.x + "," + d.y + ")";
 				}).on("click",function(d){
-					var content = "";
+					var content = "<h4>Node Details</h4><ul>";
 					if(d.options.pct_correct){
-						content+="<span class='text-info'><b>Accuracy[<a>?</a>]</a></span>: "+d.options.pct_correct+"<br />";
+						content+="<li><span class='text-info'><b>Accuracy</b>[<a>?</a>]</a></span>: "+d.options.pct_correct+"</li>";
 					} else if(d.options.infogain){
-						content+="<span class='text-info'><b>Info Gain[<a>?</a>]</a></span>: "+d.options.infogain+"<br />";
+						content+="<li><span class='text-info'><b>Info Gain</b>[<a>?</a>]</a></span>: "+d.options.infogain+"</li>";
 					}
 					
 					if(d.options.bin_size){
-						content+="<span class='text-info'><b>Bin Size[<a>?</a>]</a></span>: "+d.options.bin_size+"<br />";
+						content+="<li><span class='text-info'><b>Bin Size</b>[<a>?</a>]</a></span>: "+d.options.bin_size+"</li>";
+						content+="<li><span>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"% of cases from dataset fall here.</span></li>"
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				});
