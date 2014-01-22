@@ -39,6 +39,10 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
+<div id="NodeDetailsWrapper">
+	<div id="NodeDetailsContent"></div>
+</div>
+
 <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
           <div class="container">
@@ -62,7 +66,13 @@ Player player = (Player) session.getAttribute("player");
   		<strong id="alertMsg"></strong>
 	</div>
 		<div class="row">
+					<div class="span9">
+				<span class="row">
+					<div id="PlayerTreeRegion"></div>
+				</span>
+			</div>
 			<div class="span3">
+			
 				<span class="row">
 				<button class="btn btn-primary" id="save_tree">Save Tree</button>
 				<hr>
@@ -71,11 +81,6 @@ Player player = (Player) session.getAttribute("player");
 				</span>
 				<h2>Gene Summary</h2>
 				<table class="table table-hover" id='json_structure'></table>
-			</div>
-			<div class="span9">
-				<span class="row">
-					<div id="PlayerTreeRegion"></div>
-				</span>
 			</div>
 		</div>
 	</div>

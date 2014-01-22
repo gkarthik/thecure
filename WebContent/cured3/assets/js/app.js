@@ -96,6 +96,9 @@ NodeCollection = Backbone.Collection.extend({
 		//Storing Score in a Score Model.
 		var scoreArray = data;
 		scoreArray.treestruct = null;
+		if(scoreArray.novelty == "Infinity"){
+			scoreArray.novelty = 0;
+		}
 		Cure.Score.set(scoreArray);
 	},
 	error : function(data) {
@@ -205,6 +208,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if (serialized_model.options.kind == "split_value") {
 			return _.template(splitvaluenode_html, {
 				name : serialized_model.name,
+				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
@@ -214,6 +218,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				&& serialized_model.options.kind == "split_node") {
 			return _.template(splitnode_html, {
 				name : serialized_model.name,
+				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			}, {
@@ -222,6 +227,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		}
 		return _.template(node_html, {
 			name : serialized_model.name,
+			highlight : serialized_model.highlight,
 			options : serialized_model.options,
 			cid : serialized_model.cid
 		}, {
@@ -231,20 +237,17 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	events : {
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
-		'click .name' : 'showSummary'
+		'click .name' : 'showSummary',
+		'blur .name': 'setHighlight'
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
 		this.model.bind('change', this.render);
 		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
-		this.model.on('change:highlight', function() {
-			if (this.model.get('highlight') != 0) {
-				this.$el.addClass('highlight');
-			} else {
-				this.$el.removeClass('highlight');
-			}
-		}, this);
+	},
+	setHighlight: function(){
+		this.model.set('highlight',0);
 	},
 	showSummary : function() {
 		//showJSON is used to render the Gene Info POP Up.
@@ -254,9 +257,15 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
+		var width = $(this.el).width();
+		
+		if(width<=100 && this.model.get('options').kind!="split_value"){
+			width = 100;;
+		}
+		
 		$(this.el).stop(false, false).animate(
 				{
-					'margin-left' : (this.model.get('x') - (($(this.el).width()) / 2))
+					'margin-left' : (this.model.get('x') - ((width) / 2))
 							+ "px",
 					'margin-top' : (this.model.get('y') + 70) + "px"
 				});
@@ -1009,12 +1018,17 @@ Cure.delete_all_children = function(seednode) {
 //
 Cure.render_network = function(dataset) {
 	var scaleY = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
+	var infoY = d3.scale.log().domain([ 0.00001, 1 ]).rangeRound([ 0, 100 ]);
 
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
-				.rangeRound([ 0, 40 ]);
+				.rangeRound([ 0, 30 ]);
+		var binsizeY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
+				.rangeRound([ 0, 100 ]);
 	} else {
-		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 50 ]);
+		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 30 ]);
+		var binsizeY = d3.scale.linear().domain([ 0, 100 ])
+			.rangeRound([ 0, 100 ]);
 		dataset = [ {
 			'name' : '',
 			'cid' : 0,
@@ -1047,186 +1061,146 @@ Cure.render_network = function(dataset) {
 			marginTop = 0;
 		}
 		$("#footer").css("margin-top",marginTop);
+		
+		//Drawing Edges
+		var node = Cure.PlayerNodeCollection.models[0];
+		Cure.PlayerSvg.selectAll(".link").remove();
+		edgeCount = 0;
+		translateLeft = 0;
+		if(node){
+			Cure.drawEdges(node,binY,0);
+		}
 
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
 		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode")
-				.attr("transform", function(d) {
-					return "translate(" + dataset.x + "," + dataset.y + ")";
-				});
-		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("width", 10)
-				.attr("height", function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
+				.attr(
+				"transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")";
+				}).on("click",function(d){
+					var content = "<h4>Node Details</h4><ul>";
+					if(d.options.pct_correct){
+						content+="<li><span class='text-info'><b>Accuracy</b>[<a>?</a>]</a></span>: "+d.options.pct_correct+"</li>";
+					} else if(d.options.infogain){
+						content+="<li><span class='text-info'><b>Info Gain</b>[<a>?</a>]</a></span>: "+d.options.infogain+"</li>";
 					}
-					return height;
-				}).attr("x", 90).attr("y", function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
+					
+					if(d.options.bin_size){
+						content+="<li><span class='text-info'><b>Bin Size</b>[<a>?</a>]</a></span>: "+d.options.bin_size+"</li>";
+						content+="<li><span>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"% of cases from dataset fall here.</span></li>"
 					}
-					return -1 * height;
-				}).style("fill", function(d) {
-					return "lightsteelblue";
+					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				});
+		
+		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
+			if(d.options.kind!="split_value"){
+				return "100";
+			}
+		}).attr("height", 10).style("fill", function(d) {
+			return "white";
+		}).attr("stroke","#000").attr("stroke-width","1");
+		
+		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("transform","translate(-50,-40)").attr("width", 0).attr("height", 8).style("fill", function(d) {
+			if (d.options.pct_correct) {
+				return "red";
+			} else if (d.options.infogain) {
+				return "green";
+			}
+		});
+		
+		//Accuracy Text
+		
 		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
-				"transform", "translate(80, 0) rotate(-90)").style("font-size", "13")
+				"transform", "translate(-50, -49)").style("font-size", "10")
 				.style("fill", function(d) {
-					return "lightsteelblue";
+					return "black";
 				}).text(function(d) {
 					var text = "";
 					if (d.options.pct_correct) {
-						text = "Accuracy: " + d.options.pct_correct;
+						text = "Accuracy";
 					} else if (d.options.infogain) {
-						text = "Info Gain" + d.options.infogain;
+						text = "Info Gain";
 					}
-					return text.substring(0, 15);
+					return text;
 				});
+		
 		// Bin Size
-		nodeEnter.append("rect").attr("class", "binsize").attr("width", 10).attr(
-				"height", function(d) {
-					var height = 0;
-					if (d.options.bin_size) {
-						height = binY(d.options.bin_size);
-					}
-					return height;
-				}).attr("x", 130).attr("y", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
+		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,2)").attr("width",function(d){
+			if(d.options.kind!="split_value"){
+				return "100";
 			}
-			return -1 * height;
-		}).style("fill", function(d) {
-			return "lightsteelblue";
+		}).attr("height", 10).style("fill", function(d) {
+			return "white";
+		}).attr("stroke","#000").attr("stroke-width","1");
+		
+		nodeEnter.append("rect").attr("class", "binsize").attr("transform","translate(-50,3)").attr("width", 0).attr(
+				"height", 8).style("fill", function(d) {
+			return "blue";
 		});
 
+		//Bin Size Text 
 		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
-				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
+				"translate(-50, 22)").style("font-size", "10").style("fill",
 				function(d) {
-					return "lightsteelblue";
+					return "black";
 				}).text(function(d) {
 			var text = "";
 			if (d.options.bin_size) {
-				text = "Bin size: " + d.options.bin_size;
+				text = "Bin size";
 			}
-			return text.substring(0, 15);
+			return text;
 		});
 
+		
 		var nodeUpdate = node.transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + d.x + "," + d.y + ")";
 				});
-
-		nodeUpdate.select(".nodeaccuracy").attr("width", 10).attr("height",
-				function(d) {
-					var height = 0;
-					if (d.options.pct_correct) {
-						height = scaleY(d.options.pct_correct);
-					} else if (d.options.infogain) {
-						height = scaleY(d.options.infogain);
-					}
-					return height;
-				}).attr("x", 90).attr("y", function(d) {
+		
+		//Update Accuracy Nodes
+		
+		nodeUpdate.select(".nodeaccuracy").transition().duration(Cure.duration).attr("width", function(d) {
 			var height = 0;
 			if (d.options.pct_correct) {
 				height = scaleY(d.options.pct_correct);
 			} else if (d.options.infogain) {
-				height = scaleY(d.options.infogain);
-			}
-			return -1 * height;
-		}).style("fill", function(d) {
-			return "lightsteelblue";
-		});
-
-		nodeUpdate.select(".nodeaccuracytext").attr("transform",
-				"translate(80, 0) rotate(-90)").style("font-size", "13").style("fill",
-				function(d) {
-					return "lightsteelblue";
-				}).text(function(d) {
-			var text = "";
-			if (d.options.pct_correct) {
-				text = "Accuracy: " + d.options.pct_correct;
-			} else if (d.options.infogain) {
-				text = "Info Gain" + d.options.infogain;
-			}
-			return text.substring(0, 15);
-		});
-		// Bin Size
-		nodeUpdate.select(".binsize").attr("width", 10).attr("height", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
+				height = infoY(d.options.infogain);
 			}
 			return height;
-		}).attr("x", 130).attr("y", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binY(d.options.bin_size);
-			}
-			return -1 * height;
 		}).style("fill", function(d) {
-			return "lightsteelblue";
+			if (d.options.pct_correct) {
+				return "red";
+			} else if (d.options.infogain) {
+				return "green";
+			}
 		});
 
-		nodeUpdate.select(".binsizetext").attr("transform",
-				"translate(120, 0) rotate(-90)").style("font-size", "13").style("fill",
-				function(d) {
-					return "lightsteelblue";
-				}).text(function(d) {
+		//Update Accuracy Text
+		nodeUpdate.select(".nodeaccuracytext").text(function(d) {
 			var text = "";
-			if (d.options.bin_size) {
-				text = "Bin size: " + d.options.bin_size;
+			if (d.options.pct_correct) {
+				text = "Accuracy";
+			} else if (d.options.infogain) {
+				text = "Info Gain";
 			}
-			return text.substring(0, 15);
+			return text;
+		});
+		
+		
+		// Bin Size
+		nodeUpdate.select(".binsize").transition().duration(Cure.duration).attr("width", function(d) {
+			var height = 0;
+			if (d.options.bin_size) {
+				height = binsizeY(d.options.bin_size);
+			}
+			return height;
 		});
 
 		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).remove();
-
-		var link = SVG.selectAll(".link").data(links);
-		link.enter().insert("svg:path", "g").attr("class", "link").attr("d",
-				function(d) {
-					var o = {
-						x : dataset.x0,
-						y : dataset.y0
-					};
-					return Cure.diagonal({
-						source : o,
-						target : o
-					});
-				}).style("stroke-width", 1);
-		link.transition().duration(Cure.duration).attr("d", Cure.diagonal).style(
-				"stroke-width", function(d) {
-					var strokewidth = 1;
-					if (d.target.options.kind != "split_value") {
-						strokewidth = binY(d.target.options.bin_size);
-					} else {
-						if (d.target.children[0]) {
-							strokewidth = binY(d.target.children[0].options.bin_size);
-						}
-					}
-					if (strokewidth < 1) {
-						strokewidth = 1;
-					}
-					return strokewidth;
-				});
-		link.exit().transition().duration(Cure.duration).attr("d", function(d) {
-			var o = {
-				x : dataset.x,
-				y : dataset.y
-			};
-			return Cure.diagonal({
-				source : o,
-				target : o
-			});
-		}).remove();
+		
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
 			d.y0 = d.y;
@@ -1240,6 +1214,56 @@ Cure.showAlert = function(message){
 	window.setTimeout(function(){
 		$("#alertWrapper").hide();
 	},2000);
+}
+
+Cure.showDetailsOfNode = function(content, top, left){
+	top = top + 40;
+	left = left + (window.innerWidth-1170)/2;
+	$("#NodeDetailsWrapper").css({
+		"top": top,
+		"left": left,
+		"display": "block"
+	});
+	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
+}
+var translateLeft=0;
+var edgeCount=0;
+Cure.drawEdges = function(node,binY,count){
+	if(node.get('children').models.length == 0){
+		translateLeft += binY(node.get('options').bin_size);
+		edgeCount++;
+		var links = [];
+		var tempNode = node;
+		var bin_size = binY(node.get('options').bin_size);
+		while(tempNode.get('parentNode')!=null){
+			links.push({"source":tempNode.get('parentNode').toJSON(),"target":tempNode.toJSON()});
+			tempNode = tempNode.get('parentNode');
+		}
+		for(var temp in links){
+			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
+				if(links[temp].source.options.kind!="split_value"){
+					links[temp].source.y+=14;
+				}
+				if(links[temp].target.options.kind!="split_value"){
+					links[temp].target.y=links[temp].target.y-42;
+				}
+				return Cure.diagonal({
+					source : links[temp].source,
+					target : links[temp].target
+				});
+		}).style("stroke-width", function(){
+			var edgeWidth = binY(node.get('options').bin_size);
+			if(edgeWidth<1){
+				edgeWidth = 1;
+			} 
+			return edgeWidth;
+		}).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
+		}
+	}
+	var i = 0;
+	for(i = node.get('children').models.length;i>0;i--){
+		Cure.drawEdges(node.get('children').models[i-1],binY,count);
+	}
 }
 
 //
@@ -1292,6 +1316,7 @@ Cure.addInitializer(function(options) {
 		JsonRegion : "#json_structure"
 	});
 	Cure.colorScale = d3.scale.category10();
+	Cure.edgeColor = d3.scale.category20();
 	Cure.width = options["width"];
 	Cure.height = options["height"];
 	Cure.duration = 500;
