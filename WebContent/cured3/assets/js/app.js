@@ -1084,12 +1084,17 @@ Cure.render_network = function(dataset) {
 					} else if(d.options.infogain){
 						content+="<li><span class='text-info'><b>Info Gain</b>[<a>?</a>]</a></span>: "+d.options.infogain+"</li>";
 					}
-					
 					if(d.options.bin_size){
 						content+="<li><span class='text-info'><b>Bin Size</b>[<a>?</a>]</a></span>: "+d.options.bin_size+"</li>";
 						content+="<li><span>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"% of cases from dataset fall here.</span></li>"
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
+				}).on("mouseenter",function(){
+					d3.select(this).classed("selected",true);
+					d3.selectAll(".selected .nodehinttext").style("display","block");
+				}).on("mouseleave",function(){
+					d3.selectAll(".selected .nodehinttext").style("display","none");
+					d3.select(this).classed("selected",false);
 				});
 		
 		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
@@ -1102,7 +1107,7 @@ Cure.render_network = function(dataset) {
 		
 		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("transform","translate(-50,-40)").attr("width", 0).attr("height", 8).style("fill", function(d) {
 			if (d.options.pct_correct) {
-				return "red";
+				return "orange";
 			} else if (d.options.infogain) {
 				return "green";
 			}
@@ -1110,11 +1115,11 @@ Cure.render_network = function(dataset) {
 		
 		//Accuracy Text
 		
-		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
+		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext nodehinttext").attr(
 				"transform", "translate(-50, -49)").style("font-size", "10")
 				.style("fill", function(d) {
 					return "black";
-				}).text(function(d) {
+				}).style("display","none").text(function(d) {
 					var text = "";
 					if (d.options.pct_correct) {
 						text = "Accuracy";
@@ -1125,7 +1130,13 @@ Cure.render_network = function(dataset) {
 				});
 		
 		// Bin Size
-		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,2)").attr("width",function(d){
+		nodeEnter.append("rect").attr("class", "scaleIndicator binScaleIndicator").attr("transform",function(d){
+			if(d.options.kind == "leaf_node"){
+				return "translate(-50,16)";
+			} else{
+				return "translate(-50,2)";
+			}
+		}).attr("width",function(d){
 			if(d.options.kind!="split_value"){
 				return "100";
 			}
@@ -1133,17 +1144,28 @@ Cure.render_network = function(dataset) {
 			return "white";
 		}).attr("stroke","#000").attr("stroke-width","1");
 		
-		nodeEnter.append("rect").attr("class", "binsize").attr("transform","translate(-50,3)").attr("width", 0).attr(
+		nodeEnter.append("rect").attr("class", "binsize").attr("transform",function(d){
+			if(d.options.kind == "leaf_node"){
+				return "translate(-50,17)";
+			} else{
+				return "translate(-50,3)";
+			}
+		}).attr("width", 0).attr(
 				"height", 8).style("fill", function(d) {
 			return "blue";
 		});
 
 		//Bin Size Text 
-		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
-				"translate(-50, 22)").style("font-size", "10").style("fill",
+		nodeEnter.append("svg:text").attr("class", "binsizetext nodehinttext").attr("transform",function(d){
+				if(d.options.kind == "leaf_node"){
+					return "translate(-50,36)";
+				} else{
+					return "translate(-50, 22)";
+				}
+			}).style("font-size", "10").style("fill",
 				function(d) {
 					return "black";
-				}).text(function(d) {
+				}).style("display","none").text(function(d) {
 			var text = "";
 			if (d.options.bin_size) {
 				text = "Bin size";
@@ -1169,12 +1191,13 @@ Cure.render_network = function(dataset) {
 			return height;
 		}).style("fill", function(d) {
 			if (d.options.pct_correct) {
-				return "red";
+				return "orange";
 			} else if (d.options.infogain) {
 				return "green";
 			}
 		});
-
+		
+		
 		//Update Accuracy Text
 		nodeUpdate.select(".nodeaccuracytext").text(function(d) {
 			var text = "";
@@ -1188,12 +1211,35 @@ Cure.render_network = function(dataset) {
 		
 		
 		// Bin Size
-		nodeUpdate.select(".binsize").transition().duration(Cure.duration).attr("width", function(d) {
+		nodeUpdate.select(".binScaleIndicator").attr("transform",function(d){
+			if(d.options.kind == "leaf_node"){
+				return "translate(-50,16)";
+			} else{
+				return "translate(-50,2)";
+			}
+		});
+		
+		nodeUpdate.select(".binsize").attr("transform",function(d){
+			if(d.options.kind == "leaf_node"){
+				return "translate(-50,17)";
+			} else{
+				return "translate(-50,3)";
+			}
+		}).transition().duration(Cure.duration).attr("width", function(d) {
 			var height = 0;
 			if (d.options.bin_size) {
 				height = binsizeY(d.options.bin_size);
 			}
 			return height;
+		});
+		
+		//Update Bin Size Text
+		nodeUpdate.select(".binsizetext").attr("transform",function(d){
+			if(d.options.kind == "leaf_node"){
+				return "translate(-50,36)";
+			} else{
+				return "translate(-50, 22)";
+			}
 		});
 
 		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
