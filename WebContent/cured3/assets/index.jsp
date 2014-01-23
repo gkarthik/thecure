@@ -70,7 +70,7 @@ Player player = (Player) session.getAttribute("player");
 				<span class="row">
 				<div id="HelpText">
 					<button type="button" id="closeHelp">×</button>
-					<h4>The Idea</h4>
+					<h5>Help</h5>
 					<ul>
 						<li>Decide split criteria by typing and choosing genes in the text box.</li>
 						<li>Classify the data set into <b>relapse</b> and <b>no relapse</b>.</li>
