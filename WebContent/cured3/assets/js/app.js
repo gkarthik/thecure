@@ -765,9 +765,11 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 						}
 					});
 					newNode.set("cid", newNode.cid);
+					/*
 					if (model.get("children")) {
 						model.get("children").add(newNode);
 					}
+					*/
 				}
 				if (Cure.MyGeneInfoRegion) {
 					Cure.MyGeneInfoRegion.close();
@@ -801,10 +803,30 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+var emptyLayout = Backbone.Marionette.Layout.extend({
+    template: "#Empty-Layout-Template",
+    regions: {
+      AddRootNode: "#AddRootNodeWrapper"
+    },
+    onBeforeRender: function(){
+    	Cure.ToggleHelp(false);
+    },
+    onRender: function(){
+    	if(!Cure.helpText){
+        	Cure.helpText = $("#HelpText").html();	
+    	}
+    	var newAddRootNodeView = new AddRootNodeView({model:Cure.PlayerNodeCollection}); 
+    	this.AddRootNode.show(newAddRootNodeView);
+    },
+    onBeforeClose: function(){
+    	Cure.ToggleHelp(true);
+    }
+});
+
 NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to manipulate and display list of all nodes in collection
 	itemView : NodeView,
-	emptyView : AddRootNodeView,
+	emptyView : emptyLayout,
 	initialize : function() {
 
 	}
@@ -1328,6 +1350,23 @@ Cure.showDetailsOfNode = function(content, top, left){
 	});
 	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
 }
+
+Cure.ToggleHelp = function(check){
+	if(!check){
+    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"850px","height":"170px"});
+    	window.setTimeout(function(){
+        	$("#HelpText").html(Cure.helpText);
+		},500);
+	} else {
+		$("#HelpText").css({"position":"absolute","overflow":"hidden","background": "#F69","color": "#FFF","cursor": "pointer","width":"30px","height":"20px"});
+		$("#HelpText").html("");
+		window.setTimeout(function(){
+			$("#HelpText").html("Help");
+		},500);
+	}
+}
+
+//Variables for drawEdges.
 var translateLeft=0;
 var edgeCount=0;
 Cure.drawEdges = function(node,binY,count){
@@ -1383,6 +1422,17 @@ Cure.addInitializer(function(options) {
 			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
 					+ "Tree'></div><svg id='"
 					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>")
+					
+	//Event Initializers
+					
+	$("#HelpText").on("click",function(){
+		Cure.ToggleHelp(false);
+	});
+	
+	$("body").delegate("#closeHelp","click",function(){
+		Cure.ToggleHelp(true);
+	});
+	
 	$("#save_tree").on("click",function(){
 		var tree;
 		if(Cure.PlayerNodeCollection.models[0])

@@ -68,7 +68,16 @@ Player player = (Player) session.getAttribute("player");
 		<div class="row">
 					<div class="span9">
 				<span class="row">
-					<div id="PlayerTreeRegion"></div>
+				<div id="HelpText">
+					<button type="button" id="closeHelp">×</button>
+					<h4>The Idea</h4>
+					<ul>
+						<li>Decide split criteria by typing and choosing genes in the text box.</li>
+						<li>Classify the data set into <b>relapse</b> and <b>no relapse</b>.</li>
+						<li>Add nodes to the tree by clicking <i class="icon-plus-sign"></i> on the leaf nodes.</li>
+					</ul>
+				</div>
+				<div id="PlayerTreeRegion"></div>
 				</span>
 			</div>
 			<div class="span3">
@@ -85,6 +94,9 @@ Player player = (Player) session.getAttribute("player");
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="Empty-Layout-Template">
+		<div id="AddRootNodeWrapper"></div>
+	</script> 
 	<script type="text/template" id="commentTemplate">
 	<@ if(editView == 0) { @>
 		<@ if(content == "") { @>
