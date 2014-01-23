@@ -1065,6 +1065,7 @@ Cure.render_network = function(dataset) {
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
 		Cure.PlayerSvg.selectAll(".link").remove();
+		//Cure.PlayerSvg.selectAll(".dataChart").remove();
 		edgeCount = 0;
 		translateLeft = 0;
 		if(node){
@@ -1073,9 +1074,20 @@ Cure.render_network = function(dataset) {
 
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
-		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode")
-				.attr(
-				"transform", function(d) {
+		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode").attr("transform", function(d) {
+					if(d.options.kind == "leaf_node"){
+						var limit = 100;
+						var radius = 5;
+						for(i=0;i<limit;i++){
+							d3.select(this).append("circle").attr("class",function(){
+								return d.name;
+							}).attr("r",5).style("fill","#000").attr("cx",function(){
+								return (radius*2)*(i%10);
+							}).attr("cy",function(){
+								return (100-(radius*2)*parseInt(i/10));
+							});
+						}
+					}
 					return "translate(" + d.x + "," + d.y + ")";
 				}).on("click",function(d){
 					var content = "<h4>Node Details</h4><ul>";
@@ -1097,14 +1109,7 @@ Cure.render_network = function(dataset) {
 					d3.select(this).classed("selected",false);
 				});
 		
-		var arc = d3.svg.arc()
-	    			.innerRadius(0)
-	    			.outerRadius(30)
-	    			.startAngle(0 * (Math.PI/180))
-	    			.endAngle(2 * (Math.PI/180));
-		
-		nodeEnter.append(arc);
-		
+		/*
 		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
 			if(d.options.kind!="split_value"){
 				return "100";
@@ -1180,13 +1185,13 @@ Cure.render_network = function(dataset) {
 			}
 			return text;
 		});
-
+		*/
 		
-		var nodeUpdate = node.transition().duration(Cure.duration).attr(
-				"transform", function(d) {
+		var nodeUpdate = node.transition().duration(Cure.duration).attr("transform", function(d) {
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
+		/*
 		//Update Accuracy Nodes
 		
 		nodeUpdate.select(".nodeaccuracy").transition().duration(Cure.duration).attr("width", function(d) {
@@ -1249,6 +1254,8 @@ Cure.render_network = function(dataset) {
 				return "translate(-50, 22)";
 			}
 		});
+		
+		*/
 
 		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
 				"transform", function(d) {
