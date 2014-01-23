@@ -1097,6 +1097,14 @@ Cure.render_network = function(dataset) {
 					d3.select(this).classed("selected",false);
 				});
 		
+		var arc = d3.svg.arc()
+	    			.innerRadius(0)
+	    			.outerRadius(30)
+	    			.startAngle(0 * (Math.PI/180))
+	    			.endAngle(2 * (Math.PI/180));
+		
+		nodeEnter.append(arc);
+		
 		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
 			if(d.options.kind!="split_value"){
 				return "100";
