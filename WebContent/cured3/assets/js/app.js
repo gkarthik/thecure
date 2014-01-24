@@ -1105,9 +1105,11 @@ Cure.render_network = function(dataset) {
 					var limit = binsizeY(d.options.bin_size);
 					if(d.options.kind=="leaf_node"){
 						var accLimit = d.options.pct_correct * limit;
+					} else if(d.options.kind == "split_node") {
+						var accLimit = d.children[0].children[0].options.bin_size;
 					} else {
-						var accLimit = limit;
-					} 
+						var accLimit = 0;
+					}
 					var radius = 5;
 					Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
 					return "translate(" + parseInt(d.x-50) + "," + parseInt(d.y+10) + ")";
@@ -1213,8 +1215,14 @@ Cure.render_network = function(dataset) {
 							var limit = binsizeY(d.options.bin_size);
 							if(d.options.kind=="leaf_node"){
 								var accLimit = d.options.pct_correct * limit;
+							} else if(d.options.kind == "split_node") {
+								try{
+									var accLimit = d.children[0].children[0].options.bin_size;
+								} catch(err){
+									var accLimit = 0;
+								}
 							} else {
-								var accLimit = limit;
+								var accLimit = 0;
 							}
 							var radius = 5;
 							Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
@@ -1349,7 +1357,7 @@ Cure.ToggleHelp = function(check){
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
 	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,-18)").style("display",function(){
-		if(nodeKind != "leaf_node"){
+		if(nodeKind == "split_value"){
 			return "none";
 		}
 		return "block";
