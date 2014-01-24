@@ -1348,7 +1348,7 @@ Cure.ToggleHelp = function(check){
 }
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
-	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,-20)").style("display",function(){
+	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,-18)").style("display",function(){
 		if(nodeKind != "leaf_node"){
 			return "none";
 		}
@@ -1369,25 +1369,25 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 			return "rgba(255, 0, 0, 0.22)";
 		} 
 		return "rgba(0, 0, 255, 0.22)";
-	}).attr("transform","translate(-5,5)").style("stroke",function(){
+	}).attr("transform","translate(-2,8)").style("stroke",function(){
 		if(nodeName=="relapse"){
 			return "red";
 		} 
 		return "blue";
 	});
 	for(i=0;i<limit;i++){
-		chartWrapper.append("circle").attr("class",function(){
+		chartWrapper.append("rect").attr("class",function(){
 			if(i<accLimit)
 				return "posCircle";
 			return "negCircle";
-		}).attr("r",radius-1).style("fill",function(){
+		}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
 			if(nodeName=="relapse"){
 				return "blue";//Opposite Color
 			}
 			return "red";//Opposite Color
-		}).attr("cx",function(){
+		}).attr("x",function(){
 			return (radius*2)*(i%10);
-		}).attr("cy",function(){
+		}).attr("y",function(){
 			return (100-(radius*2)*parseInt(i/10));
 		});
 	}
