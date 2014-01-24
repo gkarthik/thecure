@@ -1348,7 +1348,7 @@ Cure.ToggleHelp = function(check){
 }
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
-	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").style("display",function(){
+	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,-20)").style("display",function(){
 		if(nodeKind != "leaf_node"){
 			return "none";
 		}
@@ -1364,7 +1364,12 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 			return 102;
 		}
 		return 0;
-	}).attr("fill","transparent").attr("transform","translate(-5,5)").style("stroke",function(){
+	}).attr("fill",function(){
+		if(nodeName=="relapse"){
+			return "rgba(255, 0, 0, 0.22)";
+		} 
+		return "rgba(0, 0, 255, 0.22)";
+	}).attr("transform","translate(-5,5)").style("stroke",function(){
 		if(nodeName=="relapse"){
 			return "red";
 		} 
@@ -1375,7 +1380,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 			if(i<accLimit)
 				return "posCircle";
 			return "negCircle";
-		}).attr("r",radius).style("fill",function(){
+		}).attr("r",radius-1).style("fill",function(){
 			if(nodeName=="relapse"){
 				return "blue";//Opposite Color
 			}

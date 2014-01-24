@@ -101,6 +101,7 @@ input.edit{
 
 .leaf_node .btn{
 	float:none;
+	margin-top:110px;
 }
 
 .leaf_node .name{
@@ -184,9 +185,8 @@ margin-left: 5px;
 
 .addgeneinfo{
 	position: absolute;
-margin: 1px;
-margin-top: 27px;
-margin-left: -75px;
+	margin: 1px;
+	margin-left: -75px;
 }
 
 #ScoreSVG{
