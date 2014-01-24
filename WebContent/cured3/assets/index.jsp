@@ -314,11 +314,20 @@ Player player = (Player) session.getAttribute("player");
   </script>
 	<script id="nodeTemplate" type="text/template">  
     <span class="name attrvalue">
-      <@= args.name @>
+		<@ if(args.name == "relapse")
+		{
+			print ('<font style="color:red;">'+args.name.toUpperCase()+'</font>');
+		}
+		else
+		{
+			print ('<font style="color:blue;">'+args.name.toUpperCase()+'</font>');
+		} 
+      	@>
     </span>
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>
+		<span style="float: none;">Add Node </span>
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
   </script>
