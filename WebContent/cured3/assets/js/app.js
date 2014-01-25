@@ -1465,7 +1465,13 @@ Cure.drawEdges = function(node,binY,count){
 				edgeWidth = 1;
 			} 
 			return edgeWidth;
-		}).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
+		}).style("stroke",function(){
+			if(node.get('name')=="relapse"){
+				return "red";
+			} else {
+				return "blue";
+			}
+		});
 		}
 	}
 	var i = 0;
