@@ -313,17 +313,15 @@ Player player = (Player) session.getAttribute("player");
     </td>
   </script>
 	<script id="nodeTemplate" type="text/template">  
-    <span class="name attrvalue">
 		<@ if(args.name == "relapse")
 		{
-			print ('<font style="color:red;">'+args.name.toUpperCase()+'</font>');
+			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
 		}
 		else
 		{
-			print ('<font style="color:blue;">'+args.name.toUpperCase()+'</font>');
+			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
 		} 
       	@>
-    </span>
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>

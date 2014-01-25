@@ -257,16 +257,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
-		var width = $(this.el).width();
+		var width = $(this.el).outerWidth();
 		
-		if(width<=100 && this.model.get('options').kind!="split_value"){
-			width = 100;;
+		if(width<=80 && this.model.get('options').kind!="split_value"){
+			width = 82;
 		}
 		
-		var nodeTop = (this.model.get('y')+70);
+		var nodeTop = (this.model.get('y')+71);
 		
 		if(this.model.get("options").kind == "leaf_node") {
-			nodeTop = (this.model.get('y')+205);
+			nodeTop = (this.model.get('y')+182);
 		}
 		$(this.el).stop(false, false).animate(
 				{
@@ -1011,9 +1011,8 @@ Cure.updatepositions = function(NodeCollection) {
 	d3nodes.forEach(function(d) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
-				console.log(depthDiff)
 				if(i%2!=0){
-					depthDiff = 180;
+					depthDiff = 160;
 				} else {
 					depthDiff = 80;
 				}
@@ -1088,9 +1087,8 @@ Cure.render_network = function(dataset) {
 		nodes.forEach(function(d) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
-				console.log(depthDiff)
 				if(i%2!=0){
-					depthDiff = 180;
+					depthDiff = 160;
 				} else {
 					depthDiff = 80;
 				}
@@ -1139,9 +1137,9 @@ Cure.render_network = function(dataset) {
 					var radius = 5;
 					Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
 					if(d.options.kind=="leaf_node"){
-						return "translate(" + parseInt(d.x-50) + "," + parseInt(d.y-19) + ")";
+						return "translate(" + d.x + "," + parseInt(d.y-19) + ")";
 					}
-					return "translate(" + parseInt(d.x-50) + "," + parseInt(d.y+10) + ")";
+					return "translate(" + d.x + "," + parseInt(d.y+10) + ")";
 				}).on("click",function(d){
 					var content = "<h4>Node Details</h4><ul>";
 					if(d.options.pct_correct){
@@ -1249,7 +1247,7 @@ Cure.render_network = function(dataset) {
 									if(d.children[0].children[0].name == "no relapse"){
 										var accLimit = binsizeY(d.children[0].children[0].options.bin_size);
 									} else {
-										var accLimit = binsizeY(d.children[1].children[1].options.bin_size);
+										var accLimit = binsizeY(d.children[1].children[0].options.bin_size);
 									}
 								} catch(err){
 									var accLimit = 0;
@@ -1257,7 +1255,7 @@ Cure.render_network = function(dataset) {
 							} else {
 								var accLimit = 0;
 							}
-							var radius = 5;
+							var radius = 4;
 							Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
 							return "MetaDataNode"+d.cid;
 						}).transition().duration(Cure.duration).attr("transform", function(d) {
@@ -1273,7 +1271,7 @@ Cure.render_network = function(dataset) {
 					window.setTimeout(function(){
 						d3.selectAll("#"+id+classToChoose["className"]).transition().duration(Cure.duration*2).style("fill",classToChoose["color"]);
 					},Cure.duration);
-					return "translate(" + parseInt(d.x-50) + "," + parseInt(d.y+10) + ")";
+					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
 		/*
@@ -1389,33 +1387,37 @@ Cure.ToggleHelp = function(check){
 }
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
-	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,-16)").style("display",function(){
+	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(-"+(radius*10)+",-5)").style("display",function(){
 		if(nodeKind == "split_value"){
 			return "none";
 		}
 		return "block";
 	});
-	chartWrapper.append("rect").attr("class","circleContainer").attr("height",function(){
+	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
 		if(nodeKind!="split_value"){
-			return 102;
+			return (radius*20)+2;
 		}
 		return 0;
 	}).attr("width",function(d){
 		if(nodeKind!="split_value"){
-			return 102;
+			return (radius*20)+2;
 		}
 		return 0;
 	}).attr("fill",function(){
 		if(nodeName=="relapse"){
 			return "rgba(255, 0, 0, 0.22)";
-		} 
-		return "rgba(0, 0, 255, 0.22)";
-	}).attr("transform","translate(-2,8)").style("stroke",function(){
+		} else if(nodeName == "no relapse") {
+			return "rgba(0, 0, 255, 0.22)";
+		}
+		return "white";
+	}).attr("transform","translate(-2,6)").style("stroke",function(){
 		if(nodeName=="relapse"){
 			return "red";
-		} 
-		return "blue";
-	});
+		} else if(nodeName == "no relapse") {
+			return "blue";
+		}
+		return "black";
+	}).style("stroke-width","2");
 	for(i=0;i<limit;i++){
 		chartWrapper.append("rect").attr("class",function(){
 			if(i<accLimit)
@@ -1429,7 +1431,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 		}).attr("x",function(){
 			return (radius*2)*(i%10);
 		}).attr("y",function(){
-			return (100-(radius*2)*parseInt(i/10));
+			return ((radius*20)-(radius*2)*parseInt(i/10));
 		});
 	}
 }
@@ -1451,7 +1453,7 @@ Cure.drawEdges = function(node,binY,count){
 		for(var temp in links){
 			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
 				if(links[temp].target.options.kind == "split_value"){
-					links[temp].source.y += 102;//For Split Nodes 
+					links[temp].source.y += 82;//For Split Nodes 
 				}
 				return Cure.diagonal({
 					source : links[temp].source,
