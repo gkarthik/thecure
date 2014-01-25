@@ -79,15 +79,16 @@ input.edit{
 }
 
 .split_value{
-	border: 0px;
-	background: none;
-	color:palered;
+	border: 1px solid #000;
+	background: #FFF;
+	color:#000;
 	padding:0px;
 	padding-top: 7px;
 	text-align:center;
 	font-weight:bold;
 	font-size:20px;
 	min-width:0px;
+	padding:2px;
 }
 
 .leaf_node{
