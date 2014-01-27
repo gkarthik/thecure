@@ -1130,7 +1130,39 @@ Cure.render_network = function(dataset) {
 					if(d.options.kind=="leaf_node"){
 						var accLimit = d.options.pct_correct * limit;
 					} else if(d.options.kind == "split_node") {
-						var accLimit = d.children[0].children[0].options.bin_size;
+						//Split Node -> previousAttributes
+							var accLimit = 0;
+							var splitAttr= [];
+							//First CHild Node
+							try{
+								if(d.children[0].children[0].options.kind =="split_node"){
+									splitAttr = d.children[0].children[0].previousAttributes;
+								} else {//Leaf Node
+									splitAttr = d.children[0].children[0];								
+								}
+								
+								if(splitAttr.name == "relapse") {
+									accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+								} else if(splitAttr.name == "no relapse") {
+									accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+								}
+								
+								//Second Node
+								if(d.children[1].children[0].options.kind =="split_node")
+								{
+									splitAttr = d.children[1].children[0].previousAttributes;
+								} else {
+									splitAttr = d.children[1].children[0];
+								}
+								
+								if(splitAttr.name == "relapse") {
+									accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+								} else if(splitAttr.name == "no relapse") {
+									accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+								}
+							} catch(err){
+								var accLimit = 0;
+							}
 					} else {
 						var accLimit = 0;
 					}
@@ -1243,15 +1275,40 @@ Cure.render_network = function(dataset) {
 							if(d.options.kind=="leaf_node"){
 								var accLimit = d.options.pct_correct * limit;
 							} else if(d.options.kind == "split_node") {
-								try{
-									if(d.children[0].children[0].name == "no relapse"){
-										var accLimit = binsizeY(d.children[0].children[0].options.bin_size);
-									} else {
-										var accLimit = binsizeY(d.children[1].children[0].options.bin_size);
-									}
-								} catch(err){
+								//Split Node -> previousAttributes
 									var accLimit = 0;
-								}
+									var splitAttr= [];
+									//First CHild Node
+									try{
+										if(d.children[0].children[0].options.kind =="split_node"){
+											splitAttr = d.children[0].children[0].previousAttributes;
+										} else {//Leaf Node
+											splitAttr = d.children[0].children[0];								
+										}
+										
+										if(splitAttr.name == "relapse") {
+											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+										} else if(splitAttr.name == "no relapse") {
+											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+										}
+										
+										//Second Node
+										if(d.children[1].children[0].options.kind =="split_node")
+										{
+											splitAttr = d.children[1].children[0].previousAttributes;
+										} else {
+											splitAttr = d.children[1].children[0];
+										}
+										
+										if(splitAttr.name == "relapse") {
+											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+										} else if(splitAttr.name == "no relapse") {
+											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+										}
+										accLimit = binsizeY(accLimit);
+									} catch(err){
+										var accLimit = 0;
+									}
 							} else {
 								var accLimit = 0;
 							}
