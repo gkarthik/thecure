@@ -1531,11 +1531,11 @@ Cure.drawEdges = function(node,binY,count){
 					}	
 				}
 				if(branchNo == 0) {
-					links[temp].source.x -= parseInt(divLeft);
-					links[temp].target.x -= parseInt(divLeft);
+					links[temp].source.x -= Math.abs(binY(node.get('options').bin_size/2)-parseInt(divLeft));
+					links[temp].target.x -= Math.abs(binY(node.get('options').bin_size/2)-parseInt(divLeft));
 				} else {
-					links[temp].source.x += parseInt(divLeft);
-					links[temp].target.x += parseInt(divLeft);
+					links[temp].source.x += Math.abs(parseInt(divLeft)/2);
+					links[temp].target.x += Math.abs(parseInt(divLeft)/2);
 				}
 				return Cure.diagonal({
 					source : links[temp].source,
@@ -1553,6 +1553,7 @@ Cure.drawEdges = function(node,binY,count){
 			} else {
 				return "blue";
 			}
+			//return Cure.colorScale(edgeCount);For testing edge width.
 		});
 		}
 		for(var temp in links){
