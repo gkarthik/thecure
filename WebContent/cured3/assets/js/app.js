@@ -1119,6 +1119,32 @@ Cure.render_network = function(dataset) {
 			Cure.drawEdges(node,binY,0);
 		}
 		
+		allLinks.sort(function(a,b){return parseInt(b.bin_size-a.bin_size);});
+		for(var temp in allLinks){
+			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
+				if(allLinks[temp].target.options.kind == "split_value"){
+					allLinks[temp].source.y += 82;//For Split Nodes 
+				}
+				return Cure.diagonal({
+					source : allLinks[temp].source,
+					target : allLinks[temp].target
+				});
+		}).style("stroke-width", function(){
+			var edgeWidth = binY(allLinks[temp].bin_size);
+			if(edgeWidth<1){
+				edgeWidth = 1;
+			} 
+			return edgeWidth;
+		}).style("stroke",function(){
+			if(allLinks[temp].name=="relapse"){
+				return "red";
+			} else {
+				return "blue";
+			}
+			//return Cure.colorScale(edgeCount);For testing edge width.
+		});
+		}
+		
 		//Remove all extra charts rendered.
 		d3.selectAll(".chartWrapper").remove();
 		
@@ -1495,8 +1521,6 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 }
 
 //Variables for drawEdges.
-var translateLeft=0;
-var edgeCount=[];//Variable to store links made
 var allLinks = [];
 Cure.drawEdges = function(node,binY,count){
 	if(node.get('children').models.length == 0){
@@ -1504,61 +1528,17 @@ Cure.drawEdges = function(node,binY,count){
 		if(node.get('parentNode').get('parentNode').get('children').models[0].get('cid')==node.get('parentNode').get('cid')){
 			branchNo = 0;
 		}
-		edgeCount++;
 		var links = [];
 		var tempNode = node;
 		var source =[];
 		var target = [];
 		while(tempNode.get('parentNode')!=null){
-			//translateLeft = binY(Cure.getTranslateLeft(tempNode,tempNode.get('cid')));
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();		
-			links.push({"source":source,"target":target});
+			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name')});
 			tempNode = tempNode.get('parentNode');
 		}
-		links.reverse();
-		var divLeft = 0;
-		for(var temp in links){
-			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
-				if(links[temp].target.options.kind == "split_value"){
-					links[temp].source.y += 82;//For Split Nodes 
-				}
-				if(divLeft==0){
-					for(var tempCtr in allLinks){
-						if(links[temp].source.cid == allLinks[tempCtr].source.cid && links[temp].target.cid == allLinks[tempCtr].target.cid){
-							divLeft += parseInt(binY(allLinks[tempCtr].bin_size));
-						} 
-					}	
-				}
-				if(branchNo == 0) {
-					links[temp].source.x -= Math.abs(binY(node.get('options').bin_size/2)-parseInt(divLeft));
-					links[temp].target.x -= Math.abs(binY(node.get('options').bin_size/2)-parseInt(divLeft));
-				} else {
-					links[temp].source.x += Math.abs(parseInt(divLeft)/2);
-					links[temp].target.x += Math.abs(parseInt(divLeft)/2);
-				}
-				return Cure.diagonal({
-					source : links[temp].source,
-					target : links[temp].target
-				});
-		}).style("stroke-width", function(){
-			var edgeWidth = binY(node.get('options').bin_size);
-			if(edgeWidth<1){
-				edgeWidth = 1;
-			} 
-			return edgeWidth;
-		}).style("stroke",function(){
-			if(node.get('name')=="relapse"){
-				return "red";
-			} else {
-				return "blue";
-			}
-			//return Cure.colorScale(edgeCount);For testing edge width.
-		});
-		}
-		for(var temp in links){
-			allLinks.push({"source":links[temp].source,"target":links[temp].target,"bin_size":node.get('options').bin_size});
-		}
+		allLinks.push.apply(allLinks, links);
 	}
 	var i = 0;
 	for(i = node.get('children').models.length;i>0;i--){
