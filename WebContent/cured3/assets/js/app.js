@@ -1119,11 +1119,25 @@ Cure.render_network = function(dataset) {
 			Cure.drawEdges(node,binY,0);
 		}
 		
+		var divLeft = 0;
 		allLinks.sort(function(a,b){return parseInt(b.bin_size-a.bin_size);});
 		for(var temp in allLinks){
 			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
 				if(allLinks[temp].target.options.kind == "split_value"){
 					allLinks[temp].source.y += 82;//For Split Nodes 
+				}
+				divLeft = 0;
+				for(i=(temp);i<allLinks.length;i++){
+					if(i!=temp && allLinks[i].source.cid == allLinks[temp].source.cid && allLinks[i].target.cid == allLinks[temp].target.cid){
+						divLeft+=parseInt(allLinks[i].bin_size);
+					}
+				}
+				if(allLinks[temp].left==0){
+					allLinks[temp].source.x-=parseInt(binY(allLinks[temp].bin_size/2)+binY(divLeft/2));
+					allLinks[temp].target.x-=parseInt(binY(allLinks[temp].bin_size/2)+binY(divLeft/2));
+				} else {
+					allLinks[temp].source.x+=parseInt(binY(divLeft/2));
+					allLinks[temp].target.x+=parseInt(binY(divLeft/2));					
 				}
 				return Cure.diagonal({
 					source : allLinks[temp].source,
@@ -1535,7 +1549,7 @@ Cure.drawEdges = function(node,binY,count){
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();		
-			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name')});
+			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"left":branchNo});
 			tempNode = tempNode.get('parentNode');
 		}
 		allLinks.push.apply(allLinks, links);
