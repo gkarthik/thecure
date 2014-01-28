@@ -1119,26 +1119,26 @@ Cure.render_network = function(dataset) {
 			Cure.drawEdges(node,binY,0);
 		}
 		
-		var divLeft = 0;
-		allLinks.sort(function(a,b){return parseInt(b.bin_size-a.bin_size);});
+		try{
+			var count =	allLinks[0].linkNumber;
+			var divLeft = 15 - parseInt(binY(allLinks[0].bin_size/2)); //Edge is rendered from middle.
+		} catch(e){
+			var count = 0;
+			var divLeft = 15;
+		}
+				
+		allLinks.sort(function(a,b){return parseInt(a.linkNumber-b.linkNumber);});
 		for(var temp in allLinks){
+			if(allLinks[temp].linkNumber != count) {
+				divLeft = divLeft - parseInt(binY(allLinks[temp-1].bin_size/2)) - parseInt(binY(allLinks[temp].bin_size/2));//When adding second edge, essentaial to include complete width of previous edge.
+				count = allLinks[temp].linkNumber;
+			}
 			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
 				if(allLinks[temp].target.options.kind == "split_value"){
 					allLinks[temp].source.y += 82;//For Split Nodes 
 				}
-				divLeft = 0;
-				for(i=(temp);i<allLinks.length;i++){
-					if(i!=temp && allLinks[i].source.cid == allLinks[temp].source.cid && allLinks[i].target.cid == allLinks[temp].target.cid){
-						divLeft+=parseInt(allLinks[i].bin_size);
-					}
-				}
-				if(allLinks[temp].left==0){
-					allLinks[temp].source.x-=parseInt(binY(allLinks[temp].bin_size/2)+binY(divLeft/2));
-					allLinks[temp].target.x-=parseInt(binY(allLinks[temp].bin_size/2)+binY(divLeft/2));
-				} else {
-					allLinks[temp].source.x+=parseInt(binY(divLeft/2));
-					allLinks[temp].target.x+=parseInt(binY(divLeft/2));					
-				}
+				allLinks[temp].source.x += divLeft;
+				allLinks[temp].target.x += divLeft;
 				return Cure.diagonal({
 					source : allLinks[temp].source,
 					target : allLinks[temp].target
@@ -1155,8 +1155,7 @@ Cure.render_network = function(dataset) {
 			} else {
 				return "blue";
 			}
-			//return Cure.colorScale(edgeCount);For testing edge width.
-		});
+		}).attr("transform","translate(-5,0)");
 		}
 		
 		//Remove all extra charts rendered.
@@ -1536,20 +1535,19 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 
 //Variables for drawEdges.
 var allLinks = [];
+var leafNodeCount = 0;
 Cure.drawEdges = function(node,binY,count){
 	if(node.get('children').models.length == 0){
+		leafNodeCount++;
 		var branchNo = 1;
-		if(node.get('parentNode').get('parentNode').get('children').models[0].get('cid')==node.get('parentNode').get('cid')){
-			branchNo = 0;
-		}
 		var links = [];
 		var tempNode = node;
 		var source =[];
 		var target = [];
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
-			target = tempNode.toJSON();		
-			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"left":branchNo});
+			target = tempNode.toJSON();
+			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount});
 			tempNode = tempNode.get('parentNode');
 		}
 		allLinks.push.apply(allLinks, links);
