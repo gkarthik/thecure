@@ -24,7 +24,7 @@ html, body{
 }
 
 #PlayerTreeRegion svg{
-  position: absolute;
+  position: relative;
 }
 
 #svgwrapper{
@@ -184,9 +184,27 @@ left:25%;
   box-shadow: 0px 0px 10px 2px red;
 }
 
+#ScoreRegion{
+	margin-top:10px;
+	border-top: 1px solid #ececec;
+}
 #score{
-	margin-top: 22px;
-margin-left: 5px;
+	padding: 5px;
+	background: #FFF;
+	color: #F69;
+	margin-bottom: 5px;
+	margin-top: 0px;
+	text-align: center;
+	border-radius: 0;
+	font-size: 60px;
+}
+
+#scoreLabel{
+	color: #F69;
+	font-weight: 100;
+	display: block;
+	width: 100%;
+	text-align: center;
 }
 
 .addgeneinfo{
@@ -273,17 +291,6 @@ text-align:left;
 	margin-left:25%;
 }
 
-/*
-Style for header links
-*/
-body div.navbar-inner div.container div.nav-collapse ul.nav li a{
-	color: #FFF;
-}
-
-body div.navbar-inner div.container a.brand{
-	color: #FFF;
-}
-
 .MetaDataNode{
 	cursor:pointer;
 }
@@ -304,6 +311,35 @@ body div.navbar-inner div.container a.brand{
 
 #NodeDetailsWrapper .close{
 	margin-top:-15px;
+}
+
+#NodeDetailsWrapper .textDetail{
+	float:left;
+	color: #000;
+	margin-left:5px;
+}
+
+#NodeDetailsWrapper p{
+	margin: auto;
+	padding: 35px 0px;	
+}
+
+#NodeDetailsWrapper .percentDetails{
+	font-size:40px;
+	float:left;
+	font-weight:bold;
+}
+
+.accuracyNodeDetail .percentDetails{
+	color: orange;
+}
+
+.binsizeNodeDetail .percentDetails{
+	color:steelblue;
+}
+
+.accuracyNodeDetail{
+	margin:2px;
 }
 
 #AddRootNodeWrapper{
@@ -334,4 +370,19 @@ body div.navbar-inner div.container a.brand{
 	margin-top: -5px;
 	background: transparent;
 	border: 0px;
+}
+
+#footer{
+	margin-top:0px;
+}
+
+/*
+Style for header links
+*/
+body div.navbar-inner div.container div.nav-collapse ul.nav li a{
+	color: #FFF;
+}
+
+body div.navbar-inner div.container a.brand{
+	color: #FFF;
 }

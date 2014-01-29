@@ -22,8 +22,8 @@ Player player = (Player) session.getAttribute("player");
 <meta charset="utf-8">
 <title>The Cure</title>
 <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
-<link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
+<link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet"
 	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
 	type="text/css" media="all" />
@@ -76,6 +76,8 @@ Player player = (Player) session.getAttribute("player");
 						<li>Classify the data set into <b>relapse</b> and <b>no relapse</b>.</li>
 						<li>Add nodes to the tree by clicking <i class="icon-plus-sign"></i> on the leaf nodes.</li>
 					</ul>
+					<h5>Terminology</h5>
+					<img src="img/helpimage.png" width="500" />
 				</div>
 				<div id="PlayerTreeRegion"></div>
 				</span>
@@ -343,8 +345,8 @@ Player player = (Player) session.getAttribute("player");
     </button>
 </script>
 	<script id="ScoreTemplate" type="text/template">
-<h3>Score</h3>
-<p class="text-info">Your current score is <label class="label label-info" id="score"><@= score @></label></p>
+<span id="scoreLabel">Score</span>
+<h3 id="score"><@= score @></h3>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
