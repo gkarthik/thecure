@@ -87,8 +87,12 @@ input.edit{
 	text-align:center;
 	font-weight:bold;
 	font-size:15px;
-	min-width:0px;
+	min-width:35px;
 	padding:2px;
+}
+
+.split_value .name{
+	float:none;
 }
 
 .leaf_node{
@@ -286,7 +290,7 @@ body div.navbar-inner div.container a.brand{
 
 #NodeDetailsWrapper{
 	z-index: 4;
-	position: fixed;
+	position: absolute;
 	margin-top: 40px;
 	top: 0px;
 	min-width: 200px;
