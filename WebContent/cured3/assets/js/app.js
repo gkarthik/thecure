@@ -337,8 +337,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2 * Math.PI / json.length;
 		var center = {
-			"x" : parseInt(Cure.width / 8 - 20),
-			"y" : Cure.height / 6
+			"x" : parseInt((Cure.Scorewidth / 2) - 50),
+			"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
 		var maxlimit = [ {
@@ -495,8 +495,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2 * Math.PI / json.length;
 		var center = {
-			"x" : parseInt(Cure.width / 8 - 20),
-			"y" : Cure.height / 6
+				"x" : parseInt((Cure.Scorewidth / 2) - 50),
+				"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
 		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).rangeRound(
@@ -676,8 +676,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				.attr("fill", "rgba(229,32,30,0.25) ");
 	},
 	onRender : function() {
-		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width / 3)
-				.attr("height", Cure.height / 3);
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.Scorewidth)
+				.attr("height", Cure.Scoreheight);
 		this.drawAxis();
 		this.updateScore();
 	}
@@ -1102,11 +1102,13 @@ Cure.render_network = function(dataset) {
 			}
 		});
 		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
+		/*
 		var marginTop = maxDepth-160;
 		if(marginTop<0){
 			marginTop = 0;
 		}
 		$("#footer").css("margin-top",marginTop);
+		*/
 		
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
@@ -1213,15 +1215,16 @@ Cure.render_network = function(dataset) {
 					}
 					return "translate(" + d.x + "," + parseInt(d.y+10) + ")";
 				}).on("click",function(d){
-					var content = "<h4>Node Details</h4><ul>";
+					var content = "";
+					//% cases
+					if(d.options.bin_size && d.options.kind =="leaf_node"){
+						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
+					} else if(d.options.bin_size && d.options.kind =="split_node") {
+						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
+					}		
+					//Accuracy
 					if(d.options.pct_correct){
-						content+="<li><span class='text-info'><b>Accuracy</b>[<a>?</a>]</a></span>: "+d.options.pct_correct+"</li>";
-					} else if(d.options.infogain){
-						content+="<li><span class='text-info'><b>Info Gain</b>[<a>?</a>]</a></span>: "+d.options.infogain+"</li>";
-					}
-					if(d.options.bin_size){
-						content+="<li><span class='text-info'><b>Bin Size</b>[<a>?</a>]</a></span>: "+d.options.bin_size+"</li>";
-						content+="<li><span>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"% of cases from dataset fall here.</span></li>"
+						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage of accuracy at this node.</span></p>";
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				}).on("mouseenter",function(){
@@ -1232,84 +1235,6 @@ Cure.render_network = function(dataset) {
 					d3.select(this).classed("selected",false);
 				});
 		
-		/*
-		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
-			if(d.options.kind!="split_value"){
-				return "100";
-			}
-		}).attr("height", 10).style("fill", function(d) {
-			return "white";
-		}).attr("stroke","#000").attr("stroke-width","1");
-		
-		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("transform","translate(-50,-40)").attr("width", 0).attr("height", 8).style("fill", function(d) {
-			if (d.options.pct_correct) {
-				return "orange";
-			} else if (d.options.infogain) {
-				return "green";
-			}
-		});
-		
-		//Accuracy Text
-		
-		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext nodehinttext").attr(
-				"transform", "translate(-50, -49)").style("font-size", "10")
-				.style("fill", function(d) {
-					return "black";
-				}).style("display","none").text(function(d) {
-					var text = "";
-					if (d.options.pct_correct) {
-						text = "Accuracy";
-					} else if (d.options.infogain) {
-						text = "Info Gain";
-					}
-					return text;
-				});
-		
-		// Bin Size
-		nodeEnter.append("rect").attr("class", "scaleIndicator binScaleIndicator").attr("transform",function(d){
-			if(d.options.kind == "leaf_node"){
-				return "translate(-50,16)";
-			} else{
-				return "translate(-50,2)";
-			}
-		}).attr("width",function(d){
-			if(d.options.kind!="split_value"){
-				return "100";
-			}
-		}).attr("height", 10).style("fill", function(d) {
-			return "white";
-		}).attr("stroke","#000").attr("stroke-width","1");
-		
-		nodeEnter.append("rect").attr("class", "binsize").attr("transform",function(d){
-			if(d.options.kind == "leaf_node"){
-				return "translate(-50,17)";
-			} else{
-				return "translate(-50,3)";
-			}
-		}).attr("width", 0).attr(
-				"height", 8).style("fill", function(d) {
-			return "blue";
-		});
-
-		//Bin Size Text 
-		nodeEnter.append("svg:text").attr("class", "binsizetext nodehinttext").attr("transform",function(d){
-				if(d.options.kind == "leaf_node"){
-					return "translate(-50,36)";
-				} else{
-					return "translate(-50, 22)";
-				}
-			}).style("font-size", "10").style("fill",
-				function(d) {
-					return "black";
-				}).style("display","none").text(function(d) {
-			var text = "";
-			if (d.options.bin_size) {
-				text = "Bin size";
-			}
-			return text;
-		});
-		*/
-		
 		var nodeUpdate = node.attr("id",function(d){
 							var limit = binsizeY(d.options.bin_size);
 							if(d.options.kind=="leaf_node"){
@@ -1318,7 +1243,7 @@ Cure.render_network = function(dataset) {
 								//Split Node -> previousAttributes
 									var accLimit = 0;
 									var splitAttr= [];
-									//First CHild Node
+									//First Child Node
 									try{
 										if(d.children[0].children[0].options.kind =="split_node"){
 											splitAttr = d.children[0].children[0].previousAttributes;
@@ -1371,73 +1296,7 @@ Cure.render_network = function(dataset) {
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
-		/*
-		//Update Accuracy Nodes
-		
-		nodeUpdate.select(".nodeaccuracy").transition().duration(Cure.duration).attr("width", function(d) {
-			var height = 0;
-			if (d.options.pct_correct) {
-				height = scaleY(d.options.pct_correct);
-			} else if (d.options.infogain) {
-				height = infoY(d.options.infogain);
-			}
-			return height;
-		}).style("fill", function(d) {
-			if (d.options.pct_correct) {
-				return "orange";
-			} else if (d.options.infogain) {
-				return "green";
-			}
-		});
-		
-		
-		//Update Accuracy Text
-		nodeUpdate.select(".nodeaccuracytext").text(function(d) {
-			var text = "";
-			if (d.options.pct_correct) {
-				text = "Accuracy";
-			} else if (d.options.infogain) {
-				text = "Info Gain";
-			}
-			return text;
-		});
-		
-		
-		// Bin Size
-		nodeUpdate.select(".binScaleIndicator").attr("transform",function(d){
-			if(d.options.kind == "leaf_node"){
-				return "translate(-50,16)";
-			} else{
-				return "translate(-50,2)";
-			}
-		});
-		
-		nodeUpdate.select(".binsize").attr("transform",function(d){
-			if(d.options.kind == "leaf_node"){
-				return "translate(-50,17)";
-			} else{
-				return "translate(-50,3)";
-			}
-		}).transition().duration(Cure.duration).attr("width", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binsizeY(d.options.bin_size);
-			}
-			return height;
-		});
-		
-		//Update Bin Size Text
-		nodeUpdate.select(".binsizetext").attr("transform",function(d){
-			if(d.options.kind == "leaf_node"){
-				return "translate(-50,36)";
-			} else{
-				return "translate(-50, 22)";
-			}
-		});
-		
-		*/
-
-		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
+			var nodeExit = node.exit().transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).remove();
@@ -1470,7 +1329,7 @@ Cure.showDetailsOfNode = function(content, top, left){
 
 Cure.ToggleHelp = function(check){
 	if(!check){
-    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"850px","height":"170px"});
+    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"850px","height":"300px","overflow":"auto"});
     	window.setTimeout(function(){
         	$("#HelpText").html(Cure.helpText);
 		},500);
@@ -1558,20 +1417,6 @@ Cure.drawEdges = function(node,binY,count){
 	}
 }
 
-/*
-Cure.getTranslateLeft = function(node,givenCid){
-	var binsize = 0;
-	if(node.get('children').models.length == 0 && node.get('cid')!=givenCid){
-		binsize = parseInt(binsize + node.get('options').bin_size);
-	} else {
-		for(var temp in node.get('children').models){
-			binsize = parseInt(binsize + Cure.getTranslateLeft(node.get('children').models[temp],givenCid));
-		}
-		return binsize;
-	}
-}
-*/
-
 //
 // -- App init!
 //    
@@ -1636,13 +1481,15 @@ Cure.addInitializer(function(options) {
 	Cure.edgeColor = d3.scale.category20();
 	Cure.width = options["width"];
 	Cure.height = options["height"];
+	Cure.Scorewidth = options["Scorewidth"];
+	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
 	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
-			"width", Cure.width).append("svg:g")
+			"width", Cure.width).attr("height", Cure.height).append("svg:g")
 			.attr("transform", "translate(0,100)");
 	Cure.PlayerNodeCollection = new NodeCollection();
 	Cure.Comment = new Comment();
@@ -1666,8 +1513,10 @@ Cure.addInitializer(function(options) {
 
 //App Start
 Cure.start({
-	"height" : 600,
+	"height" : 300,
 	"width" : 850,
+	"Scorewidth" : 268,
+	"Scoreheight" : 200,
 	"regions" : {
 		"PlayerTreeRegion" : "#PlayerTreeRegion",
 		"ScoreRegion" : "#ScoreRegion",
