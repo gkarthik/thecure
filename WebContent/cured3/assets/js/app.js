@@ -268,6 +268,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if(this.model.get("options").kind == "leaf_node") {
 			nodeTop = (this.model.get('y')+182);
 		}
+		
 		$(this.el).stop(false, false).animate(
 				{
 					'margin-left' : (this.model.get('x') - ((width) / 2))
@@ -1102,13 +1103,6 @@ Cure.render_network = function(dataset) {
 			}
 		});
 		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
-		/*
-		var marginTop = maxDepth-160;
-		if(marginTop<0){
-			marginTop = 0;
-		}
-		$("#footer").css("margin-top",marginTop);
-		*/
 		
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
@@ -1123,13 +1117,15 @@ Cure.render_network = function(dataset) {
 		
 		try{
 			var count =	allLinks[0].linkNumber;
-			var divLeft = 15 - parseInt(binY(allLinks[0].bin_size/2)); //Edge is rendered from middle.
+			var divLeft = binY(dataset.options.bin_size/2) - parseInt(binY(allLinks[0].bin_size/2)); //Edge is rendered from middle.
 		} catch(e){
 			var count = 0;
-			var divLeft = 15;
+			var divLeft = binY(dataset.options.bin_size/2);
 		}
 				
 		allLinks.sort(function(a,b){return parseInt(a.linkNumber-b.linkNumber);});
+		
+		
 		for(var temp in allLinks){
 			if(allLinks[temp].linkNumber != count) {
 				divLeft = divLeft - parseInt(binY(allLinks[temp-1].bin_size/2)) - parseInt(binY(allLinks[temp].bin_size/2));//When adding second edge, essentaial to include complete width of previous edge.
@@ -1160,8 +1156,10 @@ Cure.render_network = function(dataset) {
 		}).attr("transform","translate(-5,0)");
 		}
 		
+		
 		//Remove all extra charts rendered.
 		d3.selectAll(".chartWrapper").remove();
+		
 		
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
@@ -1296,10 +1294,11 @@ Cure.render_network = function(dataset) {
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
-			var nodeExit = node.exit().transition().duration(Cure.duration).attr(
+			//Exit Node
+			node.exit().transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
-				}).remove();
+			}).remove();
 		
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
@@ -1406,7 +1405,7 @@ Cure.drawEdges = function(node,binY,count){
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();
-			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount});
+			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
 		allLinks.push.apply(allLinks, links);

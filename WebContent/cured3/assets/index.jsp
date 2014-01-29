@@ -319,7 +319,7 @@ Player player = (Player) session.getAttribute("player");
 		{
 			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
 		}
-		else
+		else if(args.name == "no relapse")
 		{
 			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
 		} 
