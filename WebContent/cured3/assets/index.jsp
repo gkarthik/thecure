@@ -70,14 +70,20 @@ Player player = (Player) session.getAttribute("player");
 				<span class="row">
 				<div id="HelpText">
 					<button type="button" id="closeHelp">×</button>
+					<h5>Aim</h5>
+					<p>Classify the data set into <b style="color:#FFF;background:red;padding:2px;">relapse</b> and <b style="color:#FFF;background:blue;padding:2px;">no relapse</b>.</p>
 					<h5>Help</h5>
 					<ul>
-						<li>Decide split criteria by typing and choosing genes in the text box.</li>
-						<li>Classify the data set into <b>relapse</b> and <b>no relapse</b>.</li>
-						<li>Add nodes to the tree by clicking <i class="icon-plus-sign"></i> on the leaf nodes.</li>
+						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
+						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Add Node </span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To remove a particular gene from the tree, click on <i class="icon-remove"></i> and the node along with its children will be deleted.</li>
+						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
+						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
+						<li>To view a detailed chart regarding your score, click on <button class="btn btn-small btn-link"><i class="icon-fullscreen"></i> Show Chart</button>. Hover over the chart for numerical data as well.</li>
 					</ul>
 					<h5>Terminology</h5>
-					<img src="img/helpimage.png" width="500" />
+						<img src="img/helpimage.png" width="500" />
 				</div>
 				<div id="PlayerTreeRegion"></div>
 				</span>
@@ -347,6 +353,7 @@ Player player = (Player) session.getAttribute("player");
 	<script id="ScoreTemplate" type="text/template">
 <span id="scoreLabel">Score</span>
 <h3 id="score"><@= score @></h3>
+<button class="btn btn-small btn-link showSVG"><i class="icon-fullscreen"></i>Show Chart</button>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">

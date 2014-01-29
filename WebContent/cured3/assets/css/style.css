@@ -87,7 +87,7 @@ input.edit{
 	text-align:center;
 	font-weight:bold;
 	font-size:15px;
-	min-width:35px;
+	min-width:45px;
 	padding:2px;
 }
 
@@ -214,7 +214,18 @@ left:25%;
 }
 
 #ScoreSVG{
-	border:2px solid steelblue;
+	border: 2px solid steelblue;
+	display: none;
+	position: relative;
+	background: #FFF;
+}
+
+.showSVG{
+	float:right;
+}
+
+.closeSVG{
+	float:right;
 }
 
 #summary_header{
