@@ -258,17 +258,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
 		var width = $(this.el).outerWidth();
-		
-		if(width<=80 && this.model.get('options').kind!="split_value"){
-			width = 82;
-		}
-		
 		var nodeTop = (this.model.get('y')+71);
-		
 		if(this.model.get("options").kind == "leaf_node") {
 			nodeTop = (this.model.get('y')+182);
 		}
-		
 		$(this.el).stop(false, false).animate(
 				{
 					'margin-left' : (this.model.get('x') - ((width) / 2))
@@ -326,7 +319,23 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		'svg' : "#ScoreSVG",
 		'scoreEL' : "#score"
 	},
+	events: {
+		'click .showSVG': 'showSVG',
+		'click .closeSVG': 'closeSVG'
+	},
 	template : "#ScoreTemplate",
+	showSVG: function(){
+		$("#ScoreSVG").slideDown();
+		$(".showSVG").html('<i class="icon-remove"></i> Hide Chart');
+		$(".showSVG").addClass("closeSVG");
+		$(".showSVG").removeClass("showSVG");
+	},
+	closeSVG: function(){
+		$("#ScoreSVG").slideUp();
+		$(".closeSVG").html('<i class="icon-fullscreen"></i> Show Chart');
+		$(".closeSVG").addClass("showSVG");
+		$(".closeSVG").removeClass("closeSVG");
+	},
 	drawAxis : function() {
 		var json = [];
 		var thisModel = this.model;
@@ -1222,7 +1231,7 @@ Cure.render_network = function(dataset) {
 					}		
 					//Accuracy
 					if(d.options.pct_correct){
-						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage of accuracy at this node.</span></p>";
+						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				}).on("mouseenter",function(){
