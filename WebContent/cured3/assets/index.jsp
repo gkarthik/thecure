@@ -70,8 +70,6 @@ Player player = (Player) session.getAttribute("player");
 				<span class="row">
 				<div id="HelpText">
 					<button type="button" id="closeHelp">×</button>
-					<h5>Aim</h5>
-					<p>Classify the data set into <b style="color:#FFF;background:red;padding:2px;">relapse</b> and <b style="color:#FFF;background:blue;padding:2px;">no relapse</b>.</p>
 					<h5>Help</h5>
 					<ul>
 						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
@@ -103,6 +101,10 @@ Player player = (Player) session.getAttribute("player");
 	</div>
 	<jsp:include page="/footer.jsp" />
 	<script type="text/template" id="Empty-Layout-Template">
+		<div class="aimWrapper">
+		<h3>Aim</h3>
+		<p>Build a decision tree that predicts breast cancer outcome using the expression values of genes (and soon clinical variables).</p>
+		</div>
 		<div id="AddRootNodeWrapper"></div>
 	</script> 
 	<script type="text/template" id="commentTemplate">
