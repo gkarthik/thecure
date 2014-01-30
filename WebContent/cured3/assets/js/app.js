@@ -620,8 +620,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width",
 						"0.5px").attr("fill", "rgba(242,223,191,0.5)");
 
-		Cure.ScoreSVG.on(
-				"mouseover",
+		Cure.ScoreSVG.on("mouseover",
 				function() {
 					var d = Cure.ScoreSVG.selectAll(".dataPolygon").data()[0];
 					var json = [];
@@ -637,7 +636,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 							}).attr("y", function(d) {
 								return d.y - 2;
 							}).attr("height", "17").attr("width", "40").attr("fill",
-									"rgb(255,213,52)").attr("class", "hoverRect");
+									"#FFF").attr("class", "hoverRect");
 					ctr = -1;
 					Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append(
 							"svg:text").attr("x", function(d) {
@@ -645,15 +644,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 					}).attr("y", function(d) {
 						return d.y + 10;
 					}).style({
-						"font-size" : "10px",
-						"background" : "#FFF"
-					}).attr("stroke", function() {
-						if (ctr >= 2) {
-							ctr = -1;
-						}
-						ctr++;
-						return Cure.colorScale(ctr);
-					}).text(function() {
+						"font-size" : "10px"
+					}).attr("stroke","rgb(255, 102, 153)").text(function() {
 						if (ctr >= 2) {
 							ctr = -1;
 						}
@@ -1148,6 +1140,7 @@ Cure.render_network = function(dataset) {
 			allLinks[temp].source.x += divLeft;
 			allLinks[temp].target.x += divLeft;
 		}
+		
 		var link = SVG.selectAll(".link").data(allLinks);
 		
 		var source = {};
@@ -1165,7 +1158,7 @@ Cure.render_network = function(dataset) {
 			}
 		});
 	
-		link.transition().duration(Cure.duration).attr("d",function(d){
+		link.transition().delay(Cure.duration).duration(Cure.duration).attr("d",function(d){
 			return Cure.diagonal({
 				source : d.source,
 				target : d.target
@@ -1201,52 +1194,7 @@ Cure.render_network = function(dataset) {
 		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode").attr("id",function(d){
 			return "MetaDataNode"+d.cid;
 		}).attr("transform", function(d) {
-					var limit = binsizeY(d.options.bin_size);
-					if(d.options.kind=="leaf_node"){
-						var accLimit = d.options.pct_correct * limit;
-					} else if(d.options.kind == "split_node") {
-						//Split Node -> previousAttributes
-							var accLimit = 0;
-							var splitAttr= [];
-							//First CHild Node
-							try{
-								if(d.children[0].children[0].options.kind =="split_node"){
-									splitAttr = d.children[0].children[0].previousAttributes;
-								} else {//Leaf Node
-									splitAttr = d.children[0].children[0];								
-								}
-								
-								if(splitAttr.name == "relapse") {
-									accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-								} else if(splitAttr.name == "no relapse") {
-									accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-								}
-								
-								//Second Node
-								if(d.children[1].children[0].options.kind =="split_node")
-								{
-									splitAttr = d.children[1].children[0].previousAttributes;
-								} else {
-									splitAttr = d.children[1].children[0];
-								}
-								
-								if(splitAttr.name == "relapse") {
-									accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-								} else if(splitAttr.name == "no relapse") {
-									accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-								}
-							} catch(err){
-								var accLimit = 0;
-							}
-					} else {
-						var accLimit = 0;
-					}
-					var radius = 5;
-					Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
-					if(d.options.kind=="leaf_node"){
-						return "translate(" + d.x + "," + parseInt(d.y-19) + ")";
-					}
-					return "translate(" + d.x + "," + parseInt(d.y+10) + ")";
+					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).on("click",function(d){
 					var content = "";
 					//% cases
@@ -1260,12 +1208,6 @@ Cure.render_network = function(dataset) {
 						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
-				}).on("mouseenter",function(){
-					d3.select(this).classed("selected",true);
-					d3.selectAll(".selected .nodehinttext").style("display","block");
-				}).on("mouseleave",function(){
-					d3.selectAll(".selected .nodehinttext").style("display","none");
-					d3.select(this).classed("selected",false);
 				});
 		
 		node.attr("id",function(d){
@@ -1323,9 +1265,7 @@ Cure.render_network = function(dataset) {
 						classToChoose["className"]= " .posCircle";
 						classToChoose["color"]= "blue";
 					}
-					window.setTimeout(function(){
-						d3.selectAll("#"+id+classToChoose["className"]).transition().duration(Cure.duration*2).style("fill",classToChoose["color"]);
-					},Cure.duration);
+					d3.selectAll("#"+id+classToChoose["className"]).transition().delay(Cure.duration*3).duration(Cure.duration*2).style("fill",classToChoose["color"]);
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
