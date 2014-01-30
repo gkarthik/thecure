@@ -678,7 +678,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						return [ d.x, d.y ].join(",");
 					}).join(" ");
 				}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width", "1px")
-				.attr("fill", "rgba(229,32,30,0.25) ");
+				.attr("fill", "rgba(255, 102, 153, 0.25) ");
 	},
 	onRender : function() {
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.Scorewidth)
@@ -751,40 +751,42 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				$("#SpeechBubble").remove();
 			},
 			select : function(event, ui) {
-				$("#SpeechBubble").remove();
-				var kind_value = "";
-				try {
-					kind_value = model.get("options").kind;
-				} catch (exception) {
-				}
-				if (kind_value == "leaf_node") {
-					model.set("previousAttributes", model.toJSON());
-					model.set("name", ui.item.symbol);
-					model.set("options", {
-						id : ui.item.id,
-						"kind" : "split_node",
-						"full_name" : ui.item.name
-					});
-				} else {
-					var newNode = new Node({
-						'name' : ui.item.symbol,
-						"options" : {
+				if(ui.item.name != undefined){
+					$("#SpeechBubble").remove();
+					var kind_value = "";
+					try {
+						kind_value = model.get("options").kind;
+					} catch (exception) {
+					}
+					if (kind_value == "leaf_node") {
+						model.set("previousAttributes", model.toJSON());
+						model.set("name", ui.item.symbol);
+						model.set("options", {
 							id : ui.item.id,
 							"kind" : "split_node",
 							"full_name" : ui.item.name
+						});
+					} else {
+						var newNode = new Node({
+							'name' : ui.item.symbol,
+							"options" : {
+								id : ui.item.id,
+								"kind" : "split_node",
+								"full_name" : ui.item.name
+							}
+						});
+						newNode.set("cid", newNode.cid);
+						/*
+						if (model.get("children")) {
+							model.get("children").add(newNode);
 						}
-					});
-					newNode.set("cid", newNode.cid);
-					/*
-					if (model.get("children")) {
-						model.get("children").add(newNode);
+						*/
 					}
-					*/
+					if (Cure.MyGeneInfoRegion) {
+						Cure.MyGeneInfoRegion.close();
+					}
+					Cure.PlayerNodeCollection.sync();
 				}
-				if (Cure.MyGeneInfoRegion) {
-					Cure.MyGeneInfoRegion.close();
-				}
-				Cure.PlayerNodeCollection.sync();
 			}
 		});
 		
@@ -826,7 +828,7 @@ var emptyLayout = Backbone.Marionette.Layout.extend({
         	Cure.helpText = $("#HelpText").html();	
         	Cure.ToggleHelp(true);
     	}
-    	var newAddRootNodeView = new AddRootNodeView({model:Cure.PlayerNodeCollection}); 
+    	var newAddRootNodeView = new AddRootNodeView(); 
     	this.AddRootNode.show(newAddRootNodeView);
     },
     onBeforeClose: function(){
@@ -1272,6 +1274,10 @@ Cure.render_network = function(dataset) {
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 			}).remove();
+			
+			if(Cure.PlayerNodeCollection.models.length == 0){
+				d3.selectAll(".chartWrapper").remove();
+			}
 		
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
