@@ -60,6 +60,10 @@ input.edit{
 	min-width: 95px;
 	min-height: 23px;
 	border: 0px;
+	-webkit-transition: transform 0.5s ease-in-out;
+  	-moz-transition: transform 0.5s ease-in-out;
+  	-o-transition: transform 0.5s ease-in-out;
+  	transition: transform 0.5s ease-in-out;
 }
 
 .node .btn{
