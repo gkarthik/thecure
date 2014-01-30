@@ -285,10 +285,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if (this.model.get('parentNode') != null) {
 			Cure.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
-			for ( var key in prevAttr) {
-				this.model.set(key, prevAttr[key]);
-			}
-			this.model.set("previousAtributes", []);
+				for ( var key in prevAttr) {
+					this.model.set(key, prevAttr[key]);
+				}
+				this.model.set("previousAttributes", []);
 		} else {
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
@@ -635,7 +635,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 								return d.x + 8;
 							}).attr("y", function(d) {
 								return d.y - 2;
-							}).attr("height", "17").attr("width", "40").attr("fill",
+							}).attr("height", "19").attr("width", "42").attr("fill",
 									"#FFF").attr("class", "hoverRect");
 					ctr = -1;
 					Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append(
@@ -644,7 +644,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 					}).attr("y", function(d) {
 						return d.y + 10;
 					}).style({
-						"font-size" : "10px"
+						"font-size" : "12px"
 					}).attr("stroke","rgb(255, 102, 153)").text(function() {
 						if (ctr >= 2) {
 							ctr = -1;
@@ -1110,8 +1110,6 @@ Cure.render_network = function(dataset) {
 		
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
-		Cure.PlayerSvg.selectAll(".link").remove();
-		//Cure.PlayerSvg.selectAll(".dataChart").remove();
 		edgeCount = 0;
 		translateLeft = 0;
 		allLinks = [];
@@ -1145,25 +1143,25 @@ Cure.render_network = function(dataset) {
 		
 		var source = {};
 		var target = {};
-		link.enter().append("path").attr("class", "link").attr("d",function(d){
-			return Cure.diagonal({
-				source : d.source,
-				target : d.source
-			});
-		}).style("stroke-width", "1").style("stroke",function(d){
+		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
 			if(d.name=="relapse"){
 				return "red";
 			} else {
 				return "blue";
 			}
+		}).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.source
+			});
 		});
 	
-		link.transition().delay(Cure.duration).duration(Cure.duration).attr("d",function(d){
+		link.transition().duration(Cure.duration).attr("d",function(d){
 			return Cure.diagonal({
 				source : d.source,
 				target : d.target
 			});
-		}).transition().duration(Cure.duration).style("stroke-width", function(d){
+		}).transition().delay(Cure.duration).duration(Cure.duration).style("stroke-width", function(d){
 			var edgeWidth = binY(d.bin_size);
 			if(edgeWidth<1){
 				edgeWidth = 1;
