@@ -262,13 +262,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if(this.model.get("options").kind == "leaf_node") {
 			nodeTop = (this.model.get('y')+182);
 		}
+		$(this.el).attr("class", "node");
+		$(this.el).css({"transform":"translate("+ (this.model.get('x') - ((width) / 2)) +"px,"+ nodeTop +"px)"});
+		/*
 		$(this.el).stop(false, false).animate(
 				{
 					'margin-left' : (this.model.get('x') - ((width) / 2))
 							+ "px",
 					'margin-top' : nodeTop + "px"
 				});
-		$(this.el).attr("class", "node");
+		*/
 		$(this.el).addClass(this.model.get("options").kind);
 	}, 
 	remove : function() {
@@ -824,17 +827,17 @@ var emptyLayout = Backbone.Marionette.Layout.extend({
       AddRootNode: "#AddRootNodeWrapper"
     },
     onBeforeRender: function(){
-    	Cure.ToggleHelp(false);
+    	//Cure.ToggleHelp(false);
     },
     onRender: function(){
     	if(!Cure.helpText){
         	Cure.helpText = $("#HelpText").html();	
+        	Cure.ToggleHelp(true);
     	}
     	var newAddRootNodeView = new AddRootNodeView({model:Cure.PlayerNodeCollection}); 
     	this.AddRootNode.show(newAddRootNodeView);
     },
     onBeforeClose: function(){
-    	Cure.ToggleHelp(true);
     }
 });
 
@@ -1134,36 +1137,59 @@ Cure.render_network = function(dataset) {
 				
 		allLinks.sort(function(a,b){return parseInt(a.linkNumber-b.linkNumber);});
 		
-		
 		for(var temp in allLinks){
 			if(allLinks[temp].linkNumber != count) {
 				divLeft = divLeft - parseInt(binY(allLinks[temp-1].bin_size/2)) - parseInt(binY(allLinks[temp].bin_size/2));//When adding second edge, essentaial to include complete width of previous edge.
 				count = allLinks[temp].linkNumber;
 			}
-			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
-				if(allLinks[temp].target.options.kind == "split_value"){
-					allLinks[temp].source.y += 82;//For Split Nodes 
-				}
-				allLinks[temp].source.x += divLeft;
-				allLinks[temp].target.x += divLeft;
-				return Cure.diagonal({
-					source : allLinks[temp].source,
-					target : allLinks[temp].target
-				});
-		}).style("stroke-width", function(){
-			var edgeWidth = binY(allLinks[temp].bin_size);
+			if(allLinks[temp].target.options.kind == "split_value"){
+				allLinks[temp].source.y += 82;//For Split Nodes 
+			}
+			allLinks[temp].source.x += divLeft;
+			allLinks[temp].target.x += divLeft;
+		}
+		var link = SVG.selectAll(".link").data(allLinks);
+		
+		var source = {};
+		var target = {};
+		link.enter().append("path").attr("class", "link").attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.source
+			});
+		}).style("stroke-width", "1").style("stroke",function(d){
+			if(d.name=="relapse"){
+				return "red";
+			} else {
+				return "blue";
+			}
+		});
+	
+		link.transition().duration(Cure.duration).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.target
+			});
+		}).transition().duration(Cure.duration).style("stroke-width", function(d){
+			var edgeWidth = binY(d.bin_size);
 			if(edgeWidth<1){
 				edgeWidth = 1;
 			} 
 			return edgeWidth;
-		}).style("stroke",function(){
-			if(allLinks[temp].name=="relapse"){
+		}).style("stroke",function(d){
+			if(d.name=="relapse"){
 				return "red";
 			} else {
 				return "blue";
 			}
 		}).attr("transform","translate(-5,0)");
-		}
+		
+		link.exit().transition().duration(Cure.duration).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.source
+			});
+		}).remove();
 		
 		
 		//Remove all extra charts rendered.
@@ -1242,7 +1268,7 @@ Cure.render_network = function(dataset) {
 					d3.select(this).classed("selected",false);
 				});
 		
-		var nodeUpdate = node.attr("id",function(d){
+		node.attr("id",function(d){
 							var limit = binsizeY(d.options.bin_size);
 							if(d.options.kind=="leaf_node"){
 								var accLimit = d.options.pct_correct * limit;
@@ -1392,11 +1418,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 				return "blue";//Opposite Color
 			}
 			return "red";//Opposite Color
-		}).attr("x",function(){
-			return (radius*2)*(i%10);
-		}).attr("y",function(){
-			return ((radius*20)-(radius*2)*parseInt(i/10));
-		});
+		}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
 	}
 }
 
@@ -1406,7 +1428,6 @@ var leafNodeCount = 0;
 Cure.drawEdges = function(node,binY,count){
 	if(node.get('children').models.length == 0){
 		leafNodeCount++;
-		var branchNo = 1;
 		var links = [];
 		var tempNode = node;
 		var source =[];

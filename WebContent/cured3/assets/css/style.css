@@ -387,6 +387,22 @@ text-align:left;
 	margin-top:0px;
 }
 
+.aimWrapper{
+	color: rgb(255, 102, 153);
+	font-weight:bold;
+}
+
+.aimWrapper h3{
+	text-align:center;
+}
+
+.aimWrapper p{
+	font-weight: 100;
+	color: #555;
+	text-align: center;
+	font-size: 15px;
+}
+
 /*
 Style for header links
 */
