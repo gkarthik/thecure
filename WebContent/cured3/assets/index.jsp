@@ -22,8 +22,8 @@ Player player = (Player) session.getAttribute("player");
 <meta charset="utf-8">
 <title>The Cure</title>
 <link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
-<link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
+<link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet"
 	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
 	type="text/css" media="all" />
@@ -68,7 +68,22 @@ Player player = (Player) session.getAttribute("player");
 		<div class="row">
 					<div class="span9">
 				<span class="row">
-					<div id="PlayerTreeRegion"></div>
+				<div id="HelpText">
+					<button type="button" id="closeHelp">×</button>
+					<h5>Help</h5>
+					<ul>
+						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
+						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Add Node </span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To remove a particular gene from the tree, click on <i class="icon-remove"></i> and the node along with its children will be deleted.</li>
+						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
+						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
+						<li>To view a detailed chart regarding your score, click on <button class="btn btn-small btn-link"><i class="icon-fullscreen"></i> Show Chart</button>. Hover over the chart for numerical data as well.</li>
+					</ul>
+					<h5>Terminology</h5>
+						<img src="img/helpimage.png" width="500" />
+				</div>
+				<div id="PlayerTreeRegion"></div>
 				</span>
 			</div>
 			<div class="span3">
@@ -85,6 +100,13 @@ Player player = (Player) session.getAttribute("player");
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="Empty-Layout-Template">
+		<div class="aimWrapper">
+		<h3>Aim</h3>
+		<p>Build a decision tree that predicts breast cancer outcome using the expression values of genes (and soon clinical variables).</p>
+		</div>
+		<div id="AddRootNodeWrapper"></div>
+	</script> 
 	<script type="text/template" id="commentTemplate">
 	<@ if(editView == 0) { @>
 		<@ if(content == "") { @>
@@ -301,12 +323,19 @@ Player player = (Player) session.getAttribute("player");
     </td>
   </script>
 	<script id="nodeTemplate" type="text/template">  
-    <span class="name attrvalue">
-      <@= args.name @>
-    </span>
+		<@ if(args.name == "relapse")
+		{
+			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
+		}
+		else if(args.name == "no relapse")
+		{
+			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
+		} 
+      	@>
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>
+		<span style="float: none;">Add Node </span>
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
   </script>
@@ -324,8 +353,9 @@ Player player = (Player) session.getAttribute("player");
     </button>
 </script>
 	<script id="ScoreTemplate" type="text/template">
-<h3>Score</h3>
-<p class="text-info">Your current score is <label class="label label-info" id="score"><@= score @></label></p>
+<span id="scoreLabel">Score</span>
+<h3 id="score"><@= score @></h3>
+<button class="btn btn-small btn-link showSVG"><i class="icon-fullscreen"></i>Show Chart</button>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">

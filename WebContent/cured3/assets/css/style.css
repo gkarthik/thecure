@@ -20,11 +20,11 @@ html, body{
 
 #mygene_addnode{
 	position:relative;
-	width:50%;
+	width:100%;
 }
 
 #PlayerTreeRegion svg{
-  position: absolute;
+  position: relative;
 }
 
 #svgwrapper{
@@ -60,6 +60,10 @@ input.edit{
 	min-width: 95px;
 	min-height: 23px;
 	border: 0px;
+	-webkit-transition: transform 0.5s ease-in-out;
+  	-moz-transition: transform 0.5s ease-in-out;
+  	-o-transition: transform 0.5s ease-in-out;
+  	transition: transform 0.5s ease-in-out;
 }
 
 .node .btn{
@@ -69,34 +73,49 @@ input.edit{
 }
 
 .split_node{
-	background: lightsteelblue;
-	color:#000;
-	padding:4px;
-	text-align:center;
-	font-weight:bold;
-	font-size:14px;
-}
-
-.split_value{
-	border: 0px;
-	background: none;
-	color:palered;
-	padding:0px;
-	padding-top: 7px;
-	text-align:center;
-	font-weight:bold;
-	font-size:20px;
-	min-width:0px;
-}
-
-.leaf_node{
-	border: 0px;
-	background: #ffbb78 ;
+	background: white;
 	color:#000;
 	padding:2px;
 	text-align:center;
 	font-weight:bold;
+	font-size:14px;
+	border:2px solid #000;
+}
+
+.split_value{
+	border: 1px solid #000;
+	background: #FFF;
+	color:#000;
+	padding:0px;
+	padding-top: 7px;
+	text-align:center;
+	font-weight:bold;
+	font-size:15px;
+	min-width:45px;
+	padding:2px;
+}
+
+.split_value .name{
+	float:none;
+}
+
+.leaf_node{
+	border: 0px;
+	background: transparent;
+	color:#000;
+	text-align:center;
+	font-weight:bold;
 	font-size:16px;
+}
+
+.leaf_node .btn{
+	float:none;
+}
+
+.leaf_node .name{
+	float: none;
+	color: #FFF;
+	font-size: 13px;
 }
 
 .link {
@@ -169,19 +188,48 @@ left:25%;
   box-shadow: 0px 0px 10px 2px red;
 }
 
+#ScoreRegion{
+	margin-top:10px;
+	border-top: 1px solid #ececec;
+}
 #score{
-	margin-top: 22px;
-margin-left: 5px;
+	padding: 5px;
+	background: #FFF;
+	color: #F69;
+	margin-bottom: 5px;
+	margin-top: 0px;
+	text-align: center;
+	border-radius: 0;
+	font-size: 60px;
+}
+
+#scoreLabel{
+	color: #F69;
+	font-weight: 100;
+	display: block;
+	width: 100%;
+	text-align: center;
 }
 
 .addgeneinfo{
-	position: relative;
-margin: 1px;
-margin-top: 27px;
+	position: absolute;
+	margin: 1px;
+	margin-left: -75px;
 }
 
 #ScoreSVG{
-	border:2px solid steelblue;
+	border: 2px solid steelblue;
+	display: none;
+	position: relative;
+	background: #FFF;
+}
+
+.showSVG{
+	float:right;
+}
+
+.closeSVG{
+	float:right;
 }
 
 #summary_header{
@@ -258,24 +306,13 @@ text-align:left;
 	margin-left:25%;
 }
 
-/*
-Style for header links
-*/
-body div.navbar-inner div.container div.nav-collapse ul.nav li a{
-	color: #FFF;
-}
-
-body div.navbar-inner div.container a.brand{
-	color: #FFF;
-}
-
 .MetaDataNode{
 	cursor:pointer;
 }
 
 #NodeDetailsWrapper{
 	z-index: 4;
-	position: fixed;
+	position: absolute;
 	margin-top: 40px;
 	top: 0px;
 	min-width: 200px;
@@ -289,4 +326,94 @@ body div.navbar-inner div.container a.brand{
 
 #NodeDetailsWrapper .close{
 	margin-top:-15px;
+}
+
+#NodeDetailsWrapper .textDetail{
+	float:left;
+	color: #000;
+	margin-left:5px;
+}
+
+#NodeDetailsWrapper p{
+	margin: auto;
+	padding: 35px 0px;	
+}
+
+#NodeDetailsWrapper .percentDetails{
+	font-size:40px;
+	float:left;
+	font-weight:bold;
+}
+
+.accuracyNodeDetail .percentDetails{
+	color: orange;
+}
+
+.binsizeNodeDetail .percentDetails{
+	color:steelblue;
+}
+
+.accuracyNodeDetail{
+	margin:2px;
+}
+
+#AddRootNodeWrapper{
+	text-align:center;
+}
+
+#HelpText{
+	position: relative;
+	width:850px;
+	padding:5px;
+	border:1px solid lightblue;
+	border-radius:5px;
+	z-index:5;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	-o-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
+}
+
+#HelpText p{
+	margin-top:10px;
+}
+
+#closeHelp{
+	float:right;
+	margin-top:-5px;
+	float: right;
+	margin-top: -5px;
+	background: transparent;
+	border: 0px;
+}
+
+#footer{
+	margin-top:0px;
+}
+
+.aimWrapper{
+	color: rgb(255, 102, 153);
+	font-weight:bold;
+}
+
+.aimWrapper h3{
+	text-align:center;
+}
+
+.aimWrapper p{
+	font-weight: 100;
+	color: #555;
+	text-align: center;
+	font-size: 15px;
+}
+
+/*
+Style for header links
+*/
+body div.navbar-inner div.container div.nav-collapse ul.nav li a{
+	color: #FFF;
+}
+
+body div.navbar-inner div.container a.brand{
+	color: #FFF;
 }
