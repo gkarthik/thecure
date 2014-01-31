@@ -751,7 +751,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				$("#SpeechBubble").remove();
 			},
 			select : function(event, ui) {
-				if(ui.item.name != undefined){
+				if(ui.item.name != undefined){//To ensure "no gene name has been selected" is not accepted.
 					$("#SpeechBubble").remove();
 					var kind_value = "";
 					try {
@@ -1265,7 +1265,7 @@ Cure.render_network = function(dataset) {
 						classToChoose["className"]= " .posCircle";
 						classToChoose["color"]= "blue";
 					}
-					d3.selectAll("#"+id+classToChoose["className"]).transition().delay(Cure.duration*3).duration(Cure.duration*2).style("fill",classToChoose["color"]);
+					d3.selectAll("#"+id+classToChoose["className"]).style("fill",classToChoose["color"]);
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
@@ -1275,6 +1275,7 @@ Cure.render_network = function(dataset) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
 			}).remove();
 			
+			//On Empty Collection remove all .chartWrapper
 			if(Cure.PlayerNodeCollection.models.length == 0){
 				d3.selectAll(".chartWrapper").remove();
 			}
@@ -1320,6 +1321,10 @@ Cure.ToggleHelp = function(check){
 	}
 }
 
+Cure.isInt = function(n) {
+   return n % 1 === 0;
+}
+
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
 	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(-"+(radius*10)+",-5)").style("display",function(){
 		if(nodeKind == "split_value"){
@@ -1352,17 +1357,41 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 		}
 		return "black";
 	}).style("stroke-width","2");
-	for(i=0;i<limit;i++){
-		chartWrapper.append("rect").attr("class",function(){
-			if(i<accLimit)
+	for(i=0;i<(limit);i++){
+		if(Cure.isInt(accLimit) || i<=(accLimit-1) || i > (accLimit)){
+			chartWrapper.append("rect").attr("class",function(){
+				if(i<accLimit)
+					return "posCircle";
+				return "negCircle";
+			}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
+				if(nodeName=="relapse"){
+					return "blue";//Opposite Color
+				}
+				return "red";//Opposite Color
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+		} else if(!Cure.isInt(accLimit) && i== parseInt((accLimit)/1)){//Final square to be printed
+			chartWrapper.append("rect").attr("class",function(){
 				return "posCircle";
-			return "negCircle";
-		}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
-			if(nodeName=="relapse"){
-				return "blue";//Opposite Color
-			}
-			return "red";//Opposite Color
-		}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+			}).attr("height",(radius*2)-2).attr("width",function(){
+				return ((radius*2)-2) * ((accLimit) % 1);
+			}).style("fill",function(){
+				if(nodeName=="relapse"){
+					return "blue";//Opposite Color
+				}
+				return "red";//Opposite Color
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+			
+			chartWrapper.append("rect").attr("class",function(){
+				return "negCircle";
+			}).attr("height",(radius*2)-2).attr("width",function(){
+				return  ((radius*2)-2) * (1- (accLimit % 1));
+			}).style("fill",function(){
+				if(nodeName=="relapse"){
+					return "blue";//Opposite Color
+				}
+				return "red";//Opposite Color
+			}).attr("transform","translate("+parseInt((radius*2)*(i%10) + ((radius*2)-2) * (accLimit % 1)) + ","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+		}
 	}
 }
 
