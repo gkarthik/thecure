@@ -257,19 +257,21 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
-		var width = $(this.el).width();
-		
-		if(width<=100 && this.model.get('options').kind!="split_value"){
-			width = 100;;
+		var width = $(this.el).outerWidth();
+		var nodeTop = (this.model.get('y')+71);
+		if(this.model.get("options").kind == "leaf_node") {
+			nodeTop = (this.model.get('y')+182);
 		}
-		
+		$(this.el).attr("class", "node");
+		$(this.el).css({"transform":"translate("+ (this.model.get('x') - ((width) / 2)) +"px,"+ nodeTop +"px)"});
+		/*
 		$(this.el).stop(false, false).animate(
 				{
 					'margin-left' : (this.model.get('x') - ((width) / 2))
 							+ "px",
-					'margin-top' : (this.model.get('y') + 70) + "px"
+					'margin-top' : nodeTop + "px"
 				});
-		$(this.el).attr("class", "node");
+		*/
 		$(this.el).addClass(this.model.get("options").kind);
 	}, 
 	remove : function() {
@@ -283,10 +285,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if (this.model.get('parentNode') != null) {
 			Cure.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
-			for ( var key in prevAttr) {
-				this.model.set(key, prevAttr[key]);
-			}
-			this.model.set("previousAtributes", []);
+				for ( var key in prevAttr) {
+					this.model.set(key, prevAttr[key]);
+				}
+				this.model.set("previousAttributes", []);
 		} else {
 			Cure.delete_all_children(this.model);
 			this.model.destroy();
@@ -320,7 +322,23 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		'svg' : "#ScoreSVG",
 		'scoreEL' : "#score"
 	},
+	events: {
+		'click .showSVG': 'showSVG',
+		'click .closeSVG': 'closeSVG'
+	},
 	template : "#ScoreTemplate",
+	showSVG: function(){
+		$("#ScoreSVG").slideDown();
+		$(".showSVG").html('<i class="icon-remove"></i> Hide Chart');
+		$(".showSVG").addClass("closeSVG");
+		$(".showSVG").removeClass("showSVG");
+	},
+	closeSVG: function(){
+		$("#ScoreSVG").slideUp();
+		$(".closeSVG").html('<i class="icon-fullscreen"></i> Show Chart');
+		$(".closeSVG").addClass("showSVG");
+		$(".closeSVG").removeClass("closeSVG");
+	},
 	drawAxis : function() {
 		var json = [];
 		var thisModel = this.model;
@@ -332,8 +350,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2 * Math.PI / json.length;
 		var center = {
-			"x" : parseInt(Cure.width / 8 - 20),
-			"y" : Cure.height / 6
+			"x" : parseInt((Cure.Scorewidth / 2) - 50),
+			"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
 		var maxlimit = [ {
@@ -490,8 +508,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		var interval_angle = 2 * Math.PI / json.length;
 		var center = {
-			"x" : parseInt(Cure.width / 8 - 20),
-			"y" : Cure.height / 6
+				"x" : parseInt((Cure.Scorewidth / 2) - 50),
+				"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
 		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).rangeRound(
@@ -602,8 +620,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width",
 						"0.5px").attr("fill", "rgba(242,223,191,0.5)");
 
-		Cure.ScoreSVG.on(
-				"mouseover",
+		Cure.ScoreSVG.on("mouseover",
 				function() {
 					var d = Cure.ScoreSVG.selectAll(".dataPolygon").data()[0];
 					var json = [];
@@ -618,8 +635,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 								return d.x + 8;
 							}).attr("y", function(d) {
 								return d.y - 2;
-							}).attr("height", "17").attr("width", "40").attr("fill",
-									"rgb(255,213,52)").attr("class", "hoverRect");
+							}).attr("height", "19").attr("width", "42").attr("fill",
+									"#FFF").attr("class", "hoverRect");
 					ctr = -1;
 					Cure.ScoreSVG.selectAll(".hoverText").data(d).enter().append(
 							"svg:text").attr("x", function(d) {
@@ -627,15 +644,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 					}).attr("y", function(d) {
 						return d.y + 10;
 					}).style({
-						"font-size" : "10px",
-						"background" : "#FFF"
-					}).attr("stroke", function() {
-						if (ctr >= 2) {
-							ctr = -1;
-						}
-						ctr++;
-						return Cure.colorScale(ctr);
-					}).text(function() {
+						"font-size" : "12px"
+					}).attr("stroke","rgb(255, 102, 153)").text(function() {
 						if (ctr >= 2) {
 							ctr = -1;
 						}
@@ -668,11 +678,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						return [ d.x, d.y ].join(",");
 					}).join(" ");
 				}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width", "1px")
-				.attr("fill", "rgba(229,32,30,0.25) ");
+				.attr("fill", "rgba(255, 102, 153, 0.25) ");
 	},
 	onRender : function() {
-		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.width / 3)
-				.attr("height", Cure.height / 3);
+		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.Scorewidth)
+				.attr("height", Cure.Scoreheight);
 		this.drawAxis();
 		this.updateScore();
 	}
@@ -741,38 +751,42 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				$("#SpeechBubble").remove();
 			},
 			select : function(event, ui) {
-				$("#SpeechBubble").remove();
-				var kind_value = "";
-				try {
-					kind_value = model.get("options").kind;
-				} catch (exception) {
-				}
-				if (kind_value == "leaf_node") {
-					model.set("previousAttributes", model.toJSON());
-					model.set("name", ui.item.symbol);
-					model.set("options", {
-						id : ui.item.id,
-						"kind" : "split_node",
-						"full_name" : ui.item.name
-					});
-				} else {
-					var newNode = new Node({
-						'name' : ui.item.symbol,
-						"options" : {
+				if(ui.item.name != undefined){
+					$("#SpeechBubble").remove();
+					var kind_value = "";
+					try {
+						kind_value = model.get("options").kind;
+					} catch (exception) {
+					}
+					if (kind_value == "leaf_node") {
+						model.set("previousAttributes", model.toJSON());
+						model.set("name", ui.item.symbol);
+						model.set("options", {
 							id : ui.item.id,
 							"kind" : "split_node",
 							"full_name" : ui.item.name
+						});
+					} else {
+						var newNode = new Node({
+							'name' : ui.item.symbol,
+							"options" : {
+								id : ui.item.id,
+								"kind" : "split_node",
+								"full_name" : ui.item.name
+							}
+						});
+						newNode.set("cid", newNode.cid);
+						/*
+						if (model.get("children")) {
+							model.get("children").add(newNode);
 						}
-					});
-					newNode.set("cid", newNode.cid);
-					if (model.get("children")) {
-						model.get("children").add(newNode);
+						*/
 					}
+					if (Cure.MyGeneInfoRegion) {
+						Cure.MyGeneInfoRegion.close();
+					}
+					Cure.PlayerNodeCollection.sync();
 				}
-				if (Cure.MyGeneInfoRegion) {
-					Cure.MyGeneInfoRegion.close();
-				}
-				Cure.PlayerNodeCollection.sync();
 			}
 		});
 		
@@ -801,10 +815,30 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+var emptyLayout = Backbone.Marionette.Layout.extend({
+    template: "#Empty-Layout-Template",
+    regions: {
+      AddRootNode: "#AddRootNodeWrapper"
+    },
+    onBeforeRender: function(){
+    	//Cure.ToggleHelp(false);
+    },
+    onRender: function(){
+    	if(!Cure.helpText){
+        	Cure.helpText = $("#HelpText").html();	
+        	Cure.ToggleHelp(true);
+    	}
+    	var newAddRootNodeView = new AddRootNodeView(); 
+    	this.AddRootNode.show(newAddRootNodeView);
+    },
+    onBeforeClose: function(){
+    }
+});
+
 NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 	// -- View to manipulate and display list of all nodes in collection
 	itemView : NodeView,
-	emptyView : AddRootNodeView,
+	emptyView : emptyLayout,
 	initialize : function() {
 
 	}
@@ -980,8 +1014,18 @@ Cure.updatepositions = function(NodeCollection) {
 	var d3nodes = [];
 	d3nodes = Cure.cluster.nodes(Collection);
 	Cure.cluster.nodes(Collection);
+	var depthDiff = 180;
 	d3nodes.forEach(function(d) {
-		d.y = d.depth * 80;
+			d.y = 0;
+			for(i=1;i<=d.depth;i++){
+				if(i%2!=0){
+					depthDiff = 160;
+				} else {
+					depthDiff = 80;
+				}
+				d.y += depthDiff;
+			}
+		
 	});
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -1046,8 +1090,17 @@ Cure.render_network = function(dataset) {
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
 		var maxDepth = 0;
+		var depthDiff = 180;
 		nodes.forEach(function(d) {
-			d.y = d.depth * 80;
+			d.y = 0;
+			for(i=1;i<=d.depth;i++){
+				if(i%2!=0){
+					depthDiff = 160;
+				} else {
+					depthDiff = 80;
+				}
+				d.y += depthDiff;
+			}
 			if (d.y > maxDepth) {
 				maxDepth = d.y;
 			}
@@ -1056,150 +1109,175 @@ Cure.render_network = function(dataset) {
 			}
 		});
 		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
-		var marginTop = maxDepth-160;
-		if(marginTop<0){
-			marginTop = 0;
-		}
-		$("#footer").css("margin-top",marginTop);
 		
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
-		Cure.PlayerSvg.selectAll(".link").remove();
 		edgeCount = 0;
 		translateLeft = 0;
+		allLinks = [];
 		if(node){
 			Cure.drawEdges(node,binY,0);
 		}
-
+		
+		try{
+			var count =	allLinks[0].linkNumber;
+			var divLeft = binY(dataset.options.bin_size/2) - parseInt(binY(allLinks[0].bin_size/2)); //Edge is rendered from middle.
+		} catch(e){
+			var count = 0;
+			var divLeft = binY(dataset.options.bin_size/2);
+		}
+				
+		allLinks.sort(function(a,b){return parseInt(a.linkNumber-b.linkNumber);});
+		
+		for(var temp in allLinks){
+			if(allLinks[temp].linkNumber != count) {
+				divLeft = divLeft - parseInt(binY(allLinks[temp-1].bin_size/2)) - parseInt(binY(allLinks[temp].bin_size/2));//When adding second edge, essentaial to include complete width of previous edge.
+				count = allLinks[temp].linkNumber;
+			}
+			if(allLinks[temp].target.options.kind == "split_value"){
+				allLinks[temp].source.y += 82;//For Split Nodes 
+			}
+			allLinks[temp].source.x += divLeft;
+			allLinks[temp].target.x += divLeft;
+		}
+		
+		var link = SVG.selectAll(".link").data(allLinks);
+		
+		var source = {};
+		var target = {};
+		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
+			if(d.name=="relapse"){
+				return "red";
+			} else {
+				return "blue";
+			}
+		}).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.source
+			});
+		});
+	
+		link.transition().duration(Cure.duration).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.target
+			});
+		}).transition().delay(Cure.duration).duration(Cure.duration).style("stroke-width", function(d){
+			var edgeWidth = binY(d.bin_size);
+			if(edgeWidth<1){
+				edgeWidth = 1;
+			} 
+			return edgeWidth;
+		}).style("stroke",function(d){
+			if(d.name=="relapse"){
+				return "red";
+			} else {
+				return "blue";
+			}
+		}).attr("transform","translate(-5,0)");
+		
+		link.exit().transition().duration(Cure.duration).attr("d",function(d){
+			return Cure.diagonal({
+				source : d.source,
+				target : d.source
+			});
+		}).remove();
+		
+		
+		//Remove all extra charts rendered.
+		d3.selectAll(".chartWrapper").remove();
+		
+		
 		var node = SVG.selectAll(".MetaDataNode").data(nodes);
 
-		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode")
-				.attr(
-				"transform", function(d) {
-					return "translate(" + d.x + "," + d.y + ")";
+		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode").attr("id",function(d){
+			return "MetaDataNode"+d.cid;
+		}).attr("transform", function(d) {
+					return "translate(" + dataset.x + "," + dataset.y + ")";
 				}).on("click",function(d){
-					var content = "<h4>Node Details</h4><ul>";
+					var content = "";
+					//% cases
+					if(d.options.bin_size && d.options.kind =="leaf_node"){
+						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
+					} else if(d.options.bin_size && d.options.kind =="split_node") {
+						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
+					}		
+					//Accuracy
 					if(d.options.pct_correct){
-						content+="<li><span class='text-info'><b>Accuracy</b>[<a>?</a>]</a></span>: "+d.options.pct_correct+"</li>";
-					} else if(d.options.infogain){
-						content+="<li><span class='text-info'><b>Info Gain</b>[<a>?</a>]</a></span>: "+d.options.infogain+"</li>";
-					}
-					
-					if(d.options.bin_size){
-						content+="<li><span class='text-info'><b>Bin Size</b>[<a>?</a>]</a></span>: "+d.options.bin_size+"</li>";
-						content+="<li><span>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"% of cases from dataset fall here.</span></li>"
+						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 					}
 					Cure.showDetailsOfNode(content, d.y, d.x+70);
 				});
 		
-		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,-41)").attr("width",function(d){
-			if(d.options.kind!="split_value"){
-				return "100";
-			}
-		}).attr("height", 10).style("fill", function(d) {
-			return "white";
-		}).attr("stroke","#000").attr("stroke-width","1");
-		
-		nodeEnter.append("rect").attr("class", "nodeaccuracy").attr("transform","translate(-50,-40)").attr("width", 0).attr("height", 8).style("fill", function(d) {
-			if (d.options.pct_correct) {
-				return "red";
-			} else if (d.options.infogain) {
-				return "green";
-			}
-		});
-		
-		//Accuracy Text
-		
-		nodeEnter.append("svg:text").attr("class", "nodeaccuracytext").attr(
-				"transform", "translate(-50, -49)").style("font-size", "10")
-				.style("fill", function(d) {
-					return "black";
-				}).text(function(d) {
-					var text = "";
-					if (d.options.pct_correct) {
-						text = "Accuracy";
-					} else if (d.options.infogain) {
-						text = "Info Gain";
+		node.attr("id",function(d){
+							var limit = binsizeY(d.options.bin_size);
+							if(d.options.kind=="leaf_node"){
+								var accLimit = d.options.pct_correct * limit;
+							} else if(d.options.kind == "split_node") {
+								//Split Node -> previousAttributes
+									var accLimit = 0;
+									var splitAttr= [];
+									//First Child Node
+									try{
+										if(d.children[0].children[0].options.kind =="split_node"){
+											splitAttr = d.children[0].children[0].previousAttributes;
+										} else {//Leaf Node
+											splitAttr = d.children[0].children[0];								
+										}
+										
+										if(splitAttr.name == "relapse") {
+											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+										} else if(splitAttr.name == "no relapse") {
+											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+										}
+										
+										//Second Node
+										if(d.children[1].children[0].options.kind =="split_node")
+										{
+											splitAttr = d.children[1].children[0].previousAttributes;
+										} else {
+											splitAttr = d.children[1].children[0];
+										}
+										
+										if(splitAttr.name == "relapse") {
+											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+										} else if(splitAttr.name == "no relapse") {
+											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+										}
+										accLimit = binsizeY(accLimit);
+									} catch(err){
+										var accLimit = 0;
+									}
+							} else {
+								var accLimit = 0;
+							}
+							var radius = 4;
+							Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
+							return "MetaDataNode"+d.cid;
+						}).transition().duration(Cure.duration).attr("transform", function(d) {
+					var id = d3.select(this).attr("id");
+					var classToChoose = [{"className":""},{"color":""}];
+					if(d.name == "relapse"){
+						classToChoose["className"]= " .posCircle";
+						classToChoose["color"]= "red";
+					} else{
+						classToChoose["className"]= " .posCircle";
+						classToChoose["color"]= "blue";
 					}
-					return text;
-				});
-		
-		// Bin Size
-		nodeEnter.append("rect").attr("class", "scaleIndicator").attr("transform","translate(-50,2)").attr("width",function(d){
-			if(d.options.kind!="split_value"){
-				return "100";
-			}
-		}).attr("height", 10).style("fill", function(d) {
-			return "white";
-		}).attr("stroke","#000").attr("stroke-width","1");
-		
-		nodeEnter.append("rect").attr("class", "binsize").attr("transform","translate(-50,3)").attr("width", 0).attr(
-				"height", 8).style("fill", function(d) {
-			return "blue";
-		});
-
-		//Bin Size Text 
-		nodeEnter.append("svg:text").attr("class", "binsizetext").attr("transform",
-				"translate(-50, 22)").style("font-size", "10").style("fill",
-				function(d) {
-					return "black";
-				}).text(function(d) {
-			var text = "";
-			if (d.options.bin_size) {
-				text = "Bin size";
-			}
-			return text;
-		});
-
-		
-		var nodeUpdate = node.transition().duration(Cure.duration).attr(
-				"transform", function(d) {
+					d3.selectAll("#"+id+classToChoose["className"]).transition().delay(Cure.duration*3).duration(Cure.duration*2).style("fill",classToChoose["color"]);
 					return "translate(" + d.x + "," + d.y + ")";
 				});
 		
-		//Update Accuracy Nodes
-		
-		nodeUpdate.select(".nodeaccuracy").transition().duration(Cure.duration).attr("width", function(d) {
-			var height = 0;
-			if (d.options.pct_correct) {
-				height = scaleY(d.options.pct_correct);
-			} else if (d.options.infogain) {
-				height = infoY(d.options.infogain);
-			}
-			return height;
-		}).style("fill", function(d) {
-			if (d.options.pct_correct) {
-				return "red";
-			} else if (d.options.infogain) {
-				return "green";
-			}
-		});
-
-		//Update Accuracy Text
-		nodeUpdate.select(".nodeaccuracytext").text(function(d) {
-			var text = "";
-			if (d.options.pct_correct) {
-				text = "Accuracy";
-			} else if (d.options.infogain) {
-				text = "Info Gain";
-			}
-			return text;
-		});
-		
-		
-		// Bin Size
-		nodeUpdate.select(".binsize").transition().duration(Cure.duration).attr("width", function(d) {
-			var height = 0;
-			if (d.options.bin_size) {
-				height = binsizeY(d.options.bin_size);
-			}
-			return height;
-		});
-
-		var nodeExit = node.exit().transition().duration(Cure.duration).attr(
+			//Exit Node
+			node.exit().transition().duration(Cure.duration).attr(
 				"transform", function(d) {
 					return "translate(" + dataset.x + "," + dataset.y + ")";
-				}).remove();
+			}).remove();
+			
+			if(Cure.PlayerNodeCollection.models.length == 0){
+				d3.selectAll(".chartWrapper").remove();
+			}
 		
 		nodes.forEach(function(d) {
 			d.x0 = d.x;
@@ -1226,39 +1304,85 @@ Cure.showDetailsOfNode = function(content, top, left){
 	});
 	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
 }
-var translateLeft=0;
-var edgeCount=0;
+
+Cure.ToggleHelp = function(check){
+	if(!check){
+    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"850px","height":"300px","overflow":"auto"});
+    	window.setTimeout(function(){
+        	$("#HelpText").html(Cure.helpText);
+		},500);
+	} else {
+		$("#HelpText").css({"position":"absolute","overflow":"hidden","background": "#F69","color": "#FFF","cursor": "pointer","width":"30px","height":"20px"});
+		$("#HelpText").html("");
+		window.setTimeout(function(){
+			$("#HelpText").html("Help");
+		},500);
+	}
+}
+
+Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
+	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(-"+(radius*10)+",-5)").style("display",function(){
+		if(nodeKind == "split_value"){
+			return "none";
+		}
+		return "block";
+	});
+	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
+		if(nodeKind!="split_value"){
+			return (radius*20)+2;
+		}
+		return 0;
+	}).attr("width",function(d){
+		if(nodeKind!="split_value"){
+			return (radius*20)+2;
+		}
+		return 0;
+	}).attr("fill",function(){
+		if(nodeName=="relapse"){
+			return "rgba(255, 0, 0, 0.22)";
+		} else if(nodeName == "no relapse") {
+			return "rgba(0, 0, 255, 0.22)";
+		}
+		return "white";
+	}).attr("transform","translate(-2,6)").style("stroke",function(){
+		if(nodeName=="relapse"){
+			return "red";
+		} else if(nodeName == "no relapse") {
+			return "blue";
+		}
+		return "black";
+	}).style("stroke-width","2");
+	for(i=0;i<limit;i++){
+		chartWrapper.append("rect").attr("class",function(){
+			if(i<accLimit)
+				return "posCircle";
+			return "negCircle";
+		}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
+			if(nodeName=="relapse"){
+				return "blue";//Opposite Color
+			}
+			return "red";//Opposite Color
+		}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+	}
+}
+
+//Variables for drawEdges.
+var allLinks = [];
+var leafNodeCount = 0;
 Cure.drawEdges = function(node,binY,count){
 	if(node.get('children').models.length == 0){
-		translateLeft += binY(node.get('options').bin_size);
-		edgeCount++;
+		leafNodeCount++;
 		var links = [];
 		var tempNode = node;
-		var bin_size = binY(node.get('options').bin_size);
+		var source =[];
+		var target = [];
 		while(tempNode.get('parentNode')!=null){
-			links.push({"source":tempNode.get('parentNode').toJSON(),"target":tempNode.toJSON()});
+			source = tempNode.get('parentNode').toJSON();
+			target = tempNode.toJSON();
+			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
-		for(var temp in links){
-			Cure.PlayerSvg.append("path").attr("class", "link").attr("d",function(){
-				if(links[temp].source.options.kind!="split_value"){
-					links[temp].source.y+=14;
-				}
-				if(links[temp].target.options.kind!="split_value"){
-					links[temp].target.y=links[temp].target.y-42;
-				}
-				return Cure.diagonal({
-					source : links[temp].source,
-					target : links[temp].target
-				});
-		}).style("stroke-width", function(){
-			var edgeWidth = binY(node.get('options').bin_size);
-			if(edgeWidth<1){
-				edgeWidth = 1;
-			} 
-			return edgeWidth;
-		}).style("stroke",/*Cure.edgeColor(edgeCount)*/"lightgrey");
-		}
+		allLinks.push.apply(allLinks, links);
 	}
 	var i = 0;
 	for(i = node.get('children').models.length;i>0;i--){
@@ -1281,6 +1405,17 @@ Cure.addInitializer(function(options) {
 			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
 					+ "Tree'></div><svg id='"
 					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>")
+					
+	//Event Initializers
+					
+	$("#HelpText").on("click",function(){
+		Cure.ToggleHelp(false);
+	});
+	
+	$("body").delegate("#closeHelp","click",function(){
+		Cure.ToggleHelp(true);
+	});
+	
 	$("#save_tree").on("click",function(){
 		var tree;
 		if(Cure.PlayerNodeCollection.models[0])
@@ -1319,13 +1454,15 @@ Cure.addInitializer(function(options) {
 	Cure.edgeColor = d3.scale.category20();
 	Cure.width = options["width"];
 	Cure.height = options["height"];
+	Cure.Scorewidth = options["Scorewidth"];
+	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
 	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
-			"width", Cure.width).append("svg:g")
+			"width", Cure.width).attr("height", Cure.height).append("svg:g")
 			.attr("transform", "translate(0,100)");
 	Cure.PlayerNodeCollection = new NodeCollection();
 	Cure.Comment = new Comment();
@@ -1349,8 +1486,10 @@ Cure.addInitializer(function(options) {
 
 //App Start
 Cure.start({
-	"height" : 600,
+	"height" : 300,
 	"width" : 850,
+	"Scorewidth" : 268,
+	"Scoreheight" : 200,
 	"regions" : {
 		"PlayerTreeRegion" : "#PlayerTreeRegion",
 		"ScoreRegion" : "#ScoreRegion",
