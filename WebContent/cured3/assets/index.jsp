@@ -355,7 +355,7 @@ Player player = (Player) session.getAttribute("player");
 	<script id="ScoreTemplate" type="text/template">
 <span id="scoreLabel">Score</span>
 <h3 id="score"><@= score @></h3>
-<button class="btn btn-small btn-link showSVG"><i class="icon-fullscreen"></i>Show Chart</button>
+<button class="btn btn-small btn-link closeSVG"><i class="icon-fullscreen"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
