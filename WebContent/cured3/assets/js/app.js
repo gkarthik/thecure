@@ -202,7 +202,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	ui : {
 		input : ".edit",
 		addgeneinfo : ".addgeneinfo",
-		name : ".name"
+		name : ".name",
+		chart : ".chart"
 	},
 	template : function(serialized_model) {
 		if (serialized_model.options.kind == "split_value") {
@@ -238,13 +239,32 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		'click button.addchildren' : 'addChildren',
 		'click button.delete' : 'removeChildren',
 		'click .name' : 'showSummary',
-		'blur .name': 'setHighlight'
+		'blur .name': 'setHighlight',
+		'click .chart': 'showNodeDetails'
 	},
 	initialize : function() {
+		if(this.model.get('options').kind=="split_node") {
+			this.model.set('accLimit',0);
+		}
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
 		this.model.bind('change', this.render);
 		this.model.bind('add:children', this.render);
 		this.model.bind('remove', this.remove);
+	},
+	showNodeDetails: function(){
+		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').bin_size;
+		var content = "";
+		//% cases
+		if(this.model.get('options').bin_size && this.model.get('options').kind =="leaf_node"){
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*100)+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
+		} else if(this.model.get('options').bin_size && this.model.get('options').kind =="split_node") {
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*100)+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
+		}		
+		//Accuracy
+		if(this.model.get('options').pct_correct){
+			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
+		}
+		Cure.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
 	},
 	setHighlight: function(){
 		this.model.set('highlight',0);
@@ -259,21 +279,88 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		//Render the positions of each node as obtained from d3.
 		var width = $(this.el).outerWidth();
 		var nodeTop = (this.model.get('y')+71);
-		if(this.model.get("options").kind == "leaf_node") {
-			nodeTop = (this.model.get('y')+182);
-		}
+		var styleObject = {
+			"transform":"translate("+ (this.model.get('x') - ((width) / 2)) +"px,"+ nodeTop +"px)",
+			"background": "#FFF",
+			"border-color": "#000"
+		};
+		if(this.model.get('name')=="relapse") {
+			styleObject.background = "rgba(255,0,0,0.2)";
+			styleObject.borderColor = "red";
+		} else if(this.model.get('name')=="no relapse") {
+			styleObject.background = "rgba(0,0,255,0.2)";
+			styleObject.borderColor = "blue";
+		} 
 		$(this.el).attr("class", "node");
-		$(this.el).css({"transform":"translate("+ (this.model.get('x') - ((width) / 2)) +"px,"+ nodeTop +"px)"});
-		/*
-		$(this.el).stop(false, false).animate(
-				{
-					'margin-left' : (this.model.get('x') - ((width) / 2))
-							+ "px",
-					'margin-top' : nodeTop + "px"
-				});
-		*/
+		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
 	}, 
+	onRender: function(){
+		var id = this.$el.find(".chart").attr('id');
+		if(id!=undefined){
+			id = "#"+id;
+			if(Cure.PlayerNodeCollection.models.length > 0) {
+				var binsizeY = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).rangeRound([ 0, 100 ]);
+			} else {
+				var binsizeY = d3.scale.linear().domain([ 0, 239 ]).rangeRound([ 0, 100 ]);
+			}
+			var limit = binsizeY(this.model.get('options').bin_size);
+			var accLimit = 0;
+			if(this.model.get('options').kind=="leaf_node"){
+				accLimit = this.model.get('options').pct_correct * limit;
+			} else if(this.model.get('options').kind == "split_node") {
+				//Split Node -> previousAttributes
+					accLimit = 0;
+					var splitAttr= [];
+					//First Child Node
+					try{
+						if(this.model.get('children').models[0].get('children').models[0].get('options').kind =="split_node"){
+							splitAttr = this.model.get('children').models[0].get('children').models[0].get('previousAttributes');
+						} else {//Leaf Node
+							splitAttr = this.model.get('children').models[0].get('children').models[0].toJSON();								
+						}
+						
+						if(splitAttr.name == "relapse") {
+							accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+						} else if(splitAttr.name == "no relapse") {
+							accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+						}
+						
+						//Second Node
+						if(this.model.get('children').models[1].get('children').models[0].get('options').kind =="split_node")
+						{
+							splitAttr = this.model.get('children').models[1].get('children').models[0].get('previousAttributes');
+						} else {
+							splitAttr = this.model.get('children').models[1].get('children').models[0].toJSON();
+						}
+						
+						if(splitAttr.name == "relapse") {
+							accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
+						} else if(splitAttr.name == "no relapse") {
+							accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
+						}
+						accLimit = binsizeY(accLimit);
+					} catch(err){
+						accLimit = 0;
+						//console.log(err.message);
+					}
+					
+			} else {
+				accLimit = 0;
+			}
+			var radius = 4;
+			Cure.drawChart(d3.select(id), limit, accLimit, radius, this.model.get('options').kind, this.model.get('name'));
+			var classToChoose = [{"className":""},{"color":""}];
+			if(this.model.get('name') == "relapse"){
+				classToChoose["className"]= " .posCircle";
+				classToChoose["color"]= "red";
+			} else{
+				classToChoose["className"]= " .posCircle";
+				classToChoose["color"]= "blue";
+			}
+			d3.selectAll(id+classToChoose["className"]).style("fill",classToChoose["color"]);
+		}
+	},
 	remove : function() {
 		//Remove and destroy current node.
 		this.$el.remove();
@@ -776,11 +863,6 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 							}
 						});
 						newNode.set("cid", newNode.cid);
-						/*
-						if (model.get("children")) {
-							model.get("children").add(newNode);
-						}
-						*/
 					}
 					if (Cure.MyGeneInfoRegion) {
 						Cure.MyGeneInfoRegion.close();
@@ -1019,7 +1101,7 @@ Cure.updatepositions = function(NodeCollection) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
 				if(i%2!=0){
-					depthDiff = 160;
+					depthDiff = 180;
 				} else {
 					depthDiff = 80;
 				}
@@ -1061,8 +1143,6 @@ Cure.delete_all_children = function(seednode) {
 // -- Render d3 Network
 //
 Cure.render_network = function(dataset) {
-	var scaleY = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
-	var infoY = d3.scale.log().domain([ 0.00001, 1 ]).rangeRound([ 0, 100 ]);
 
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
@@ -1095,7 +1175,7 @@ Cure.render_network = function(dataset) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
 				if(i%2!=0){
-					depthDiff = 160;
+					depthDiff = 180;
 				} else {
 					depthDiff = 80;
 				}
@@ -1135,7 +1215,9 @@ Cure.render_network = function(dataset) {
 				count = allLinks[temp].linkNumber;
 			}
 			if(allLinks[temp].target.options.kind == "split_value"){
-				allLinks[temp].source.y += 82;//For Split Nodes 
+				allLinks[temp].source.y += 107;//For Split Nodes 
+			} else if(allLinks[temp].target.options.kind == "leaf_node") {
+				allLinks[temp].target.y -= 24;//For Leaf Nodes
 			}
 			allLinks[temp].source.x += divLeft;
 			allLinks[temp].target.x += divLeft;
@@ -1183,107 +1265,6 @@ Cure.render_network = function(dataset) {
 				target : d.source
 			});
 		}).remove();
-		
-		
-		//Remove all extra charts rendered.
-		d3.selectAll(".chartWrapper").remove();
-		
-		
-		var node = SVG.selectAll(".MetaDataNode").data(nodes);
-
-		var nodeEnter = node.enter().append("svg:g").attr("class", "MetaDataNode").attr("id",function(d){
-			return "MetaDataNode"+d.cid;
-		}).attr("transform", function(d) {
-					return "translate(" + dataset.x + "," + dataset.y + ")";
-				}).on("click",function(d){
-					var content = "";
-					//% cases
-					if(d.options.bin_size && d.options.kind =="leaf_node"){
-						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
-					} else if(d.options.bin_size && d.options.kind =="split_node") {
-						content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((d.options.bin_size/dataset.options.bin_size)*100)+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
-					}		
-					//Accuracy
-					if(d.options.pct_correct){
-						content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(d.options.pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
-					}
-					Cure.showDetailsOfNode(content, d.y, d.x+70);
-				});
-		
-		node.attr("id",function(d){
-							var limit = binsizeY(d.options.bin_size);
-							if(d.options.kind=="leaf_node"){
-								var accLimit = d.options.pct_correct * limit;
-							} else if(d.options.kind == "split_node") {
-								//Split Node -> previousAttributes
-									var accLimit = 0;
-									var splitAttr= [];
-									//First Child Node
-									try{
-										if(d.children[0].children[0].options.kind =="split_node"){
-											splitAttr = d.children[0].children[0].previousAttributes;
-										} else {//Leaf Node
-											splitAttr = d.children[0].children[0];								
-										}
-										
-										if(splitAttr.name == "relapse") {
-											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-										} else if(splitAttr.name == "no relapse") {
-											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-										}
-										
-										//Second Node
-										if(d.children[1].children[0].options.kind =="split_node")
-										{
-											splitAttr = d.children[1].children[0].previousAttributes;
-										} else {
-											splitAttr = d.children[1].children[0];
-										}
-										
-										if(splitAttr.name == "relapse") {
-											accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-										} else if(splitAttr.name == "no relapse") {
-											accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-										}
-										accLimit = binsizeY(accLimit);
-									} catch(err){
-										var accLimit = 0;
-									}
-							} else {
-								var accLimit = 0;
-							}
-							var radius = 4;
-							Cure.drawChart(d3.select(this), limit, accLimit, radius, d.options.kind, d.name);
-							return "MetaDataNode"+d.cid;
-						}).transition().duration(Cure.duration).attr("transform", function(d) {
-					var id = d3.select(this).attr("id");
-					var classToChoose = [{"className":""},{"color":""}];
-					if(d.name == "relapse"){
-						classToChoose["className"]= " .posCircle";
-						classToChoose["color"]= "red";
-					} else{
-						classToChoose["className"]= " .posCircle";
-						classToChoose["color"]= "blue";
-					}
-					d3.selectAll("#"+id+classToChoose["className"]).style("fill",classToChoose["color"]);
-					return "translate(" + d.x + "," + d.y + ")";
-				});
-		
-			//Exit Node
-			node.exit().transition().duration(Cure.duration).attr(
-				"transform", function(d) {
-					return "translate(" + dataset.x + "," + dataset.y + ")";
-			}).remove();
-			
-			//On Empty Collection remove all .chartWrapper
-			if(Cure.PlayerNodeCollection.models.length == 0){
-				d3.selectAll(".chartWrapper").remove();
-			}
-		
-		nodes.forEach(function(d) {
-			d.x0 = d.x;
-			d.y0 = d.y;
-		});
 	}
 }
 
@@ -1299,8 +1280,8 @@ Cure.showDetailsOfNode = function(content, top, left){
 	top = top + 40;
 	left = left + (window.innerWidth-1170)/2;
 	$("#NodeDetailsWrapper").css({
-		"top": top,
-		"left": left,
+		"top": top-100,
+		"left": left-200,
 		"display": "block"
 	});
 	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
@@ -1326,12 +1307,7 @@ Cure.isInt = function(n) {
 }
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
-	var chartWrapper = parentElement.append("svg:g").attr("class","chartWrapper").attr("transform","translate(-"+(radius*10)+",-5)").style("display",function(){
-		if(nodeKind == "split_value"){
-			return "none";
-		}
-		return "block";
-	});
+	var chartWrapper = parentElement.attr("width","102").attr("height","102").append("svg:g").attr("class","chartWrapper").attr("transform","translate(11,6)");
 	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
 		if(nodeKind!="split_value"){
 			return (radius*20)+2;
@@ -1343,20 +1319,16 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 		}
 		return 0;
 	}).attr("fill",function(){
+		return "none";
+	}).attr("transform","translate(-2,6)").attr("stroke",function(){
 		if(nodeName=="relapse"){
-			return "rgba(255, 0, 0, 0.22)";
+			return "rgba(255, 0, 0, 1)";
 		} else if(nodeName == "no relapse") {
-			return "rgba(0, 0, 255, 0.22)";
+			return "rgba(0, 0, 255, 1)";
 		}
-		return "white";
-	}).attr("transform","translate(-2,6)").style("stroke",function(){
-		if(nodeName=="relapse"){
-			return "red";
-		} else if(nodeName == "no relapse") {
-			return "blue";
-		}
-		return "black";
-	}).style("stroke-width","2");
+		return "#000";
+	}).attr("stroke-width","1");
+	
 	for(i=0;i<(limit);i++){
 		if(Cure.isInt(accLimit) || i<=(accLimit-1) || i > (accLimit)){
 			chartWrapper.append("rect").attr("class",function(){
