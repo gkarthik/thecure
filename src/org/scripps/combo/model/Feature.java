@@ -53,17 +53,17 @@ public class Feature {
 
 	public static void main(String args[]){
 		updateEntrezGene();
-//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
-//		String dataset = "mammal";
-//		try {
-//			loadRawWeka(train_file, dataset);
-//		} catch (FileNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
+		//		String dataset = "mammal";
+		//		try {
+		//			loadRawWeka(train_file, dataset);
+		//		} catch (FileNotFoundException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		} catch (Exception e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
 
 	public void getAllMetadataFromDb(){
@@ -104,7 +104,7 @@ public class Feature {
 		}		
 		return ont_annos;
 	}
-	
+
 	/**
 	 * Insert a new feature.
 	 * @throws SQLException 
@@ -151,9 +151,9 @@ public class Feature {
 		try {
 			pst = conn.connection.prepareStatement(
 					"update feature " +
-					"set short_name = ?, " +
-					" long_name = ?, " +
-					" description = ? " +
+							"set short_name = ?, " +
+							" long_name = ?, " +
+							" description = ? " +
 					"where unique_id = ? ");
 			pst.clearParameters();
 			pst.setString(1,getShort_name());
@@ -165,32 +165,56 @@ public class Feature {
 			if (affectedRows == 0) {
 				throw new SQLException("Creating feature failed, no rows affected.");
 			}
-			
+
 		} finally {
 			if (pst != null) try { pst.close(); } catch (SQLException logOrIgnore) {}
 			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
 		}
 		return affectedRows;
 	}
-	
-	public static Map<String, Feature> getByDataset(String dataset){
+
+	public static Map<String, Feature> getByDataset(String dataset, boolean load_annotations_very_slowly){
 		Map<String, Feature> features = new HashMap<String, Feature>();
 		JdbcConnection conn = new JdbcConnection();
-		String q = "select feature.* from feature, attribute where attribute.dataset = '"+dataset+"' and feature.id = attribute.feature_id ";
+		String q = "select feature.*, attribute.* from feature, attribute where attribute.dataset = '"+dataset+"' and feature.id = attribute.feature_id ";
 
 		ResultSet rslt = conn.executeQuery(q);
 		try {
 			while(rslt.next()){
-				Feature f = new Feature();
-				f.setCreated(rslt.getDate("created"));
-				f.setUpdated(rslt.getTimestamp("updated"));
-				f.setDescription(rslt.getString("description"));
-				f.setId(rslt.getInt("id"));
-				f.setLong_name(rslt.getString("long_name"));
-				f.setShort_name(rslt.getString("short_name"));
-				f.setUnique_id(rslt.getString("unique_id"));
+				String fid = rslt.getString("feature.unique_id");
+				Feature f = features.get(fid);						
+				if(f==null){
+					f = new Feature();
+					f.setCreated(rslt.getDate("feature.created"));
+					f.setUpdated(rslt.getTimestamp("feature.updated"));
+					f.setDescription(rslt.getString("feature.description"));
+					f.setId(rslt.getInt("feature.id"));
+					f.setLong_name(rslt.getString("feature.long_name"));
+					f.setShort_name(rslt.getString("feature.short_name"));
+					f.setUnique_id(rslt.getString("feature.unique_id"));
+				}
+				//this replaces
+				//	f.getMappedAttributesFromDb();
+				List<Attribute> atts = f.getDataset_attributes();
+				if(atts==null){ atts = new ArrayList<Attribute>();}
+				Attribute a = new Attribute();
+				a.setName(rslt.getString("attribute.name"));
+				a.setCol_index(rslt.getInt("attribute.col_index"));
+				a.setCreated(rslt.getDate("attribute.created"));
+				a.setFeature_id(rslt.getInt("attribute.feature_id"));
+				a.setId(rslt.getInt("attribute.id"));
+				a.setUpdated(rslt.getTimestamp("attribute.updated"));
+				a.setDataset(rslt.getString("attribute.dataset"));
+				a.setReliefF(rslt.getFloat("attribute.reliefF"));
+				if(!atts.contains(a)){
+					atts.add(a);
+					f.setDataset_attributes(atts);
+				}
 				//add the linked data
-				f.getAllMetadataFromDb();
+				if(load_annotations_very_slowly){
+					f.getAnnotationsFromDb();
+					f.getTextAnnotationsFromDb();
+				}
 				features.put(f.getUnique_id(), f);
 			}
 			rslt.close();
@@ -315,7 +339,7 @@ public class Feature {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void updateEntrezGene(){
 		String gene_info_file = "/Users/bgood/workspace/acure/database/gene/Homo_sapiens.gene_info"; //gene info file from entrez ftp://ftp.ncbi.nih.gov/gene/DATA/
 		BufferedReader f;
@@ -331,7 +355,7 @@ public class Feature {
 					gene.setUnique_id(items[1]);
 					gene.setShort_name(items[2]);
 					gene.setLong_name(items[11]);
-					
+
 					if(gene.getUnique_id()!=null){
 						Gene g = MyGeneInfo.getGeneInfoByGeneid(gene.getUnique_id(), true);
 						if(g!=null){

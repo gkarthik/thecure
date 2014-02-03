@@ -182,7 +182,7 @@ public class MetaServer extends HttpServlet {
 		if(command!=null){
 			routeGet(command, request, response);
 		}else{
-			handleBadRequest(request, response, "no command sent as GET");
+			handleBadRequest(request, response, "no command sent as GET"); 
 		}
 	}
 
@@ -209,11 +209,11 @@ public class MetaServer extends HttpServlet {
 							saveHand(postData, request, response);
 						}else if(command.equals("saveplayedcard")){
 							savePlayedCard(postData, request, response);
-						}else if(command.equals("scoretree")){
+						}else if(command.equals("scoretree")||(command.equals("savetree"))){
 							//TODO clean this up so we aren't parsing the json twice.. 
 							JsonNode treedata = mapper.readTree(json);	
 							try{
-								getScoreForManualTree(treedata, request, response);
+								scoreSaveManualTree(treedata, request, response);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -348,8 +348,9 @@ public class MetaServer extends HttpServlet {
 	 * @param response
 	 * @throws Exception 
 	 */
-	private void getScoreForManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-
+	private void scoreSaveManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		String command = data.get("command").asText(); //scoretree or savetree
+		
 		String dataset = data.get("dataset").asText();
 		Weka weka = name_dataset.get(dataset);	
 		if(weka==null){
@@ -368,9 +369,8 @@ public class MetaServer extends HttpServlet {
 		ObjectNode result = mapper.createObjectNode();
 		result.put("pct_correct", eval.pctCorrect());
 		result.put("size", numnodes);
-		//TODO replace the random novelty score with a real one driven by the database.
 		double nov = Card.getUniqueIdNovelty(entrez_ids);
-		result.put("novelty", nov);// Math.random());
+		result.put("novelty", nov);//
 		result.put("text_tree", readtree.toString());
 		//serialize and return the result		
 		JsonNode treenode = readtree.getJsontree();
@@ -388,13 +388,14 @@ public class MetaServer extends HttpServlet {
 		//TODO actually capture the player id and comment
 		String comment = "";
 		int player_id = 0;
+		int user_saved = 0;
 		String ip = request_.getRemoteAddr();
 		List<Feature> features = new ArrayList<Feature>();
 		for(String entrez_id : entrez_ids){
 			Feature f = weka.features.get(entrez_id);
 			features.add(f);
 		}
-		Tree tree = new Tree(0, player_id, ip, features, result_json,comment);
+		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
 		int tid = tree.insert();
 		float score = 0;
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);

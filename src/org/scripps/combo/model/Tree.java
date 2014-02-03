@@ -57,6 +57,7 @@ public class Tree {
 	Date created;
 	Map<String, TreeScore> dataset_score; // trees could be tried on multiple datasets
 	String comment;
+	int user_saved;
 
 	public class TreeScore{
 		float size;
@@ -76,7 +77,7 @@ public class Tree {
 		this.features = new ArrayList<Feature>();
 	}
 
-	public Tree (int id, int player_id, String ip, List<Feature> features, String json_tree, String comment) {
+	public Tree (int id, int player_id, String ip, List<Feature> features, String json_tree, String comment, int user_saved) {
 		this.player_id = player_id;
 		this.id = id;
 		this.ip = ip;
@@ -100,7 +101,7 @@ public class Tree {
 		for(String u : uniques){
 			fs.add(Feature.getByUniqueId(u));
 		}
-		Tree test = new Tree(0, 48, "anip", fs,  "{i bens, great json tree []}", " I love trees");
+		Tree test = new Tree(0, 48, "anip", fs,  "{i bens, great json tree []}", " I love trees", 1);
 		int tid = test.insert();
 		test.insertScore(tid, "datasetname", (float) 68.98, (float) 3, (float) .58, (float) 62.8);
 		List<Tree> trees = test.getAll(); //getForPlayer(48);
@@ -127,7 +128,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
@@ -172,7 +173,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
@@ -195,12 +196,44 @@ public class Tree {
 		}
 		return trees;
 	}
-
+//TODO limit to saved trees
+	public List<Tree> getByIP(String ip){
+		List<Tree> trees = new ArrayList<Tree>();
+		String q = "select * from tree where ip="+ip;
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			ResultSet ts = conn.executeQuery(q);
+			while(ts.next()){
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
+				tree.created = ts.getDate("created");
+				String fq = "select * from tree_feature where tree_id="+tree.id;
+				ResultSet fs = conn.executeQuery(fq);
+				List<Feature> features = new ArrayList<Feature>();
+				while(fs.next()){
+					int fid = fs.getInt("feature_id");
+					Feature f = Feature.getByDbId(fid);
+					if(f!=null){
+						features.add(f);
+					}
+				}
+				tree.features = features;
+				trees.add(tree);
+			}
+			ts.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return trees;
+	}	
+	
+	
 	public int insert() throws Exception{
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null;
-		String insert = "insert into tree (player_id, ip, json_tree, comment) values(?,?,?,?)";
+		String insert = "insert into tree (player_id, ip, json_tree, comment, user_saved) values(?,?,?,?,?)";
 
 		PreparedStatement p = null;
 		try {
@@ -209,6 +242,7 @@ public class Tree {
 			p.setString(2, ip);
 			p.setString(3, json_tree);
 			p.setString(4, comment);
+			p.setInt(5, user_saved);
 			int affectedRows = p.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Creating tree failed, no rows affected.");

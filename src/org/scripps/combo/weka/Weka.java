@@ -83,7 +83,7 @@ public class Weka {
 		//assumes that feature table has already been loaded
 		//get the features related to this weka dataset
 		if(setFeatures){
-			setFeatures(Feature.getByDataset(dataset));
+			setFeatures(Feature.getByDataset(dataset, false));
 		}
 	} 
 
