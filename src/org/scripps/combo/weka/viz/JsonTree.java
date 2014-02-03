@@ -118,25 +118,23 @@ public class JsonTree {
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
 		JsonTree t = new JsonTree();
 		//t.testManualTreeParseCreate(dataset, train_file, input);
-//		FileInputStream s = new FileInputStream(input);
-//		String json1 = HttpUtil.convertStreamToString(s);
-//		JsonNode treedata = t.mapper.readTree(json1);
-//		List<String> entrez_ids = t.getEntrezIds(treedata.get("treestruct"), new ArrayList<String>());
-//		System.out.println(entrez_ids);
-		
-		Tree tbase = new Tree();
-		List<Tree> trees = tbase.getAll();
-		for(Tree tree : trees){
-			String jtree = tree.getJson_tree();
-			ManualTree readtree = t.parseJsonTree(weka, jtree, dataset);
-			Evaluation maneval = new Evaluation(weka.getTrain());
-			maneval.evaluateModel(readtree, weka.getTrain());
-			System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
-			JsonNode node = readtree.getJsontree();
-			String json2 = t.mapper.writeValueAsString(node);
-			System.out.println(json2);
-		}
-		
+		//		FileInputStream s = new FileInputStream(input);
+		//		String json1 = HttpUtil.convertStreamToString(s);
+		//		JsonNode treedata = t.mapper.readTree(json1);
+		//		List<String> entrez_ids = t.getEntrezIds(treedata.get("treestruct"), new ArrayList<String>());
+		//		System.out.println(entrez_ids);
+
+		Tree tree = new Tree();
+		tree = tree.getById("32");
+		String jtree = tree.getJson_tree();
+		ManualTree readtree = t.parseJsonTree(weka, jtree, dataset);
+		Evaluation maneval = new Evaluation(weka.getTrain());
+		maneval.evaluateModel(readtree, weka.getTrain());
+		System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
+		JsonNode node = readtree.getJsontree();
+		String json2 = t.mapper.writeValueAsString(node);
+		System.out.println(json2);
+
 	}
 
 	/**
@@ -216,7 +214,7 @@ public class JsonTree {
 		return tree;
 	}
 
-	
+
 	public List<String> getEntrezIds(JsonNode node, List<String> ids){
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
@@ -233,8 +231,8 @@ public class JsonTree {
 		}
 		return ids;
 	}
-	
-	
+
+
 	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset){
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
@@ -416,7 +414,7 @@ public class JsonTree {
 			//hook up to edge targets (leafs here)
 			ArrayNode edge_target = mapper.createArrayNode();
 			ObjectNode target = mapper.createObjectNode();
-			
+
 			//ClassifierTree son = tree.getM_sons()[i];		
 			/**
 			 * text.append(att.name() + " <= " + m_SplitPoint + " : ");
@@ -424,7 +422,7 @@ public class JsonTree {
 				text.append(att.name() + " > " + m_SplitPoint + " : ");
 				text.append(printClass(m_Distribution[1]));
 			 */
-			
+
 			String label = stump.printClass(stump.getM_Distribution()[i]);//((Instances)tree.getM_train()).classAttribute().value(split.getM_distribution().maxClass(0));
 			double bin_size = -1;// Utils.roundDouble(split.getM_distribution().perBag(0),2);
 			double errors = -1;//Utils.roundDouble(split.getM_distribution().numIncorrect(0),2);
@@ -441,7 +439,7 @@ public class JsonTree {
 		String json = mapper.writeValueAsString(json_root);
 		return json;
 	}
-	
+
 	/**
 	 * Recursively build a jackson Object model for a weka tree.
 	 * Each split node in the tree is represented by a single ClassifierTree object
