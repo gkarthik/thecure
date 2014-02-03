@@ -21,6 +21,7 @@ import org.openjena.atlas.json.JsonArray;
 import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Attribute;
 import org.scripps.combo.model.Feature;
+import org.scripps.combo.model.Tree;
 import org.scripps.combo.weka.Weka;
 import org.scripps.util.HttpUtil;
 
@@ -51,7 +52,6 @@ import weka.classifiers.trees.j48.NoSplit;
 import weka.core.FastVector;
 import weka.core.Instances;
 import weka.core.Utils;
-
 import weka.gui.treevisualizer.Edge;
 import weka.gui.treevisualizer.Node;
 import weka.gui.treevisualizer.TreeBuild;
@@ -114,13 +114,29 @@ public class JsonTree {
 			train_file = "/Users/bgood/data/zoo_mammals.arff"; 
 			input = "/Users/bgood/workspace/aacure/WebContent/test/manualtree/zoo_in1.json";
 		}
+		Weka weka = new Weka();
+		weka.buildWeka(new FileInputStream(train_file), null, dataset);
 		JsonTree t = new JsonTree();
 		//t.testManualTreeParseCreate(dataset, train_file, input);
-		FileInputStream s = new FileInputStream(input);
-		String json1 = HttpUtil.convertStreamToString(s);
-		JsonNode treedata = t.mapper.readTree(json1);
-		List<String> entrez_ids = t.getEntrezIds(treedata.get("treestruct"), new ArrayList<String>());
-		System.out.println(entrez_ids);
+//		FileInputStream s = new FileInputStream(input);
+//		String json1 = HttpUtil.convertStreamToString(s);
+//		JsonNode treedata = t.mapper.readTree(json1);
+//		List<String> entrez_ids = t.getEntrezIds(treedata.get("treestruct"), new ArrayList<String>());
+//		System.out.println(entrez_ids);
+		
+		Tree tbase = new Tree();
+		List<Tree> trees = tbase.getAll();
+		for(Tree tree : trees){
+			String jtree = tree.getJson_tree();
+			ManualTree readtree = t.parseJsonTree(weka, jtree, dataset);
+			Evaluation maneval = new Evaluation(weka.getTrain());
+			maneval.evaluateModel(readtree, weka.getTrain());
+			System.out.println(readtree.toString()+"\npct correct = "+maneval.pctCorrect());
+			JsonNode node = readtree.getJsontree();
+			String json2 = t.mapper.writeValueAsString(node);
+			System.out.println(json2);
+		}
+		
 	}
 
 	/**
@@ -156,6 +172,10 @@ public class JsonTree {
 		ManualTree tree = new ManualTree();
 		try {
 			JsonNode rootNode = mapper.readTree(jsontree);
+			JsonNode treestruct = rootNode.get("treestruct");
+			if(treestruct!=null){
+				rootNode = treestruct; //database stores extra info with tree embedded as an object...
+			}
 			if(!dataset.equals("mammal")){
 				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset);
 			}
