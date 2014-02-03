@@ -1160,7 +1160,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				int maxIndex = 0; double errors = 0; double pct_correct = 0;
 				if (m_ClassDistribution != null) {
 					bin_size = Utils.sum(m_ClassDistribution);
-					maxIndex = Utils.maxIndex(m_ClassDistribution);
+					maxIndex = Utils.maxIndex(m_ClassDistribution); //this is where it decides what class the leaf is.. takes the majority.
 					maxCount = m_ClassDistribution[maxIndex];
 					errors = bin_size - maxCount;
 					pct_correct = (bin_size-errors)/bin_size;

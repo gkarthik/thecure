@@ -244,6 +244,37 @@ public class Tree {
 		return trees;
 	}	
 	
+	public Tree getById(String id){
+		Tree tree = new Tree();
+		String q = "select * from tree where id="+id;
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			ResultSet ts = conn.executeQuery(q);
+			if(ts.next()){
+				tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
+				tree.created = ts.getDate("created");
+				//TODO stop being lazy and do this properly in SQL...
+				String fq = "select * from tree_feature where tree_id="+tree.id;
+				ResultSet fs = conn.executeQuery(fq);
+				List<Feature> features = new ArrayList<Feature>();
+				while(fs.next()){
+					int fid = fs.getInt("feature_id");
+					Feature f = Feature.getByDbId(fid);
+					if(f!=null){
+						features.add(f);
+					}
+				}
+				tree.features = features;
+			}
+			ts.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tree;
+	}
+	
 	
 	public int insert() throws Exception{
 		int newid = 0;
