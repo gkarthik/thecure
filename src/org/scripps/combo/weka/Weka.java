@@ -52,7 +52,7 @@ public class Weka {
 	private Instances train = null;
 	Instances test = null;
 	Random rand;
-	String eval_method;
+	String eval_method;  //{cross_validation, test_set, training_set}
 	Map<String, Feature> features;
 	String dataset;
 
