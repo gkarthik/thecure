@@ -402,6 +402,30 @@ public class MetaServer extends HttpServlet {
 		
 	}
 
+	private void getTreeList(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		String command = data.get("command").asText(); //get_trees_all, get_trees_ip, get_trees_id
+		String ip = request_.getRemoteAddr();
+		Tree tree_ = new Tree();
+		List<Tree> trees = null;
+		if(command.equals("get_trees_all")){
+			trees = tree_.getAll(); 
+		} else if(command.equals("get_trees_ip")){
+			trees = tree_.getByIP(ip);
+		} else if(command.equals("get_trees_id")){
+			int user_id = data.get("user_id").asInt();
+			tree_.setPlayer_id(user_id);
+			trees = tree_.getForPlayer(user_id);
+		}
+		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
+		String json_trees = mapper.writeValueAsString(treelist);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+//	System.out.println(json_trees);
+		out.write(json_trees);
+		out.close();
+		
+	}
+	
 
 	private void saveHand(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
 		Game game = new Game();

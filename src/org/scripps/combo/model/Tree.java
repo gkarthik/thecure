@@ -3,17 +3,25 @@
  */
 package org.scripps.combo.model;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.scripps.util.JdbcConnection;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Represent a decision tree entered by players of The Cure
@@ -91,35 +99,42 @@ public class Tree {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		List<Integer> features = new ArrayList<Integer>();
-		features.add(3002);  features.add(2003);
-		//Tree test = new Tree(1, 0, features, null,  "{i am the, json tree []}");
-
-		List<String> uniques = new ArrayList<String>();
-		uniques.add("1009");  uniques.add("10052");
-		List<Feature> fs = new ArrayList<Feature>();
-		for(String u : uniques){
-			fs.add(Feature.getByUniqueId(u));
-		}
-		Tree test = new Tree(0, 48, "anip", fs,  "{i bens, great json tree []}", " I love trees", 1);
-		int tid = test.insert();
-		test.insertScore(tid, "datasetname", (float) 68.98, (float) 3, (float) .58, (float) 62.8);
-		List<Tree> trees = test.getAll(); //getForPlayer(48);
-		for(Tree t : trees){
-			System.out.println(t.json_tree+" comment: "+t.comment);
-			for(Feature f : t.features){
-				System.out.println("\t"+f.getShort_name());
-			}
-			if(t.dataset_score!=null){
-				for(String dataset : t.dataset_score.keySet()){
-					System.out.println("\t\t"+dataset+"\t"+t.dataset_score.get(dataset).toString());
-				}
-			}
-		}
-
+		Tree tree_ = new Tree();
+		List<Tree> trees = tree_.getAll(); //add controls to get by user, get all	
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode treess = tree_.getTreeListAsJson(trees, mapper);
+		String json = mapper.writeValueAsString(treess);
+		System.out.println(json);
 	}
 
-
+	public ObjectNode getTreeListAsJson(List<Tree> trees, ObjectMapper mapper){
+		ObjectNode root = mapper.createObjectNode();
+		root.put("n_trees", trees.size());
+		ArrayNode treelist = mapper.createArrayNode();
+		for(Tree tree : trees){
+			ObjectNode treeobj = mapper.createObjectNode();
+			treeobj.put("comment",tree.comment);
+			treeobj.put("id",tree.id);
+			treeobj.put("ip",tree.ip);
+			treeobj.put("created", tree.created.getTime());
+			treeobj.put("user_saved",tree.user_saved);
+			treeobj.put("player_id", tree.player_id);
+			JsonNode jtree;
+			try {
+				jtree = mapper.readTree(tree.json_tree);
+				treeobj.put("json_tree", jtree);
+				treelist.add(treeobj);
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		root.put("trees",treelist);
+		return root;
+	}
 
 	public List<Tree> getAll(){
 		List<Tree> trees = new ArrayList<Tree>();
@@ -196,7 +211,7 @@ public class Tree {
 		}
 		return trees;
 	}
-//TODO limit to saved trees
+
 	public List<Tree> getByIP(String ip){
 		List<Tree> trees = new ArrayList<Tree>();
 		String q = "select * from tree where ip="+ip;
@@ -206,6 +221,7 @@ public class Tree {
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
+				//TODO stop being lazy and do this properly in SQL...
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -280,6 +296,78 @@ public class Tree {
 			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
 		}
 		return;
+	}
+
+	public int getPlayer_id() {
+		return player_id;
+	}
+
+	public void setPlayer_id(int player_id) {
+		this.player_id = player_id;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public List<Feature> getFeatures() {
+		return features;
+	}
+
+	public void setFeatures(List<Feature> features) {
+		this.features = features;
+	}
+
+	public String getJson_tree() {
+		return json_tree;
+	}
+
+	public void setJson_tree(String json_tree) {
+		this.json_tree = json_tree;
+	}
+
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public Map<String, TreeScore> getDataset_score() {
+		return dataset_score;
+	}
+
+	public void setDataset_score(Map<String, TreeScore> dataset_score) {
+		this.dataset_score = dataset_score;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public int getUser_saved() {
+		return user_saved;
+	}
+
+	public void setUser_saved(int user_saved) {
+		this.user_saved = user_saved;
 	}
 
 
