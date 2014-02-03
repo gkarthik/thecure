@@ -323,6 +323,7 @@ Player player = (Player) session.getAttribute("player");
     </td>
   </script>
 	<script id="nodeTemplate" type="text/template">  
+		<svg class="leafNodeChart chart" id="chart<@= args.cid @>"></svg>
 		<@ if(args.name == "relapse")
 		{
 			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
@@ -345,6 +346,7 @@ Player player = (Player) session.getAttribute("player");
     </span>
   </script>
 	<script id="splitNodeTemplate" type="text/template">
+	<svg class="splitNodeChart chart" id="chart<@= args.cid @>"></svg>
    <span class="name attrvalue">
       <@= args.name @>
     </span>
@@ -355,7 +357,7 @@ Player player = (Player) session.getAttribute("player");
 	<script id="ScoreTemplate" type="text/template">
 <span id="scoreLabel">Score</span>
 <h3 id="score"><@= score @></h3>
-<button class="btn btn-small btn-link showSVG"><i class="icon-fullscreen"></i>Show Chart</button>
+<button class="btn btn-small btn-link closeSVG"><i class="icon-fullscreen"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
