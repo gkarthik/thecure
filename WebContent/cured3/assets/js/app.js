@@ -243,13 +243,32 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		'click .chart': 'showNodeDetails'
 	},
 	initialize : function() {
-		if(this.model.get('options').kind=="split_node") {
-			this.model.set('accLimit',0);
+		if(this.model.get('options').kind != "split_value") {
+				this.model.set('accLimit',0);																																																																																																																																																																												
 		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary');
+		if(Cure.PlayerNodeCollection.models.length > 0) {
+			Cure.binsizeScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).rangeRound([ 0, 100 ]);
+		} else {
+			Cure.binsizeScale = d3.scale.linear().domain([ 0, 239 ]).rangeRound([ 0, 100 ]);
+		}
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit');
 		this.model.bind('change', this.render);
-		this.model.bind('add:children', this.render);
+		this.model.bind('add:children', this.setaccLimit);
 		this.model.bind('remove', this.remove);
+	},
+	setaccLimit : function(children){
+		if(children.get('options').kind=="leaf_node") {
+			var accLimit = 0;
+			if(children.get('name')=="relapse") {
+				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
+			} else if(children.get('name') == "no relapse") {
+				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(children.get('options').pct_correct);
+			}
+			console.log(accLimit+" "+this.model.get('parentNode').get('name'));
+			accLimit += this.model.get('parentNode').get('accLimit');
+			this.model.get('parentNode').set('accLimit',accLimit);
+		}
+		this.render;
 	},
 	showNodeDetails: function(){
 		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').bin_size;
@@ -299,57 +318,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		var id = this.$el.find(".chart").attr('id');
 		if(id!=undefined){
 			id = "#"+id;
-			if(Cure.PlayerNodeCollection.models.length > 0) {
-				var binsizeY = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).rangeRound([ 0, 100 ]);
-			} else {
-				var binsizeY = d3.scale.linear().domain([ 0, 239 ]).rangeRound([ 0, 100 ]);
-			}
-			var limit = binsizeY(this.model.get('options').bin_size);
+			
+			//Setting up accLimit for leaf_node
 			var accLimit = 0;
-			if(this.model.get('options').kind=="leaf_node"){
-				accLimit = this.model.get('options').pct_correct * limit;
-			} else if(this.model.get('options').kind == "split_node") {
-				//Split Node -> previousAttributes
-					accLimit = 0;
-					var splitAttr= [];
-					//First Child Node
-					try{
-						if(this.model.get('children').models[0].get('children').models[0].get('options').kind =="split_node"){
-							splitAttr = this.model.get('children').models[0].get('children').models[0].get('previousAttributes');
-						} else {//Leaf Node
-							splitAttr = this.model.get('children').models[0].get('children').models[0].toJSON();								
-						}
-						
-						if(splitAttr.name == "relapse") {
-							accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-						} else if(splitAttr.name == "no relapse") {
-							accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-						}
-						
-						//Second Node
-						if(this.model.get('children').models[1].get('children').models[0].get('options').kind =="split_node")
-						{
-							splitAttr = this.model.get('children').models[1].get('children').models[0].get('previousAttributes');
-						} else {
-							splitAttr = this.model.get('children').models[1].get('children').models[0].toJSON();
-						}
-						
-						if(splitAttr.name == "relapse") {
-							accLimit += splitAttr.options.bin_size*(1-splitAttr.options.pct_correct);
-						} else if(splitAttr.name == "no relapse") {
-							accLimit += splitAttr.options.bin_size*(splitAttr.options.pct_correct);
-						}
-						accLimit = binsizeY(accLimit);
-					} catch(err){
-						accLimit = 0;
-						//console.log(err.message);
-					}
-					
-			} else {
-				accLimit = 0;
+			if(this.model.get('options').kind=="leaf_node") {
+				accLimit = Cure.binsizeScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
+				this.model.set('accLimit',accLimit);
 			}
 			var radius = 4;
-			Cure.drawChart(d3.select(id), limit, accLimit, radius, this.model.get('options').kind, this.model.get('name'));
+			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
+			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
 			if(this.model.get('name') == "relapse"){
 				classToChoose["className"]= " .posCircle";
@@ -848,6 +826,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					if (kind_value == "leaf_node") {
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.symbol);
+						model.set('accLimit', 0, {silent:true});
 						model.set("options", {
 							id : ui.item.id,
 							"kind" : "split_node",
