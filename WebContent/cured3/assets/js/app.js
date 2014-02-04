@@ -855,30 +855,6 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				}
 			}
 		});
-		
-		$("body").delegate(".close","click",function(){
-			if($(this).parent().attr("class")=="alert")
-			{
-				$(this).parent().hide();
-			}
-			else{
-				$(this).parent().parent().parent().hide();
-			}
-		});
-		
-		$(document).mouseup(function(e) {
-			var container = $("#mygene_addnode");
-			var geneList = $(".ui-autocomplete");
-
-			if (!container.is(e.target)	&& container.has(e.target).length === 0 && !geneList.is(e.target)	&& geneList.has(e.target).length === 0) 
-			{
-				$("input.mygene_query_target").val("");
-				if (Cure.MyGeneInfoRegion) {
-					Cure.MyGeneInfoRegion.close();
-				}
-			}
-		});
-
 	}
 });
 
@@ -948,6 +924,14 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 				this.ShowJSON();
 			}
 		}, this);
+		var thisView = this;
+		$(document).mouseup(function(e){
+			var classToclose = $(thisView.ui.jsondata);
+			if (!classToclose.is(e.target)	&& classToclose.has(e.target).length === 0) 
+			{
+				thisView.HideJSON();
+			}
+		});
 	},
 	onRender : function() {
 		if (this.model.get('showJSON') != 0) {
@@ -1400,6 +1384,35 @@ Cure.addInitializer(function(options) {
 	
 	$("body").delegate("#closeHelp","click",function(){
 		Cure.ToggleHelp(true);
+	});
+	
+	$("body").delegate(".close","click",function(){
+		if($(this).parent().attr("class")=="alert")
+		{
+			$(this).parent().hide();
+		}
+		else{
+			$(this).parent().parent().parent().hide();
+		}
+	});
+	
+	$(document).mouseup(function(e) {
+		var container = $("#mygene_addnode");
+		var geneList = $(".ui-autocomplete");
+
+		if (!container.is(e.target)	&& container.has(e.target).length === 0 && !geneList.is(e.target)	&& geneList.has(e.target).length === 0) 
+		{
+			$("input.mygene_query_target").val("");
+			if (Cure.MyGeneInfoRegion) {
+				Cure.MyGeneInfoRegion.close();
+			}
+		}
+		
+		var classToclose = $('.blurCloseElement');
+		if (!classToclose.is(e.target)	&& classToclose.has(e.target).length === 0) 
+		{
+			classToclose.hide();
+		}
 	});
 	
 	$("#save_tree").on("click",function(){

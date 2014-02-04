@@ -39,7 +39,7 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
-<div id="NodeDetailsWrapper">
+<div id="NodeDetailsWrapper" class="blurCloseElement">
 	<div id="NodeDetailsContent"></div>
 </div>
 
