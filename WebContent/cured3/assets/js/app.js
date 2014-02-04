@@ -768,6 +768,11 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		var html_template = $("#AddRootNode").html();
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
+			open: function(event){
+				console.log($(event.target).offset().top+" "+$("html, body").scrollTop());
+				var scrollTop = $(event.target).offset().top-400;
+				$("html, body").animate({scrollTop:scrollTop}, '500');
+			},
 			minLength: 1,
 			focus: function( event, ui ) {
 				focueElement = $(event.currentTarget);//Adding PopUp to .ui-auocomplete
@@ -859,7 +864,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 			else{
 				$(this).parent().parent().parent().hide();
 			}
-		})
+		});
 		
 		$(document).mouseup(function(e) {
 			var container = $("#mygene_addnode");
@@ -873,6 +878,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 				}
 			}
 		});
+
 	}
 });
 
