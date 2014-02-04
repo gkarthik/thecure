@@ -22,6 +22,12 @@ import org.scripps.util.Gene;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.MyGeneInfo;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import weka.attributeSelection.Ranker;
 import weka.attributeSelection.ReliefFAttributeEval;
 import weka.core.Instances;
@@ -52,7 +58,7 @@ public class Feature {
 	Timestamp updated;
 
 	public static void main(String args[]){
-		updateEntrezGene();
+		//updateEntrezGene();
 		//		String train_file = "/Users/bgood/workspace/acure/WebContent/WEB-INF/data/zoo_mammals.arff";
 		//		String dataset = "mammal";
 		//		try {
@@ -64,6 +70,22 @@ public class Feature {
 		//			// TODO Auto-generated catch block
 		//			e.printStackTrace();
 		//		}
+		ObjectMapper mapper = new ObjectMapper();
+		String dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
+		ObjectNode features = Feature.getMetaBricClinicalFeatures(mapper);
+		try {
+			String json_features = mapper.writeValueAsString(features);
+			System.out.println(json_features);
+		} catch (JsonGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void getAllMetadataFromDb(){
@@ -225,6 +247,34 @@ public class Feature {
 		}
 		return features;
 	}
+
+	public static ObjectNode getMetaBricClinicalFeatures(ObjectMapper mapper){
+		ObjectNode featureob = mapper.createObjectNode();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select feature.* from feature, attribute where attribute.dataset = 'metabric_with_clinical' and feature.id = attribute.feature_id and unique_id like 'metabric%'";
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			ArrayNode features = mapper.createArrayNode();
+			while(rslt.next()){
+				ObjectNode f = mapper.createObjectNode();
+				f.put("id", rslt.getInt("feature.id"));
+				f.put("unique_id", rslt.getString("feature.unique_id"));
+				f.put("long_name", rslt.getString("feature.long_name"));
+				f.put("short_name", rslt.getString("feature.short_name"));
+				f.put("description", rslt.getString("feature.description"));
+				features.add(f);
+			}
+			featureob.put("features", features);
+			rslt.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return featureob;
+	}
+
 
 	public static Feature getByDbId(int id){
 		Feature f = null;
