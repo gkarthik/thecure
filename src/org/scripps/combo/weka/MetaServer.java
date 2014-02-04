@@ -50,6 +50,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import weka.attributeSelection.ASEvaluation;
@@ -123,37 +124,7 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	//	dream 1 data
-//				try {
-//					String dataset = "dream_breast_cancer";
-//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_2500genes.arff");
-//					Weka dream_weka = new Weka();
-//					dream_weka.buildWeka(train_loc, null, dataset);			
-//					name_dataset.put("dream_breast_cancer", dream_weka);	
-//					train_loc.close();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (Exception e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-		//dream 2 data
-//				try {
-//					String dataset = "dream_breast_cancer_2";
-//					InputStream train_loc = context.getResourceAsStream("/WEB-INF/data/dream/Exprs_CNV_lts_2500genes.arff");
-//					Weka dream_weka = new Weka();
-//					dream_weka.buildWeka(train_loc, null, dataset);			
-//					name_dataset.put(dataset, dream_weka);	
-//					train_loc.close();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (Exception e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}		
-		//Griffith data
+		//live game data
 		try {
 			String dataset = active_data_name;
 			InputStream train_loc = context.getResourceAsStream(active_data);
@@ -219,6 +190,27 @@ public class MetaServer extends HttpServlet {
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to get score for manual tree: "+json);
 							}
+						}else if(command.equals("get_clinical_features")){   // //get_clinical_features //get_trees_all, get_trees_ip, get_trees_user_id
+							//TODO clean this up so we aren't parsing the json twice.. 
+							JsonNode data = mapper.readTree(json);	
+							try{
+								getClinicalFeatures(data, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to get clinical features: "+json);
+							}						
+						}else if(command.startsWith("get_trees")){  //get_trees_all, get_trees_ip, get_trees_user_id
+							//TODO clean this up so we aren't parsing the json twice.. 
+							JsonNode data = mapper.readTree(json);	
+							try{
+								getTreeList(data, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to get clinical features: "+json);
+							}
+							
 						}
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
@@ -352,6 +344,8 @@ public class MetaServer extends HttpServlet {
 		String command = data.get("command").asText(); //scoretree or savetree
 		
 		String dataset = data.get("dataset").asText();
+		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
+		
 		Weka weka = name_dataset.get(dataset);	
 		if(weka==null){
 			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
@@ -402,8 +396,27 @@ public class MetaServer extends HttpServlet {
 		
 	}
 
+//	
+		
+	private void getClinicalFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		//String command = data.get("command").asText(); //get_clinical_features 
+		String dataset = data.get("dataset").asText();
+		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
+		ObjectNode features = null;
+		if(dataset.equals("metabric_with_clinical")){
+			features = Feature.getMetaBricClinicalFeatures(mapper);
+			features.put("dataset", dataset);
+		}
+		String json_features = mapper.writeValueAsString(features);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(json_features);
+		out.close();
+	}
+	
+	//todo add the router to get here
 	private void getTreeList(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		String command = data.get("command").asText(); //get_trees_all, get_trees_ip, get_trees_id
+		String command = data.get("command").asText(); //get_trees_all, get_trees_ip, get_trees_user_id
 		String ip = request_.getRemoteAddr();
 		Tree tree_ = new Tree();
 		List<Tree> trees = null;
@@ -411,7 +424,7 @@ public class MetaServer extends HttpServlet {
 			trees = tree_.getAll(); 
 		} else if(command.equals("get_trees_ip")){
 			trees = tree_.getByIP(ip);
-		} else if(command.equals("get_trees_id")){
+		} else if(command.equals("get_trees_user_id")){
 			int user_id = data.get("user_id").asInt();
 			tree_.setPlayer_id(user_id);
 			trees = tree_.getForPlayer(user_id);
