@@ -113,8 +113,25 @@ Score = Backbone.RelationalModel.extend({
 	defaults : {
 		novelty : 0,
 		pct_correct : 0,
-		size : 1,// Least Size got form server = 1.
+		size : 1/0,// Least Size got form server = 1.
 		score : 0,
+	},
+	initialize: function(){
+		this.bind('change', this.updateScore);
+	},
+	updateScore: function(){
+		if (this.get("size") != 1) {
+			var score = 750 * (1 / this.get("size")) + 500
+					* this.get("novelty") + 1000 * this.get("pct_correct");
+			this.set("score", Math.round(score));
+		} else {
+			this.set({
+				"score" : 0,
+				"size" : 1 / 0,
+				"pct_correct" : 0,
+				"novelty" : 0
+			});
+		}
 	}
 });
 
@@ -122,6 +139,73 @@ Comment = Backbone.RelationalModel.extend({
 	defaults: {
 		content: "",
 		editView: 0
+	}
+});
+
+ScoreEntry = Backbone.RelationalModel.extend({
+	defaults: {
+		comment: "",
+		created: 0,
+		id: 0,
+		ip: "",
+		json_tree :{
+			novelty : 0,
+			pct_correct : 0,
+			size : 1,// Least Size got form server = 1.
+			score : 0,
+			text_tree : '',
+			treestruct : {}
+		}
+	},
+	initialize: function(){
+		this.bind('change', this.updateScore);
+		this.updateScore();
+	},
+	updateScore: function(){
+		var scoreVar = this.get('json_tree');
+		scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
+					500 * scoreVar.novelty + 
+					1000 * scoreVar.pct_correct);
+		console.log(scoreVar);
+		this.set("json_tree", scoreVar);
+	}
+});
+
+ScoreBoard = Backbone.Collection.extend({
+	model: ScoreEntry,
+	initialize : function(){
+		_.bindAll(this, 'parseResponse');
+	},
+	upperLimit: 10,
+	lowerLimit: 0,
+	url : '/cure/MetaServer',
+	fetch: function(){
+		var args = {
+				command : "get_trees_with_range",
+				lowerLimit : this.lowerLimit,
+				upperLimit : this.upperLimit,
+		};
+		this.lowerLimit+=10;
+		this.upperLimit+=10;
+		$.ajax({
+			type : 'POST',
+			url : this.url,
+			data : JSON.stringify(args),
+			dataType : 'json',
+			contentType : "application/json; charset=utf-8",
+			success : this.parseResponse,
+			error : this.error,
+			async: true
+		});
+	},
+	parseResponse : function(data) {
+		//If empty tree is returned, no tree rendered.
+		if(data.n_trees > 0) {
+			this.add(data.trees);
+		}
+	},
+	error : function(data) {
+
 	}
 });
 
@@ -264,7 +348,6 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			} else if(children.get('name') == "no relapse") {
 				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(children.get('options').pct_correct);
 			}
-			console.log(accLimit+" "+this.model.get('parentNode').get('name'));
 			accLimit += this.model.get('parentNode').get('accLimit');
 			this.model.get('parentNode').set('accLimit',accLimit);
 		}
@@ -379,9 +462,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
-		this.model.bind("change:pct_correct", this.updateScore);
-		this.model.bind("change:size", this.updateScore);
-		this.model.bind("change:novelty", this.updateScore);
+		this.model.bind("change", this.updateScore);
+//		this.model.bind("change:size", this.updateScore);
+//		this.model.bind("change:novelty", this.updateScore);
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
@@ -549,19 +632,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						"fill", "none").attr("class", "maxHalfPolygon");
 	},
 	updateScore : function() {
-		// 1000*pct_correct + 750*1/size_of_tree + 500*feature_novelty
-		if (this.model.get("size") != 1) {
-			var score = 750 * (1 / this.model.get("size")) + 500
-					* this.model.get("novelty") + 1000 * this.model.get("pct_correct");
-			this.model.set("score", Math.round(score));
-		} else {
-			this.model.set({
-				"score" : 0,
-				"size" : 1 / 0,
-				"pct_correct" : 0,
-				"novelty" : 0
-			});
-		}
 		$(this.ui.scoreEL).html(this.model.get("score"));
 		var json = [];
 		var thisModel = this.model;
@@ -769,7 +839,6 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 		this.$el.html(html_template);
 		this.$el.find('input.mygene_query_target').genequery_autocomplete({
 			open: function(event){
-				console.log($(event.target).offset().top+" "+$("html, body").scrollTop());
 				var scrollTop = $(event.target).offset().top-400;
 				$("html, body").animate({scrollTop:scrollTop}, '500');
 			},
@@ -972,6 +1041,29 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 	itemView : JSONItemView,
 	collection : NodeCollection,
+	initialize : function() {
+		this.collection.bind('add', this.render);
+		this.collection.bind('remove', this.render);
+	}
+});
+
+ScoreEntryView = Backbone.Marionette.ItemView.extend({
+	model : ScoreEntry,
+	ui : {
+
+	},
+	events : {
+
+	},
+	initialize : function() {
+		this.model.bind('change', this.render);
+	},
+	template: "#ScoreBoardTemplate"
+});
+
+ScoreBoardView = Backbone.Marionette.CollectionView.extend({
+	itemView : ScoreEntryView,
+	collection : ScoreBoard,
 	initialize : function() {
 		this.collection.bind('add', this.render);
 		this.collection.bind('remove', this.render);
@@ -1329,6 +1421,14 @@ Cure.addInitializer(function(options) {
 		escape : /\<\@\-(.+?)\@\>/gim
 	};
 	Backbone.emulateHTTP = true;
+	
+	var args = {
+			command : "get_trees_all",
+/*			dataset : "metabric_with_clinical",
+			treestruct : tree,
+			player_id : cure_user_id,
+			comment: Cure.Comment.get("content")*/
+	};
 	$(options.regions.PlayerTreeRegion).html(
 			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
 					+ "Tree'></div><svg id='"
@@ -1417,6 +1517,9 @@ Cure.addInitializer(function(options) {
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
+	Cure.ScoreBoard = new ScoreBoard();
+	//Sync Score Board
+	Cure.ScoreBoard.fetch();
 	Cure.PlayerNodeCollection = new NodeCollection();
 	Cure.Comment = new Comment();
 	Cure.Score = new Score();
@@ -1427,13 +1530,16 @@ Cure.addInitializer(function(options) {
 	Cure.PlayerNodeCollectionView = new NodeCollectionView({
 		collection : Cure.PlayerNodeCollection
 	});
-
 	Cure.JSONCollectionView = new JSONCollectionView({
 		collection : Cure.PlayerNodeCollection
 	});
+	Cure.ScoreBoardView = new ScoreBoardView({
+		collection: Cure.ScoreBoard
+	});
+	
 	Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 	Cure.ScoreRegion.show(Cure.ScoreView);
-	//Cure.ScoreBoardRegion.show(Cure.JSONCollectionView);
+	Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 	Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 	Cure.CommentRegion.show(Cure.CommentView);
 });
