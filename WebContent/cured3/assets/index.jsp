@@ -96,7 +96,7 @@ Player player = (Player) session.getAttribute("player");
 					<div id="ScoreRegion"></div>
 				</span>
 				<h2>Score Board</h2>
-				<table class="table table-hover" id='scoreboard_wrapper'></table>
+				<div id='scoreboard_wrapper'></div>
 			</div>
 		</div>
 	</div>
@@ -338,6 +338,22 @@ Player player = (Player) session.getAttribute("player");
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>";
+  </script>
+  <script id="ScoreBoardTemplate" type="text/template">
+	<table class="table table-bordered">
+		<tr>
+			<th><span class="key">Score</span></th>
+			<th><span class="key">Size</span></th>
+			<th><span class="key">Accuracy</span></th>
+			<th><span class="key">Novelty</span></th>
+		</tr>
+		<tr>
+			<td><span class='keyValue'><@= json_tree.score @></span></td>
+			<td><span class='keyValue'><@= json_tree.size @></span></td>
+			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
+			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
+		</tr>
+	</table>
   </script>
 	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
