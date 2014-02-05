@@ -119,6 +119,39 @@ ClinicalFeature = Backbone.RelationalModel.extend({
 	}
 });
 
+ClinicalFeatureCollection = Backbone.Collection.extend({
+	model: ClinicalFeature,
+	url: '/cure/MetaServer',
+	initialize: function(){
+		_.bindAll(this, 'parseResponse');
+	},
+	fetch: function(){
+		var args = {
+				command : "get_clinical_features",
+				dataset : "metabric_with_clinical"
+		};
+		$.ajax({
+			type : 'POST',
+			url : this.url,
+			data : JSON.stringify(args),
+			dataType : 'json',
+			contentType : "application/json; charset=utf-8",
+			success : this.parseResponse,
+			error : this.error,
+			async: true
+		});
+	},
+	parseResponse : function(data) {
+		if(data.features.length > 0) {
+			console.log(data.features);
+			this.add(data.features);
+		}
+	},
+	error : function(data) {
+
+	}
+});
+
 Score = Backbone.RelationalModel.extend({
 	defaults : {
 		novelty : 0,
@@ -130,14 +163,14 @@ Score = Backbone.RelationalModel.extend({
 		this.bind('change', this.updateScore);
 	},
 	updateScore: function(){
-		if (this.get("size") != 1) {
+		if (this.get("size") > 1) {
 			var score = 750 * (1 / this.get("size")) + 500
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
 		} else {
 			this.set({
 				"score" : 0,
-				"size" : 1 / 0,
+				"size" : 0,
 				"pct_correct" : 0,
 				"novelty" : 0
 			});
@@ -173,9 +206,13 @@ ScoreEntry = Backbone.RelationalModel.extend({
 	},
 	updateScore: function(){
 		var scoreVar = this.get('json_tree');
-		scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
+		if(scoreVar.size>=1) {
+			scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
 					500 * scoreVar.novelty + 
 					1000 * scoreVar.pct_correct);
+		} else {
+			scoreVar.score = 0;
+		}
 		this.set("json_tree", scoreVar);
 	}
 });
@@ -1504,22 +1541,6 @@ Cure.addInitializer(function(options) {
 		   }
 		});
 	
-	var args = {
-			command : "get_clinical_features",
-			dataset : "metabric_with_clinical"
-	};
-	$.ajax({
-		type : 'POST',
-		url : '/cure/MetaServer',
-		data : JSON.stringify(args),
-		dataType : 'json',
-		contentType : "application/json; charset=utf-8",
-		success : function(data){
-			console.log(data);
-		},
-		error : Cure.showAlert("Error Occured. Please try again in a while.")
-	});
-	
 	$("#save_tree").on("click",function(){
 		var tree;
 		if(Cure.PlayerNodeCollection.models[0])
@@ -1560,6 +1581,8 @@ Cure.addInitializer(function(options) {
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
+	Cure.ClinicalFeatureCollection = new ClinicalFeatureCollection();
+	Cure.ClinicalFeatureCollection.fetch();
 	Cure.ScoreBoard = new ScoreBoard();
 	//Sync Score Board
 	Cure.ScoreBoard.fetch();
