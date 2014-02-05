@@ -889,36 +889,22 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 
 //HTML Templates for rendering Gene SUmary Pop Up and Node Information. 
 var shownode_html = $("#JSONtemplate").html();
-var nodeedit_html = $('#Attrtemplate').html();
 
 // -- View to render Gene SUmmary List
 JSONItemView = Backbone.Marionette.ItemView.extend({
 	model : Node,
 	ui : {
 		jsondata : ".jsonview_data",
-		showjson : ".showjson",
-		attreditwrapper : ".attreditwrapper",
-		attredit : ".attredit",
-		input : ".edit",
-		key : ".attrkey",
+		showjson : ".showjson"
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
-		'click button.close' : 'HideJSON',
-		'click .showattr' : 'ShowAttr',
-		'click .editdone' : 'doneEdit',
+		'click button.close' : 'HideJSON'
 	},
 	tagName : "tr",
 	initialize : function() {
 		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON');
 		this.model.bind('change', this.render);
-		this.model.on('change:edit', function() {
-			if (this.model.get('edit') != 0) {
-				this.$el.addClass('editnode');
-			} else {
-				this.$el.removeClass('editnode');
-			}
-		}, this);
 		this.model.on('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
 				this.ShowJSON();
@@ -958,22 +944,13 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if (serialized_model.edit == 0) {
-			return _.template(shownode_html, {
+		return _.template(shownode_html, {
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
 			}, {
 				variable : 'args'
 			});
-		} else {
-			return _.template(nodeedit_html, {
-				name : name,
-				options : options
-			}, {
-				variable : 'args'
-			});
-		}
 	},
 	ShowJSON : function() {
 		this.getSummary();
@@ -988,31 +965,12 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 		});
 		$(this.ui.showjson).removeClass("disabled");
 		this.model.set("showJSON", 0);
-	},
-	ShowAttr : function() {
-		this.model.set('edit', 1);
-	},
-	doneEdit : function() {
-		this.model.set('edit', 0);
 	}
-});
-
-// -- View to render empty Gene SUmmar List for genes not of type "split_node"
-EmptyJSONItemView = Backbone.Marionette.ItemView.extend({
-	model : Node,
-	template : "#EmptyTemplate"
 });
 
 //Collection View to render gene summary list.
 JSONCollectionView = Backbone.Marionette.CollectionView.extend({
-	getItemView : function(model) {
-		if (model.get("options").kind == "split_node") {
-			return JSONItemView;
-		} else {
-			return EmptyJSONItemView;
-		}
-
-	},
+	itemView : JSONItemView,
 	collection : NodeCollection,
 	initialize : function() {
 		this.collection.bind('add', this.render);
@@ -1374,8 +1332,12 @@ Cure.addInitializer(function(options) {
 	$(options.regions.PlayerTreeRegion).html(
 			"<div id='" + options.regions.PlayerTreeRegion.replace("#", "")
 					+ "Tree'></div><svg id='"
-					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>")
-					
+					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>");
+	Cure.width = options["width"];
+	Cure.height = options["height"];
+	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
+			"width", Cure.width).attr("height", Cure.height).append("svg:g")
+			.attr("transform", "translate(0,100)");
 	//Event Initializers
 					
 	$("#HelpText").on("click",function(){
@@ -1443,16 +1405,11 @@ Cure.addInitializer(function(options) {
 			Cure.showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
 		}
 	});
-	Cure.addRegions({
-		PlayerTreeRegion : options.regions.PlayerTreeRegion + "Tree",
-		ScoreRegion : options.regions.ScoreRegion,
-		CommentRegion : options.regions.CommentRegion,
-		JsonRegion : "#json_structure"
-	});
+	
+	options.regions.PlayerTreeRegion+="Tree";
+	Cure.addRegions(options.regions);
 	Cure.colorScale = d3.scale.category10();
 	Cure.edgeColor = d3.scale.category20();
-	Cure.width = options["width"];
-	Cure.height = options["height"];
 	Cure.Scorewidth = options["Scorewidth"];
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
@@ -1460,9 +1417,6 @@ Cure.addInitializer(function(options) {
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
-	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
-			"width", Cure.width).attr("height", Cure.height).append("svg:g")
-			.attr("transform", "translate(0,100)");
 	Cure.PlayerNodeCollection = new NodeCollection();
 	Cure.Comment = new Comment();
 	Cure.Score = new Score();
@@ -1479,7 +1433,8 @@ Cure.addInitializer(function(options) {
 	});
 	Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 	Cure.ScoreRegion.show(Cure.ScoreView);
-	Cure.JsonRegion.show(Cure.JSONCollectionView);
+	//Cure.ScoreBoardRegion.show(Cure.JSONCollectionView);
+	Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 	Cure.CommentRegion.show(Cure.CommentView);
 });
 
@@ -1492,6 +1447,8 @@ Cure.start({
 	"regions" : {
 		"PlayerTreeRegion" : "#PlayerTreeRegion",
 		"ScoreRegion" : "#ScoreRegion",
-		"CommentRegion" : "#CommentRegion"
+		"CommentRegion" : "#CommentRegion",
+		"ScoreBoardRegion" : "#scoreboard_wrapper",
+		"JSONSummaryRegion" : "#jsonSummary"
 	}
 });
