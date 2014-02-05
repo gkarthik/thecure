@@ -277,7 +277,7 @@ public class Tree {
 	
 	public List<Tree> getWithLimit(String lowerLimit, String upperLimit){
 		List<Tree> trees = new ArrayList<Tree>();
-		String q = "select * from tree limit "+lowerLimit+","+upperLimit;
+		String q = "select * from tree order by id desc limit "+lowerLimit+","+upperLimit;
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			ResultSet ts = conn.executeQuery(q);

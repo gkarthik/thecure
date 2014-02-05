@@ -248,6 +248,15 @@ left:25%;
 	float:right;
 }
 
+#scoreboard_wrapper{
+	height:400px;
+	overflow:auto;
+	width:260px;
+	padding:10px;
+	border:2px solid rgb(255, 102, 153);
+	border-radius: 5px;
+}
+
 #summary_header{
 	position:fixed;
 	width:50%;
@@ -423,6 +432,9 @@ text-align:left;
 	font-size: 15px;
 }
 
+.renderPink{
+	color: rgb(255, 102, 153);
+}
 /*
 Style for header links
 */
