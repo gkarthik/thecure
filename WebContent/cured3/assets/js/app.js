@@ -343,9 +343,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	setaccLimit : function(children){
 		if(children.get('options').kind=="leaf_node") {
 			var accLimit = 0;
-			if(children.get('name')=="relapse") {
+			if(children.get('name')==Cure.negNodeName) {
 				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
-			} else if(children.get('name') == "no relapse") {
+			} else if(children.get('name') == Cure.posNodeName) {
 				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(children.get('options').pct_correct);
 			}
 			accLimit += this.model.get('parentNode').get('accLimit');
@@ -386,10 +386,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			"background": "#FFF",
 			"border-color": "#000"
 		};
-		if(this.model.get('name')=="relapse") {
+		if(this.model.get('name')==Cure.negNodeName) {
 			styleObject.background = "rgba(255,0,0,0.2)";
 			styleObject.borderColor = "red";
-		} else if(this.model.get('name')=="no relapse") {
+		} else if(this.model.get('name')==Cure.posNodeName) {
 			styleObject.background = "rgba(0,0,255,0.2)";
 			styleObject.borderColor = "blue";
 		} 
@@ -412,7 +412,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
 			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
-			if(this.model.get('name') == "relapse"){
+			if(this.model.get('name') == Cure.negNodeName){
 				classToChoose["className"]= " .posCircle";
 				classToChoose["color"]= "red";
 			} else{
@@ -1248,7 +1248,7 @@ Cure.render_network = function(dataset) {
 		var source = {};
 		var target = {};
 		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
-			if(d.name=="relapse"){
+			if(d.name==Cure.negNodeName){
 				return "red";
 			} else {
 				return "blue";
@@ -1272,7 +1272,7 @@ Cure.render_network = function(dataset) {
 			} 
 			return edgeWidth;
 		}).style("stroke",function(d){
-			if(d.name=="relapse"){
+			if(d.name==Cure.negNodeName){
 				return "red";
 			} else {
 				return "blue";
@@ -1341,9 +1341,9 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 	}).attr("fill",function(){
 		return "none";
 	}).attr("transform","translate(-2,6)").attr("stroke",function(){
-		if(nodeName=="relapse"){
+		if(nodeName == Cure.negNodeName){
 			return "rgba(255, 0, 0, 1)";
-		} else if(nodeName == "no relapse") {
+		} else if(nodeName == Cure.posNodeName) {
 			return "rgba(0, 0, 255, 1)";
 		}
 		return "#000";
@@ -1356,7 +1356,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "posCircle";
 				return "negCircle";
 			}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
-				if(nodeName=="relapse"){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
@@ -1367,7 +1367,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 			}).attr("height",(radius*2)-2).attr("width",function(){
 				return ((radius*2)-2) * ((accLimit) % 1);
 			}).style("fill",function(){
-				if(nodeName=="relapse"){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
@@ -1378,7 +1378,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 			}).attr("height",(radius*2)-2).attr("width",function(){
 				return  ((radius*2)-2) * (1- (accLimit % 1));
 			}).style("fill",function(){
-				if(nodeName=="relapse"){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
@@ -1436,6 +1436,8 @@ Cure.addInitializer(function(options) {
 					+ options.regions.PlayerTreeRegion.replace("#", "") + "SVG'></svg>");
 	Cure.width = options["width"];
 	Cure.height = options["height"];
+	Cure.posNodeName = options["posNodeName"];
+	Cure.negNodeName = options["negNodeName"];
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
 			"width", Cure.width).attr("height", Cure.height).append("svg:g")
 			.attr("transform", "translate(0,100)");
@@ -1567,5 +1569,7 @@ Cure.start({
 		"CommentRegion" : "#CommentRegion",
 		"ScoreBoardRegion" : "#scoreboard_wrapper",
 		"JSONSummaryRegion" : "#jsonSummary"
-	}
+	},
+	posNodeName: "y",
+	negNodeName: "n"
 });
