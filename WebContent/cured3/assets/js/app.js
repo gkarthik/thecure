@@ -19,7 +19,7 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		var args = {
 			command : "scoretree",
-			dataset : "griffith_breast_cancer_1",
+			dataset : "metabric_with_clinical",
 			treestruct : tree,
 			comment: Cure.Comment.get("content")
 		};
@@ -1422,10 +1422,10 @@ Cure.addInitializer(function(options) {
 			tree = Cure.PlayerNodeCollection.models[0].toJSON();
 			var args = {
 					command : "savetree",
-					dataset : "griffith_breast_cancer_1",
+					dataset : "metabric_with_clinical",
 					treestruct : tree,
 					player_id : cure_user_id,
-					comment: Cure.COmment.get("content")
+					comment: Cure.Comment.get("content")
 			};
 			$.ajax({
 				type : 'POST',
