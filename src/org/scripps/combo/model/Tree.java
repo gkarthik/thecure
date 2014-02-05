@@ -92,6 +92,7 @@ public class Tree {
 		this.features = features;
 		this.json_tree = json_tree;
 		this.comment = comment;
+		this.user_saved = user_saved;
 	}
 
 	/**
@@ -277,7 +278,7 @@ public class Tree {
 	
 	public List<Tree> getWithLimit(String lowerLimit, String upperLimit){
 		List<Tree> trees = new ArrayList<Tree>();
-		String q = "select * from tree order by id desc limit "+lowerLimit+","+upperLimit;
+		String q = "select * from tree where user_saved='1' order by id desc limit "+lowerLimit+","+upperLimit;
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			ResultSet ts = conn.executeQuery(q);

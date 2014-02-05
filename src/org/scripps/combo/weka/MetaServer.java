@@ -390,6 +390,9 @@ public class MetaServer extends HttpServlet {
 			Feature f = weka.features.get(entrez_id);
 			features.add(f);
 		}
+		if(command.equals("savetree")){
+			user_saved = 1;
+		}
 		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
 		int tid = tree.insert();
 		float score = 0; //Score Equation to be put in here, I think - @gkarthik

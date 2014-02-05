@@ -297,11 +297,11 @@ Player player = (Player) session.getAttribute("player");
   </script>
 	<script id="nodeTemplate" type="text/template">  
 		<svg class="leafNodeChart chart" id="chart<@= args.cid @>"></svg>
-		<@ if(args.name == "relapse")
+		<@ if(args.name == args.negNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
 		}
-		else if(args.name == "no relapse")
+		else if(args.name == args.posNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
 		} 

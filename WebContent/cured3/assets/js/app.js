@@ -109,11 +109,21 @@ NodeCollection = Backbone.Collection.extend({
 //
 // -- Defining our models
 //
+ClinicalFeature = Backbone.RelationalModel.extend({
+	defaults : {
+		description : "",
+		id : 0,
+		long_name : "",
+		short_name : "",
+		unique_id : 0
+	}
+});
+
 Score = Backbone.RelationalModel.extend({
 	defaults : {
 		novelty : 0,
 		pct_correct : 0,
-		size : 1/0,// Least Size got form server = 1.
+		size : 0,// Least Size got form server = 1.
 		score : 0,
 	},
 	initialize: function(){
@@ -170,6 +180,7 @@ ScoreEntry = Backbone.RelationalModel.extend({
 	}
 });
 
+//Score Entry Collection
 ScoreBoard = Backbone.Collection.extend({
 	model: ScoreEntry,
 	initialize : function(){
@@ -202,6 +213,7 @@ ScoreBoard = Backbone.Collection.extend({
 		if(data.n_trees > 0) {
 			this.add(data.trees);
 		}
+		console.log(data.trees)
 		Cure.ScoreBoardRequestSent = false;
 	},
 	error : function(data) {
@@ -314,7 +326,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			name : serialized_model.name,
 			highlight : serialized_model.highlight,
 			options : serialized_model.options,
-			cid : serialized_model.cid
+			cid : serialized_model.cid,
+			posNodeName : Cure.posNodeName,
+			negNodeName : Cure.negNodeName
 		}, {
 			variable : 'args'
 		});
@@ -1056,6 +1070,7 @@ ScoreEntryView = Backbone.Marionette.ItemView.extend({
 
 	},
 	initialize : function() {
+		console.log(Cure.ScoreBoard.models.length);
 		this.model.bind('change', this.render);
 	},
 	template: "#ScoreBoardTemplate"
@@ -1067,7 +1082,6 @@ ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	className : "ScoreBoardInnerWrapper",
 	initialize : function() {
 		this.collection.bind('add', this.render);
-		this.collection.bind('remove', this.render);
 	}
 });
 
@@ -1489,6 +1503,22 @@ Cure.addInitializer(function(options) {
 		      } 
 		   }
 		});
+	
+	var args = {
+			command : "get_clinical_features",
+			dataset : "metabric_with_clinical"
+	};
+	$.ajax({
+		type : 'POST',
+		url : '/cure/MetaServer',
+		data : JSON.stringify(args),
+		dataType : 'json',
+		contentType : "application/json; charset=utf-8",
+		success : function(data){
+			console.log(data);
+		},
+		error : Cure.showAlert("Error Occured. Please try again in a while.")
+	});
 	
 	$("#save_tree").on("click",function(){
 		var tree;
