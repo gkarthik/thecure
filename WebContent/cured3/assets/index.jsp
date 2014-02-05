@@ -95,7 +95,7 @@ Player player = (Player) session.getAttribute("player");
 				<div id="CommentRegion"></div>
 					<div id="ScoreRegion"></div>
 				</span>
-				<h2>Score Board</h2>
+				<h2 class="renderPink">Score Board</h2>
 				<div id='scoreboard_wrapper'></div>
 			</div>
 		</div>
@@ -340,6 +340,9 @@ Player player = (Player) session.getAttribute("player");
         cure_user_id = "<%=player_id%>";
   </script>
   <script id="ScoreBoardTemplate" type="text/template">
+	<p class="text-info"><@ if(comment!=""){
+			print("Comments: '"+comment+"'")
+		} @></p>
 	<table class="table table-bordered">
 		<tr>
 			<th><span class="key">Score</span></th>
@@ -354,6 +357,7 @@ Player player = (Player) session.getAttribute("player");
 			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
 		</tr>
 	</table>
+	<hr>
   </script>
 	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>

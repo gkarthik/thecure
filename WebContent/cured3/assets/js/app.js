@@ -166,7 +166,6 @@ ScoreEntry = Backbone.RelationalModel.extend({
 		scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
 					500 * scoreVar.novelty + 
 					1000 * scoreVar.pct_correct);
-		console.log(scoreVar);
 		this.set("json_tree", scoreVar);
 	}
 });
@@ -203,6 +202,7 @@ ScoreBoard = Backbone.Collection.extend({
 		if(data.n_trees > 0) {
 			this.add(data.trees);
 		}
+		Cure.ScoreBoardRequestSent = false;
 	},
 	error : function(data) {
 
@@ -1064,6 +1064,7 @@ ScoreEntryView = Backbone.Marionette.ItemView.extend({
 ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	itemView : ScoreEntryView,
 	collection : ScoreBoard,
+	className : "ScoreBoardInnerWrapper",
 	initialize : function() {
 		this.collection.bind('add', this.render);
 		this.collection.bind('remove', this.render);
@@ -1476,6 +1477,16 @@ Cure.addInitializer(function(options) {
 			classToclose.hide();
 		}
 	});
+	
+	Cure.ScoreBoardRequestSent = false;
+	$("#scoreboard_wrapper").scroll(function () { 
+		   if ($("#scoreboard_wrapper").scrollTop() >= $("#scoreboard_wrapper .ScoreBoardInnerWrapper").height() - $("#scoreboard_wrapper").height()) {
+		      if(!Cure.ScoreBoardRequestSent){
+		    	  Cure.ScoreBoard.fetch();
+		    	  Cure.ScoreBoardRequestSent = true;
+		      } 
+		   }
+		});
 	
 	$("#save_tree").on("click",function(){
 		var tree;
