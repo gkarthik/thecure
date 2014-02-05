@@ -42,6 +42,7 @@ Player player = (Player) session.getAttribute("player");
 <div id="NodeDetailsWrapper" class="blurCloseElement">
 	<div id="NodeDetailsContent"></div>
 </div>
+<div id="jsonSummary"></div>
 
 <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
@@ -94,8 +95,8 @@ Player player = (Player) session.getAttribute("player");
 				<div id="CommentRegion"></div>
 					<div id="ScoreRegion"></div>
 				</span>
-				<h2>Gene Summary</h2>
-				<table class="table table-hover" id='json_structure'></table>
+				<h2>Score Board</h2>
+				<table class="table table-hover" id='scoreboard_wrapper'></table>
 			</div>
 		</div>
 	</div>
@@ -211,12 +212,7 @@ Player player = (Player) session.getAttribute("player");
 </div>
   	</script>
 	<script id="JSONtemplate" type="text/template">
-      	<td><span class="jsonview_name"><@= args.name @></span></td>
-      	<td><span><button class="btn btn-link showattr" >Info</button></span></td>
-	  	<@ if(args.kind == "split_node") { @>
-      		<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
-      		<td>
-				<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+		<div class="jsonview_data" id="jsonview_data<@= args.id @>">
 				<div id="summary_header">
 					<button type="button" class="close">&times;</button>
 					<h2><@= args.name @></h2>
@@ -298,29 +294,6 @@ Player player = (Player) session.getAttribute("player");
 		<@ } @>
 </div>
 			</div>
-		</td>
-	  <@  } @>
-  </script>
-	<script id="Attrtemplate" type="text/template">
-    <td colspan="3">
-<button class="btn btn-link editdone" >Close Info</button>
-    <ul class="unstyled">
-      <li>
-            <span class="attredit">
-              <label class="label label-info">Name</label><br /><label class="attrvalue"><@= args.name @></label>
-              <input class="input-medium edit" id="name" type="text" value="<@= args.name @>" />
-            </span>
-      </li>
-      <@ for(var option in args.options) {@>
-        <li>
-            <span class="attredit">
-              <label class="label label-info"><@= option @></label><br /><label class="attrvalue"> <@= args.options[option] @></label>
-              <input class="input-medium edit modeloption" id="<@= option @>" type="text" value="<@= args.options[option] @>" />
-            </span>
-        </li>
-      <@ } @>
-    </ul>
-    </td>
   </script>
 	<script id="nodeTemplate" type="text/template">  
 		<svg class="leafNodeChart chart" id="chart<@= args.cid @>"></svg>

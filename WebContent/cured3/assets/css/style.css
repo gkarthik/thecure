@@ -164,7 +164,7 @@ input.edit{
   float:none;
 }
 
-#json_structure .jsonview_data
+.jsonview_data
 {
 z-index: 4;
 position: fixed;
