@@ -30,8 +30,7 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/jquery-1.10.1.js"></script>
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"
 	type="text/javascript"></script>
-<script src="./js/mygene_autocomplete_jqueryui.js"
-	type="text/javascript"></script>
+<script src="./js/mygene_autocomplete_jqueryui.js" type="text/javascript"></script>
 <script type="text/javascript" src="./js/underscore.js"></script>
 <script type="text/javascript" src="./js/backbone.js"></script>
 <script type="text/javascript" src="./js/backbone-relational.js"></script>
@@ -122,11 +121,27 @@ Player player = (Player) session.getAttribute("player");
 	<@ } @>
 	</script>
 	<script type="text/template" id="AddRootNode">
-		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
+	<div id="mygeneinfo_wrapper" class="addnode_wrapper">
+		<label class="label label-info">Enter a Gene Symbol/Name</label>
   		<div id="mygene_addnode">
   			<input id="gene_query" style="width:250px" class="mygene_query_target">
+			<button class="btn btn-info showCf">Choose Clinical Features</button>
   		</div>
+	</div>
+	<div id="mygenecf_wrapper" class="addnode_wrapper">
+		<label class="label label-info">Click on the textbox and choose a clinical feature</label>
+  		<div id="mygene_addnode_cf">
+  			<input id="cf_query" style="width:250px" class="cf_query_target">
+			<button class="btn btn-info hideCf">Choose Gene Symbols</button>
+  		</div>
+	</div>
   	</script>
+  	<script id="ClinicalFeatureSummary" type="text/template">
+	<span><button type="button" class="close">&times;</button></span>
+	<h3><@= args.long_name @></h3>
+	<hr>
+	<p><@= args.description @></p>
+	</script>
   	<script id="GeneInfoSummary" type="text/template">
 	<div class="speechWrapper">
 		<div class="summary_header">
