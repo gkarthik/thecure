@@ -895,7 +895,10 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	},
 	showCf: function(){
 		$("#mygeneinfo_wrapper").hide();
-
+		if (this.model) {
+			var model = this.model;
+		}
+		
 		//Clinical Features Autocomplete
 		var availableTags = Cure.ClinicalFeatureCollection.toJSON();
 		
@@ -962,19 +965,21 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 						model.set("name", ui.item.short_name);
 						model.set('accLimit', 0, {silent:true});
 						model.set("options", {
-							id : ui.item.id,
+							id : ui.item.unique_id,
 							"unique_id" : ui.item.unique_id,
 							"kind" : "split_node",
-							"full_name" : ui.item.long_name
+							"full_name" : ui.item.long_name,
+							"description" : ui.item.description
 						});
 					} else {
 						var newNode = new Node({
 							'name' : ui.item.short_name,
 							"options" : {
-								id : ui.item.id,
+								id : ui.item.unique_id,
 								"unique_id" : ui.item.unique_id,
 								"kind" : "split_node",
-								"full_name" : ui.item.name
+								"full_name" : ui.item.long_name,
+								"description" : ui.item.description
 							}
 						});
 						newNode.set("cid", newNode.cid);
