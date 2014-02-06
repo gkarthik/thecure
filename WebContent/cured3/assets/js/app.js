@@ -296,7 +296,7 @@ Node = Backbone.RelationalModel.extend({
 		relatedModel : 'Node',
 		reverseRelation : {
 			key : 'parentNode',
-			includeInJSON : false
+			includeInJSON : true
 		}
 	} ]
 });
@@ -388,9 +388,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				this.model.set('accLimit',0);																																																																																																																																																																												
 		}
 		if(Cure.PlayerNodeCollection.models.length > 0) {
-			Cure.binsizeScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).rangeRound([ 0, 100 ]);
+			Cure.binsizeScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).range([ 0, 100 ]);
 		} else {
-			Cure.binsizeScale = d3.scale.linear().domain([ 0, 239 ]).rangeRound([ 0, 100 ]);
+			Cure.binsizeScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit');
 		this.model.bind('change', this.render);
@@ -415,9 +415,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		var content = "";
 		//% cases
 		if(this.model.get('options').bin_size && this.model.get('options').kind =="leaf_node"){
-			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*100)+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
 		} else if(this.model.get('options').bin_size && this.model.get('options').kind =="split_node") {
-			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*100)+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
 		}		
 		//Accuracy
 		if(this.model.get('options').pct_correct){
@@ -704,11 +704,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
-		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).rangeRound(
+		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range(
 				[ 0, 100 ]);
 		var noveltyScale = d3.scale.linear().domain([ 0, 1 ])
-				.rangeRound([ 0, 100 ]);
-		var sizeScale = d3.scale.linear().domain([ 0, 1 ]).rangeRound([ 0, 100 ]);
+				.range([ 0, 100 ]);
+		var sizeScale = d3.scale.linear().domain([ 0, 1 ]).range([ 0, 100 ]);
 		var datapoints = [ {
 			"x" : 0,
 			"y" : 0
@@ -1344,13 +1344,13 @@ Cure.render_network = function(dataset) {
 
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
-				.rangeRound([ 0, 30 ]);
+				.range([ 0, 30 ]);
 		var binsizeY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
-				.rangeRound([ 0, 100 ]);
+				.range([ 0, 100 ]);
 	} else {
-		var binY = d3.scale.linear().domain([ 0, 100 ]).rangeRound([ 0, 30 ]);
+		var binY = d3.scale.linear().domain([ 0, 100 ]).range([ 0, 30 ]);
 		var binsizeY = d3.scale.linear().domain([ 0, 100 ])
-			.rangeRound([ 0, 100 ]);
+			.range([ 0, 100 ]);
 		dataset = [ {
 			'name' : '',
 			'cid' : 0,
@@ -1704,7 +1704,16 @@ Cure.addInitializer(function(options) {
 	Cure.Scorewidth = options["Scorewidth"];
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
-	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
+	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ])/*.separation(function(a,b) {
+		console.log(a);
+		console.log(b);
+		if(a.parentNode){
+			var dist = 0;
+			dist = (Cure.width - (a.parent.children.length*110))/a.parent.children;
+			return dist;
+		} 
+		return "auto";
+	});*/
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
