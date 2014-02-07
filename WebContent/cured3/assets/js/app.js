@@ -296,7 +296,7 @@ Node = Backbone.RelationalModel.extend({
 		relatedModel : 'Node',
 		reverseRelation : {
 			key : 'parentNode',
-			includeInJSON : true
+			includeInJSON: false
 		}
 	} ]
 });
@@ -449,10 +449,15 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		} else if(this.model.get('name')==Cure.posNodeName) {
 			styleObject.background = "rgba(0,0,255,0.2)";
 			styleObject.borderColor = "blue";
-		} 
-		$(this.el).attr("class", "node");
+		}
+		$(this.el).attr('class','node');//To refresh class everytime node is rendered.
 		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
+		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
+		console.log(numNodes);
+		if(numNodes * 112 >= Cure.width){
+			$(this.el).addClass('shrink_'+this.model.get('options').kind);
+		}
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
@@ -1504,6 +1509,31 @@ Cure.isInt = function(n) {
    return n % 1 === 0;
 }
 
+//Function to get number of nodes at a particular depth level
+Cure.getNumNodesatDepth = function(root,givenDepth){
+	var num = 0;
+	if(Cure.getDepth(root)==givenDepth){
+		num++;
+	} else if(Cure.getDepth(root)<givenDepth){
+		if(root.get('children').models.length>0){
+			for(var temp in root.get('children').models){
+				num+=Cure.getNumNodesatDepth(root.get('children').models[temp],givenDepth);
+			}
+		}
+	}
+	return num;
+}
+
+//Function to get depth of a node
+Cure.getDepth = function(node){
+	var  givenDepth= 0;
+	while(node!=null){
+		node = node.get('parentNode');
+		givenDepth++;
+	}
+	return givenDepth;
+}
+
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
 	var chartWrapper = parentElement.attr("width","102").attr("height","102").append("svg:g").attr("class","chartWrapper").attr("transform","translate(11,6)");
 	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
@@ -1704,16 +1734,7 @@ Cure.addInitializer(function(options) {
 	Cure.Scorewidth = options["Scorewidth"];
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
-	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ])/*.separation(function(a,b) {
-		console.log(a);
-		console.log(b);
-		if(a.parentNode){
-			var dist = 0;
-			dist = (Cure.width - (a.parent.children.length*110))/a.parent.children;
-			return dist;
-		} 
-		return "auto";
-	});*/
+	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});

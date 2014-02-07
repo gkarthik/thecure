@@ -141,6 +141,18 @@ input.edit{
 	font-size: 13px;
 }
 
+.shrink_leaf_node{
+	border:2px solid green;
+}
+
+.shrink_split_node{
+	border:2px solid green;
+}
+
+.shrink_split_value{
+	border:2px solid green;
+}
+
 .link {
   fill: none;
   stroke: #ccc;
