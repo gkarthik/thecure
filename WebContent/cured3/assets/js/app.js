@@ -454,22 +454,32 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
 		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
-		console.log(numNodes);
 		if(numNodes * 112 >= Cure.width){
 			$(this.el).addClass('shrink_'+this.model.get('options').kind);
+			$(this.el).css({
+				width: (Cure.width - 6*numNodes) /numNodes,//6 to account for border-width:2px
+				height: 'auto',
+				'font-size': '0.5vw'
+			});
 		}
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
+		var accLimit = 0;
+		//Setting up accLimit for leaf_node
+		if(this.model.get('options').kind=="leaf_node") {
+			accLimit = Cure.binsizeScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
+			this.model.set('accLimit',accLimit);
+		}
 		if(id!=undefined){
 			id = "#"+id;
-			
-			//Setting up accLimit for leaf_node
-			var accLimit = 0;
-			if(this.model.get('options').kind=="leaf_node") {
-				accLimit = Cure.binsizeScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
-				this.model.set('accLimit',accLimit);
+			/*
+			if(((this.$el.width()-20)/10)){
+				var radius = 4;
+			} else {
+				var radius = ((this.$el.width()-20)/10);
 			}
+			*/
 			var radius = 4;
 			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
 			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
@@ -483,6 +493,23 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}
 			d3.selectAll(id+classToChoose["className"]).style("fill",classToChoose["color"]);
 		}
+		/*
+		else if($(this.el).hasClass("shrink_leaf_node") && id!= undefined){
+			var bin_size = this.model.get('options').bin_size;
+			var accLimit = this.model.get('accLimit'); 
+			console.log(accLimit/100)
+			var hue = 0;
+			if(this.model.get('name')==Cure.posNodeName){//Deviate starting from blue. H = 240 degrees
+				hue = 1.2/360 - ((100-accLimit) * 1.2/360);
+			} else if(this.model.get('name')==Cure.negNodeName) {//Deviate starting from red. H = 360 degrees
+				hue = 1.2/360 - ((accLimit) * 1.2/360);	
+			}
+			var rgb = Cure.hslToRgb(hue,1,0.5);
+			id = "#"+id;
+			d3.select(id).style('background',function(){
+				return 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
+			});
+		}*/
 	},
 	remove : function() {
 		//Remove and destroy current node.
@@ -1524,6 +1551,34 @@ Cure.getNumNodesatDepth = function(root,givenDepth){
 	return num;
 }
 
+//Function to convert from HSL to RGB
+//Reference -> http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+Cure.hslToRgb = function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.floor(r * 255), Math.floor(g * 255), Math.floor(b * 255)];
+}
+
+
 //Function to get depth of a node
 Cure.getDepth = function(node){
 	var  givenDepth= 0;
@@ -1535,7 +1590,11 @@ Cure.getDepth = function(node){
 }
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
-	var chartWrapper = parentElement.attr("width","102").attr("height","102").append("svg:g").attr("class","chartWrapper").attr("transform","translate(11,6)");
+	var chartWrapper = parentElement.attr("width",function(){
+		return (radius*20)+4;
+	}).attr("height",function(){
+		return (radius*20)+4;
+	}).append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,0)");
 	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
 		if(nodeKind!="split_value"){
 			return (radius*20)+2;
@@ -1548,7 +1607,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 		return 0;
 	}).attr("fill",function(){
 		return "none";
-	}).attr("transform","translate(-2,6)").attr("stroke",function(){
+	}).attr("transform","translate(0,0)").attr("stroke",function(){
 		if(nodeName == Cure.negNodeName){
 			return "rgba(255, 0, 0, 1)";
 		} else if(nodeName == Cure.posNodeName) {
@@ -1568,7 +1627,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
 		} else if(!Cure.isInt(accLimit) && i== parseInt((accLimit)/1)){//Final square to be printed
 			chartWrapper.append("rect").attr("class",function(){
 				return "posCircle";
@@ -1579,7 +1638,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
 			
 			chartWrapper.append("rect").attr("class",function(){
 				return "negCircle";
@@ -1590,7 +1649,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+parseInt((radius*2)*(i%10) + ((radius*2)-2) * (accLimit % 1)) + ","+((radius*20)-(radius*2)*parseInt(i/10))+")");
+			}).attr("transform","translate("+parseInt((radius*2)*(i%10) + ((radius*2)-2) * (accLimit % 1)) + ","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
 		}
 	}
 }
@@ -1734,6 +1793,7 @@ Cure.addInitializer(function(options) {
 	Cure.Scorewidth = options["Scorewidth"];
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
+	var width = 0;
 	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
