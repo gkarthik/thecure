@@ -55,13 +55,13 @@ input.edit{
 .node {
   	z-index: 3;
 	position: absolute;
-	min-width: 95px;
 	min-height: 23px;
 	border: 0px;
 	-webkit-transition: transform 0.5s ease-in-out;
   	-moz-transition: transform 0.5s ease-in-out;
   	-o-transition: transform 0.5s ease-in-out;
   	transition: transform 0.5s ease-in-out;
+  	font-size: .8vw;
 }
 
 .node .btn{
@@ -101,7 +101,6 @@ input.edit{
 	padding-top: 7px;
 	text-align:center;
 	font-weight:bold;
-	font-size:15px;
 	min-width:45px;
 	padding:2px;
 }
@@ -143,6 +142,15 @@ input.edit{
 
 .shrink_leaf_node{
 	border:2px solid green;
+}
+
+.shrink_leaf_node .addchildren span{
+	display:none;
+}
+.shrink_leaf_node svg{
+	width: 70%;
+	height: 50px;
+	padding: 0px;
 }
 
 .shrink_split_node{
