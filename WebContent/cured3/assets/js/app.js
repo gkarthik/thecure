@@ -1591,10 +1591,10 @@ Cure.getDepth = function(node){
 
 Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
 	var chartWrapper = parentElement.attr("width",function(){
-		return (radius*20)+4;
+		return (radius*20)+8;
 	}).attr("height",function(){
-		return (radius*20)+4;
-	}).append("svg:g").attr("class","chartWrapper").attr("transform","translate(0,0)");
+		return (radius*20)+8;
+	}).append("svg:g").attr("class","chartWrapper").attr("transform","translate(3,3)");
 	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
 		if(nodeKind!="split_value"){
 			return (radius*20)+2;
@@ -1607,7 +1607,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 		return 0;
 	}).attr("fill",function(){
 		return "none";
-	}).attr("transform","translate(0,0)").attr("stroke",function(){
+	}).attr("transform","translate(-2,2)").attr("stroke",function(){
 		if(nodeName == Cure.negNodeName){
 			return "rgba(255, 0, 0, 1)";
 		} else if(nodeName == Cure.posNodeName) {
@@ -1627,7 +1627,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt(i/10))+")");
 		} else if(!Cure.isInt(accLimit) && i== parseInt((accLimit)/1)){//Final square to be printed
 			chartWrapper.append("rect").attr("class",function(){
 				return "posCircle";
@@ -1638,7 +1638,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
+			}).attr("transform","translate("+(radius*2)*(i%10)+","+((radius*19)-(radius*2)*parseInt(i/10))+")");
 			
 			chartWrapper.append("rect").attr("class",function(){
 				return "negCircle";
@@ -1649,7 +1649,7 @@ Cure.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeN
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
-			}).attr("transform","translate("+parseInt((radius*2)*(i%10) + ((radius*2)-2) * (accLimit % 1)) + ","+((radius*19)-(radius*2)*parseInt((i-1)/10))+")");
+			}).attr("transform","translate("+parseInt((radius*2)*(i%10) + ((radius*2)-2) * (accLimit % 1)) + ","+((radius*19)-(radius*2)*parseInt(i/10))+")");
 		}
 	}
 }
