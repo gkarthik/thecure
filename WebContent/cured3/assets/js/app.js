@@ -436,6 +436,16 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
+		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
+		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
+			$(this.el).addClass('shrink_'+this.model.get('options').kind);
+			$(this.el).css({
+				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.
+				height: 'auto',
+				'font-size': '0.5vw',
+				'min-width': '0px'
+			});
+		}
 		var width = $(this.el).outerWidth();
 		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
@@ -453,15 +463,6 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		$(this.el).attr('class','node');//To refresh class everytime node is rendered.
 		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
-		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
-		if(numNodes * 112 >= Cure.width){
-			$(this.el).addClass('shrink_'+this.model.get('options').kind);
-			$(this.el).css({
-				width: (Cure.width - 6*numNodes) /numNodes,//6 to account for border-width:2px
-				height: 'auto',
-				'font-size': '0.5vw'
-			});
-		}
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
@@ -473,14 +474,12 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		}
 		if(id!=undefined){
 			id = "#"+id;
-			/*
-			if(((this.$el.width()-20)/10)){
-				var radius = 4;
-			} else {
-				var radius = ((this.$el.width()-20)/10);
-			}
-			*/
 			var radius = 4;
+			var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
+			if(numNodes * 100 >= Cure.width){
+					var width = (Cure.width - 10*numNodes) /numNodes;
+					radius = (width - 4)/20;
+			}
 			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
 			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
