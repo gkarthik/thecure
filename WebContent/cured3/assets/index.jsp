@@ -74,7 +74,7 @@ Player player = (Player) session.getAttribute("player");
 					<ul>
 						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
 						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
-						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Add Node </span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Addk</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
 						<li>To remove a particular gene from the tree, click on <i class="icon-remove"></i> and the node along with its children will be deleted.</li>
 						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
 						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
@@ -324,7 +324,7 @@ Player player = (Player) session.getAttribute("player");
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>
-		<span style="float: none;">Add Node </span>
+		<span style="float: none;">Add</span>
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
   </script>
