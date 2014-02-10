@@ -437,6 +437,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
 		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
+		
 		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
 			$(this.el).addClass('shrink_'+this.model.get('options').kind);
 			$(this.el).css({
@@ -445,7 +446,24 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				'font-size': '0.5vw',
 				'min-width': '0px'
 			});
-		}
+		} else {
+			if($(this.el).hasClass('shrink_'+this.model.get('options').kind)){
+				$(this.el).removeClass('shrink_'+this.model.get('options').kind);
+			}
+			try{
+				console.log(this.model.get('parentNode').get('parentNode').get('viewCSS').width);
+				$(this.el).css({
+					'width': this.model.get('parentNode').get('parentNode').get('viewCSS').width+"px",
+					'min-width': '0px'
+				});
+			} catch(e){
+				if(this.model.get('options')=='leaf_node'||this.model.get('options')=='split_node'){
+					$(this.el).css({
+						'min-width': "100px"
+					});
+				}
+				}
+			}
 		var width = $(this.el).outerWidth();
 		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
@@ -463,6 +481,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		$(this.el).attr('class','node');//To refresh class everytime node is rendered.
 		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
+		this.model.set("viewCSS",{'width':this.$el.width()});
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
@@ -475,11 +494,8 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if(id!=undefined){
 			id = "#"+id;
 			var radius = 4;
-			var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
-			if(numNodes * 100 >= Cure.width){
-					var width = (Cure.width - 10*numNodes) /numNodes;
-					radius = (width - 4)/20;
-			}
+			var width = this.model.get('viewCSS').width-10;
+			radius = (width - 4)/20;
 			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
 			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
@@ -1336,7 +1352,6 @@ Cure.updatepositions = function(NodeCollection) {
 				}
 				d.y += depthDiff;
 			}
-		
 	});
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -1793,11 +1808,11 @@ Cure.addInitializer(function(options) {
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
 	var width = 0;
-	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]).separation(function(a, b) { 
-		if(a.children.length > 0){
-			return (a.parent==b.parent) ?1 :2;
+	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]).separation(function(a, b) {
+		if(a.children.length>2){
+			return a.children.length;
 		}
-		return a.children.length; 
+		return (a.parent==b.parent) ?1 :2;
 	});
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
