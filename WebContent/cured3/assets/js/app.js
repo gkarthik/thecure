@@ -430,7 +430,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	},
 	showSummary : function() {
 		//showJSON is used to render the Gene Info POP Up.
-		if (this.model.get("options").kind == "split_node") {
+		if (this.model.get("options").kind == "split_node" || this.model.get("options").kind == "split_value") {
 			this.model.set("showJSON", 1);
 		}
 	},
@@ -1011,13 +1011,23 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.short_name);
 						model.set('accLimit', 0, {silent:true});
-						model.set("options", {
-							id : ui.item.unique_id,
-							"unique_id" : ui.item.unique_id,
-							"kind" : "split_node",
-							"full_name" : ui.item.long_name,
-							"description" : ui.item.description
-						});
+						if(Cure.isJSON(ui.item.description)){
+							model.set("options", {
+								id : ui.item.unique_id,
+								"unique_id" : ui.item.unique_id,
+								"kind" : "split_node",
+								"full_name" : ui.item.long_name,
+								"description" : ui.item.description
+							});
+						} else {
+							model.set("options", {
+								id : ui.item.unique_id,
+								"unique_id" : ui.item.unique_id,
+								"kind" : "split_node",
+								"full_name" : ui.item.long_name,
+								"description" : ui.item.description
+							});
+						}
 					} else {
 						var newNode = new Node({
 							'name' : ui.item.short_name,
@@ -1184,7 +1194,8 @@ NodeCollectionView = Backbone.Marionette.CollectionView.extend({
 
 //HTML Templates for rendering Gene SUmary Pop Up and Node Information. 
 var shownode_html = $("#JSONtemplate").html();
-
+var showsplitvaluenode_html = $("#JSONSplitValuetemplate").html();
+var showsplitnodecf_html = $("#JSONSplitNodeCftemplate").html();
 // -- View to render Gene SUmmary List
 JSONItemView = Backbone.Marionette.ItemView.extend({
 	model : Node,
@@ -1239,16 +1250,52 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		return _.template(shownode_html, {
+		console.log(serialized_model.options.id)
+		if(serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") == -1) {
+			return _.template(shownode_html, {
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
 			}, {
 				variable : 'args'
 			});
+		} else if (serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") != -1){
+			return _.template(showsplitnodecf_html, {
+				name : name,
+				summary : serialized_model.gene_summary,
+				kind : serialized_model.options.kind
+			}, {
+				variable : 'args'
+			});
+		} else {
+			return _.template(showsplitvaluenode_html, {
+				name : name,
+				summary : serialized_model.gene_summary,
+				kind : serialized_model.options.kind
+			}, {
+				variable : 'args'
+			});
+		}
 	},
 	ShowJSON : function() {
-		this.getSummary();
+		if(this.model.get('options').kind == "split_node"){
+			if(this.model.get('options').id.indexOf("metabric") == -1){
+				this.getSummary();
+			} else {
+				var summary = {};
+				summary.name = this.model.get('name');
+				summary.summaryText = this.model.get('options').description;
+				this.model.set("gene_summary",summary);
+			}
+		} else {
+			if(Cure.isJSON(this.model.get('parentNode').get('options').description)){
+				var json_string = JSON.parse(this.model.get('parentNode').get('options').description);
+				var summary = {};
+				summary.name = this.model.get('name');
+				summary.summaryText = json_string[this.model.get('name')];
+				this.model.set("gene_summary",summary);
+			}
+		}
 		this.$el.find(this.ui.showjson).addClass("disabled");
 		this.$el.find(this.ui.jsondata).css({
 			'display' : 'block'
@@ -1550,6 +1597,15 @@ Cure.isInt = function(n) {
    return n % 1 === 0;
 }
 
+Cure.isJSON = function(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 //Function to get number of nodes at a particular depth level
 Cure.getNumNodesatDepth = function(root,givenDepth){
 	var num = 0;
@@ -1809,8 +1865,12 @@ Cure.addInitializer(function(options) {
 	Cure.duration = 500;
 	var width = 0;
 	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]).separation(function(a, b) {
-		if(a.children.length>2){
-			return a.children.length;
+		try{
+			if(a.children.length>2){
+				return a.children.length;
+			}
+		} catch(e){
+			
 		}
 		return (a.parent==b.parent) ?1 :2;
 	});
