@@ -63,12 +63,11 @@ input.edit{
   	transition: transform 0.5s ease-in-out;
   	font-size: .8vw;
   	padding: 2px;
+  	min-width: 80px;
 }
 
 .node .btn{
 	margin:0px;
-	margin-left:5px; 
-	float:left;
 }
 
 .chart{
@@ -175,7 +174,6 @@ input.edit{
 {
   display:block;
   text-align:center;
-  float:left;
 }
 
 .split_node .name{
@@ -184,6 +182,14 @@ input.edit{
 
 .split_node .name:hover{
 	  color: #333;
+}
+
+.split_value .name{
+	cursor: pointer;
+}
+
+.split_value .name:hover{
+	color: #333;
 }
 
 .showjson
@@ -324,7 +330,7 @@ left:25%;
 }
 
 
-#SpeechBubble .summary_header{
+.summary_header{
 position: fixed;
 padding: 2px;
 padding-left:10px;
@@ -334,7 +340,7 @@ z-index: 1;
 text-align:left;
 }
 
-#SpeechBubble .summary_content{
+.summary_content{
 	padding: 3%;
 	position:relative;
 	width:90%;
