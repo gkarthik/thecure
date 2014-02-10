@@ -29,7 +29,7 @@ $.widget("my.genequery_autocomplete", $.ui.autocomplete, {
         //exact match with symbol is boosted.
         q: "(symbol:{term} OR symbol: {term}* OR name:{term}* OR alias: {term}* OR summary:{term}*)",
 //        q: "{term}*",
-        userfilter: "bgood_cure_griffith",
+        userfilter: "bgood_metabric",
         species: "human",
         fields: "name,symbol,taxid,entrezgene",
         limit:20,

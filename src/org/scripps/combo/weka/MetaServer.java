@@ -383,15 +383,19 @@ public class MetaServer extends HttpServlet {
 		String comment = "";
 		int player_id = 0;
 		int user_saved = 0;
+		comment = data.get("comment").asText();
 		String ip = request_.getRemoteAddr();
 		List<Feature> features = new ArrayList<Feature>();
 		for(String entrez_id : entrez_ids){
 			Feature f = weka.features.get(entrez_id);
 			features.add(f);
 		}
+		if(command.equals("savetree")){
+			user_saved = 1;
+		}
 		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
 		int tid = tree.insert();
-		float score = 0;
+		float score = 0; //Score Equation to be put in here, I think - @gkarthik
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
 		
 	}
@@ -427,6 +431,10 @@ public class MetaServer extends HttpServlet {
 			int user_id = data.get("user_id").asInt();
 			tree_.setPlayer_id(user_id);
 			trees = tree_.getForPlayer(user_id);
+		} else if(command.equals("get_trees_with_range")) {
+			String lowerLimit = data.get("lowerLimit").asText();
+			String upperLimit = data.get("upperLimit").asText();
+			trees = tree_.getWithLimit(lowerLimit,upperLimit);
 		}
 		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
 		String json_trees = mapper.writeValueAsString(treelist);

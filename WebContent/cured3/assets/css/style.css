@@ -8,19 +8,17 @@ html, body{
   padding-top:40px;
 }
 
-#mygene_wrapper{
-	position: absolute;
-	z-index: 1;
-	width:30%;
-	padding:2.5%;
-	margin-left: 32.5%;
-	margin-top:150px;
-	display:none;
+.addnode_wrapper{
+	position:relative;
+	width:100%;	
+}
+
+#mygenecf_wrapper{
+	display: none;
 }
 
 #mygene_addnode{
-	position:relative;
-	width:100%;
+	
 }
 
 #PlayerTreeRegion svg{
@@ -57,13 +55,14 @@ input.edit{
 .node {
   	z-index: 3;
 	position: absolute;
-	min-width: 95px;
 	min-height: 23px;
 	border: 0px;
 	-webkit-transition: transform 0.5s ease-in-out;
   	-moz-transition: transform 0.5s ease-in-out;
   	-o-transition: transform 0.5s ease-in-out;
   	transition: transform 0.5s ease-in-out;
+  	font-size: .8vw;
+  	padding: 2px;
 }
 
 .node .btn{
@@ -103,7 +102,6 @@ input.edit{
 	padding-top: 7px;
 	text-align:center;
 	font-weight:bold;
-	font-size:15px;
 	min-width:45px;
 	padding:2px;
 }
@@ -129,10 +127,39 @@ input.edit{
 	color: #000;
 }
 
+.leaf_node .showCf{
+	color: #FFF;
+}
+
+.leaf_node .hideCf{
+	color: #FFF;
+}
+
 .leaf_node .name{
 	float: none;
 	color: #FFF;
 	font-size: 13px;
+}
+
+.shrink_leaf_node{
+	border:2px solid green;
+}
+
+.shrink_leaf_node .addchildren span{
+	display:none;
+}
+.shrink_leaf_node svg{
+	width: 70%;
+	height: 50px;
+	padding: 0px;
+}
+
+.shrink_split_node{
+	border:2px solid green;
+}
+
+.shrink_split_value{
+	border:2px solid green;
 }
 
 .link {
@@ -141,8 +168,8 @@ input.edit{
   stroke-width: 1.5px;
 }
 .btn{
-  margin:0px 2px;
-  padding:0px;
+  margin: 2px;
+  padding:2px 4px;
 }
 .name
 {
@@ -164,7 +191,7 @@ input.edit{
   float:none;
 }
 
-#json_structure .jsonview_data
+.jsonview_data
 {
 z-index: 4;
 position: fixed;
@@ -248,6 +275,15 @@ left:25%;
 	float:right;
 }
 
+#scoreboard_wrapper{
+	height:400px;
+	overflow:auto;
+	width:260px;
+	padding:10px;
+	border:2px solid rgb(255, 102, 153);
+	border-radius: 5px;
+}
+
 #summary_header{
 	position:fixed;
 	width:50%;
@@ -277,7 +313,7 @@ left:25%;
 	width: auto;
 	font-size:12px;
 	margin-left:5px;
-	text-align:center;
+	padding:10px;
 }
 
 .speechWrapper{	
@@ -423,6 +459,9 @@ text-align:left;
 	font-size: 15px;
 }
 
+.renderPink{
+	color: rgb(255, 102, 153);
+}
 /*
 Style for header links
 */
