@@ -30,8 +30,7 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/jquery-1.10.1.js"></script>
 <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"
 	type="text/javascript"></script>
-<script src="./js/mygene_autocomplete_jqueryui.js"
-	type="text/javascript"></script>
+<script src="./js/mygene_autocomplete_jqueryui.js" type="text/javascript"></script>
 <script type="text/javascript" src="./js/underscore.js"></script>
 <script type="text/javascript" src="./js/backbone.js"></script>
 <script type="text/javascript" src="./js/backbone-relational.js"></script>
@@ -39,9 +38,10 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
-<div id="NodeDetailsWrapper">
+<div id="NodeDetailsWrapper" class="blurCloseElement">
 	<div id="NodeDetailsContent"></div>
 </div>
+<div id="jsonSummary"></div>
 
 <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
@@ -74,7 +74,7 @@ Player player = (Player) session.getAttribute("player");
 					<ul>
 						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
 						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
-						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Add Node </span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Addk</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
 						<li>To remove a particular gene from the tree, click on <i class="icon-remove"></i> and the node along with its children will be deleted.</li>
 						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
 						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
@@ -94,8 +94,8 @@ Player player = (Player) session.getAttribute("player");
 				<div id="CommentRegion"></div>
 					<div id="ScoreRegion"></div>
 				</span>
-				<h2>Gene Summary</h2>
-				<table class="table table-hover" id='json_structure'></table>
+				<h2 class="renderPink">Score Board</h2>
+				<div id='scoreboard_wrapper'></div>
 			</div>
 		</div>
 	</div>
@@ -121,11 +121,27 @@ Player player = (Player) session.getAttribute("player");
 	<@ } @>
 	</script>
 	<script type="text/template" id="AddRootNode">
-		<label class="label label-info">Key in a Gene Symbol/Name to Start</label>
+	<div id="mygeneinfo_wrapper" class="addnode_wrapper">
+		<label class="label label-info">Enter a Gene Symbol/Name</label>
   		<div id="mygene_addnode">
   			<input id="gene_query" style="width:250px" class="mygene_query_target">
+			<button class="btn btn-info showCf">Choose Clinical Features</button>
   		</div>
+	</div>
+	<div id="mygenecf_wrapper" class="addnode_wrapper">
+		<label class="label label-info">Click on the textbox and choose a clinical feature</label>
+  		<div id="mygene_addnode_cf">
+  			<input id="cf_query" style="width:250px" class="cf_query_target">
+			<button class="btn btn-info hideCf">Choose Gene Symbols</button>
+  		</div>
+	</div>
   	</script>
+  	<script id="ClinicalFeatureSummary" type="text/template">
+	<span><button type="button" class="close">&times;</button></span>
+	<h3><@= args.long_name @></h3>
+	<hr>
+	<p><@= args.description @></p>
+	</script>
   	<script id="GeneInfoSummary" type="text/template">
 	<div class="speechWrapper">
 		<div class="summary_header">
@@ -211,12 +227,7 @@ Player player = (Player) session.getAttribute("player");
 </div>
   	</script>
 	<script id="JSONtemplate" type="text/template">
-      	<td><span class="jsonview_name"><@= args.name @></span></td>
-      	<td><span><button class="btn btn-link showattr" >Info</button></span></td>
-	  	<@ if(args.kind == "split_node") { @>
-      		<td><span><button class="btn btn-link showjson" >Gene Summary</button></span></td>
-      		<td>
-				<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+		<div class="jsonview_data" id="jsonview_data<@= args.id @>">
 				<div id="summary_header">
 					<button type="button" class="close">&times;</button>
 					<h2><@= args.name @></h2>
@@ -298,37 +309,14 @@ Player player = (Player) session.getAttribute("player");
 		<@ } @>
 </div>
 			</div>
-		</td>
-	  <@  } @>
-  </script>
-	<script id="Attrtemplate" type="text/template">
-    <td colspan="3">
-<button class="btn btn-link editdone" >Close Info</button>
-    <ul class="unstyled">
-      <li>
-            <span class="attredit">
-              <label class="label label-info">Name</label><br /><label class="attrvalue"><@= args.name @></label>
-              <input class="input-medium edit" id="name" type="text" value="<@= args.name @>" />
-            </span>
-      </li>
-      <@ for(var option in args.options) {@>
-        <li>
-            <span class="attredit">
-              <label class="label label-info"><@= option @></label><br /><label class="attrvalue"> <@= args.options[option] @></label>
-              <input class="input-medium edit modeloption" id="<@= option @>" type="text" value="<@= args.options[option] @>" />
-            </span>
-        </li>
-      <@ } @>
-    </ul>
-    </td>
   </script>
 	<script id="nodeTemplate" type="text/template">  
 		<svg class="leafNodeChart chart" id="chart<@= args.cid @>"></svg>
-		<@ if(args.name == "relapse")
+		<@ if(args.name == args.negNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:red;">'+args.name.toUpperCase()+'</span>');
 		}
-		else if(args.name == "no relapse")
+		else if(args.name == args.posNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
 		} 
@@ -336,7 +324,7 @@ Player player = (Player) session.getAttribute("player");
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="icon-plus-sign"></i>
-		<span style="float: none;">Add Node </span>
+		<span style="float: none;">Add</span>
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
   </script>
@@ -365,6 +353,26 @@ Player player = (Player) session.getAttribute("player");
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>";
+  </script>
+  <script id="ScoreBoardTemplate" type="text/template">
+	<p class="text-info"><@ if(comment!=""){
+			print("Comments: '"+comment+"'")
+		} @></p>
+	<table class="table table-bordered">
+		<tr>
+			<th><span class="key">Score</span></th>
+			<th><span class="key">Size</span></th>
+			<th><span class="key">Accuracy</span></th>
+			<th><span class="key">Novelty</span></th>
+		</tr>
+		<tr>
+			<td><span class='keyValue'><@= json_tree.score @></span></td>
+			<td><span class='keyValue'><@= json_tree.size @></span></td>
+			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
+			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
+		</tr>
+	</table>
+	<hr>
   </script>
 	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>

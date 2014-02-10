@@ -92,6 +92,7 @@ public class Tree {
 		this.features = features;
 		this.json_tree = json_tree;
 		this.comment = comment;
+		this.user_saved = user_saved;
 	}
 
 	/**
@@ -273,6 +274,51 @@ public class Tree {
 			e.printStackTrace();
 		}
 		return tree;
+	}
+	
+	public List<Tree> getWithLimit(String lowerLimit, String upperLimit){
+		List<Tree> trees = new ArrayList<Tree>();
+		String q = "select * from tree where user_saved='1' order by id desc limit "+lowerLimit+","+upperLimit;
+		JdbcConnection conn = new JdbcConnection();
+		try {
+			ResultSet ts = conn.executeQuery(q);
+			while(ts.next()){
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				tree.created = ts.getDate("created");
+				String fq = "select * from tree_feature where tree_id="+tree.id;
+				ResultSet fs = conn.executeQuery(fq);
+				List<Feature> features = new ArrayList<Feature>();
+				while(fs.next()){
+					int fid = fs.getInt("feature_id");
+					Feature f = Feature.getByDbId(fid);
+					if(f!=null){
+						features.add(f);
+					}
+				}
+				tree.features = features;
+				//scores
+				ResultSet scores = conn.executeQuery("select * from tree_dataset_score where tree_id="+tree.id);
+				if(scores!=null){
+					Map<String, TreeScore> data_score = new HashMap<String, TreeScore>();
+					while(scores.next()){
+						TreeScore score = new TreeScore();
+						score.novelty = scores.getFloat("novelty");
+						score.percent_correct = scores.getFloat("percent_correct");
+						score.size = scores.getFloat("size");
+						score.score = scores.getFloat("score");
+						data_score.put(scores.getString("dataset"), score);
+					}
+					tree.dataset_score = data_score;
+				}
+				trees.add(tree);
+			}
+			ts.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return trees;
 	}
 	
 	

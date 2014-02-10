@@ -73,7 +73,7 @@ public class Card {
 		String q = "select count(*) as total from card";
 		String q2 = "select count(*) as n from card where ";
 		for(String uid : unique_id){
-			q2 += " unique_id = "+uid+" or ";
+			q2 += " unique_id = '"+uid+"' or ";// quotes('') for unique ids of clinical features like 'metabric_clinical_5'
 		}
 		q2 = q2.substring(0,q2.length()-3);
 		double base = 1; double n = 1;
@@ -84,10 +84,15 @@ public class Card {
 			}
 			rslt.close();
 			rslt = conn.executeQuery(q2);
-			if(rslt.next()){
+			if(rslt.next()){//returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
 				n = rslt.getDouble("n");
 			}
-			nov = (1 - Math.log(n)/Math.log(base));
+			if(base>0 && n > 0){
+				nov = (1 - Math.log(n)/Math.log(base));
+			}else if(base == 0 && n == 0){//With this condition, novelty = Infinity error resolved.
+				nov = 1; //First time card used.
+			}
+			
 			conn.connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
