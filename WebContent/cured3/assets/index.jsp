@@ -137,10 +137,24 @@ Player player = (Player) session.getAttribute("player");
 	</div>
   	</script>
   	<script id="ClinicalFeatureSummary" type="text/template">
-	<span><button type="button" class="close">&times;</button></span>
-	<h3><@= args.long_name @></h3>
-	<hr>
-	<p><@= args.description @></p>
+	<div class="speechWrapper">
+	<div class="summary_header">
+		<button type="button" class="close">&times;</button>
+		<h3><@= args.long_name @></h3>
+		<hr>
+	</div>
+	<div class="summary_content">
+		<p><@ if(Cure.isJSON(args.description)){
+				var json_string = JSON.parse(args.description);
+				for(var temp in json_string){
+					print("<h4>"+temp+"</h4>"+"<p>"+json_string[temp]+"</p>");
+				}
+			  } else {
+					print(args.description);
+				}
+			@></p>
+	</div>
+	</div>
 	</script>
   	<script id="GeneInfoSummary" type="text/template">
 	<div class="speechWrapper">
@@ -226,6 +240,36 @@ Player player = (Player) session.getAttribute("player");
 	</div>
 </div>
   	</script>
+  	<script id="JSONSplitNodeCftemplate" type="text/template">
+	<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+				<div id="summary_header">
+					<button type="button" class="close">&times;</button>
+					<h2><@= args.name @></h2>
+				</div>
+				<div id="summary_content">
+				<p><@ if(Cure.isJSON(args.summary.summaryText)){
+				var json_string = JSON.parse(args.summary.summaryText);
+				for(var temp in json_string){
+					print("<h4>"+temp+"</h4>"+"<p>"+json_string[temp]+"</p>");
+				}
+			  } else {
+					print(args.summary.summaryText);
+				}
+			@></p>
+				</div>
+	</div>
+	</script>
+  	<script id="JSONSplitValuetemplate" type="text/template">
+	<div class="jsonview_data" id="jsonview_data<@= args.id @>">
+				<div id="summary_header">
+					<button type="button" class="close">&times;</button>
+					<h2><@= args.name @></h2>
+				</div>
+				<div id="summary_content">
+				<@= args.summary.summaryText @>
+				</div>
+	</div>
+	</script>
 	<script id="JSONtemplate" type="text/template">
 		<div class="jsonview_data" id="jsonview_data<@= args.id @>">
 				<div id="summary_header">
