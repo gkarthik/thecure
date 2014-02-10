@@ -440,7 +440,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
 			$(this.el).addClass('shrink_'+this.model.get('options').kind);
 			$(this.el).css({
-				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.
+				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.	
 				height: 'auto',
 				'font-size': '0.5vw',
 				'min-width': '0px'
@@ -1793,7 +1793,12 @@ Cure.addInitializer(function(options) {
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
 	var width = 0;
-	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]);
+	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]).separation(function(a, b) { 
+		if(a.children.length > 0){
+			return (a.parent==b.parent) ?1 :2;
+		}
+		return a.children.length; 
+	});
 	Cure.diagonal = d3.svg.diagonal().projection(function(d) {
 		return [ d.x, d.y ];
 	});
