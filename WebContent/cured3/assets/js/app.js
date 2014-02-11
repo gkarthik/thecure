@@ -1015,7 +1015,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					}
 					if (kind_value == "leaf_node") {
 						model.set("previousAttributes", model.toJSON());
-						model.set("name", ui.item.short_name);
+						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
 						if(Cure.isJSON(ui.item.description)){
 							model.set("options", {
@@ -1036,7 +1036,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 						}
 					} else {
 						var newNode = new Node({
-							'name' : ui.item.short_name,
+							'name' : ui.item.short_name.replace(/_/g," "),
 							"options" : {
 								id : ui.item.unique_id,
 								"unique_id" : ui.item.unique_id,
