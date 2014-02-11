@@ -76,6 +76,7 @@ input.edit{
   	font-size: .8vw;
   	padding: 2px;
   	min-width: 100px;
+  	max-width:100px;
 }
 
 .node .btn{
