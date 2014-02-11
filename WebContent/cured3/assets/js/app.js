@@ -450,18 +450,24 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			if($(this.el).hasClass('shrink_'+this.model.get('options').kind)){
 				$(this.el).removeClass('shrink_'+this.model.get('options').kind);
 			}
-			try{
-				console.log(this.model.get('parentNode').get('parentNode').get('viewCSS').width);
-				$(this.el).css({
-					'width': this.model.get('parentNode').get('parentNode').get('viewCSS').width+"px",
-					'min-width': '0px'
-				});
-			} catch(e){
-				if(this.model.get('options')=='leaf_node'||this.model.get('options')=='split_node'){
+			if(this.model.get('options').kind=='leaf_node'||this.model.get('options').kind=='split_node'){
+				try{
 					$(this.el).css({
-						'min-width': "100px"
+						'width': this.model.get('parentNode').get('parentNode').get('viewCSS').width+"px",
+						'min-width': '0px'
 					});
-				}
+				} catch(e){
+						$(this.el).css({
+							'min-width': "100px"
+						});
+					}
+				} else {
+					if(this.model.get('parentNode')!=null){
+						$(this.el).css({
+							'width': parseFloat(this.model.get('parentNode').get('viewCSS').width)+"px",
+							'min-width': '0px'
+						});
+					}
 				}
 			}
 		var width = $(this.el).outerWidth();
@@ -1055,7 +1061,6 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 	    };
 	    
 	    this.$el.find('#cf_query').focus(function(){
-	    	console.log(this);
 	    	$(this).autocomplete("search", "");
 	    });	
 		$("#mygenecf_wrapper").show();
@@ -1250,7 +1255,6 @@ JSONItemView = Backbone.Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		console.log(serialized_model.options.id)
 		if(serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") == -1) {
 			return _.template(shownode_html, {
 				name : name,
@@ -1913,7 +1917,7 @@ Cure.addInitializer(function(options) {
 //App Start
 Cure.start({
 	"height" : 300,
-	"width" : window.innerWidth * 0.7,
+	"width" : window.innerWidth * 0.8,
 	"Scorewidth" : 268,
 	"Scoreheight" : 200,
 	"regions" : {
