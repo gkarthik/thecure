@@ -13,12 +13,24 @@ html, body{
 	width:100%;	
 }
 
+#score-panel{
+	position:absolute;
+	top:50px;
+	right:20px;
+	z-index:5;
+	width:325px;
+}
+
 #mygenecf_wrapper{
 	display: none;
 }
 
 #mygene_addnode{
-	
+	margin-top: 5px;
+}
+
+#mygene_addnode_cf{
+	margin-top: 5px;
 }
 
 #PlayerTreeRegion svg{
@@ -63,7 +75,7 @@ input.edit{
   	transition: transform 0.5s ease-in-out;
   	font-size: .8vw;
   	padding: 2px;
-  	min-width: 80px;
+  	min-width: 100px;
 }
 
 .node .btn{
@@ -126,12 +138,12 @@ input.edit{
 	color: #000;
 }
 
-.leaf_node .showCf{
-	color: #FFF;
+.showCf{
+	cursor: pointer;
 }
 
-.leaf_node .hideCf{
-	color: #FFF;
+.hideCf{
+	cursor: pointer;	
 }
 
 .leaf_node .name{
@@ -202,16 +214,16 @@ input.edit{
 z-index: 4;
 position: fixed;
 margin-top: 40px;
-top: 0px;
+top: 20px;
 width: 50%;
-padding: 21px;
-background: #FFF;
+background: none repeat scroll 0% 0% rgb(255, 255, 255);
 display: none;
 height: 450px;
 border: 1px solid lightblue;
 border-radius: 10px;
 box-shadow: 0px 0px 10px 0px lightblue;
-left:25%;
+left: 25%;
+padding: 1%;
 }
 
 #json_structure .jsonview_data .full_name{
@@ -263,8 +275,8 @@ left:25%;
 
 .addgeneinfo{
 	position: absolute;
-	margin: 1px;
-	margin-left: -75px;
+	margin: 10px 1px 1px -75px;
+	width: 300px;
 }
 
 #ScoreSVG{
@@ -284,7 +296,7 @@ left:25%;
 #scoreboard_wrapper{
 	height:400px;
 	overflow:auto;
-	width:260px;
+	width:290px;
 	padding:10px;
 	border:2px solid rgb(255, 102, 153);
 	border-radius: 5px;
@@ -292,14 +304,13 @@ left:25%;
 
 #summary_header{
 	position:fixed;
-	width:50%;
-	padding-left:10px;
+	width:48%;
 }
 
 #summary_content{
-	margin-top:100px;
-	height:350px;
+	margin-top: 100px;
 	overflow: auto;
+	height: 71%;
 }
 
 #summary_content .label{
@@ -369,7 +380,7 @@ text-align:left;
 }
 
 #NodeDetailsWrapper{
-	z-index: 4;
+	z-index: 10;
 	position: absolute;
 	margin-top: 40px;
 	top: 0px;
@@ -468,6 +479,11 @@ text-align:left;
 .renderPink{
 	color: rgb(255, 102, 153);
 }
+
+.commentContent{
+	width: 100%;
+}
+
 /*
 Style for header links
 */
@@ -477,4 +493,30 @@ body div.navbar-inner div.container div.nav-collapse ul.nav li a{
 
 body div.navbar-inner div.container a.brand{
 	color: #FFF;
+}
+
+.navbar .nav > li > a{
+	float: none;
+padding: 10px 10px 11px;
+line-height: 19px;
+color: rgb(255, 255, 255);
+text-decoration: none;
+text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
+}
+
+.navbar .nav > li > a:hover{
+	background-color: rgb(178, 54, 95)
+}
+
+.navbar .nav > li > .brand:hover{
+	 background: transparent;
+}
+
+/*
+Style for right control panel
+*/
+
+.panel-default > .panel-heading{
+	background: rgb(255, 102, 153);
+	color:#FFF;
 }

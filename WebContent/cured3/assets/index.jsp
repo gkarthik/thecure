@@ -17,11 +17,13 @@ Player player = (Player) session.getAttribute("player");
   }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Cure</title>
-<link href='./css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet"
@@ -51,31 +53,27 @@ Player player = (Player) session.getAttribute("player");
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </a>
-            <a class="brand" href="/cure/">The Cure</a>
-            <div class="nav-collapse">
-              <ul class="nav">
-                <li><a href="/cure/contact.jsp">Contact</a></li>
-              </ul>
-            </div>
+             <ul class="nav navbar-nav">
+               <li><a class="brand" href="/cure/">The Cure</a></li>
+                <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
+             </ul>
           </div>
         </div>
       </div>
-	<div class="container CureContainer">
+	<div class="container-fluid CureContainer">
 	<div class="alert" id="alertWrapper">
   		<button type="button" class="close">&times;</button>
   		<strong id="alertMsg"></strong>
 	</div>
 		<div class="row">
-					<div class="span9">
-				<span class="row">
 				<div id="HelpText">
 					<button type="button" id="closeHelp">×</button>
 					<h5>Help</h5>
 					<ul>
 						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
 						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
-						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="icon-plus-sign"></i><span style="float: none;">Addk</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
-						<li>To remove a particular gene from the tree, click on <i class="icon-remove"></i> and the node along with its children will be deleted.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="glyphicon glyphicon-plus-sign"></i><span style="float: none;">Addk</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To remove a particular gene from the tree, click on <i class=" glyphicon glyphicon-remove"></i> and the node along with its children will be deleted.</li>
 						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
 						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
 						<li>To view a detailed chart regarding your score, click on <button class="btn btn-small btn-link"><i class="icon-fullscreen"></i> Show Chart</button>. Hover over the chart for numerical data as well.</li>
@@ -84,18 +82,19 @@ Player player = (Player) session.getAttribute("player");
 						<img src="img/helpimage.png" width="500" />
 				</div>
 				<div id="PlayerTreeRegion"></div>
-				</span>
-			</div>
-			<div class="span3">
-			
-				<span class="row">
-				<button class="btn btn-primary" id="save_tree">Save Tree</button>
+			<div id="score-panel">
+			<div class=" panel panel-default">
+				<div class="panel-heading">Control Panel <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Panel <i class="glyphicon glyphicon-th-list"></i></button></div>
+				<div class="panel-body">
+  					<button class="btn btn-primary btn-block" id="save_tree">Save Tree</button>
 				<hr>
 				<div id="CommentRegion"></div>
 					<div id="ScoreRegion"></div>
 				</span>
 				<h2 class="renderPink">Score Board</h2>
 				<div id='scoreboard_wrapper'></div>
+  				</div>
+  				</div>
 			</div>
 		</div>
 	</div>
@@ -110,29 +109,29 @@ Player player = (Player) session.getAttribute("player");
 	<script type="text/template" id="commentTemplate">
 	<@ if(editView == 0) { @>
 		<@ if(content == "") { @>
-		<button class="btn btn-primary enter-comment">Enter Comment</button>
+		<button class="btn btn-primary btn-block enter-comment">Enter Comment</button>
 		<@ } else { @>
 		<p><@= content @></p>
-		<button class="btn btn-primary enter-comment">Change Comment</button>
+		<button class="btn btn-primary btn-block enter-comment">Change Comment</button>
 		<@ } @>
 	<@ } else if(editView == 1){@>
 		<textarea class="commentContent"><@= content @></textarea>
-		<button class="btn btn-link save-comment">Save</button>
+		<button class="btn btn-primary btn-block save-comment">Save Comment</button>
 	<@ } @>
 	</script>
 	<script type="text/template" id="AddRootNode">
 	<div id="mygeneinfo_wrapper" class="addnode_wrapper">
-		<label class="label label-info">Enter a Gene Symbol/Name</label>
+		<label class="label label-default">Enter a Gene Symbol/Name</label>
   		<div id="mygene_addnode">
   			<input id="gene_query" style="width:250px" class="mygene_query_target">
-			<button class="btn btn-info showCf">Choose Clinical Features</button>
+			<span title="Switch To Clinical Features Symbols" class="showCf"><i class="glyphicon glyphicon-refresh"></i></span>
   		</div>
 	</div>
 	<div id="mygenecf_wrapper" class="addnode_wrapper">
-		<label class="label label-info">Click on the textbox and choose a clinical feature</label>
+		<label class="label label-default">Click on the textbox and choose a clinical feature</label>
   		<div id="mygene_addnode_cf">
   			<input id="cf_query" style="width:250px" class="cf_query_target">
-			<button class="btn btn-info hideCf">Choose Gene Symbols</button>
+			<span title="Switch To Gene Symbols" class="hideCf"><i class="glyphicon glyphicon-refresh"></i></span> 
   		</div>
 	</div>
   	</script>
@@ -367,7 +366,7 @@ Player player = (Player) session.getAttribute("player");
       	@>
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
-      <i class="icon-plus-sign"></i>
+      <i class="glyphicon glyphicon-plus-sign"></i>
 		<span style="float: none;">Add</span>
     </button>
 	<div class="addgeneinfo" id="addgeneinfo<@= args.cid @>"></div>
@@ -382,14 +381,14 @@ Player player = (Player) session.getAttribute("player");
    <span class="name attrvalue">
       <@= args.name @>
     </span>
-    <button class="btn btn-small btn-link delete" href="#">
-      <i class="icon-remove"></i>
+    <button class="btn delete" href="#">
+      <i class=" glyphicon glyphicon-remove"></i>
     </button>
 </script>
 	<script id="ScoreTemplate" type="text/template">
 <span id="scoreLabel">Score</span>
 <h3 id="score"><@= score @></h3>
-<button class="btn btn-small btn-link closeSVG"><i class="icon-fullscreen"></i>Hide Chart</button>
+<button class="btn btn-sm btn-default closeSVG"><i class="glyphicon glyphicon-resize-small"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
