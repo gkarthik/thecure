@@ -581,13 +581,13 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	template : "#ScoreTemplate",
 	showSVG: function(){
 		$("#ScoreSVG").slideDown();
-		$(".showSVG").html('<i class="icon-remove"></i> Hide Chart');
+		$(".showSVG").html('<i class="glyphicon glyphicon-resize-small"></i>Hide Chart');
 		$(".showSVG").addClass("closeSVG");
 		$(".showSVG").removeClass("showSVG");
 	},
 	closeSVG: function(){
 		$("#ScoreSVG").slideUp();
-		$(".closeSVG").html('<i class="icon-fullscreen"></i> Show Chart');
+		$(".closeSVG").html('<i class="glyphicon glyphicon-resize-full"></i>Show Chart');
 		$(".closeSVG").addClass("showSVG");
 		$(".closeSVG").removeClass("closeSVG");
 	},
@@ -1393,9 +1393,9 @@ Cure.updatepositions = function(NodeCollection) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
 				if(i%2!=0){
-					depthDiff = 180;
+					depthDiff = 200;
 				} else {
-					depthDiff = 80;
+					depthDiff = 100;
 				}
 				d.y += depthDiff;
 			}
@@ -1466,9 +1466,9 @@ Cure.render_network = function(dataset) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
 				if(i%2!=0){
-					depthDiff = 180;
+					depthDiff = 200;
 				} else {
-					depthDiff = 80;
+					depthDiff = 100;
 				}
 				d.y += depthDiff;
 			}
@@ -1580,12 +1580,12 @@ Cure.showDetailsOfNode = function(content, top, left){
 
 Cure.ToggleHelp = function(check){
 	if(!check){
-    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"850px","height":"300px","overflow":"auto"});
+    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"50%","height":"300px","overflow":"auto"});
     	window.setTimeout(function(){
         	$("#HelpText").html(Cure.helpText);
 		},500);
 	} else {
-		$("#HelpText").css({"position":"absolute","overflow":"hidden","background": "#F69","color": "#FFF","cursor": "pointer","width":"30px","height":"20px"});
+		$("#HelpText").css({"position":"absolute","overflow":"hidden","background": "#F69","color": "#FFF","cursor": "pointer","width":"45px","height":"30px"});
 		$("#HelpText").html("");
 		window.setTimeout(function(){
 			$("#HelpText").html("Help");
@@ -1802,7 +1802,7 @@ Cure.addInitializer(function(options) {
 		var container = $(".addnode_wrapper");
 		var geneList = $(".ui-autocomplete");
 
-		if (!container.is(e.target)	&& container.has(e.target).length === 0 && !geneList.is(e.target)	&& geneList.has(e.target).length === 0) 
+		if (!container.is(e.target)	&& container.has(e.target).length == 0 && !geneList.is(e.target)	&& geneList.has(e.target).length == 0) 
 		{
 			$("input.mygene_query_target").val("");
 			if (Cure.MyGeneInfoRegion) {
@@ -1811,7 +1811,7 @@ Cure.addInitializer(function(options) {
 		}
 		
 		var classToclose = $('.blurCloseElement');
-		if (!classToclose.is(e.target)	&& classToclose.has(e.target).length === 0) 
+		if (!classToclose.is(e.target)	&& classToclose.has(e.target).length == 0) 
 		{
 			classToclose.hide();
 		}
@@ -1826,6 +1826,10 @@ Cure.addInitializer(function(options) {
 		      } 
 		   }
 		});
+	
+	$(".togglePanel").on("click",function(){
+		$("#score-panel .panel-body").slideToggle();
+	});
 	
 	$("#save_tree").on("click",function(){
 		var tree;
@@ -1909,7 +1913,7 @@ Cure.addInitializer(function(options) {
 //App Start
 Cure.start({
 	"height" : 300,
-	"width" : 850,
+	"width" : window.innerWidth * 0.7,
 	"Scorewidth" : 268,
 	"Scoreheight" : 200,
 	"regions" : {
