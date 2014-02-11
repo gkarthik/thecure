@@ -247,7 +247,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 */
 	public String numFoldsTipText() {
 		return "Determines the amount of data used for backfitting. One fold is used for "
-		+ "backfitting, the rest for growing the tree. (Default: 0, no backfitting)";
+				+ "backfitting, the rest for growing the tree. (Default: 0, no backfitting)";
 	}
 
 	/**
@@ -320,19 +320,19 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		newVector.addElement(new Option(
 				"\tNumber of attributes to randomly investigate\n"
-				+ "\t(<0 = int(log_2(#attributes)+1)).", "K", 1,
-		"-K <number of attributes>"));
+						+ "\t(<0 = int(log_2(#attributes)+1)).", "K", 1,
+				"-K <number of attributes>"));
 
 		newVector.addElement(new Option(
 				"\tSet minimum number of instances per leaf.", "M", 1,
-		"-M <minimum number of instances>"));
+				"-M <minimum number of instances>"));
 
 		newVector.addElement(new Option("\tSeed for random number generator.\n"
 				+ "\t(default 1)", "S", 1, "-S <num>"));
 
 		newVector.addElement(new Option(
 				"\tThe maximum depth of the tree, 0 for unlimited.\n"
-				+ "\t(default 0)", "depth", 1, "-depth <num>"));
+						+ "\t(default 0)", "depth", 1, "-depth <num>"));
 
 		newVector.
 		addElement(new Option("\tNumber of folds for backfitting " +
@@ -617,7 +617,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				// Split instance up
 				for (int i = 0; i < m_Successors.length; i++) {
 					double[] help = m_Successors[i]
-					                             .distributionForInstance(instance);
+							.distributionForInstance(instance);
 					if (help != null) {
 						for (int j = 0; j < help.length; j++) {
 							returnedDist[j] += m_Prop[i] * help[j];
@@ -628,16 +628,16 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 				// For nominal attributes
 				returnedDist = m_Successors[(int) instance.value(m_Attribute)]
-				                            .distributionForInstance(instance);
+						.distributionForInstance(instance);
 			} else {
 
 				// For numeric attributes
 				if (instance.value(m_Attribute) < m_SplitPoint) {
 					returnedDist = m_Successors[0]
-					                            .distributionForInstance(instance);
+							.distributionForInstance(instance);
 				} else {
 					returnedDist = m_Successors[1]
-					                            .distributionForInstance(instance);
+							.distributionForInstance(instance);
 				}
 			}
 		}
@@ -675,7 +675,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			StringBuffer resultBuff = new StringBuffer();
 			toGraph(resultBuff, 0);
 			String result = "digraph Tree {\n" + "edge [style=bold]\n"
-			+ resultBuff.toString() + "\n}\n";
+					+ resultBuff.toString() + "\n}\n";
 			return result;
 		} catch (Exception e) {
 			return null;
@@ -754,12 +754,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			return "ManualTree: no model has been built yet.";
 		} else {
 			return "\nManualTree\n==========\n"
-			+ toString(0)
-			+ "\n"
-			+ "\nSize of the tree : "
-			+ numNodes()
-			+ (getMaxDepth() > 0 ? ("\nMax depth of tree: " + getMaxDepth())
-					: (""));
+					+ toString(0)
+					+ "\n"
+					+ "\nSize of the tree : "
+					+ numNodes()
+					+ (getMaxDepth() > 0 ? ("\nMax depth of tree: " + getMaxDepth())
+							: (""));
 		}
 	}
 
@@ -779,12 +779,21 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			maxIndex = Utils.maxIndex(m_ClassDistribution);
 			maxCount = m_ClassDistribution[maxIndex];
 		} 
-		return " : "
-		+ m_Info.classAttribute().value(maxIndex)
-		+ " ("
-		+ Utils.doubleToString(sum, 2)
-		+ "/"
-		+ Utils.doubleToString(sum - maxCount, 2) + ")";
+		if(m_Info==null){
+					return " : "
+					+ "None"
+					+ " ("
+					+ 0
+					+ "/"
+					+ 0 + ")";
+		}else{
+			return " : "
+					+ m_Info.classAttribute().value(maxIndex)
+					+ " ("
+					+ Utils.doubleToString(sum, 2)
+					+ "/"
+					+ Utils.doubleToString(sum - maxCount, 2) + ")";
+		}
 	}
 
 	/**
@@ -1006,15 +1015,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		// or maximum depth reached
 		m_ClassDistribution = (double[]) classProbs.clone();
 
-//		if (Utils.sum(m_ClassDistribution) < 2 * m_MinNum
-//				|| Utils.eq(m_ClassDistribution[Utils.maxIndex(m_ClassDistribution)], Utils
-//						.sum(m_ClassDistribution))
-//						|| ((getMaxDepth() > 0) && (depth >= getMaxDepth()))) {
-//			// Make leaf
-//			m_Attribute = -1;
-//			m_Prop = null;
-//			return;
-//		}
+		//		if (Utils.sum(m_ClassDistribution) < 2 * m_MinNum
+		//				|| Utils.eq(m_ClassDistribution[Utils.maxIndex(m_ClassDistribution)], Utils
+		//						.sum(m_ClassDistribution))
+		//						|| ((getMaxDepth() > 0) && (depth >= getMaxDepth()))) {
+		//			// Make leaf
+		//			m_Attribute = -1;
+		//			m_Prop = null;
+		//			return;
+		//		}
 
 		// Compute class distributions and value of splitting
 		// criterion for each attribute
@@ -1068,7 +1077,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		m_Attribute = attIndex;
 		double[][] distribution = dists[m_Attribute];
-		
+
 		//stop if input json tree does not contain any more children
 		//replacing Utils.gr(vals[m_Attribute], 0)&&
 		if (kind!=null&&kind.equals("split_node")&&att_name!=null) {
@@ -1096,6 +1105,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				//after split, should hold for all in set
 				String child_name = "";
 				Instances subset = subsets[i];
+				if(subset==null||subset.numInstances()==0){ //if no instances fall down this path, don't show it.
+					continue; 
+				}
 				Instance inst = subset.instance(0);
 				//which nominal attribute is this split linked to?
 				if (subset.attribute(m_Attribute).isNominal()) {
@@ -1154,7 +1166,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				//already made this one..
 			}else{
 				// Make leaf
-		
+
 				//add the data to the json object
 				double bin_size = 0, maxCount = 0;
 				int maxIndex = 0; double errors = 0; double pct_correct = 0;
@@ -1286,7 +1298,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if something goes wrong
 	 */
 	protected double distribution(double[][] props, double[][][] dists, int att, Instances data)
-	throws Exception {
+			throws Exception {
 
 		double splitPoint = Double.NaN;
 		Attribute attribute = data.attribute(att);
@@ -1480,7 +1492,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		StringBuffer resultBuff = new StringBuffer();
 		toGraph(resultBuff, 0, null);
 		String result = "digraph RandomTree {\n" + "edge [style=bold]\n"
-		+ resultBuff.toString() + "\n}\n";
+				+ resultBuff.toString() + "\n}\n";
 		return result;
 	}
 
@@ -1507,7 +1519,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if something goes wrong
 	 */
 	protected int toGraph(StringBuffer text, int num, ManualTree parent)
-	throws Exception {
+			throws Exception {
 
 		num++;
 		if (m_Attribute == -1) {

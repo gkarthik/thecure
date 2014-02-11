@@ -418,7 +418,6 @@ public class MetaServer extends HttpServlet {
 		out.close();
 	}
 	
-	//todo add the router to get here
 	private void getTreeList(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 		String command = data.get("command").asText(); //get_trees_all, get_trees_ip, get_trees_user_id
 		String ip = request_.getRemoteAddr();
@@ -441,7 +440,6 @@ public class MetaServer extends HttpServlet {
 		String json_trees = mapper.writeValueAsString(treelist);
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
-//	System.out.println(json_trees);
 		out.write(json_trees);
 		out.close();
 		
