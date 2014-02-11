@@ -115,6 +115,8 @@ input.edit{
 	font-weight:bold;
 	min-width:45px;
 	padding:2px;
+	max-height: 70px;
+	overflow: auto;
 }
 
 .split_value .name{
@@ -153,7 +155,7 @@ input.edit{
 }
 
 .shrink_leaf_node{
-	border:2px solid green;
+	
 }
 
 .shrink_leaf_node .addchildren span{
@@ -166,11 +168,11 @@ input.edit{
 }
 
 .shrink_split_node{
-	border:2px solid green;
+	
 }
 
 .shrink_split_value{
-	border:2px solid green;
+	
 }
 
 .link {
