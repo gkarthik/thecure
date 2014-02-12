@@ -337,7 +337,7 @@ var splitnode_html = $("#splitNodeTemplate").html();
 // -- View to manipulate each single node
 NodeView = Backbone.Marionette.ItemView.extend({
 	tagName : 'div',
-	className : 'node',
+	className : 'node dragHtmlGroup',
 	ui : {
 		input : ".edit",
 		addgeneinfo : ".addgeneinfo",
@@ -484,7 +484,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			styleObject.background = "rgba(0,0,255,0.2)";
 			styleObject.borderColor = "blue";
 		}
-		$(this.el).attr('class','node');//To refresh class everytime node is rendered.
+		$(this.el).attr('class','node dragHtmlGroup');//To refresh class everytime node is rendered.
 		$(this.el).css(styleObject);
 		$(this.el).addClass(this.model.get("options").kind);
 		this.model.set("viewCSS",{'width':this.$el.width()});
@@ -1522,6 +1522,7 @@ Cure.render_network = function(dataset) {
 		
 		var source = {};
 		var target = {};
+		
 		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
 			if(d.name==Cure.negNodeName){
 				return "red";
@@ -1779,9 +1780,30 @@ Cure.addInitializer(function(options) {
 	Cure.height = options["height"];
 	Cure.posNodeName = options["posNodeName"];
 	Cure.negNodeName = options["negNodeName"];
+	
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
 			"width", Cure.width).attr("height", Cure.height).append("svg:g")
-			.attr("transform", "translate(0,100)");
+			.attr("transform", "translate(0,100)").attr("class","dragSvgGroup").call(d3.behavior.drag()
+				  .on("dragstart", function(d) {
+				    // Replace this with some way of retrieving the element's current position:
+			      var t = d3.select(this);
+			      if(t.attr("x") == null){
+			      	t.attr("x",0);
+			      }
+			      if(t.attr("y") == null){
+			      	t.attr("y",0);
+			      }
+				    this.__origin__ = [t.attr("x"), t.attr("y")];
+				  })
+				  .on("drag", function(d, i) {
+				    var o = this.__origin__;
+				    o[0] += d3.event.dx;
+				    o[1] += d3.event.dy;
+				    // Set positions using o and use Math.min and Math.max to limit extent.
+				  })
+				  .on("dragend", function() {
+				    delete this.__origin__;
+				  }));
 	//Event Initializers
 					
 	$("#HelpText").on("click",function(){
