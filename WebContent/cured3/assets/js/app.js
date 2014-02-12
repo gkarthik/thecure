@@ -471,7 +471,10 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				}
 			}
 		var width = $(this.el).outerWidth();
-		var nodeTop = (this.model.get('y')+111);
+		var nodeTop = (this.model.get('y')+71);
+		if(this.$el.css('transform')){
+			var transform = this.$el.css('transform');
+		}
 		var styleObject = {
 			"transform": "translate(0px,0px)",
 			"left": (this.model.get('x') - ((width) / 2)) +"px",
@@ -1752,6 +1755,8 @@ Cure.drawEdges = function(node,binY,count){
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();
+			source.y+=71;
+			target.y+=71;
 			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
@@ -1808,9 +1813,24 @@ Cure.addInitializer(function(options) {
 	Cure.posNodeName = options["posNodeName"];
 	Cure.negNodeName = options["negNodeName"];
 	
+	function zoomed() 
+	{
+		Cure.PlayerSvg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+		var splitTranslate = String(d3.event.translate).match(/-?[0-9\.]+/g); 
+		console.log(splitTranslate[1])
+		console.log("translate(" + splitTranslate[0] + "px,"+ splitTranslate[1] +"px)scale(" + d3.event.scale + ")")
+		$("#PlayerTreeRegionTree").css({"transform": "translate(" + splitTranslate[0] + "px,"+splitTranslate[1]+"px)scale(" + d3.event.scale + ")"});
+	}
+	
+	var zoom = d3.behavior.zoom()
+    .scaleExtent([-10, 10])
+    .on("zoom", zoomed);
+	
+	$(options.regions.PlayerTreeRegion + "Tree").css({"width":Cure.width});
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
-			"width", Cure.width).attr("height", Cure.height).append("svg:g")
-			.attr("transform", "translate(0,100)").attr("class","dragSvgGroup");
+			"width", Cure.width).attr("height", Cure.height).style("background","#FFF").call(zoom).append("svg:g")
+			.attr("transform", "translate(0,0)").attr("class","dragSvgGroup");
+			
 	//Event Initializers
 					
 	$("#HelpText").on("click",function(){
