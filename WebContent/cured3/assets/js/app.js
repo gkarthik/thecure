@@ -81,8 +81,8 @@ NodeCollection = Backbone.Collection.extend({
 				this.updateCollection(json_node.children[temp], null, newNode);
 			}
 		}
-		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 		Cure.updatepositions(Cure.PlayerNodeCollection);
+		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 	},
 	parseResponse : function(data) {
 		//If empty tree is returned, no tree rendered.
@@ -90,8 +90,8 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
 		} else {
 		//If server returns json with tree render and update positions of nodes.
-			Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 			Cure.updatepositions(Cure.PlayerNodeCollection);
+			Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 		}
 		//Storing Score in a Score Model.
 		var scoreArray = data;
@@ -471,9 +471,11 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				}
 			}
 		var width = $(this.el).outerWidth();
-		var nodeTop = (this.model.get('y')+71);
+		var nodeTop = (this.model.get('y')+111);
 		var styleObject = {
-			"transform":"translate("+ (this.model.get('x') - ((width) / 2)) +"px,"+ nodeTop +"px)",
+			"transform": "translate(0px,0px)",
+			"left": (this.model.get('x') - ((width) / 2)) +"px",
+			"top": nodeTop +"px",
 			"background": "#FFF",
 			"border-color": "#000"
 		};
@@ -1522,6 +1524,7 @@ Cure.render_network = function(dataset) {
 		
 		var source = {};
 		var target = {};
+		var nodeOffsets = Cure.setOffsets();
 		
 		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
 			if(d.name==Cure.negNodeName){
@@ -1534,7 +1537,14 @@ Cure.render_network = function(dataset) {
 				source : d.source,
 				target : d.source
 			});
-		});
+		}).call(d3.behavior.drag().on("dragstart", function(d) {
+					  d3.event.sourceEvent.stopPropagation();
+					  }).on("drag", function(d, i) {
+						  var relOffset = {x: parseFloat(d.source.x), y: parseFloat(d.source.y)};
+						  var translateString = "translate("+parseFloat(d3.event.x-relOffset.x)+","+parseFloat(d3.event.y-relOffset.y)+")";
+						  Cure.shiftNodes(parseFloat(d3.event.x-relOffset.x),parseFloat(d3.event.y-relOffset.y),nodeOffsets);
+						  d3.selectAll('.link').attr("transform",translateString);
+					  }));
 	
 		link.transition().duration(Cure.duration).attr("d",function(d){
 			return Cure.diagonal({
@@ -1753,6 +1763,23 @@ Cure.drawEdges = function(node,binY,count){
 	}
 }
 
+Cure.setOffsets = function(){
+	var nodeOffsets = [];
+	$('.node').each(function(){
+		nodeOffsets.push($(this).offset());
+	});
+	return nodeOffsets;
+}
+
+var temp = 0;
+Cure.shiftNodes = function(translateX,translateY,nodeOffsets){
+	temp = 0;
+	$('.node').each(function(){
+		$(this).css({"transform":"translate("+parseFloat(translateX)+"px,"+parseFloat(translateY)+"px)"});
+		temp++;
+	});
+}
+
 //
 // -- App init!
 //    
@@ -1783,27 +1810,7 @@ Cure.addInitializer(function(options) {
 	
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
 			"width", Cure.width).attr("height", Cure.height).append("svg:g")
-			.attr("transform", "translate(0,100)").attr("class","dragSvgGroup").call(d3.behavior.drag()
-				  .on("dragstart", function(d) {
-				    // Replace this with some way of retrieving the element's current position:
-			      var t = d3.select(this);
-			      if(t.attr("x") == null){
-			      	t.attr("x",0);
-			      }
-			      if(t.attr("y") == null){
-			      	t.attr("y",0);
-			      }
-				    this.__origin__ = [t.attr("x"), t.attr("y")];
-				  })
-				  .on("drag", function(d, i) {
-				    var o = this.__origin__;
-				    o[0] += d3.event.dx;
-				    o[1] += d3.event.dy;
-				    // Set positions using o and use Math.min and Math.max to limit extent.
-				  })
-				  .on("dragend", function() {
-				    delete this.__origin__;
-				  }));
+			.attr("transform", "translate(0,100)").attr("class","dragSvgGroup");
 	//Event Initializers
 					
 	$("#HelpText").on("click",function(){
@@ -1934,6 +1941,7 @@ Cure.addInitializer(function(options) {
 	Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 	Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 	Cure.CommentRegion.show(Cure.CommentView);
+	Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 });
 
 //App Start
