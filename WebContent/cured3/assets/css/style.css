@@ -33,6 +33,11 @@ html, body{
 	margin-top: 5px;
 }
 
+#PlayerTreeRegionTree{
+	z-index:1;
+	transform-origin: 0% 0%;
+}
+
 #PlayerTreeRegion svg{
   position: relative;
 }
