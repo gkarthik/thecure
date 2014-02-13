@@ -1343,9 +1343,7 @@ ScoreEntryView = Backbone.Marionette.ItemView.extend({
 	},
 	loadNewTree: function(){
 		var json_struct = this.model.toJSON().json_tree;
-		console.log(this.model.toJSON().json_tree.treestruct);
 		Cure.PlayerNodeCollection.parseResponse(json_struct);
-		console.log(this.model.toJSON().json_treetreestruct);
 	},
 	template: "#ScoreBoardTemplate"
 });
@@ -1441,7 +1439,6 @@ Cure.delete_all_children = function(seednode) {
 	var children = seednode.get('children');
 	if (seednode.get('children').length > 0) {
 		for (var i=0;i < children.models.length;i++) {
-			console.log(children.models[temp].get('name'));
 			Cure.delete_all_children(children.models[i]);
 			children.models[i].destroy();
 			i--;
