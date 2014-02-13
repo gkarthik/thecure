@@ -47,6 +47,7 @@ html, body{
 
 #PlayerTreeRegionSVG{
 	border: 1px solid #000;
+	cursor:move;
 }
 
 #svgwrapper{

@@ -472,11 +472,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			}
 		var width = $(this.el).outerWidth();
 		var nodeTop = (this.model.get('y')+71);
-		if(this.$el.css('transform')){
-			var transform = this.$el.css('transform');
-		}
 		var styleObject = {
-			"transform": "translate(0px,0px)",
 			"left": (this.model.get('x') - ((width) / 2)) +"px",
 			"top": nodeTop +"px",
 			"background": "#FFF",
@@ -1543,10 +1539,12 @@ Cure.render_network = function(dataset) {
 		}).call(d3.behavior.drag().on("dragstart", function(d) {
 					  d3.event.sourceEvent.stopPropagation();
 					  }).on("drag", function(d, i) {
-						  var relOffset = {x: parseFloat(d.source.x), y: parseFloat(d.source.y)};
-						  var translateString = "translate("+parseFloat(d3.event.x-relOffset.x)+","+parseFloat(d3.event.y-relOffset.y)+")";
-						  Cure.shiftNodes(parseFloat(d3.event.x-relOffset.x),parseFloat(d3.event.y-relOffset.y),nodeOffsets);
-						  d3.selectAll('.link').attr("transform",translateString);
+						  if(Cure.PlayerNodeCollection.models.length > 0){
+							  var relOffset = {x: parseFloat(d.source.x), y: parseFloat(d.source.y)};
+							  var translateString = "translate("+parseFloat(d3.event.x-relOffset.x)+","+parseFloat(d3.event.y-relOffset.y)+")";
+							  Cure.shiftNodes(parseFloat(d3.event.x-relOffset.x),parseFloat(d3.event.y-relOffset.y),nodeOffsets);
+							  d3.selectAll('.link').attr("transform",translateString);							  
+						  }
 					  }));
 	
 		link.transition().duration(Cure.duration).attr("d",function(d){
@@ -1755,8 +1753,8 @@ Cure.drawEdges = function(node,binY,count){
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();
-			source.y+=105;
-			target.y+=105;
+			source.y = parseFloat(105 + source.y);
+			target.y = parseFloat(105 + target.y);
 			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
@@ -1815,11 +1813,11 @@ Cure.addInitializer(function(options) {
 	
 	function zoomed() 
 	{
-		Cure.PlayerSvg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-		var splitTranslate = String(d3.event.translate).match(/-?[0-9\.]+/g); 
-		console.log(splitTranslate[1])
-		console.log("translate(" + splitTranslate[0] + "px,"+ splitTranslate[1] +"px)scale(" + d3.event.scale + ")")
-		$("#PlayerTreeRegionTree").css({"transform": "translate(" + splitTranslate[0] + "px,"+splitTranslate[1]+"px)scale(" + d3.event.scale + ")"});
+		if(Cure.PlayerNodeCollection.models.length > 0){
+			Cure.PlayerSvg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+			var splitTranslate = String(d3.event.translate).match(/-?[0-9\.]+/g); 
+			$("#PlayerTreeRegionTree").css({"transform": "translate(" + splitTranslate[0] + "px,"+splitTranslate[1]+"px)scale(" + d3.event.scale + ")"});
+		}
 	}
 	
 	var zoom = d3.behavior.zoom()
