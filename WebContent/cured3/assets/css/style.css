@@ -309,13 +309,18 @@ padding: 1%;
 	float:right;
 }
 
-#scoreboard_wrapper{
+#scoreboard_outerWrapper{
 	height:400px;
 	overflow:auto;
 	width:290px;
 	padding:10px;
 	border:2px solid rgb(255, 102, 153);
 	border-radius: 5px;
+}
+
+#scoreboard_wrapper .table tr:hover{
+	background: #eee;
+	cursor: pointer;
 }
 
 #summary_header{

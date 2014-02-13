@@ -89,7 +89,18 @@ Player player = (Player) session.getAttribute("player");
 					<div id="ScoreRegion"></div>
 				</span>
 				<h2 class="renderPink">Score Board</h2>
-				<div id='scoreboard_wrapper'></div>
+				<div id="scoreboard_outerWrapper">
+					<table class="table">
+						<tr>
+							<th>Score</th>
+							<th>Size</th>
+							<th>Accuracy</th>
+							<th>Novelty</th>
+						</tr>
+					</table>
+					<div id='scoreboard_wrapper'></div>
+				</div>
+				</table>
   				</div>
   				</div>
 			</div>
@@ -395,24 +406,15 @@ Player player = (Player) session.getAttribute("player");
         cure_user_id = "<%=player_id%>";
   </script>
   <script id="ScoreBoardTemplate" type="text/template">
-	<p class="text-info"><@ if(comment!=""){
-			print("Comments: '"+comment+"'")
-		} @></p>
-	<table class="table table-bordered">
-		<tr>
-			<th><span class="key">Score</span></th>
-			<th><span class="key">Size</span></th>
-			<th><span class="key">Accuracy</span></th>
-			<th><span class="key">Novelty</span></th>
-		</tr>
-		<tr>
+			<td class="text-info"><@ if(comment!=""){
+					print("Comments: '"+comment+"'")
+				} @></td>
+			</tr>
+			<tr>
 			<td><span class='keyValue'><@= json_tree.score @></span></td>
 			<td><span class='keyValue'><@= json_tree.size @></span></td>
 			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
 			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
-		</tr>
-	</table>
-	<hr>
   </script>
 	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
 </body>
