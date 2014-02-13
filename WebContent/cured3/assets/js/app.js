@@ -979,7 +979,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					}, {
 						variable : 'args'
 					});
-					var dropdown = $("#cf_query").data('uiAutocomplete').bindings[1];
+					var dropdown = $("#cf_query").data('ui-autocomplete').bindings[1];
 					var offset = $(dropdown).offset();
 					var uiwidth = $(dropdown).width();
 					var width = 0.9 * (offset.left);
@@ -1054,7 +1054,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					Cure.PlayerNodeCollection.sync();
 				}
 			},
-		}).data("uiAutocomplete")._renderItem = function (ul, item) {
+		}).data("ui-autocomplete")._renderItem = function (ul, item) {
 		    return $("<li></li>")
 	        .data("item.autocomplete", item)
 	        .append("<a>" + item.label + "</a>")
@@ -1103,7 +1103,7 @@ AddRootNodeView = Backbone.Marionette.ItemView.extend({
 					}, {
 						variable : 'args'
 					});
-					var dropdown = $("#gene_query").data('myGenequery_autocomplete').bindings[0];
+					var dropdown = $("#gene_query").data('my-genequery_autocomplete').bindings[0];
 					var offset = $(dropdown).offset();
 					var uiwidth = $(dropdown).width();
 					var width = 0.9 * (offset.left);

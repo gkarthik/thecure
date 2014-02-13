@@ -26,12 +26,9 @@ Player player = (Player) session.getAttribute("player");
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
-<link rel="stylesheet"
-	href="http://code.jquery.com/ui/1.10.3/themes/ui-lightness/jquery-ui.min.css"
-	type="text/css" media="all" />
-<script type="text/javascript" src="./js/jquery-1.10.1.js"></script>
-<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"
-	type="text/javascript"></script>
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 <script src="./js/mygene_autocomplete_jqueryui.js" type="text/javascript"></script>
 <script type="text/javascript" src="./js/underscore.js"></script>
 <script type="text/javascript" src="./js/backbone.js"></script>
