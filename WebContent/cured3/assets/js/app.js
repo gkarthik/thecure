@@ -57,10 +57,14 @@ NodeCollection = Backbone.Collection.extend({
 					this.updateCollection(json_node.children[temp],
 							node.get('children').models[temp]);
 				}
-				temp++;
+				if(json_node.children.length>0){
+					temp++;
+				}
 				for ( var i = temp; i < node.get('children').length; i++) {
-					delete_all_children(node.get('children')[temp]);
-					node.get('children')[temp].destroy();
+					console.log(i)
+					Cure.delete_all_children(node.get('children').models[i]);
+					node.get('children').models[i].destroy();
+					i--;
 				}
 			}
 		} else if (node == null) {
@@ -100,6 +104,7 @@ NodeCollection = Backbone.Collection.extend({
 			scoreArray.novelty = 0;
 		}
 		Cure.Score.set(scoreArray);
+		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
 	},
 	error : function(data) {
 		console.log("Error Receiving Data From Server.");
@@ -1327,22 +1332,29 @@ JSONCollectionView = Backbone.Marionette.CollectionView.extend({
 
 ScoreEntryView = Backbone.Marionette.ItemView.extend({
 	model : ScoreEntry,
+	tagName: 'tr',
 	ui : {
 
 	},
-	events : {
-
-	},
 	initialize : function() {
+		_.bindAll(this, 'loadNewTree');
 		this.model.bind('change', this.render);
+		this.$el.click(this.loadNewTree);
+	},
+	loadNewTree: function(){
+		var json_struct = this.model.toJSON().json_tree;
+		console.log(this.model.toJSON().json_tree.treestruct);
+		Cure.PlayerNodeCollection.parseResponse(json_struct);
+		console.log(this.model.toJSON().json_treetreestruct);
 	},
 	template: "#ScoreBoardTemplate"
 });
 
 ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	itemView : ScoreEntryView,
+	tagName: 'table',
 	collection : ScoreBoard,
-	className : "ScoreBoardInnerWrapper",
+	className : "ScoreBoardInnerWrapper table",
 	initialize : function() {
 		this.collection.bind('add', this.render);
 	}
@@ -1428,9 +1440,11 @@ Cure.updatepositions = function(NodeCollection) {
 Cure.delete_all_children = function(seednode) {
 	var children = seednode.get('children');
 	if (seednode.get('children').length > 0) {
-		for ( var temp in children.models) {
-			Cure.delete_all_children(children.models[temp]);
-			children.models[temp].destroy();
+		for (var i=0;i < children.models.length;i++) {
+			console.log(children.models[temp].get('name'));
+			Cure.delete_all_children(children.models[i]);
+			children.models[i].destroy();
+			i--;
 		}
 	}
 }
