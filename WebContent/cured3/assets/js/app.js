@@ -1517,7 +1517,7 @@ Cure.render_network = function(dataset) {
 			if(allLinks[temp].target.options.kind == "split_value"){
 				allLinks[temp].source.y += 107;//For Split Nodes 
 			} else if(allLinks[temp].target.options.kind == "leaf_node") {
-				allLinks[temp].target.y -= 24;//For Leaf Nodes
+				allLinks[temp].target.y -= 34;//For Leaf Nodes
 			}
 			allLinks[temp].source.x += divLeft;
 			allLinks[temp].target.x += divLeft;
@@ -1755,8 +1755,8 @@ Cure.drawEdges = function(node,binY,count){
 		while(tempNode.get('parentNode')!=null){
 			source = tempNode.get('parentNode').toJSON();
 			target = tempNode.toJSON();
-			source.y+=71;
-			target.y+=71;
+			source.y+=105;
+			target.y+=105;
 			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
@@ -1828,7 +1828,7 @@ Cure.addInitializer(function(options) {
 	
 	$(options.regions.PlayerTreeRegion + "Tree").css({"width":Cure.width});
 	Cure.PlayerSvg = d3.select(options.regions.PlayerTreeRegion + "SVG").attr(
-			"width", Cure.width).attr("height", Cure.height).style("background","#FFF").call(zoom).append("svg:g")
+			"width", Cure.width).attr("height", Cure.height).call(zoom).append("svg:g")
 			.attr("transform", "translate(0,0)").attr("class","dragSvgGroup");
 			
 	//Event Initializers
@@ -1921,7 +1921,7 @@ Cure.addInitializer(function(options) {
 	Cure.Scoreheight = options["Scoreheight"];
 	Cure.duration = 500;
 	var width = 0;
-	Cure.cluster = d3.layout.tree().size([ Cure.width, "auto" ]).separation(function(a, b) {
+	Cure.cluster = d3.layout.tree().size([ Cure.width*0.8, "auto" ]).separation(function(a, b) {
 		try{
 			if(a.children.length>2){
 				return a.children.length;
@@ -1967,7 +1967,7 @@ Cure.addInitializer(function(options) {
 //App Start
 Cure.start({
 	"height" : 300,
-	"width" : window.innerWidth * 0.8,
+	"width" : window.innerWidth*0.9,
 	"Scorewidth" : 268,
 	"Scoreheight" : 200,
 	"regions" : {

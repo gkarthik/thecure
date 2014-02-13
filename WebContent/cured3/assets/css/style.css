@@ -34,12 +34,19 @@ html, body{
 }
 
 #PlayerTreeRegionTree{
+	position: relative;
 	z-index:1;
 	transform-origin: 0% 0%;
+	-ms-transform-origin:0% 0%; /* IE 9 */
+	-webkit-transform-origin:0% 0%; /* Safari and Chrome */
 }
 
 #PlayerTreeRegion svg{
   position: relative;
+}
+
+#PlayerTreeRegionSVG{
+	border: 1px solid #000;
 }
 
 #svgwrapper{
