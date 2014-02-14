@@ -319,8 +319,12 @@ padding: 1%;
 }
 
 #scoreboard_wrapper .table tr:hover{
-	background: #eee;
+	color: #F69;
 	cursor: pointer;
+}
+
+#scoreboard_wrapper .table tr:hover .text-info{
+	color: #F69;
 }
 
 #summary_header{
@@ -504,6 +508,27 @@ text-align:left;
 
 .commentContent{
 	width: 100%;
+}
+.innerTable{
+	margin: 0px;
+}
+
+.innerTable > tbody > tr > td{
+	border-top: none;
+	padding:0px;
+}
+
+#loading-wrapper{
+	display:none;
+	position:fixed;
+	top:40%;
+	z-index: 10;
+	left: 35%;
+	width:30%;
+}
+
+#loading-wrapper .progress-bar{
+	background-color: #F69;
 }
 
 /*

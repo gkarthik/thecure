@@ -61,7 +61,6 @@ NodeCollection = Backbone.Collection.extend({
 					temp++;
 				}
 				for ( var i = temp; i < node.get('children').length; i++) {
-					console.log(i)
 					Cure.delete_all_children(node.get('children').models[i]);
 					node.get('children').models[i].destroy();
 					i--;
@@ -1342,8 +1341,10 @@ ScoreEntryView = Backbone.Marionette.ItemView.extend({
 		this.$el.click(this.loadNewTree);
 	},
 	loadNewTree: function(){
+		Cure.showLoading();
 		var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
 		Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
+		Cure.hideLoading();
 	},
 	template: "#ScoreBoardTemplate"
 });
@@ -1620,6 +1621,14 @@ Cure.isJSON = function(str) {
         return false;
     }
     return true;
+}
+
+Cure.showLoading = function(){
+	$("#loading-wrapper").show();
+}
+
+Cure.hideLoading = function(){
+	$("#loading-wrapper").hide();
 }
 
 //Function to get number of nodes at a particular depth level
