@@ -1586,11 +1586,9 @@ Cure.showAlert = function(message){
 }
 
 Cure.showDetailsOfNode = function(content, top, left){
-	top = top + 40;
-	left = left + (window.innerWidth-1170)/2;
 	$("#NodeDetailsWrapper").css({
-		"top": top-100,
-		"left": left-200,
+		"top": top-140,
+		"left": left+150,
 		"display": "block"
 	});
 	$("#NodeDetailsContent").html('<span><button type="button" class="close">×</button></span>'+content);
