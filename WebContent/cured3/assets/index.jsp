@@ -37,6 +37,19 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
 </head>
 <body>
+<div id="loading-wrapper">
+	<div class="panel panel-default">
+	<div class="panel-heading">
+	<center>Drawing Tree ...</center>
+	</div>
+	<div class="panel-content">
+	<div class="progress progress-striped active">
+	  <div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+	</div>
+	<center>Loading might take a while.</center>
+	</div>
+	</div>
+</div>
 <div id="NodeDetailsWrapper" class="blurCloseElement">
 	<div id="NodeDetailsContent"></div>
 </div>
@@ -406,11 +419,6 @@ Player player = (Player) session.getAttribute("player");
         cure_user_id = "<%=player_id%>";
   </script>
   <script id="ScoreBoardTemplate" type="text/template">
-			<td class="text-info"><@ if(comment!=""){
-					print("Comments: '"+comment+"'")
-				} @></td>
-			</tr>
-			<tr>
 			<td><span class='keyValue'><@= json_tree.score @></span></td>
 			<td><span class='keyValue'><@= json_tree.size @></span></td>
 			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
