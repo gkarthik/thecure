@@ -1342,8 +1342,8 @@ ScoreEntryView = Backbone.Marionette.ItemView.extend({
 		this.$el.click(this.loadNewTree);
 	},
 	loadNewTree: function(){
-		var json_struct = this.model.toJSON().json_tree;
-		Cure.PlayerNodeCollection.parseResponse(json_struct);
+		var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
+		Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
 	},
 	template: "#ScoreBoardTemplate"
 });
