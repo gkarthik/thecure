@@ -598,7 +598,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	ui : {
 		'svg' : "#ScoreSVG",
 		'scoreEL' : "#score",
-		'scoreDetails': '#ScoreDetailsWrapper'
+		'scoreDetails': '#ScoreChangesWrapper'
 	},
 	events: {
 		'click .showSVG': 'showSVG',
@@ -767,6 +767,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate, this.model.attributes, {
 				variable : 'args'
 			}));
+			$(this.ui.scoreDetails).show();
 		}
 		var json = [];
 		var thisModel = this.model;

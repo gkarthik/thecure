@@ -411,9 +411,10 @@ Player player = (Player) session.getAttribute("player");
 <h3 id="score"><@= score @></h3>
 <button class="btn btn-sm btn-default closeSVG"><i class="glyphicon glyphicon-resize-small"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
-<div id="ScoreDetailsWrapper"></div>
+<div id="ScoreChangesWrapper"></div>
   	</script>
   	<script id="scoreDetailsTemplate" type="text/template">
+	<span><span><button type="button" class="close">&times;</button></span></span>
 	<table class='table'>
 	<tr>
 	<td>
@@ -477,6 +478,7 @@ Player player = (Player) session.getAttribute("player");
   				} else {
   					$("#scoreDiff").html("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.scoreDiff));
   				}
+				window.setTimeout(function(){$(Cure.ScoreView.ui.scoreDetails).hide();},3000);
 				window.clearInterval(counter); 
               }
               else
