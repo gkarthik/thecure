@@ -411,6 +411,36 @@ Player player = (Player) session.getAttribute("player");
 <h3 id="score"><@= score @></h3>
 <button class="btn btn-sm btn-default closeSVG"><i class="glyphicon glyphicon-resize-small"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
+<div id="ScoreDetailsWrapper"></div>
+  	</script>
+  	<script id="scoreDetailsTemplate" type="text/template">
+  	<h4>Score</h4> 
+  <h4><@ 
+		var currentVal = args.score + (-1 * args.scoreDiff);
+  		var endVal = args.score;
+  		var increment = args.scoreDiff/Math.abs(args.scoreDiff);
+  		console.log(currentVal+" "+endVal+" "+increment);
+  		var counter = window.setInterval(function ()
+          {
+              if (currentVal == endVal)
+              {
+				console.log(increment);
+  				if(increment>0){
+  					print(endVal+"<i class='glyphicon glyphicon-arrow-down'></i> "+args.scoreDiff+" POINTS");
+  				} else {
+  					print(endVal+"<i class='glyphicon glyphicon-arrow-up'></i> "+args.scoreDiff+" POINTS");
+  				}
+				window.clearInterval(counter); 
+              }
+              else
+              {
+                currentVal = currentVal + increment;
+                print('Score '+currentVal);
+				console.log(currentVal);
+              }
+          }, 10);
+  		 @>
+  </h4>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
   	</script>

@@ -169,21 +169,25 @@ Score = Backbone.RelationalModel.extend({
 		pct_correct : 0,
 		size : 0,// Least Size got form server = 1.
 		score : 0,
+		scoreDiff : 0
 	},
 	initialize: function(){
-		this.bind('change', this.updateScore);
+		this.bind('change:size', this.updateScore);
 	},
 	updateScore: function(){
 		if (this.get("size") > 1) {
+			var oldScore = this.get('score');
 			var score = 750 * (1 / this.get("size")) + 500
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
+			this.set("scoreDiff",parseFloat(Math.round(score)-oldScore));
 		} else {
 			this.set({
 				"score" : 0,
 				"size" : 0,
 				"pct_correct" : 0,
-				"novelty" : 0
+				"novelty" : 0,
+				"scoreDiff": 0
 			});
 		}
 	}
@@ -573,17 +577,17 @@ NodeView = Backbone.Marionette.ItemView.extend({
 	}
 });
 
+var scoreDetailsTemplate = $("#scoreDetailsTemplate").html();
 //View to reflect current score and radar chart.
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
-		this.model.bind("change", this.updateScore);
-//		this.model.bind("change:size", this.updateScore);
-//		this.model.bind("change:novelty", this.updateScore);
+		this.model.bind("change:scoreDiff", this.updateScore);
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
-		'scoreEL' : "#score"
+		'scoreEL' : "#score",
+		'scoreDetails': '#ScoreDetailsWrapper'
 	},
 	events: {
 		'click .showSVG': 'showSVG',
@@ -748,6 +752,14 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	updateScore : function() {
 		$(this.ui.scoreEL).html(this.model.get("score"));
+		if(this.model.get('score')!=this.model.get('scoreDiff')){
+			$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate, {
+				score : this.model.get('score'),
+				scoreDiff : this.model.get('scoreDiff')
+			}, {
+				variable : 'args'
+			}));
+		}
 		var json = [];
 		var thisModel = this.model;
 		for ( var temp in this.model.toJSON()) {
