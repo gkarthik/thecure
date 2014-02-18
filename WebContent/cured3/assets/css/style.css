@@ -13,12 +13,44 @@ html, body{
 	width:100%;	
 }
 
-#score-panel{
-	position:absolute;
-	top:50px;
-	right:20px;
+#cure-panel{
+	position:fixed;
 	z-index:5;
 	width:325px;
+	right:20px;
+	top: 50px;
+}
+
+#cure-panel .panel-body{
+	display:none;
+}
+
+#score-panel{
+	-webkit-transition: transform 0.5s ease-in-out;
+  	-moz-transition: transform 0.5s ease-in-out;
+  	-o-transition: transform 0.5s ease-in-out;
+  	transition: transform 0.5s ease-in-out;
+}
+
+.score-panel-extend{
+	position: fixed;
+	width: 50%;
+	left: 25%;
+	text-align: center;
+}
+
+.score-panel-extend #ScoreChangesWrapper{
+	width: 35%;
+	text-align: left;
+	margin-left: 32%;
+}
+
+.score-panel-extend .btn{
+	display:none;
+}
+
+#score-panel .panel-body{
+	display: block;
 }
 
 #mygenecf_wrapper{
@@ -227,7 +259,7 @@ input.edit{
 
 .jsonview_data
 {
-z-index: 4;
+z-index: 10;
 position: fixed;
 margin-top: 40px;
 top: 20px;
@@ -301,17 +333,56 @@ padding: 1%;
 	background: #FFF;
 }
 
-#ScoreChangesWrapper{
-	display:none;
-	position: fixed;
-left: 25%;
-top: 35%;
-background: #FFF;
-width: 46%;
-padding: 2%;
-border: 2px solid #F69;
-border-radius: 5px;
-box-shadow: 0px 0px 10px 0px #333;
+#ScoreChangesWrapper table{
+	float: left;
+	width: 100%;	
+}
+
+.chart-cell{
+	border:1px solid #000;
+	width:102px;
+	padding:1px;	
+}
+
+.score-row{
+	color: #F69;
+}
+
+.scoreBarChart{
+	width: 0px;
+}
+
+.size-row{
+	color: #2ca02c;
+}
+
+#sizeBarChart{
+	background: #2CA02C;
+	color: #FFF;
+	text-align: right;
+	padding: 2px;
+}
+
+.accuracy-row{
+	color: #ff7f0e;
+}
+
+#accuracyBarChart{
+	background: #ff7f0e;
+	color: #FFF;
+	text-align: right;
+	padding: 2px;
+}
+
+.novelty-row{
+	color: #1f77b4;
+}
+
+#noveltyBarChart{
+	background: #1f77b4;
+	color: #FFF;
+	text-align: right;
+	padding: 2px;
 }
 
 .showSVG{
@@ -579,4 +650,9 @@ Style for right control panel
 .panel-default > .panel-heading{
 	background: rgb(255, 102, 153);
 	color:#FFF;
+	z-index:2;
+}
+
+.panel-default > .panel-body{
+	z-index: -1;
 }

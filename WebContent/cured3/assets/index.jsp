@@ -92,17 +92,32 @@ Player player = (Player) session.getAttribute("player");
 						<img src="img/helpimage.png" width="500" />
 				</div>
 				<div id="PlayerTreeRegion"></div>
-			<div id="score-panel">
+				<div id="cure-panel">
+				<div id="score-panel">
+				<div class="panel panel-default">
+					<div class='panel-heading'>Score <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score <i class="glyphicon glyphicon-th-list"></i></button></div>
+					<div class='panel-body'>
+						<div id="ScoreRegion"></div>
+					</div>
+				</div>
+				</div>
+				<div id="control-panel">
 			<div class=" panel panel-default">
-				<div class="panel-heading">Control Panel <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Panel <i class="glyphicon glyphicon-th-list"></i></button></div>
+				<div class="panel-heading">Save Options <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Save Options <i class="glyphicon glyphicon-th-list"></i></button></div>
 				<div class="panel-body">
   					<button class="btn btn-primary btn-block" id="save_tree">Save Tree</button>
 				<hr>
 				<div id="CommentRegion"></div>
-					<div id="ScoreRegion"></div>
-				</span>
-				<h2 class="renderPink">Score Board</h2>
-				<div id="scoreboard_outerWrapper">
+				</table>
+  				</div>
+  				</div>
+			</div>
+				<div id="scoreboard-panel">
+				<div class="panel panel-default">
+					<div class='panel-heading'>Score Board <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score Board <i class="glyphicon glyphicon-th-list"></i></button></div>
+					<div class='panel-body'>
+					<h2 class="renderPink">Score Board</h2>
+						<div id="scoreboard_outerWrapper">
 					<table class="table">
 						<tr>
 							<th>Score</th>
@@ -113,10 +128,10 @@ Player player = (Player) session.getAttribute("player");
 					</table>
 					<div id='scoreboard_wrapper'></div>
 				</div>
-				</table>
-  				</div>
-  				</div>
-			</div>
+					</div>
+				</div>
+				</div>
+				</div>
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp" />
@@ -384,7 +399,7 @@ Player player = (Player) session.getAttribute("player");
 		{
 			print ('<span class="name attrvalue" style="background:blue;">'+args.name.toUpperCase()+'</span>');
 		} 
-      	@>
+      	@>	
     <input type="text" class="edit d3edit" value="<@- args.name @>">
     <button class="btn btn-small btn-link addchildren" type="button">
       <i class="glyphicon glyphicon-plus-sign"></i>
@@ -407,91 +422,78 @@ Player player = (Player) session.getAttribute("player");
     </button>
 </script>
 	<script id="ScoreTemplate" type="text/template">
-<span id="scoreLabel">Score</span>
 <h3 id="score"><@= score @></h3>
 <button class="btn btn-sm btn-default closeSVG"><i class="glyphicon glyphicon-resize-small"></i>Hide Chart</button>
 		<svg id="ScoreSVG"></svg>
 <div id="ScoreChangesWrapper"></div>
   	</script>
   	<script id="scoreDetailsTemplate" type="text/template">
-	<span><span><button type="button" class="close">&times;</button></span></span>
-	<table class='table'>
-	<tr>
+	<table>
+	<tr class='size-row'>
 	<td>
 	Size
 	</td>
-	<td>
-	<@= args.size @>
-</td>
-	<td>
+<td>
 	 <@ if(args.sizeDiff>0){
 					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.sizeDiff));
 				} else {
 					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(args.sizeDiff));
-				}@></h4>
+				}@>
 	</td>
+	<td class="chart-cell">
+		<div id="sizeBarChart" class="scoreBarChart">
+			<@= args.size @>
+		</div>
+	</td>
+	
 	</tr>
-<tr>
+<tr class="accuracy-row">
 	<td>
 	Accuracy
 	</td>
-	<td>
-	<@ print(Math.round(args.pct_correct*100)/100); @>
-</td>
 	<td>
 	 <@ if(args.pct_correctDiff>0){
 					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(args.pct_correctDiff*100)/100));
 				} else {
 					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(args.pct_correctDiff*100)/100));
-				}@></h4>
+				}@>
+	</td>
+	<td class="chart-cell">
+		<div id="accuracyBarChart" class="scoreBarChart">
+			<@ print(Math.round(args.pct_correct*100)/100); @>
+		</div>
 	</td>
 	</tr>
-<tr>
+<tr class="novelty-row">
 	<td>
 	Novelty
-	</td>
-	<td>
-	<@ print(Math.round(args.novelty*100)/100); @>
 	</td>
 	<td>
 	 <@ if(args.pct_correctDiff>0){
 					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(args.noveltyDiff*100)/100));
 				} else {
 					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(args.noveltyDiff*100)/100));
-				}@></h4>
+				}@>
 	</td>
+	<td class="chart-cell">
+		<div id="noveltyBarChart" class="scoreBarChart">
+			<@ print(Math.round(args.novelty*100)/100); @>
+		</div>
+	</td>
+	
 	</tr>
+<tr class="score-row">
 <td>Score</td>
-<td id="scoreAnimate">
-  	 <@ 
-		var currentVal = args.score + (-1 * args.scoreDiff);
-  		var endVal = args.score;
-  		var increment = args.scoreDiff/Math.abs(args.scoreDiff);
-  		console.log(currentVal+" "+endVal+" "+increment);
-  		var counter = window.setInterval(function ()
-          {
-              if (currentVal == endVal)
-              {
-				$("#scoreAnimate").html(currentVal);
-  				if(increment<0){
-  					$("#scoreDiff").html("<i class='glyphicon glyphicon-arrow-down'></i> "+ Math.abs(args.scoreDiff));
-  				} else {
-  					$("#scoreDiff").html("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.scoreDiff));
-  				}
-				window.setTimeout(function(){$(Cure.ScoreView.ui.scoreDetails).hide();},3000);
-				window.clearInterval(counter); 
-              }
-              else
-              {
-                currentVal = currentVal + increment;
-                $("#scoreAnimate").html(currentVal);
-              }
-          }, 0.01);
-  		 @>
-</td>
 <td id="scoreDiff">
-
-	</td>
+	<@ if(args.scoreDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.scoreDiff));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(args.scoreDiff));
+				}@>
+</td>
+<td>
+  	<@= args.score @>
+</td>
 </tr>
 </table>
   	</script>

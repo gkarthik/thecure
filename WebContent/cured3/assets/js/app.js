@@ -185,10 +185,10 @@ Score = Backbone.RelationalModel.extend({
 			var score = 750 * (1 / this.get("size")) + 500
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
-			this.set("scoreDiff",parseFloat(Math.round(score)-oldScore));
 			this.set("sizeDiff",parseFloat(this.get('size')-this.get('previousAttributes').size));
 			this.set("pct_correctDiff",parseFloat(this.get('pct_correct')-this.get('previousAttributes').pct_correct));
 			this.set("noveltyDiff",parseFloat(this.get('novelty')-this.get('previousAttributes').novelty));
+			this.set("scoreDiff",parseFloat(Math.round(score)-oldScore));
 		} else {
 			this.set({
 				"score" : 0,
@@ -407,9 +407,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 				this.model.set('accLimit',0);																																																																																																																																																																												
 		}
 		if(Cure.PlayerNodeCollection.models.length > 0) {
-			Cure.binsizeScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).range([ 0, 100 ]);
+			Cure.binScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).range([ 0, 100 ]);
 		} else {
-			Cure.binsizeScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
+			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit');
 		this.model.bind('change', this.render);
@@ -420,9 +420,9 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		if(children.get('options').kind=="leaf_node") {
 			var accLimit = 0;
 			if(children.get('name')==Cure.negNodeName) {
-				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
+				accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
 			} else if(children.get('name') == Cure.posNodeName) {
-				accLimit += Cure.binsizeScale(children.get('options').bin_size)*(children.get('options').pct_correct);
+				accLimit += Cure.binScale(children.get('options').bin_size)*(children.get('options').pct_correct);
 			}
 			accLimit += this.model.get('parentNode').get('accLimit');
 			this.model.get('parentNode').set('accLimit',accLimit);
@@ -514,7 +514,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 		var accLimit = 0;
 		//Setting up accLimit for leaf_node
 		if(this.model.get('options').kind=="leaf_node") {
-			accLimit = Cure.binsizeScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
+			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
 			this.model.set('accLimit',accLimit);
 		}
 		if(id!=undefined){
@@ -522,7 +522,7 @@ NodeView = Backbone.Marionette.ItemView.extend({
 			var radius = 4;
 			var width = this.model.get('viewCSS').width-10;
 			radius = (width - 4)/20;
-			var limit = Cure.binsizeScale(this.model.get('options').bin_size);
+			var limit = Cure.binScale(this.model.get('options').bin_size);
 			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
 			if(this.model.get('name') == Cure.negNodeName){
@@ -761,13 +761,38 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				}).attr("stroke", "rgba(3,3,3,0.15)").attr("stroke-width", "1px").attr(
 						"fill", "none").attr("class", "maxHalfPolygon");
 	},
+	showScoreDiff: function(){
+		if($("#score-panel .panel-body").css('display')=="none"){
+			$("#score-panel .togglePanel").trigger('click');
+		}
+		$("#score-panel").addClass('score-panel-extend');
+		$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate,this.model.toJSON(),{variable: 'args'}));
+			$(this.ui.scoreDetails).show();
+			var args = this.model.toJSON();
+			var time = 100/Math.abs(args.scoreDiff);
+				var currentVal = args.score + (-1 * args.scoreDiff);
+				var endVal = args.score;
+				var increment = args.scoreDiff / Math.abs(args.scoreDiff) * 50;
+				if(args.scoreDiff != args.score){
+					var counter = window.setInterval(function() {
+						if (currentVal > endVal) {
+							$("#score").html(endVal);
+							window.clearInterval(counter);
+						} else {
+							currentVal = currentVal + increment;
+							$("#score").html(currentVal);
+						}
+					}, time);
+				}
+			d3.select("#sizeBarChart").transition().duration(Cure.duration).style('width',Cure.sizeScale(1/this.model.get('size'))+'px');
+			d3.select("#accuracyBarChart").transition().duration(Cure.duration).style('width',Cure.accuracyScale(this.model.get('pct_correct'))+'px');
+			d3.select("#noveltyBarChart").transition().duration(Cure.duration).style('width',Cure.noveltyScale(this.model.get('novelty'))+'px');
+			window.setTimeout(function(){$("#score-panel").removeClass('score-panel-extend');},8000);
+	},
 	updateScore : function() {
 		$(this.ui.scoreEL).html(this.model.get("score"));
-		if(this.model.get('score')!=this.model.get('scoreDiff')){
-			$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate, this.model.attributes, {
-				variable : 'args'
-			}));
-			$(this.ui.scoreDetails).show();
+		if(this.model.get('score') != 0){
+			this.showScoreDiff();
 		}
 		var json = [];
 		var thisModel = this.model;
@@ -783,11 +808,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				"y" : Cure.Scoreheight / 2
 		};
 		var ctr = -1;
-		var accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range(
-				[ 0, 100 ]);
-		var noveltyScale = d3.scale.linear().domain([ 0, 1 ])
-				.range([ 0, 100 ]);
-		var sizeScale = d3.scale.linear().domain([ 0, 1 ]).range([ 0, 100 ]);
 		var datapoints = [ {
 			"x" : 0,
 			"y" : 0
@@ -804,11 +824,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						function(d) {
 							var length = 0;
 							if (d.pct_correct) {
-								length = accuracyScale(d.pct_correct);
+								length = Cure.accuracyScale(d.pct_correct);
 							} else if (d.size) {
-								length = sizeScale(1 / d.size);
+								length = Cure.sizeScale(1 / d.size);
 							} else if (d.novelty) {
-								length = noveltyScale(d.novelty);
+								length = Cure.noveltyScale(d.novelty);
 							}
 							ctr++;
 							datapoints[ctr].x = (center.x)
@@ -822,11 +842,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 							}
 							var length = 0;
 							if (d.pct_correct) {
-								length = accuracyScale(d.pct_correct);
+								length = Cure.accuracyScale(d.pct_correct);
 							} else if (d.size) {
-								length = sizeScale(1 / d.size);
+								length = Cure.sizeScale(1 / d.size);
 							} else if (d.novelty) {
-								length = noveltyScale(d.novelty);
+								length = Cure.noveltyScale(d.novelty);
 							}
 							ctr++;
 							datapoints[ctr].y = (center.y)
@@ -846,11 +866,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						function(d) {
 							var length = 0;
 							if (d.pct_correct) {
-								length = accuracyScale(d.pct_correct);
+								length = Cure.accuracyScale(d.pct_correct);
 							} else if (d.size) {
-								length = sizeScale(1 / d.size);
+								length = Cure.sizeScale(1 / d.size);
 							} else if (d.novelty) {
-								length = noveltyScale(d.novelty);
+								length = Cure.noveltyScale(d.novelty);
 							}
 							ctr++;
 							datapoints[ctr].x = (center.x)
@@ -864,11 +884,11 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 							}
 							var length = 0;
 							if (d.pct_correct) {
-								length = accuracyScale(d.pct_correct);
+								length = Cure.accuracyScale(d.pct_correct);
 							} else if (d.size) {
-								length = sizeScale(1 / d.size);
+								length = Cure.sizeScale(1 / d.size);
 							} else if (d.novelty) {
-								length = noveltyScale(d.novelty);
+								length = Cure.noveltyScale(d.novelty);
 							}
 							ctr++;
 							datapoints[ctr].y = (center.y)
@@ -1609,7 +1629,7 @@ Cure.showAlert = function(message){
 
 Cure.showDetailsOfNode = function(content, top, left){
 	$("#NodeDetailsWrapper").css({
-		"top": top-140,
+		"top": top-100,
 		"left": left+150,
 		"display": "block"
 	});
@@ -1841,6 +1861,11 @@ Cure.addInitializer(function(options) {
 	Cure.posNodeName = options["posNodeName"];
 	Cure.negNodeName = options["negNodeName"];
 	
+	//Scales
+	Cure.accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range([ 0, 100 ]);
+	Cure.noveltyScale = d3.scale.linear().domain([ 0, 1 ]).range([ 0, 100 ]);
+	Cure.sizeScale = d3.scale.linear().domain([ 0, 1 ]).range([ 0, 100 ]);
+	
 	function zoomed() 
 	{
 		if(Cure.PlayerNodeCollection.models.length > 0){
@@ -1920,7 +1945,9 @@ Cure.addInitializer(function(options) {
 		});
 	
 	$(".togglePanel").on("click",function(){
-		$("#score-panel .panel-body").slideToggle();
+		$(".panel-body").slideUp();
+		var panelBody = $(this).parent().parent().find(".panel-body");
+		panelBody.slideToggle();
 	});
 	
 	$("#save_tree").on("click",function(){
