@@ -415,7 +415,7 @@ Player player = (Player) session.getAttribute("player");
   	</script>
   	<script id="scoreDetailsTemplate" type="text/template">
   	<h4>Score</h4> 
-  <h4><@ 
+  <h4 id="scoreAnimate"><@ 
 		var currentVal = args.score + (-1 * args.scoreDiff);
   		var endVal = args.score;
   		var increment = args.scoreDiff/Math.abs(args.scoreDiff);
@@ -425,20 +425,19 @@ Player player = (Player) session.getAttribute("player");
               if (currentVal == endVal)
               {
 				console.log(increment);
-  				if(increment>0){
-  					print(endVal+"<i class='glyphicon glyphicon-arrow-down'></i> "+args.scoreDiff+" POINTS");
+  				if(increment<0){
+  					$("#scoreAnimate").html(endVal+"<i class='glyphicon glyphicon-arrow-down'></i> "+args.scoreDiff+" POINTS");
   				} else {
-  					print(endVal+"<i class='glyphicon glyphicon-arrow-up'></i> "+args.scoreDiff+" POINTS");
+  					$("#scoreAnimate").html(endVal+"<i class='glyphicon glyphicon-arrow-up'></i> "+args.scoreDiff+" POINTS");
   				}
 				window.clearInterval(counter); 
               }
               else
               {
                 currentVal = currentVal + increment;
-                print('Score '+currentVal);
-				console.log(currentVal);
+                $("#scoreAnimate").html(currentVal);
               }
-          }, 10);
+          }, 0.01);
   		 @>
   </h4>
   	</script>
