@@ -414,8 +414,55 @@ Player player = (Player) session.getAttribute("player");
 <div id="ScoreDetailsWrapper"></div>
   	</script>
   	<script id="scoreDetailsTemplate" type="text/template">
-  	<h4>Score</h4> 
-  <h4 id="scoreAnimate"><@ 
+	<table class='table'>
+	<tr>
+	<td>
+	Size
+	</td>
+	<td>
+	<@= args.size @>
+</td>
+	<td>
+	 <@ if(args.sizeDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.sizeDiff));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(args.sizeDiff));
+				}@></h4>
+	</td>
+	</tr>
+<tr>
+	<td>
+	Accuracy
+	</td>
+	<td>
+	<@ print(Math.round(args.pct_correct*100)/100); @>
+</td>
+	<td>
+	 <@ if(args.pct_correctDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(args.pct_correctDiff*100)/100));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(args.pct_correctDiff*100)/100));
+				}@></h4>
+	</td>
+	</tr>
+<tr>
+	<td>
+	Novelty
+	</td>
+	<td>
+	<@ print(Math.round(args.novelty*100)/100); @>
+	</td>
+	<td>
+	 <@ if(args.pct_correctDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(args.noveltyDiff*100)/100));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(args.noveltyDiff*100)/100));
+				}@></h4>
+	</td>
+	</tr>
+<td>Score</td>
+<td id="scoreAnimate">
+  	 <@ 
 		var currentVal = args.score + (-1 * args.scoreDiff);
   		var endVal = args.score;
   		var increment = args.scoreDiff/Math.abs(args.scoreDiff);
@@ -424,11 +471,11 @@ Player player = (Player) session.getAttribute("player");
           {
               if (currentVal == endVal)
               {
-				console.log(increment);
+				$("#scoreAnimate").html(currentVal);
   				if(increment<0){
-  					$("#scoreAnimate").html(endVal+"<i class='glyphicon glyphicon-arrow-down'></i> "+args.scoreDiff+" POINTS");
+  					$("#scoreDiff").html("<i class='glyphicon glyphicon-arrow-down'></i> "+ Math.abs(args.scoreDiff));
   				} else {
-  					$("#scoreAnimate").html(endVal+"<i class='glyphicon glyphicon-arrow-up'></i> "+args.scoreDiff+" POINTS");
+  					$("#scoreDiff").html("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(args.scoreDiff));
   				}
 				window.clearInterval(counter); 
               }
@@ -439,7 +486,12 @@ Player player = (Player) session.getAttribute("player");
               }
           }, 0.01);
   		 @>
-  </h4>
+</td>
+<td id="scoreDiff">
+
+	</td>
+</tr>
+</table>
   	</script>
 	<script id="EmptyTemplate" type="text/template">
   	</script>

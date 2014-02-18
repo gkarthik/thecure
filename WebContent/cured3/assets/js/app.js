@@ -102,6 +102,7 @@ NodeCollection = Backbone.Collection.extend({
 		if(scoreArray.novelty == "Infinity"){
 			scoreArray.novelty = 0;
 		}
+		Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 		Cure.Score.set(scoreArray);
 		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
 	},
@@ -169,7 +170,11 @@ Score = Backbone.RelationalModel.extend({
 		pct_correct : 0,
 		size : 0,// Least Size got form server = 1.
 		score : 0,
-		scoreDiff : 0
+		scoreDiff : 0,
+		sizeDiff : 0,
+		pct_correctDiff : 0,
+		noveltyDiff : 0,
+		previousAttributes: {}
 	},
 	initialize: function(){
 		this.bind('change:size', this.updateScore);
@@ -181,13 +186,19 @@ Score = Backbone.RelationalModel.extend({
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
 			this.set("scoreDiff",parseFloat(Math.round(score)-oldScore));
+			this.set("sizeDiff",parseFloat(this.get('size')-this.get('previousAttributes').size));
+			this.set("pct_correctDiff",parseFloat(this.get('pct_correct')-this.get('previousAttributes').pct_correct));
+			this.set("noveltyDiff",parseFloat(this.get('novelty')-this.get('previousAttributes').novelty));
 		} else {
 			this.set({
 				"score" : 0,
 				"size" : 0,
 				"pct_correct" : 0,
 				"novelty" : 0,
-				"scoreDiff": 0
+				"scoreDiff": 0,
+				"sizeDiff": 0,
+				"pct_correctDiff": 0,
+				"noveltyDiff": 0,
 			});
 		}
 	}
@@ -753,10 +764,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	updateScore : function() {
 		$(this.ui.scoreEL).html(this.model.get("score"));
 		if(this.model.get('score')!=this.model.get('scoreDiff')){
-			$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate, {
-				score : this.model.get('score'),
-				scoreDiff : this.model.get('scoreDiff')
-			}, {
+			$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate, this.model.attributes, {
 				variable : 'args'
 			}));
 		}
