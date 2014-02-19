@@ -45,6 +45,10 @@ html, body{
 	margin-left: 32%;
 }
 
+#ScoreChangesWrapper > table > td{
+	padding:2px;
+}
+
 .score-panel-extend .btn{
 	display:none;
 }

@@ -96,6 +96,7 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.updatepositions(Cure.PlayerNodeCollection);
 			Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 		}
+		
 		//Storing Score in a Score Model.
 		var scoreArray = data;
 		scoreArray.treestruct = null;
@@ -104,6 +105,7 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 		Cure.Score.set(scoreArray);
+		
 		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
 	},
 	error : function(data) {
@@ -769,10 +771,10 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate,this.model.toJSON(),{variable: 'args'}));
 			$(this.ui.scoreDetails).show();
 			var args = this.model.toJSON();
-			var time = 100/Math.abs(args.scoreDiff);
+			var time = 1000/Math.abs(args.scoreDiff);
 				var currentVal = args.score + (-1 * args.scoreDiff);
 				var endVal = args.score;
-				var increment = args.scoreDiff / Math.abs(args.scoreDiff) * 50;
+				var increment = args.scoreDiff / Math.abs(args.scoreDiff) * 10;
 				if(args.scoreDiff != args.score){
 					var counter = window.setInterval(function() {
 						if (currentVal > endVal) {
