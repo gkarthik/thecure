@@ -35,6 +35,7 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/backbone-relational.js"></script>
 <script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js/parallel.js" charset="utf-8"></script>
 </head>
 <body>
 <div id="loading-wrapper">
