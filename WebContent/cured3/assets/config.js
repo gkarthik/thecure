@@ -43,7 +43,27 @@ require.config({
     },
     myGeneAutocomplete : {
       deps : ['jquery','jqueryui'],
-      exports : 'jQueryUI'
+      exports : 'myGeneAutocomplete'
     }
   }
 })
+
+//Starting the app
+requirejs(["app/core"],
+function(Cure) {
+	Cure.start({
+		"height" : 300,
+		"width" : window.innerWidth*0.9,
+		"Scorewidth" : 268,
+		"Scoreheight" : 200,
+		"regions" : {
+			"PlayerTreeRegion" : "#PlayerTreeRegion",
+			"ScoreRegion" : "#ScoreRegion",
+			"CommentRegion" : "#CommentRegion",
+			"ScoreBoardRegion" : "#scoreboard_wrapper",
+			"JSONSummaryRegion" : "#jsonSummary"
+		},
+		posNodeName: "y",
+		negNodeName: "n"
+	});
+});
