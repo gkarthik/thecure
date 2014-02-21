@@ -14,7 +14,8 @@ require.config({
     d3 : 'lib/d3.v3',
 
     //mygeneautocomplete
-    myGeneAutocomplete : 'lib/mygene_autocomplete_jqueryui'
+    myGeneAutocomplete : 'lib/mygene_autocomplete_jqueryui',
+    text : 'lib/text'
   },
   shim : {
     jquery : {
