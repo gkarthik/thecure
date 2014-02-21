@@ -151,8 +151,8 @@ define([
 					data : JSON.stringify(args),
 					dataType : 'json',
 					contentType : "application/json; charset=utf-8",
-					success : Cure.showAlert("saved"),
-					error : Cure.showAlert("Error Occured. Please try again in a while.")
+					success : Cure.utils.showAlert("saved"),
+					error : Cure.utils.showAlert("Error Occured. Please try again in a while.")
 				});
 			}
 			else

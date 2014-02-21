@@ -13,10 +13,10 @@ ScoreEntryView = Marionette.ItemView.extend({
 		this.$el.click(this.loadNewTree);
 	},
 	loadNewTree: function(){
-		Cure.showLoading();
+		Cure.utils.showLoading();
 		var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
 		Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
-		Cure.hideLoading();
+		Cure.utils.hideLoading();
 	},
 	template: "#ScoreBoardTemplate"
 });

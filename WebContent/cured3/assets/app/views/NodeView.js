@@ -1,8 +1,13 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	'd3'
     ], function($, Marionette, d3) {
+	
+	var node_html = $("#nodeTemplate").html();
+	var splitvaluenode_html = $("#splitValueTemplate").html();
+	var splitnode_html = $("#splitNodeTemplate").html();
+	
 NodeView = Marionette.ItemView.extend({
 	tagName : 'div',
 	className : 'node dragHtmlGroup',
@@ -91,7 +96,7 @@ NodeView = Marionette.ItemView.extend({
 		if(this.model.get('options').pct_correct){
 			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 		}
-		Cure.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
+		Cure.utils.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
 	},
 	setHighlight: function(){
 		this.model.set('highlight',0);
@@ -104,7 +109,7 @@ NodeView = Marionette.ItemView.extend({
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.
-		var numNodes = Cure.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.getDepth(this.model));
+		var numNodes = Cure.utils.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.utils.getDepth(this.model));
 		
 		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
 			$(this.el).addClass('shrink_'+this.model.get('options').kind);
@@ -172,7 +177,7 @@ NodeView = Marionette.ItemView.extend({
 			var width = this.model.get('viewCSS').width-10;
 			radius = (width - 4)/20;
 			var limit = Cure.binScale(this.model.get('options').bin_size);
-			Cure.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
+			Cure.utils.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
 			if(this.model.get('name') == Cure.negNodeName){
 				classToChoose["className"]= " .posCircle";
@@ -204,20 +209,20 @@ NodeView = Marionette.ItemView.extend({
 	remove : function() {
 		//Remove and destroy current node.
 		this.$el.remove();
-		Cure.delete_all_children(this.model);
+		Cure.utils.delete_all_children(this.model);
 		this.model.destroy();
 	},
 	removeChildren : function() {
 		//Remove all children from current node.
 		if (this.model.get('parentNode') != null) {
-			Cure.delete_all_children(this.model);
+			Cure.utils.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
 				for ( var key in prevAttr) {
 					this.model.set(key, prevAttr[key]);
 				}
 				this.model.set("previousAttributes", []);
 		} else {
-			Cure.delete_all_children(this.model);
+			Cure.utils.delete_all_children(this.model);
 			this.model.destroy();
 		}
 		Cure.PlayerNodeCollection.sync();
