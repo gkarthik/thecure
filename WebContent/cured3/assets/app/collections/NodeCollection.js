@@ -81,8 +81,8 @@ NodeCollection = Backbone.Collection.extend({
 				this.updateCollection(json_node.children[temp], null, newNode);
 			}
 		}
-		Cure.updatepositions(Cure.PlayerNodeCollection);
-		Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+		Cure.utils.updatepositions(Cure.PlayerNodeCollection);
+		Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 	},
 	parseResponse : function(data) {
 		//If empty tree is returned, no tree rendered.
@@ -90,8 +90,8 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
 		} else {
 		//If server returns json with tree render and update positions of nodes.
-			Cure.updatepositions(Cure.PlayerNodeCollection);
-			Cure.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
+			Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 		}
 		
 		//Storing Score in a Score Model.

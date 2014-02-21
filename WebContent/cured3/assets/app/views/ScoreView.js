@@ -3,6 +3,7 @@ define([
 	'marionette',
 	'd3'
     ], function($, Marionette, d3) {
+	var scoreDetailsTemplate = $("#scoreDetailsTemplate").html();
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
