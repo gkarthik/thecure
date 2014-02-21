@@ -1,5 +1,5 @@
 define([
-	'jQuery',
+	'jquery',
     	'backbone',
 	'app/models/ScoreEntry'
     ], function($, Backbone, ScoreEntry) {

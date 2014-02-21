@@ -1,23 +1,23 @@
 require.config({
   paths : {
-    underscore : './js/underscore.js',
-    backbone : './js/backbone.js',
-    backboneRelational : './js/backbone-relational.js',
-    marionette : 'path/to/marionette',
+    underscore : 'lib/underscore',
+    backbone : 'lib/backbone',
+    backboneRelational : 'lib/backbone-relational',
+    marionette : 'lib/marionette.backbone.min',
 
     //jQuery
-    jquery : '//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js',
-    jqueryui : '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js',
+    jquery : 'http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min',
+    jqueryui : 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min',
 
     //d3
-    d3 : '/js/d3.v3.js',
+    d3 : 'lib/d3.v3',
 
     //mygeneautocomplete
-    myGeneAutocomplete : './js/mygene_autocomplete_jqueryui.js'
+    myGeneAutocomplete : 'lib/mygene_autocomplete_jqueryui'
   },
   shim : {
     jquery : {
-      exports : 'jQuery'
+      exports : '$'
     },
     underscore : {
       exports : '_'
@@ -27,7 +27,7 @@ require.config({
       exports : 'Backbone'
     },
     backboneRelational : {
-      deps : ['jquery', 'underscore', 'backbone'],
+      deps : ['backbone'],
       exports : 'BackboneRelational'
     },
     marionette : {
@@ -46,11 +46,12 @@ require.config({
       exports : 'myGeneAutocomplete'
     }
   }
-})
+});
 
 //Starting the app
-requirejs(["app/core"],
-function(Cure) {
+require(["core"],
+function() {
+	console.log(Cure)
 	Cure.start({
 		"height" : 300,
 		"width" : window.innerWidth*0.9,

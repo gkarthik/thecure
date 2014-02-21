@@ -1,7 +1,8 @@
 define([
+    	'backbone',
     	'backboneRelational'
-    ], function(BackboneRelational) {
-Comment = BackboneRelational.extend({
+    ], function(Backbone) {
+Comment = Backbone.RelationalModel.extend({
 	defaults: {
 		content: "",
 		editView: 0

@@ -1,7 +1,8 @@
 define([
+      'backbone',
     	'backboneRelational'
-    ], function(BackboneRelational) {
-ClinicalFeature = BackboneRelational.extend({
+    ], function(Backbone) {
+ClinicalFeature = Backbone.RelationalModel.extend({
 	defaults : {
 		description : "",
 		id : 0,

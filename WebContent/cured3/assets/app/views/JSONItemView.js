@@ -1,7 +1,9 @@
 define([
-	'jQuery',
-	'marionette'
-    ], function($, Marionette) {
+	'jquery',
+	'marionette',
+	//Model
+	'app/models/Node'
+    ], function($, Marionette, Node) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
@@ -16,7 +18,7 @@ JSONItemView = Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON');
 		this.model.bind('change', this.render);
-		this.model.on('change:showJSON', function() {
+		this.model.bind('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
 				this.ShowJSON();
 			}

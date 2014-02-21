@@ -23,11 +23,10 @@ Player player = (Player) session.getAttribute("player");
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Cure</title>
 <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
-
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 <!-- 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
@@ -37,7 +36,6 @@ Player player = (Player) session.getAttribute("player");
 <script type="text/javascript" src="./js/backbone-relational.js"></script>
 <script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
 <script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
-<script type="text/javascript" src="./js/parallel.js" charset="utf-8"></script>
  -->
 </head>
 <body>
@@ -513,9 +511,6 @@ Player player = (Player) session.getAttribute("player");
 			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
 			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
   </script>
-  <script data-main="config" src="./js/require.js"></script>
-  <!-- 
-	<script type="text/javascript" src="./js/app.js" charset="utf-8">></script>
-  -->
+	<script type="text/javascript" data-main="config" src="require.js" charset="utf-8"></script>
 </body>
 </html>

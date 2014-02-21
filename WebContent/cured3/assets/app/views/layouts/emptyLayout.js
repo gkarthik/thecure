@@ -1,9 +1,9 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	//Views
 	'app/views/AddRootNodeView'
-    ], function($, Marionette, Comment) {
+    ], function($, Marionette, AddRootNodeView) {
 emptyLayout = Marionette.Layout.extend({
     template: "#Empty-Layout-Template",
     regions: {
@@ -12,10 +12,11 @@ emptyLayout = Marionette.Layout.extend({
     onBeforeRender: function(){
     	//Cure.ToggleHelp(false);
     },
+    helpText : "",
     onRender: function(){
-    	if(!Cure.helpText){
-        	Cure.helpText = $("#HelpText").html();	
-        	Cure.ToggleHelp(true);
+    	if(!this.helpText){
+        	this.helpText = $("#HelpText").html();	
+        	Cure.utils.ToggleHelp(true, this.helpText);
     	}
     	var newAddRootNodeView = new AddRootNodeView(); 
     	this.AddRootNode.show(newAddRootNodeView);

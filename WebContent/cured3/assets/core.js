@@ -1,11 +1,26 @@
 define([
     	'marionette',
     	'd3',
+    	'jquery',
+    	//Collection
+    	'app/collections/ClinicalFeatureCollection',
+    	'app/collections/NodeCollection',
+    	'app/collections/ScoreBoard',
+    	//Models
+    	'app/models/Comment',
+    	'app/models/Score',
     	//Views
-    ], function(Marionette, d3) {
+    	'app/views/CommentView',
+    	'app/views/JSONCollectionView',
+    	'app/views/NodeCollectionView',
+    	'app/views/ScoreBoardView',
+    	'app/views/ScoreView',
+    	//Utilitites
+    	'app/utilities/utilities'
+    ], function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection, ScoreBoard, Comment, Score, CommentView, JSONCollectionView, NodeCollectionView, ScoreBoardView, ScoreView, CureUtils) {
 	
 	Cure = new Marionette.Application();
-	
+	Cure.utils = CureUtils;
 	Cure.addInitializer(function(options) {
 		//JSP Uses <% %> to render elements and this clashes with default underscore templates.
 		_.templateSettings = {
@@ -65,11 +80,12 @@ define([
 		//Event Initializers
 						
 		$("#HelpText").on("click",function(){
-			Cure.ToggleHelp(false);
+			var html = $(this).html();
+			Cure.utils.ToggleHelp(false, html);
 		});
 		
 		$("body").delegate("#closeHelp","click",function(){
-			Cure.ToggleHelp(true);
+			Cure.utils.ToggleHelp(true);
 		});
 		
 		$("body").delegate(".close","click",function(){
@@ -142,7 +158,7 @@ define([
 			else
 			{
 				tree = [];
-				Cure.showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
+				Cure.utils.showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
 			}
 		});
 		
