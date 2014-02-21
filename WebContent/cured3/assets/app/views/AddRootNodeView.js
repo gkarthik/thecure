@@ -1,13 +1,17 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
-	//Views
+	//Models
 	'app/models/Node',
+	//Templates
+	'text!app/templates/GeneSummary.html',
+	'text!app/templates/ClinicalFeatureSummary.html',
+	'text!app/templates/AddNode.html',
+	//Plugins
 	'myGeneAutocomplete',
 	'jqueryui'
-    ], function($, Marionette, Node) {
-	var geneinfosummary = $("#GeneInfoSummary").html();
-	var cfsummary = $("#ClinicalFeatureSummary").html();
+    ], function($, Marionette, Node, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 	},
@@ -45,11 +49,9 @@ AddRootNodeView = Marionette.ItemView.extend({
 					$("#SpeechBubble").remove();
 				}
 				focueElement.append("<div id='SpeechBubble'></div>")
-					var html = _.template(cfsummary, {
+					var html = cfsummary({
 						long_name : ui.item.long_name,
 						description : ui.item.description
-					}, {
-						variable : 'args'
 					});
 					var dropdown = $("#cf_query").data('ui-autocomplete').bindings[1];
 					var offset = $(dropdown).offset();
@@ -142,13 +144,13 @@ AddRootNodeView = Marionette.ItemView.extend({
 		$("#mygenecf_wrapper").hide();
 		$("#mygeneinfo_wrapper").show();
 	},
-	template : "#AddRootNode",
+	template : AddNodeTemplate,
 	render : function() {
 		if (this.model) {
 			var model = this.model;
 		}
-		var html_template = $("#AddRootNode").html();
-		this.$el.html(html_template);
+		var html_template = AddNodeTemplate;
+		this.$el.html(AddNodeTemplate);
 		
 		this.$el.find('#gene_query').genequery_autocomplete({
 			open: function(event){
@@ -169,7 +171,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 							generif: data.generif,
 							name: data.name
 					};
-					var html = _.template(geneinfosummary, {
+					var html = geneinfosummary({
 						symbol : data.symbol,
 						summary : summary
 					}, {

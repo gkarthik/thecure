@@ -137,6 +137,7 @@ Player player = (Player) session.getAttribute("player");
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp" />
+	<!--
 	<script type="text/template" id="Empty-Layout-Template">
 		<div class="aimWrapper">
 		<h3>Aim</h3>
@@ -501,16 +502,11 @@ Player player = (Player) session.getAttribute("player");
   	</script>
 	<script id="EmptyTemplate" type="text/template">
   	</script>
+  	-->
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>";
   </script>
-  <script id="ScoreBoardTemplate" type="text/template">
-			<td><span class='keyValue'><@= json_tree.score @></span></td>
-			<td><span class='keyValue'><@= json_tree.size @></span></td>
-			<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*100)/100) @></span></td>
-			<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*100)/100) @></span></td>
-  </script>
-	<script type="text/javascript" data-main="config" src="require.js" charset="utf-8"></script>
+	<script type="text/javascript" data-main="lib/config" src="lib/require.js" charset="utf-8"></script>
 </body>
 </html>

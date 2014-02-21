@@ -2,10 +2,12 @@ define([
 	'jquery',
 	'marionette',
 	//Views
-	'app/views/AddRootNodeView'
-    ], function($, Marionette, AddRootNodeView) {
+	'app/views/AddRootNodeView',
+	//Templates
+	'text!app/templates/EmptyNodeCollection.html'
+    ], function($, Marionette, AddRootNodeView, EmptyNodeCollectionTemplate) {
 emptyLayout = Marionette.Layout.extend({
-    template: "#Empty-Layout-Template",
+    template: EmptyNodeCollectionTemplate,
     regions: {
       AddRootNode: "#AddRootNodeWrapper"
     },

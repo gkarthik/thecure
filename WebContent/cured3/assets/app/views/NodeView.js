@@ -1,13 +1,13 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
-	'd3'
-    ], function($, Marionette, d3) {
-	
-	var node_html = $("#nodeTemplate").html();
-	var splitvaluenode_html = $("#splitValueTemplate").html();
-	var splitnode_html = $("#splitNodeTemplate").html();
-	
+	'd3',
+	//Templates
+	'text!app/templates/LeafNode.html',
+	'text!app/templates/SplitValue.html',
+	'text!app/templates/SplitNode.html'
+    ], function($, Marionette, d3, LeafNodeTemplate, splitValueTemplate, splitNodeTemplate) {
 NodeView = Marionette.ItemView.extend({
 	tagName : 'div',
 	className : 'node dragHtmlGroup',
@@ -19,34 +19,28 @@ NodeView = Marionette.ItemView.extend({
 	},
 	template : function(serialized_model) {
 		if (serialized_model.options.kind == "split_value") {
-			return _.template(splitvaluenode_html, {
+			return splitValueTemplate({
 				name : serialized_model.name,
 				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
-			}, {
-				variable : 'args'
 			});
 		} else if (serialized_model.children.length > 0
 				&& serialized_model.options.kind == "split_node") {
-			return _.template(splitnode_html, {
+			return splitNodeTemplate({
 				name : serialized_model.name,
 				highlight : serialized_model.highlight,
 				options : serialized_model.options,
 				cid : serialized_model.cid
-			}, {
-				variable : 'args'
 			});
 		}
-		return _.template(node_html, {
+		return LeafNodeTemplate({
 			name : serialized_model.name,
 			highlight : serialized_model.highlight,
 			options : serialized_model.options,
 			cid : serialized_model.cid,
 			posNodeName : Cure.posNodeName,
 			negNodeName : Cure.negNodeName
-		}, {
-			variable : 'args'
 		});
 	},
 	events : {

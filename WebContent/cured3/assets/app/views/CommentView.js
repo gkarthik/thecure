@@ -1,8 +1,12 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
-	'app/models/Comment'
-    ], function($, Marionette, Comment) {
+	//Models
+	'app/models/Comment',
+	//Templates
+	'text!app/templates/Comment.html',
+    ], function($, Marionette, Comment, CommentTemplate) {
 CommentView = Backbone.Marionette.ItemView.extend({
 	tagName: 'div',
 	mode: 'Comment',
@@ -10,7 +14,7 @@ CommentView = Backbone.Marionette.ItemView.extend({
 	ui: {
 		commentContent: ".commentContent"
 	},
-	template : "#commentTemplate",
+	template : CommentTemplate,
 	events: {
 		"click .enter-comment": 'changeView',
 		"click .save-comment": 'saveComment'

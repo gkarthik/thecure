@@ -58,7 +58,7 @@ NodeCollection = Backbone.Collection.extend({
 					temp++;
 				}
 				for ( var i = temp; i < node.get('children').length; i++) {
-					Cure.delete_all_children(node.get('children').models[i]);
+					Cure.utils.delete_all_children(node.get('children').models[i]);
 					node.get('children').models[i].destroy();
 					i--;
 				}

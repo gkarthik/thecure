@@ -1,9 +1,12 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
-	'd3'
-    ], function($, Marionette, d3) {
-	var scoreDetailsTemplate = $("#scoreDetailsTemplate").html();
+	'd3',
+	//Templates
+	'text!app/templates/Score.html',
+	'text!app/templates/ScoreChangeSummary.html'
+    ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate) {
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
@@ -18,7 +21,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		'click .showSVG': 'showSVG',
 		'click .closeSVG': 'closeSVG'
 	},
-	template : "#ScoreTemplate",
+	template : scoreTemplate,
 	showSVG: function(){
 		$("#ScoreSVG").slideDown();
 		$(".showSVG").html('<i class="glyphicon glyphicon-resize-small"></i>Hide Chart');
@@ -180,7 +183,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			$("#score-panel .togglePanel").trigger('click');
 		}
 		$("#score-panel").addClass('score-panel-extend');
-		$(this.ui.scoreDetails).html(_.template(scoreDetailsTemplate,this.model.toJSON(),{variable: 'args'}));
+		$(this.ui.scoreDetails).html(scoreChangeTemplate(this.model.toJSON()));
 			$(this.ui.scoreDetails).show();
 			var args = this.model.toJSON();
 			var time = 1000/Math.abs(args.scoreDiff);

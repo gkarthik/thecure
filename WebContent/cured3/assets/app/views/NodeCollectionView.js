@@ -1,4 +1,5 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
 	//Views
