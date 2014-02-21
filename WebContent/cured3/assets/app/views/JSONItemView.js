@@ -4,6 +4,10 @@ define([
 	//Model
 	'app/models/Node'
     ], function($, Marionette, Node) {
+	var shownode_html = $("#JSONtemplate").html();
+	var showsplitvaluenode_html = $("#JSONSplitValuetemplate").html();
+	var showsplitnodecf_html = $("#JSONSplitNodeCftemplate").html();
+	
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {

@@ -6,6 +6,8 @@ define([
 	'myGeneAutocomplete',
 	'jqueryui'
     ], function($, Marionette, Node) {
+	var geneinfosummary = $("#GeneInfoSummary").html();
+	var cfsummary = $("#ClinicalFeatureSummary").html();
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 	},
