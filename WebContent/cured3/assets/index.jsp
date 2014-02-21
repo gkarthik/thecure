@@ -26,17 +26,8 @@ Player player = (Player) session.getAttribute("player");
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="./css/odometer-theme-train-station.css" />
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
-<!-- 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-<script src="./js/mygene_autocomplete_jqueryui.js" type="text/javascript"></script>
-<script type="text/javascript" src="./js/underscore.js"></script>
-<script type="text/javascript" src="./js/backbone.js"></script>
-<script type="text/javascript" src="./js/backbone-relational.js"></script>
-<script type="text/javascript" src="./js/marionette.backbone.min.js"></script>
-<script type="text/javascript" src="./js/d3.v3.js" charset="utf-8"></script>
- -->
 </head>
 <body>
 <div id="loading-wrapper">
@@ -98,7 +89,7 @@ Player player = (Player) session.getAttribute("player");
 				<div id="score-panel">
 				<div class="panel panel-default">
 					<div class='panel-heading'>Score <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score <i class="glyphicon glyphicon-th-list"></i></button></div>
-					<div class='panel-body'>
+					<div class='panel-body panel-static'>
 						<div id="ScoreRegion"></div>
 					</div>
 				</div>
@@ -106,7 +97,7 @@ Player player = (Player) session.getAttribute("player");
 				<div id="control-panel">
 			<div class=" panel panel-default">
 				<div class="panel-heading">Save Options <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Save Options <i class="glyphicon glyphicon-th-list"></i></button></div>
-				<div class="panel-body">
+				<div class="panel-body panel-static">
   					<button class="btn btn-primary btn-block" id="save_tree">Save Tree</button>
 				<hr>
 				<div id="CommentRegion"></div>
@@ -117,7 +108,7 @@ Player player = (Player) session.getAttribute("player");
 				<div id="scoreboard-panel">
 				<div class="panel panel-default">
 					<div class='panel-heading'>Score Board <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score Board <i class="glyphicon glyphicon-th-list"></i></button></div>
-					<div class='panel-body'>
+					<div class='panel-body panel-static'>
 					<h2 class="renderPink">Score Board</h2>
 						<div id="scoreboard_outerWrapper">
 					<table class="table">

@@ -107,6 +107,12 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	error : function(data) {
 		console.log("Error Receiving Data From Server.");
+	},
+	getTreeinText : function(node){
+		if(node == undefined){
+			node = this.models[0];
+		}
+		
 	}
 });
 
