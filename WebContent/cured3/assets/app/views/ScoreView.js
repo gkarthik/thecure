@@ -5,12 +5,21 @@ define([
 	'd3',
 	//Templates
 	'text!app/templates/Score.html',
-	'text!app/templates/ScoreChangeSummary.html'
-    ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate) {
+	'text!app/templates/ScoreChangeSummary.html',
+	//Plugins
+	'odometer'
+    ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate, Odometer) {
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
 		this.model.bind("change:scoreDiff", this.updateScore);
+		var thisView = this;
+		$(document).mouseup(function(e){
+			var classToclose = $('.score-panel-extend');
+	    if(!classToclose.is(e.target) && classToclose.has(e.target).length == 0) {
+	    	thisView.hideScoreDiff();
+	    }
+		});
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
@@ -185,26 +194,13 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		$("#score-panel").addClass('score-panel-extend');
 		$(this.ui.scoreDetails).html(scoreChangeTemplate(this.model.toJSON()));
 			$(this.ui.scoreDetails).show();
-			var args = this.model.toJSON();
-			var time = 1000/Math.abs(args.scoreDiff);
-				var currentVal = args.score + (-1 * args.scoreDiff);
-				var endVal = args.score;
-				var increment = args.scoreDiff / Math.abs(args.scoreDiff) * 10;
-				if(args.scoreDiff != args.score){
-					var counter = window.setInterval(function() {
-						if (currentVal > endVal) {
-							$("#score").html(endVal);
-							window.clearInterval(counter);
-						} else {
-							currentVal = currentVal + increment;
-							$("#score").html(currentVal);
-						}
-					}, time);
-				}
 			d3.select("#sizeBarChart").transition().duration(Cure.duration).style('width',Cure.sizeScale(1/this.model.get('size'))+'px');
 			d3.select("#accuracyBarChart").transition().duration(Cure.duration).style('width',Cure.accuracyScale(this.model.get('pct_correct'))+'px');
 			d3.select("#noveltyBarChart").transition().duration(Cure.duration).style('width',Cure.noveltyScale(this.model.get('novelty'))+'px');
-			window.setTimeout(function(){$("#score-panel").removeClass('score-panel-extend');},8000);
+			window.setTimeout(this.hideScoreDiff,8000);
+	},
+	hideScoreDiff: function(){
+		$("#score-panel").removeClass('score-panel-extend');
 	},
 	updateScore : function() {
 		$(this.ui.scoreEL).html(this.model.get("score"));
@@ -393,8 +389,16 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				.attr("height", Cure.Scoreheight);
 		this.drawAxis();
 		this.updateScore();
+	},
+	onShow : function(){
+		var el = document.getElementById("score");
+		od = new Odometer({
+		  el: el,
+		  value: 0,
+		  format: '',
+		  theme: 'train-station'
+		});
 	}
 });
-
 return ScoreView;
 });

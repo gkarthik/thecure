@@ -315,6 +315,7 @@ padding: 1%;
 	text-align: center;
 	border-radius: 0;
 	font-size: 60px;
+	width: 100%;
 }
 
 #scoreLabel{
@@ -326,9 +327,9 @@ padding: 1%;
 }
 
 .addgeneinfo{
-	position: absolute;
-	margin: 10px 1px 1px -75px;
-	width: 300px;
+position: absolute;
+margin: 10px 1px 1px -120px;
+width: 310px;
 }
 
 #ScoreSVG{
