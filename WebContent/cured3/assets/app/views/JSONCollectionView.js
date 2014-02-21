@@ -1,8 +1,10 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
+	//Collectons
+	'app/collections/NodeCollection',
 	'app/views/JSONItemView'
-    ], function($, Marionette, JSONItemView) {
+    ], function($, Marionette, NodeCollection, JSONItemView) {
 JSONCollectionView = Marionette.CollectionView.extend({
 	itemView : JSONItemView,
 	collection : NodeCollection,
@@ -12,6 +14,6 @@ JSONCollectionView = Marionette.CollectionView.extend({
 	}
 });
 
-return JSONItemView;
+return JSONCollectionView;
 });
 

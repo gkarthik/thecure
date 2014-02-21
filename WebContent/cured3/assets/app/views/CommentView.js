@@ -1,5 +1,5 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	'app/models/Comment'
     ], function($, Marionette, Comment) {

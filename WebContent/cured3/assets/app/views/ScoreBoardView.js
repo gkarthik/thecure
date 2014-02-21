@@ -1,5 +1,5 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	'app/views/ScoreEntryView'
     ], function($, Marionette, ScoreEntryView) {

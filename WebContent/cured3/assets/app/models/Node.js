@@ -1,7 +1,8 @@
 define([
-    	'backboneRelational'
-    ], function(BackboneRelational) {
-	Node = BackboneRelational.extend({
+      	'backbone',
+      	'backboneRelational'
+    ], function(Backbone) {
+	Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',
 		'cid' : 0,

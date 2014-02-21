@@ -1,7 +1,8 @@
 define([
-    	'backboneRelational'
-    ], function(BackboneRelational) {
-	Score = BackboneRelational.extend({
+      	'backbone',
+      	'backboneRelational'
+    ], function(Backbone) {
+	Score = Backbone.RelationalModel.extend({
 	defaults : {
 		novelty : 0,
 		pct_correct : 0,

@@ -1,10 +1,10 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	//Views
-	'app/models/Node'
-	'myGeneAutocomplete'
-	'jQueryUI'
+	'app/models/Node',
+	'myGeneAutocomplete',
+	'jqueryui'
     ], function($, Marionette, Node) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {

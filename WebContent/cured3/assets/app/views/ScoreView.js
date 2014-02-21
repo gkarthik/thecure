@@ -1,5 +1,5 @@
 define([
-	'jQuery',
+	'jquery',
 	'marionette',
 	'd3'
     ], function($, Marionette, d3) {

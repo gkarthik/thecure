@@ -1,9 +1,8 @@
 define([
-	'jQuery',
-	'marionette'
+	'jquery',
+	'marionette',
     ], function($, Marionette) {
 ScoreEntryView = Marionette.ItemView.extend({
-	model : ScoreEntry,
 	tagName: 'tr',
 	ui : {
 

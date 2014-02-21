@@ -1,6 +1,6 @@
 define([
-	'jQuery',
-    	'backbone',
+	'jquery',
+  'backbone',
 	'app/models/ClinicalFeature'
     ], function($, Backbone, ClinicalFeature) {
 ClinicalFeatureCollection = Backbone.Collection.extend({
