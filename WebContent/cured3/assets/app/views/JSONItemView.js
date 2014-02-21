@@ -98,7 +98,7 @@ JSONItemView = Marionette.ItemView.extend({
 				this.model.set("gene_summary",summary);
 			}
 		} else {
-			if(Cure.isJSON(this.model.get('parentNode').get('options').description)){
+			if(Cure.utils.isJSON(this.model.get('parentNode').get('options').description)){
 				var json_string = JSON.parse(this.model.get('parentNode').get('options').description);
 				var summary = {};
 				summary.name = this.model.get('name');
