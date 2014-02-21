@@ -81,7 +81,7 @@ define([
 						
 		$("#HelpText").on("click",function(){
 			var html = $(this).html();
-			Cure.utils.ToggleHelp(false, html);
+			Cure.utils.ToggleHelp(false, Cure.helpText);
 		});
 		
 		$("body").delegate("#closeHelp","click",function(){

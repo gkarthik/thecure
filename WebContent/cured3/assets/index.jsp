@@ -181,7 +181,7 @@ Player player = (Player) session.getAttribute("player");
 		<hr>
 	</div>
 	<div class="summary_content">
-		<p><@ if(Cure.isJSON(args.description)){
+		<p><@ if(Cure.utils.isJSON(args.description)){
 				var json_string = JSON.parse(args.description);
 				for(var temp in json_string){
 					print("<h4>"+temp+"</h4>"+"<p>"+json_string[temp]+"</p>");
@@ -284,7 +284,7 @@ Player player = (Player) session.getAttribute("player");
 					<h2><@= args.name @></h2>
 				</div>
 				<div id="summary_content">
-				<p><@ if(Cure.isJSON(args.summary.summaryText)){
+				<p><@ if(Cure.utils.isJSON(args.summary.summaryText)){
 				var json_string = JSON.parse(args.summary.summaryText);
 				for(var temp in json_string){
 					print("<h4>"+temp+"</h4>"+"<p>"+json_string[temp]+"</p>");

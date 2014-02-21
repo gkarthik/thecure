@@ -12,11 +12,10 @@ emptyLayout = Marionette.Layout.extend({
     onBeforeRender: function(){
     	//Cure.ToggleHelp(false);
     },
-    helpText : "",
     onRender: function(){
-    	if(!this.helpText){
-        	this.helpText = $("#HelpText").html();	
-        	Cure.utils.ToggleHelp(true, this.helpText);
+    	if(!Cure.helpText){
+        	Cure.helpText = $("#HelpText").html();	
+        	Cure.utils.ToggleHelp(true, Cure.helpText);
     	}
     	var newAddRootNodeView = new AddRootNodeView(); 
     	this.AddRootNode.show(newAddRootNodeView);
