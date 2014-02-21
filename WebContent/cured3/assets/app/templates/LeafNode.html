@@ -1,0 +1,16 @@
+<svg class="leafNodeChart chart" id="chart<%= cid %>"></svg>
+		<% if(name == negNodeName)
+		{
+			print ('<span class="name attrvalue" style="background:red;">'+name.toUpperCase()+'</span>');
+		}
+		else if(name == posNodeName)
+		{
+			print ('<span class="name attrvalue" style="background:blue;">'+name.toUpperCase()+'</span>');
+		} 
+      	%>	
+    <input type="text" class="edit d3edit" value="<%= name %>">
+    <button class="btn btn-small btn-link addchildren" type="button">
+      <i class="glyphicon glyphicon-plus-sign"></i>
+		<span style="float: none;">Add</span>
+    </button>
+	<div class="addgeneinfo" id="addgeneinfo<%= cid %>"></div>

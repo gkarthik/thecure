@@ -1,0 +1,68 @@
+<table>
+	<tr class='size-row'>
+	<td>
+	Size
+	</td>
+<td>
+	 <% if(sizeDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(sizeDiff));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(sizeDiff));
+				}%>
+	</td>
+	<td class="chart-cell">
+		<div id="sizeBarChart" class="scoreBarChart">
+			<%= size %>
+		</div>
+	</td>
+	
+	</tr>
+<tr class="accuracy-row">
+	<td>
+	Accuracy
+	</td>
+	<td>
+	 <% if(pct_correctDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(pct_correctDiff*100)/100));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(pct_correctDiff*100)/100));
+				}%>
+	</td>
+	<td class="chart-cell">
+		<div id="accuracyBarChart" class="scoreBarChart">
+			<% print(Math.round(pct_correct*100)/100); %>
+		</div>
+	</td>
+	</tr>
+<tr class="novelty-row">
+	<td>
+	Novelty
+	</td>
+	<td>
+	 <% if(pct_correctDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(Math.round(noveltyDiff*100)/100));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(Math.round(noveltyDiff*100)/100));
+				}%>
+	</td>
+	<td class="chart-cell">
+		<div id="noveltyBarChart" class="scoreBarChart">
+			<% print(Math.round(novelty*100)/100); %>
+		</div>
+	</td>
+	
+	</tr>
+<tr class="score-row">
+<td>Score</td>
+<td id="scoreDiff">
+	<% if(scoreDiff>0){
+					print("<i class='glyphicon glyphicon-arrow-up'></i> "+Math.abs(scoreDiff));
+				} else {
+					print("<i class='glyphicon glyphicon-arrow-down'></i> "+Math.abs(scoreDiff));
+				}%>
+</td>
+<td>
+  	<%= score %>
+</td>
+</tr>
+</table>
