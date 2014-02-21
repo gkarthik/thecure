@@ -2,12 +2,12 @@ define([
 	'jquery',
 	'marionette',
 	//Model
-	'app/models/Node'
-    ], function($, Marionette, Node) {
-	var shownode_html = $("#JSONtemplate").html();
-	var showsplitvaluenode_html = $("#JSONSplitValuetemplate").html();
-	var showsplitnodecf_html = $("#JSONSplitNodeCftemplate").html();
-	
+	'app/models/Node',
+	//Templates
+	'text!app/templates/JSONSplitNodeGeneSummary.html',	
+	'text!app/templates/JSONSplitValueSummary.html',
+	'text!app/templates/JSONSplitNodeCfSummary.html'
+    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
@@ -62,28 +62,25 @@ JSONItemView = Marionette.ItemView.extend({
 		var name = serialized_model.name;
 		var options = serialized_model.options;
 		if(serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") == -1) {
-			return _.template(shownode_html, {
+			return splitNodeGeneSummary({
+				id: serialized_model.cid,
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
-			}, {
-				variable : 'args'
 			});
 		} else if (serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") != -1){
-			return _.template(showsplitnodecf_html, {
+			return splitNodeCfSummary({
+				id: serialized_model.cid,
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
-			}, {
-				variable : 'args'
 			});
 		} else {
-			return _.template(showsplitvaluenode_html, {
+			return splitValueSummary({
+				id: serialized_model.cid,
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
-			}, {
-				variable : 'args'
 			});
 		}
 	},

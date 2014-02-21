@@ -1,7 +1,10 @@
 define([
+  //Libraries
 	'jquery',
 	'marionette',
-    ], function($, Marionette) {
+	//Templates
+	'text!app/templates/ScoreEntry.html'
+    ], function($, Marionette, ScoreEntryTemplate) {
 ScoreEntryView = Marionette.ItemView.extend({
 	tagName: 'tr',
 	ui : {
@@ -18,7 +21,7 @@ ScoreEntryView = Marionette.ItemView.extend({
 		Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
 		Cure.utils.hideLoading();
 	},
-	template: "#ScoreBoardTemplate"
+	template: ScoreEntryTemplate
 });
 
 return ScoreEntryView;
