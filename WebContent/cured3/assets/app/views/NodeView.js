@@ -106,38 +106,38 @@ NodeView = Marionette.ItemView.extend({
 		var numNodes = Cure.utils.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.utils.getDepth(this.model));
 		
 		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
-			$(this.el).addClass('shrink_'+this.model.get('options').kind);
-			$(this.el).css({
+			this.$el.addClass('shrink_'+this.model.get('options').kind);
+			this.$el.css({
 				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.	
 				height: 'auto',
 				'font-size': '0.5vw',
 				'min-width': '0px'
 			});
 		} else {
-			if($(this.el).hasClass('shrink_'+this.model.get('options').kind)){
-				$(this.el).removeClass('shrink_'+this.model.get('options').kind);
+			if(this.$el.hasClass('shrink_'+this.model.get('options').kind)){
+				this.$el.removeClass('shrink_'+this.model.get('options').kind);
 			}
 			if(this.model.get('options').kind=='leaf_node'||this.model.get('options').kind=='split_node'){
 				try{
-					$(this.el).css({
+					this.$el.css({
 						'width': this.model.get('parentNode').get('parentNode').get('viewCSS').width+"px",
 						'min-width': '0px'
 					});
 				} catch(e){
-						$(this.el).css({
+						this.$el.css({
 							'min-width': "100px"
 						});
 					}
 				} else {
 					if(this.model.get('parentNode')!=null){
-						$(this.el).css({
+						this.$el.css({
 							'width': parseFloat(this.model.get('parentNode').get('viewCSS').width)+"px",
 							'min-width': '0px'
 						});
 					}
 				}
 			}
-		var width = $(this.el).outerWidth();
+		var width = this.$el.outerWidth();
 		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
 			"left": (this.model.get('x') - ((width) / 2)) +"px",
@@ -152,9 +152,10 @@ NodeView = Marionette.ItemView.extend({
 			styleObject.background = "rgba(0,0,255,0.2)";
 			styleObject.borderColor = "blue";
 		}
-		$(this.el).attr('class','node dragHtmlGroup');//To refresh class everytime node is rendered.
-		$(this.el).css(styleObject);
-		$(this.el).addClass(this.model.get("options").kind);
+		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
+		this.$el.css(styleObject);
+		this.$el.addClass(this.model.get("options").kind);
+		console.log(this.$el.width());
 		this.model.set("viewCSS",{'width':this.$el.width()});
 	}, 
 	onRender: function(){
@@ -183,7 +184,7 @@ NodeView = Marionette.ItemView.extend({
 			d3.selectAll(id+classToChoose["className"]).style("fill",classToChoose["color"]);
 		}		
 		/*
-		else if($(this.el).hasClass("shrink_leaf_node") && id!= undefined){
+		else if(this.$el.hasClass("shrink_leaf_node") && id!= undefined){
 			var bin_size = this.model.get('options').bin_size;
 			var accLimit = this.model.get('accLimit'); 
 			console.log(accLimit/100)
