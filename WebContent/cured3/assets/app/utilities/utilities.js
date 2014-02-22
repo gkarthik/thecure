@@ -160,16 +160,16 @@ CureUtils.render_network = function(dataset) {
 		
 		for(var temp in allLinks){
 			if(allLinks[temp].linkNumber != count) {
-				divLeft = divLeft - parseInt(binY(allLinks[temp-1].bin_size/2)) - parseInt(binY(allLinks[temp].bin_size/2));//When adding second edge, essentaial to include complete width of previous edge.
+				divLeft = parseFloat(divLeft - parseFloat(binY(allLinks[temp-1].bin_size/2)) - parseFloat(binY(allLinks[temp].bin_size/2)));//When adding second edge, essential to include complete width of previous edge.
 				count = allLinks[temp].linkNumber;
 			}
 			if(allLinks[temp].target.options.kind == "split_value"){
-				allLinks[temp].source.y += 107;//For Split Nodes 
+				allLinks[temp].source.y = parseFloat(allLinks[temp].source.y + 107);//For Split Nodes 
 			} else if(allLinks[temp].target.options.kind == "leaf_node") {
-				allLinks[temp].target.y -= 34;//For Leaf Nodes
+				allLinks[temp].target.y = parseFloat(allLinks[temp].target.y - 34);//For Leaf Nodes
 			}
-			allLinks[temp].source.x += divLeft;
-			allLinks[temp].target.x += divLeft;
+			allLinks[temp].source.x = parseFloat(divLeft + allLinks[temp].source.x);
+			allLinks[temp].target.x = parseFloat(divLeft + allLinks[temp].target.x);
 		}
 		
 		var link = SVG.selectAll(".link").data(allLinks);

@@ -38,15 +38,24 @@ html, body{
 	left: 25%;
 	text-align: center;
 }
-
-.score-panel-extend #ScoreChangesWrapper{
-	width: 35%;
-	text-align: left;
-	margin-left: 32%;
+#ScoreChangesWrapper{
+	font-size:18px;
+	font-weight:bold;
 }
 
-#ScoreChangesWrapper > table > td{
-	padding:2px;
+#ScoreChangesWrapper label{
+	font-size: 12px;
+}
+
+.score-panel-extend #ScoreChangesWrapper{
+	text-align: left;
+	float:left;
+	margin-left:20px;
+}
+
+#ScoreChangesWrapper table td{
+	padding:2px 5px;
+	min-width:100px;
 }
 
 .score-panel-extend .btn{
@@ -336,11 +345,16 @@ width: 310px;
 	border: 2px solid steelblue;
 	position: relative;
 	background: #FFF;
+	float:left;
 }
 
 #ScoreChangesWrapper table{
 	float: left;
 	width: 100%;	
+}
+
+.scorefactor-row{
+	display:none;
 }
 
 .chart-cell{
