@@ -23,10 +23,14 @@ define([
 			var score = 750 * (1 / this.get("size")) + 500
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
-			this.set("sizeDiff",parseFloat(this.get('size')-this.get('previousAttributes').size));
-			this.set("pct_correctDiff",parseFloat(this.get('pct_correct')-this.get('previousAttributes').pct_correct));
-			this.set("noveltyDiff",parseFloat(this.get('novelty')-this.get('previousAttributes').novelty));
-			this.set("scoreDiff",parseFloat(Math.round(score)-oldScore));
+			if(this.get('previousAttributes').size!=0){
+				this.set("sizeDiff",parseInt(750 * (1 / this.get("size")-750 * (1 / this.get('previousAttributes').size))));
+			} else {
+				this.set("sizeDiff",parseInt(750 * (1 / this.get("size")- 0)));
+			}
+			this.set("pct_correctDiff",parseInt((1000 * this.get("pct_correct"))-(1000 * this.get('previousAttributes').pct_correct)));
+			this.set("noveltyDiff",parseInt((500*this.get('novelty'))-(500*this.get('previousAttributes').novelty)));
+			this.set("scoreDiff",parseInt(Math.round(score)-oldScore));
 		} else {
 			this.set({
 				"score" : 0,
