@@ -85,7 +85,7 @@ define(
 		        Cure.PlayerSvg = d3
 		            .select(options.regions.PlayerTreeRegion + "SVG").attr("width",
 		                Cure.width).attr("height", Cure.height).call(zoom).append(
-		                "svg:g").attr("transform", "translate(100,0)").attr("class",
+		                "svg:g").attr("transform", "translate(0,0)").attr("class",
 		                "dragSvgGroup");
 
 		        // Event Initializers
