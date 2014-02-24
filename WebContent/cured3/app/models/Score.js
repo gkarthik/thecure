@@ -24,9 +24,9 @@ define([
 					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
 			if(this.get('previousAttributes').size!=0){
-				this.set("sizeDiff",parseInt(750 * (1 / this.get("size")-750 * (1 / this.get('previousAttributes').size))));
+				this.set("sizeDiff",parseInt((750 * (1 / this.get("size")) - (750 * (1 / this.get('previousAttributes').size)))));
 			} else {
-				this.set("sizeDiff",parseInt(750 * (1 / this.get("size")- 0)));
+				this.set("sizeDiff",parseInt(750 * (1 / this.get("size"))));
 			}
 			this.set("pct_correctDiff",parseInt((1000 * this.get("pct_correct"))-(1000 * this.get('previousAttributes').pct_correct)));
 			this.set("noveltyDiff",parseInt((500*this.get('novelty'))-(500*this.get('previousAttributes').novelty)));

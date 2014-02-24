@@ -200,9 +200,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	updateScore : function() {
 		var thisView = this;
-		if(this.model.get('score') != 0){
-			this.showScoreDiff();
-		}
+		this.showScoreDiff();
 		var json = [];
 		var thisModel = this.model;
 		for ( var temp in this.model.toJSON()) {
@@ -376,7 +374,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						"0.5px").attr("fill", "rgba(242,223,191,0.5)");
 				//Data Polygon Transition
 				Cure.ScoreSVG.selectAll(".dataPolygon").transition()
-				.duration(Cure.duration).delay(function(d, i) { return Cure.duration*3*i; }).attr("points", function(d, i) {
+				.duration(Cure.duration).delay( Cure.duration*6).attr("points", function(d, i) {
 					return d.map(function(d) {
 						return [ d.x, d.y ].join(",");
 					}).join(" ");
