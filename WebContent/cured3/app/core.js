@@ -190,7 +190,7 @@ define(
 		        Cure.Scoreheight = options["Scoreheight"];
 		        Cure.duration = 500;
 		        var width = 0;
-		        Cure.cluster = d3.layout.tree().size([ Cure.width * 0.8, "auto" ])
+		        Cure.cluster = d3.layout.tree().size([ Cure.width * 0.7, "auto" ])
 		            .separation(function(a, b) {
 			            try {
 				            if (a.children.length > 2) {

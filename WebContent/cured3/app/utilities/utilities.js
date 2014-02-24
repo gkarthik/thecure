@@ -65,10 +65,7 @@ CureUtils.updatepositions = function(NodeCollection) {
 		for ( var innerTemp in d3nodes) {
 			if (String(d3nodes[innerTemp].cid) == String(NodeCollection["models"][temp]
 					.get('cid'))) {
-				NodeCollection["models"][temp].set("x", d3nodes[innerTemp].x);
-				NodeCollection["models"][temp].set("y", d3nodes[innerTemp].y);
-				NodeCollection["models"][temp].set("x0", d3nodes[innerTemp].x0);
-				NodeCollection["models"][temp].set("y0", d3nodes[innerTemp].y0);
+				NodeCollection["models"][temp].set({"x": d3nodes[innerTemp].x, "y": d3nodes[innerTemp].y});
 			}
 		}
 	}

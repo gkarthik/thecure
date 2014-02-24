@@ -191,7 +191,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		if($("#score-panel .panel-body").css('display')=="none"){
 			$("#score-panel .togglePanel").trigger('click');
 		}
-		$("#score-panel").addClass('score-panel-extend');
+		//$("#score-panel").addClass('score-panel-extend');
 		$(this.ui.scoreDetails).html(scoreChangeTemplate(this.model.toJSON()));
 			$(this.ui.scoreDetails).show();
 	},
