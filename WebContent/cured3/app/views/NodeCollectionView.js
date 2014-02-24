@@ -11,7 +11,7 @@ NodeCollectionView = Marionette.CollectionView.extend({
 	itemView : NodeView,
 	emptyView : emptyLayout,
 	initialize : function() {
-
+		
 	}
 });
 
