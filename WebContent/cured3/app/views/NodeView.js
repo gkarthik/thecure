@@ -60,7 +60,8 @@ NodeView = Marionette.ItemView.extend({
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit');
-		this.model.bind('change', this.render);
+		this.model.bind('change:x', this.render);
+		this.model.bind('change:y', this.render);
 		this.model.bind('add:children', this.setaccLimit);
 		this.model.bind('remove', this.remove);
 	},

@@ -1,5 +1,5 @@
 require.config({
-      baseUrl : "/cure/cured3/assets/",
+      baseUrl : "/cure/cured3/",
       paths : {
         underscore : 'lib/underscore',
         backbone : 'lib/backbone',
@@ -63,7 +63,7 @@ require.config({
 require([ "app/core" ], function() {
 	Cure.start({
 	  "height" : 300,
-	  "width" : window.innerWidth * 0.9,
+	  "width" : window.innerWidth * 0.8,
 	  "Scorewidth" : 268,
 	  "Scoreheight" : 200,
 	  "regions" : {

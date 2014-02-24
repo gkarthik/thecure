@@ -95,6 +95,8 @@ NodeCollection = Backbone.Collection.extend({
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
+			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
+			Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);	
 		} else {
 		//If server returns json with tree render and update positions of nodes.
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
@@ -131,7 +133,6 @@ NodeCollection = Backbone.Collection.extend({
 				branch.leafnode = node.toJSON();
 				var tempNode = node.get('parentNode');
 				while(tempNode != null){
-					console.log(tempNode.get('name'));
 					if(tempNode.get('options').kind == "split_node"){
 						if(tempNode.get('options').id.indexOf("metabric") == -1){
 							branch.splitnodes.push({node: tempNode.toJSON(), type: "gene"});
