@@ -85,7 +85,7 @@ define(
 		        Cure.PlayerSvg = d3
 		            .select(options.regions.PlayerTreeRegion + "SVG").attr("width",
 		                Cure.width).attr("height", Cure.height).call(zoom).append(
-		                "svg:g").attr("transform", "translate(0,0)").attr("class",
+		                "svg:g").attr("transform", "translate(100,0)").attr("class",
 		                "dragSvgGroup");
 
 		        // Event Initializers
@@ -190,7 +190,7 @@ define(
 		        Cure.Scoreheight = options["Scoreheight"];
 		        Cure.duration = 500;
 		        var width = 0;
-		        Cure.cluster = d3.layout.tree().size([ Cure.width * 0.7, "auto" ])
+		        Cure.cluster = d3.layout.tree().size([ (Cure.width * 0.8)-100, "auto" ])
 		            .separation(function(a, b) {
 			            try {
 				            if (a.children.length > 2) {

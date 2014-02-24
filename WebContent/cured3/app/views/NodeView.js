@@ -64,6 +64,8 @@ NodeView = Marionette.ItemView.extend({
 		this.model.bind('change:y', this.render);
 		this.model.bind('add:children', this.setaccLimit);
 		this.model.bind('remove', this.remove);
+		
+		this.model.set("cid",this.cid);
 	},
 	setaccLimit : function(children){
 		if(children.get('options').kind=="leaf_node") {
@@ -141,7 +143,7 @@ NodeView = Marionette.ItemView.extend({
 		var width = this.$el.outerWidth();
 		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
-			"left": (this.model.get('x') - ((width) / 2)) +"px",
+			"left": (100 + this.model.get('x') - ((width) / 2)) +"px",
 			"top": nodeTop +"px",
 			"background": "#FFF",
 			"border-color": "#000"

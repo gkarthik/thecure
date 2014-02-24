@@ -21,12 +21,16 @@ NodeCollection = Backbone.Collection.extend({
 		if (this.models[0]) {
 			tree = this.models[0].toJSON();
 		}
+		
+		Cure.utils.showLoading();
+		
 		var args = {
 			command : "scoretree",
 			dataset : "metabric_with_clinical",
 			treestruct : tree,
 			comment: Cure.Comment.get("content")
 		};
+		
 		//POST request to server.		
 		$.ajax({
 			type : 'POST',
@@ -71,16 +75,14 @@ NodeCollection = Backbone.Collection.extend({
 				}
 			}
 		} else if (node == null) {
-			var newNode = new Node({
-				'name' : "",
-				"options" : {},
-			});
+			var newValues = {};
 			for ( var key in json_node) {
 				if (key != "children") {
-					newNode.set(key, json_node[key]);
+					newValues[key] = json_node[key];
 				}
 			}
-			newNode.set("cid", newNode.cid);
+			var newNode = new Node(newValues);
+			
 			if (parent != null) {
 				parent.get('children').add(newNode);
 			}
@@ -109,6 +111,7 @@ NodeCollection = Backbone.Collection.extend({
 		if(scoreArray.novelty == "Infinity"){
 			scoreArray.novelty = 0;
 		}
+		Cure.utils.hideLoading();
 		Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 		Cure.Score.set(scoreArray);
 		
