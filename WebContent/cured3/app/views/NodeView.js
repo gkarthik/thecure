@@ -143,7 +143,7 @@ NodeView = Marionette.ItemView.extend({
 		var width = this.$el.outerWidth();
 		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
-			"left": (100 + this.model.get('x') - ((width) / 2)) +"px",
+			"left": (this.model.get('x') - ((width) / 2)) +"px",
 			"top": nodeTop +"px",
 			"background": "#FFF",
 			"border-color": "#000"
@@ -159,7 +159,7 @@ NodeView = Marionette.ItemView.extend({
 		this.$el.css(styleObject);
 		this.$el.addClass(this.model.get("options").kind);
 		console.log(this.$el.width());
-		this.model.set("viewCSS",{'width':this.$el.width()});
+		this.model.set("viewCSS",{'width':this.$el.outerWidth()});
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
@@ -172,7 +172,7 @@ NodeView = Marionette.ItemView.extend({
 		if(id!=undefined){
 			id = "#"+id;
 			var radius = 4;
-			var width = this.model.get('viewCSS').width-10;
+			var width = this.model.get('viewCSS').width-20;
 			radius = (width - 4)/20;
 			var limit = Cure.binScale(this.model.get('options').bin_size);
 			Cure.utils.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
