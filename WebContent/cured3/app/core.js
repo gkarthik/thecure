@@ -12,13 +12,23 @@ define(
         'app/views/NodeCollectionView', 'app/views/ScoreBoardView',
         'app/views/ScoreView',
         // Utilitites
-        'app/utilities/utilities' ],
+        'app/utilities/utilities',
+        //Tour
+        'app/tour/tour',
+        'app/tour/treeTour'],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
         ScoreBoard, Comment, Score, CommentView, JSONCollectionView,
-        NodeCollectionView, ScoreBoardView, ScoreView, CureUtils) {
+        NodeCollectionView, ScoreBoardView, ScoreView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
+	    //Tours
+	    Cure.initTour = InitTour;
+	    Cure.treeTour = TreeTour;
+	    //Initialize Tours
+	    Cure.initTour.init();
+	    Cure.treeTour.init();
+	    
 	    Cure
 	        .addInitializer(function(options) {
 		        // JSP Uses <% %> to render elements and this clashes
@@ -190,7 +200,7 @@ define(
 		        Cure.Scoreheight = options["Scoreheight"];
 		        Cure.duration = 500;
 		        var width = 0;
-		        Cure.cluster = d3.layout.tree().size([ (Cure.width * 0.8)-100, "auto" ])
+		        Cure.cluster = d3.layout.tree().size([ (Cure.width-100), "auto" ])
 		            .separation(function(a, b) {
 			            try {
 				            if (a.children.length > 2) {
@@ -235,5 +245,6 @@ define(
 		        Cure.CommentRegion.show(Cure.CommentView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 	        });
+	    
 	    return Cure;
     });

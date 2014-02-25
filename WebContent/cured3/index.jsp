@@ -24,6 +24,7 @@ Player player = (Player) session.getAttribute("player");
 <title>The Cure</title>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link href='./css/bootstrap-tour.min.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/cure/assets/css/style.css" type="text/css" media="screen">
 <link href='./css/style.css' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="./css/odometer-theme-train-station.css" />

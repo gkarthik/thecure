@@ -108,7 +108,7 @@ NodeView = Marionette.ItemView.extend({
 		//Render the positions of each node as obtained from d3.
 		var numNodes = Cure.utils.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.utils.getDepth(this.model));
 		
-		if(numNodes * 100 >= Cure.width){//TODO: find way to get width of node dynamically.
+		if(numNodes * 100 >= Cure.width-100){//TODO: find way to get width of node dynamically.
 			this.$el.addClass('shrink_'+this.model.get('options').kind);
 			this.$el.css({
 				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.	

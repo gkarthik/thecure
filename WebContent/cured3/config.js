@@ -16,7 +16,10 @@ require.config({
         // mygeneautocomplete
         myGeneAutocomplete : 'lib/mygene_autocomplete_jqueryui',
         text : 'lib/text',
-        odometer: 'lib/odometer'
+        odometer: 'lib/odometer',
+        
+        //Bootstrap Tour
+        bootstrapTour: 'lib/bootstrap-tour-standalone.min'
       },
       shim : {
         jquery : {
@@ -56,6 +59,10 @@ require.config({
         	deps : [ 'jquery'],
 	        exports : 'Odometer'
         },
+        bootstrapTour: {
+        	deps: ['jquery'],
+        	exports: 'bootstrapTour'
+        }
       }
     });
 
