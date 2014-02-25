@@ -70,7 +70,7 @@ require.config({
 require([ "app/core" ], function() {
 	Cure.start({
 	  "height" : 300,
-	  "width" : window.innerWidth * 0.8,
+	  "width" : window.innerWidth - 365,
 	  "Scorewidth" : 268,
 	  "Scoreheight" : 200,
 	  "regions" : {

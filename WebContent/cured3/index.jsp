@@ -85,6 +85,10 @@ Player player = (Player) session.getAttribute("player");
 					<h5>Terminology</h5>
 						<img src="img/helpimage.png" width="500" />
 				</div>
+				<div id="zoom-controls">
+				<button><i class="glyphicon glyphicon-zoom-in zoomin"></i></button>
+				<button><i class="glyphicon glyphicon-zoom-out zoomout"></i></button>
+				</div>
 				<div id="PlayerTreeRegion"></div>
 				<div id="cure-panel">
 				<div id="score-panel">
