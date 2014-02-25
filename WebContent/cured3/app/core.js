@@ -61,36 +61,25 @@ define(
 		            [ 0, 100 ]);
 		        Cure.sizeScale = d3.scale.linear().domain([ 0, 1 ]).range(
 		            [ 0, 100 ]);
-
-		        function zoomed() {
-			        if (Cure.PlayerNodeCollection.models.length > 0) {
-				        var t = d3.event.translate, s = d3.event.scale, height = Cure.height, width = Cure.width;
-				        if (Cure.PlayerSvg.attr('width') != null
-				            && Cure.PlayerSvg.attr('height') != null) {
-					        width = Cure.PlayerSvg.attr('width') * (8 / 9),
-					            height = Cure.PlayerSvg.attr('height');
-				        }
-				        t[0] = Math.min(width / 2 * (s), Math.max(width / 2 * (-1 * s),
-				            t[0]));
-				        t[1] = Math.min(height / 2 * (s), Math.max(height / 2
-				            * (-1 * s), t[1]));
-				        zoom.translate(t);
-				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")scale("
-				            + s + ")");
-				        var splitTranslate = String(t).match(/-?[0-9\.]+/g);
-				        $("#PlayerTreeRegionTree").css(
-				            {
-					            "transform" : "translate(" + splitTranslate[0] + "px,"
-					                + splitTranslate[1] + "px)scale(" + s + ")"
-				            });
-			        }
-		        }
 		        
-		        	//if(d3.event.sourceEvent.type=="wheel"){
-		        		//var top = $("body").scrollTop();
-	        	//$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
+		        Cure.scaleLevel = 1;
+		        
+		        $(".zoomin").on("click",function(){
+		        	if(Cure.scaleLevel <= 3){
+			        	Cure.scaleLevel += 0.1;
+		        	}
+		        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        });
+		        
+		        $(".zoomout").on("click",function(){
+		        	if(Cure.scaleLevel >= -3){
+			        	Cure.scaleLevel -= 0.1;
+		        	}
+		        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        });
+		        
       				function zoomed() {
-      					if(d3.event.sourceEvent.type=="wheel"){
+      					if(d3.event.sourceEvent.type!="mousemove"){
       						var top = $("body").scrollTop();
   			        	$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
       					} else {
@@ -106,12 +95,12 @@ define(
     				        t[1] = Math.min(height / 2 * (s), Math.max(height / 2
     				            * (-1 * s), t[1]));
     				        zoom.translate(t);
-    				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")");
+    				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")scale("+Cure.scaleLevel+")");
     				        var splitTranslate = String(t).match(/-?[0-9\.]+/g);
     				        $("#PlayerTreeRegionTree").css(
     				            {
     					            "transform" : "translate(" + splitTranslate[0] + "px,"
-    					                + splitTranslate[1] + "px)"
+    					                + splitTranslate[1] + "px)scale("+Cure.scaleLevel+")"
     				            });
     			        }
       					}
