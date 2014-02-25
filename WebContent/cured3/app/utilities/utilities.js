@@ -429,5 +429,18 @@ CureUtils.shiftNodes = function(translateX,translateY,nodeOffsets){
 		temp++;
 	});
 }
+
+CureUtils.transformRegion = function(transformAttr,scaleLevel){
+	var transformArray = String(transformAttr).match(/-?[0-9\.]+/g);
+	var transformString= {};
+	transformString.svg = "translate("+transformArray[0]+","+transformArray[1]+")scale("+scaleLevel+")"; 
+	transformString.treeregion = "translate("+transformArray[0]+"px,"+transformArray[1]+"px)scale("+scaleLevel+")";
+	Cure.PlayerSvg.attr("transform", transformString.svg);
+	$("#PlayerTreeRegionTree").css(
+	    {
+	      "transform" : transformString.treeregion
+	    });
+}
+
 return CureUtils;
 });

@@ -86,8 +86,8 @@ Player player = (Player) session.getAttribute("player");
 						<img src="img/helpimage.png" width="500" />
 				</div>
 				<div id="zoom-controls">
-				<button><i class="glyphicon glyphicon-zoom-in zoomin"></i></button>
-				<button><i class="glyphicon glyphicon-zoom-out zoomout"></i></button>
+				<button class="zoomin"><i class="glyphicon glyphicon-zoom-in"></i></button>
+				<button class="zoomout"><i class="glyphicon glyphicon-zoom-out"></i></button>
 				</div>
 				<div id="PlayerTreeRegion"></div>
 				<div id="cure-panel">
