@@ -14,8 +14,9 @@ define(
         // Utilitites
         'app/utilities/utilities',
         //Tour
-        'app/tour/tour',
-        'app/tour/treeTour'],
+        //'app/tour/tour',
+        //'app/tour/treeTour'
+        ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
         ScoreBoard, Comment, Score, CommentView, JSONCollectionView,
         NodeCollectionView, ScoreBoardView, ScoreView, CureUtils, InitTour, TreeTour) {
@@ -23,11 +24,11 @@ define(
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
 	    //Tours
-	    Cure.initTour = InitTour;
-	    Cure.treeTour = TreeTour;
+	    //Cure.initTour = InitTour;
+	    //Cure.treeTour = TreeTour;
 	    //Initialize Tours
-	    Cure.initTour.init();
-	    Cure.treeTour.init();
+	    //Cure.initTour.init();
+	    //Cure.treeTour.init();
 	    
 	    Cure
 	        .addInitializer(function(options) {
@@ -35,7 +36,6 @@ define(
 		        // with default underscore templates.
 		        _.templateSettings = {
 		          interpolate : /\<\@\=(.+?)\@\>/gim,
-		          evaluate : /\<\@([\s\S]+?)\@\>/gim,
 		          escape : /\<\@\-(.+?)\@\>/gim
 		        };
 		        Backbone.emulateHTTP = true;
@@ -85,13 +85,46 @@ define(
 				            });
 			        }
 		        }
+		        
+		        	//if(d3.event.sourceEvent.type=="wheel"){
+		        		//var top = $("body").scrollTop();
+	        	//$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
+      				function zoomed() {
+      					if(d3.event.sourceEvent.type=="wheel"){
+      						var top = $("body").scrollTop();
+  			        	$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
+      					} else {
+      						if (Cure.PlayerNodeCollection.models.length > 0) {
+    				        var t = d3.event.translate, s = d3.event.scale, height = Cure.height, width = Cure.width;
+    				        if (Cure.PlayerSvg.attr('width') != null
+    				            && Cure.PlayerSvg.attr('height') != null) {
+    					        width = Cure.PlayerSvg.attr('width') * (8 / 9),
+    					            height = Cure.PlayerSvg.attr('height');
+    				        }
+    				        t[0] = Math.min(width / 2 * (s), Math.max(width / 2 * (-1 * s),
+    				            t[0]));
+    				        t[1] = Math.min(height / 2 * (s), Math.max(height / 2
+    				            * (-1 * s), t[1]));
+    				        zoom.translate(t);
+    				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")");
+    				        var splitTranslate = String(t).match(/-?[0-9\.]+/g);
+    				        $("#PlayerTreeRegionTree").css(
+    				            {
+    					            "transform" : "translate(" + splitTranslate[0] + "px,"
+    					                + splitTranslate[1] + "px)"
+    				            });
+    			        }
+      					}
+  			        
+  		        }
 
-		        var zoom = d3.behavior.zoom().scaleExtent([ -10, 10 ]).on("zoom",
-		            zoomed);
-
+  		        var zoom = d3.behavior.zoom().scaleExtent([ 1, 1 ]).on("zoom",
+  		            zoomed);
+		        
 		        $(options.regions.PlayerTreeRegion + "Tree").css({
 			        "width" : Cure.width
 		        });
+		        
 		        Cure.PlayerSvg = d3
 		            .select(options.regions.PlayerTreeRegion + "SVG").attr("width",
 		                Cure.width).attr("height", Cure.height).call(zoom).append(

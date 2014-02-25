@@ -113,7 +113,7 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		Cure.utils.hideLoading();
 		if(Cure.PlayerNodeCollection.models.length==5){
-			Cure.treeTour.start();
+			//Cure.treeTour.start();
 		}
 		Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 		Cure.Score.set(scoreArray);
