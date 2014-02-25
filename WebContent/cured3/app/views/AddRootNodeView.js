@@ -239,7 +239,8 @@ AddRootNodeView = Marionette.ItemView.extend({
 					Cure.PlayerNodeCollection.sync();
 				}
 			}
-		});		
+		});
+		//Cure.initTour.start();
 	}
 });
 
