@@ -9,7 +9,7 @@ define([
     ], function($, Marionette, Comment, CommentTemplate) {
 CommentView = Backbone.Marionette.ItemView.extend({
 	tagName: 'div',
-	mode: 'Comment',
+	model: 'Comment',
 	className: 'commentBox',
 	ui: {
 		commentContent: ".commentContent"

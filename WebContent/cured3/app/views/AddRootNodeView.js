@@ -20,8 +20,8 @@ AddRootNodeView = Marionette.ItemView.extend({
 		'cfWrapper': '#mygenecf_wrapper'
 	},
 	events:{
-		'click .showCf': 'showCf',
-		'click .hideCf': 'hideCf'
+		'click #showCf': 'showCf',
+		'click #hideCf': 'hideCf'
 	},
 	showCf: function(){
 		$("#mygeneinfo_wrapper").hide();
@@ -240,7 +240,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 				}
 			}
 		});
-		//Cure.initTour.start();
+
 	}
 });
 
