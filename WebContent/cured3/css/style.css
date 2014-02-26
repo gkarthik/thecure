@@ -148,6 +148,24 @@ input.edit{
 	box-shadow: 0px 0px 10px 8px #F69;
 }
 
+.posBranchName{
+	color: blue;
+}
+
+.negBranchName{
+	color: red;
+}
+
+.branchNode{
+	color: #000;
+	font-weight: bold;
+}
+
+.percentValues{
+	font-weight: bold;
+	font-size:15px;
+}
+
 .node .btn{
 	margin:0px;
 }
