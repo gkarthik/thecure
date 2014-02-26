@@ -66,6 +66,7 @@ public class Tree {
 	Map<String, TreeScore> dataset_score; // trees could be tried on multiple datasets
 	String comment;
 	int user_saved;
+	String player_name;
 
 	public class TreeScore{
 		float size;
@@ -120,6 +121,18 @@ public class Tree {
 			treeobj.put("created", tree.created.getTime());
 			treeobj.put("user_saved",tree.user_saved);
 			treeobj.put("player_id", tree.player_id);
+			
+			String player_name = "";
+			JdbcConnection conn = new JdbcConnection();
+			try{
+				ResultSet player = conn.executeQuery("select * from player where id="+tree.player_id);
+				while(player.next()){
+					player_name = player.getString("name");
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			treeobj.put("player_name", player_name);
 			JsonNode jtree;
 			try {
 				jtree = mapper.readTree(tree.json_tree);

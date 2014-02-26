@@ -32,8 +32,24 @@ ScoreBoard = Backbone.Collection.extend({
 	},
 	parseResponse : function(data) {
 		//If empty tree is returned, no tree rendered.
+		var trees = data.trees;
+		trees.unshift({
+			comment: "Comment",
+			created: "Created",
+			id: "id",
+			ip: "ip",
+			player_name: "Player",
+			json_tree :{
+				novelty : "Novelty",
+				pct_correct : "Accuracy",
+				size : "Size",
+				score : "Score",
+				text_tree : '',
+				treestruct : {}
+			}
+		});
 		if(data.n_trees > 0) {
-			this.add(data.trees);
+			this.add(trees);
 		}
 		Cure.ScoreBoardRequestSent = false;
 	},

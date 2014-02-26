@@ -7,6 +7,12 @@ define([
     ], function($, Marionette, ScoreEntryTemplate) {
 ScoreEntryView = Marionette.ItemView.extend({
 	tagName: 'tr',
+	className: function(){
+		if(this.model.get('json_tree').pct_correct!="Accuracy"){
+			return "tree-score-entry";
+		}
+		return "";
+	},
 	ui : {
 
 	},
@@ -16,10 +22,12 @@ ScoreEntryView = Marionette.ItemView.extend({
 		this.$el.click(this.loadNewTree);
 	},
 	loadNewTree: function(){
-		Cure.utils.showLoading();
-		var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
-		Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
-		Cure.utils.hideLoading();
+		if(this.$el.hasClass("tree-score-entry")){
+			Cure.utils.showLoading();
+			var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
+			Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
+			Cure.utils.hideLoading();
+		}
 	},
 	template: ScoreEntryTemplate
 });

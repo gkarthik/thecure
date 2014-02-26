@@ -8,6 +8,7 @@ ScoreEntry = Backbone.RelationalModel.extend({
 		created: 0,
 		id: 0,
 		ip: "",
+		player_name: "",
 		json_tree :{
 			novelty : 0,
 			pct_correct : 0,
@@ -22,15 +23,17 @@ ScoreEntry = Backbone.RelationalModel.extend({
 		this.updateScore();
 	},
 	updateScore: function(){
-		var scoreVar = this.get('json_tree');
-		if(scoreVar.size>=1) {
-			scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
-					500 * scoreVar.novelty + 
-					1000 * scoreVar.pct_correct);
-		} else {
-			scoreVar.score = 0;
+		if(this.get("json_tree").score != "Score"){
+			var scoreVar = this.get('json_tree');
+			if(scoreVar.size>=1) {
+				scoreVar.score = Math.round(750 * (1 / scoreVar.size) + 
+						500 * scoreVar.novelty + 
+						1000 * scoreVar.pct_correct);
+			} else {
+				scoreVar.score = 0;
+			}
+			this.set("json_tree", scoreVar);
 		}
-		this.set("json_tree", scoreVar);
 	}
 });
 

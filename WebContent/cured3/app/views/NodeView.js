@@ -80,7 +80,6 @@ NodeView = Marionette.ItemView.extend({
 	setaccLimit : function(children){
 		if(children.get('options').kind=="leaf_node") {
 			var accLimit = 0;
-			console.log(children);
 			if(children.get('name')==Cure.negNodeName) {
 				accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
 			} else if(children.get('name') == Cure.posNodeName) {

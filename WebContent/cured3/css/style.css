@@ -454,12 +454,12 @@ width: 310px;
 	border-radius: 5px;
 }
 
-#scoreboard_wrapper .table tr:hover{
+#scoreboard_wrapper .table .tree-score-entry:hover{
 	color: #F69;
 	cursor: pointer;
 }
 
-#scoreboard_wrapper .table tr:hover .text-info{
+#scoreboard_wrapper .table .tree-score-entry:hover .text-info{
 	color: #F69;
 }
 
