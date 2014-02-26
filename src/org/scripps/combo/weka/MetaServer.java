@@ -383,6 +383,7 @@ public class MetaServer extends HttpServlet {
 		String comment = "";
 		int player_id = 0;
 		int user_saved = 0;
+		player_id = data.get("player_id").asInt();
 		comment = data.get("comment").asText();
 		String ip = request_.getRemoteAddr();
 		List<Feature> features = new ArrayList<Feature>();

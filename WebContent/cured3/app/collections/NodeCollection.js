@@ -26,7 +26,8 @@ NodeCollection = Backbone.Collection.extend({
 			command : "scoretree",
 			dataset : "metabric_with_clinical",
 			treestruct : tree,
-			comment: Cure.Comment.get("content")
+			comment: Cure.Comment.get("content"),
+			player_id : cure_user_id
 		};
 		
 		//POST request to server.		

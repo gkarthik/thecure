@@ -343,9 +343,9 @@ CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, 
 	}).attr("fill",function(){
 		return "none";
 	}).attr("transform","translate(-2,2)").attr("stroke",function(){
-		if(nodeName == CureUtils.negNodeName){
+		if(nodeName == Cure.negNodeName){
 			return "rgba(255, 0, 0, 1)";
-		} else if(nodeName == CureUtils.posNodeName) {
+		} else if(nodeName == Cure.posNodeName) {
 			return "rgba(0, 0, 255, 1)";
 		}
 		return "#000";
@@ -358,7 +358,7 @@ CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, 
 					return "posCircle";
 				return "negCircle";
 			}).attr("height",(radius*2)-2).attr("width",(radius*2)-2).style("fill",function(){
-				if(nodeName==CureUtils.negNodeName){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
@@ -369,7 +369,7 @@ CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, 
 			}).attr("height",(radius*2)-2).attr("width",function(){
 				return ((radius*2)-2) * ((accLimit) % 1);
 			}).style("fill",function(){
-				if(nodeName==CureUtils.negNodeName){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color
@@ -380,7 +380,7 @@ CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, 
 			}).attr("height",(radius*2)-2).attr("width",function(){
 				return  ((radius*2)-2) * (1- (accLimit % 1));
 			}).style("fill",function(){
-				if(nodeName==CureUtils.negNodeName){
+				if(nodeName==Cure.negNodeName){
 					return "blue";//Opposite Color
 				}
 				return "red";//Opposite Color

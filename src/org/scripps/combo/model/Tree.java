@@ -283,7 +283,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
