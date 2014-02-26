@@ -7,8 +7,8 @@ define([
 ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	itemView : ScoreEntryView,
 	tagName: 'table',
+	className: 'table ScoreBoardInnerWrapper',
 	collection : ScoreBoard,
-	className : "ScoreBoardInnerWrapper table",
 	initialize : function() {
 		this.collection.bind('add', this.render);
 	}

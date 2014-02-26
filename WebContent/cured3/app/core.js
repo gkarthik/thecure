@@ -169,6 +169,7 @@ define(
 		        Cure.ScoreBoardRequestSent = false;
 		        $("#scoreboard_wrapper").scroll(
 		            function() {
+		            	console.log("hello");
 			            if ($("#scoreboard_wrapper").scrollTop() >= $(
 			                "#scoreboard_wrapper .ScoreBoardInnerWrapper").height()
 			                - $("#scoreboard_wrapper").height()) {
