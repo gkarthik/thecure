@@ -63,6 +63,7 @@ NodeView = Marionette.ItemView.extend({
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight');
 		this.model.bind('change:x', this.render);
 		this.model.bind('change:y', this.render);
+		this.model.bind('change:accLimit', this.render);
 		this.model.bind('change:highlight', this.highlight);
 		this.model.bind('add:children', this.setaccLimit);
 		this.model.bind('remove', this.remove);
@@ -79,6 +80,7 @@ NodeView = Marionette.ItemView.extend({
 	setaccLimit : function(children){
 		if(children.get('options').kind=="leaf_node") {
 			var accLimit = 0;
+			console.log(children);
 			if(children.get('name')==Cure.negNodeName) {
 				accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
 			} else if(children.get('name') == Cure.posNodeName) {

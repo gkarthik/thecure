@@ -10,7 +10,7 @@ int player_id = 0;
 int player_experience = 0;
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
-     response.sendRedirect("/cure/login.jsp"); 
+     //response.sendRedirect("/cure/login.jsp"); 
   } else {
     player_id = player.getId();
     player_experience = 0;
@@ -114,8 +114,6 @@ Player player = (Player) session.getAttribute("player");
 				<div class="panel panel-default">
 					<div class='panel-heading'>Tree Explanation <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Explanation <i class="glyphicon glyphicon-th-list"></i></button></div>
 					<div class='panel-body panel-static'>
-						<h2>Tree in Text</h2>
-						<hr>
 						<div id="tree-explanation-wrapper"></div>
 				</div>
 					</div>
