@@ -14,12 +14,13 @@ var AddRootNodeTour = new Tour({
 	    element: "#showCf",
 	    title: "#2 Switching  To Clinical Features",
 	    content: "Click on the icon to switch between choosing clinical features and gene names.",
+	    placement: "left",
 	    onNext: function(){
 	    	$("#showCf").trigger('click');
 	    }
 	  },
 	  {
-	  	element: "#hideCf",
+	  	element: "#cf_query",
 	    title: "#3 Selecting a Clinical Feature",
 	    content: "You can select Clinical Feature by clicking on the textbox and choosing from the list that appears. You can also search by typing into the textbox.",
 	    onNext: function(){
@@ -39,7 +40,7 @@ var AddRootNodeTour = new Tour({
 	   }
 	  }
 	  ],
-	  storage: false,
+	  storage: window.localStorage
 });
 
 return AddRootNodeTour;

@@ -93,8 +93,7 @@ define([
   placement: "left"
 }
   ],
-	  storage: false,
-	  debug : false,
+	  storage: window.localStorage
 });	
 	
 	return TreeTour;
