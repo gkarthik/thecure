@@ -70,7 +70,7 @@ Player player = (Player) session.getAttribute("player");
   		<strong id="alertMsg"></strong>
 	</div>
 		<div class="row">
-				<div id="HelpText">
+				<div id="HelpText" class="HelpButton">
 					<button type="button" id="closeHelp">×</button>
 					<h5>Help</h5>
 					<ul>
@@ -110,6 +110,16 @@ Player player = (Player) session.getAttribute("player");
   				</div>
   				</div>
 			</div>
+			<div id="explanation-panel">
+				<div class="panel panel-default">
+					<div class='panel-heading'>Tree Explanation <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Explanation <i class="glyphicon glyphicon-th-list"></i></button></div>
+					<div class='panel-body panel-static'>
+						<h2>Tree in Text</h2>
+						<hr>
+						<div id="tree-explanation-wrapper"></div>
+				</div>
+					</div>
+				</div>
 				<div id="scoreboard-panel">
 				<div class="panel panel-default">
 					<div class='panel-heading'>Score Board <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score Board <i class="glyphicon glyphicon-th-list"></i></button></div>

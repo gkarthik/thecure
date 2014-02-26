@@ -267,8 +267,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		"rgba(255,255,255,0.5)").attr("class", "hoverRect").attr("transform",function(d){
 			var transformString = "";
 			if (d.pct_correct == 0) {
-				transformString = "translate(10,10)";
-				console.log(transformString);	
+				transformString = "translate(10,10)";	
 			} else if (d.size == 0) {
 				transformString = "translate(10,0)";
 			} else if (d.novelty == 0) {
@@ -297,8 +296,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}).attr("class", "hoverText").attr("transform",function(d){
 			var transformString = "";
 			if (d.pct_correct == 0) {
-				transformString = "translate(10,10)";
-				console.log(transformString);	
+				transformString = "translate(10,10)";	
 			} else if (d.size == 0) {
 				transformString = "translate(10,0)";
 			} else if (d.novelty == 0) {

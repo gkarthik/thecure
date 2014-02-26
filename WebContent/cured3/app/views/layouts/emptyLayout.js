@@ -19,8 +19,13 @@ emptyLayout = Marionette.Layout.extend({
         	Cure.helpText = $("#HelpText").html();	
         	Cure.utils.ToggleHelp(true, Cure.helpText);
     	}
-    	var newAddRootNodeView = new AddRootNodeView(); 
-    	this.AddRootNode.show(newAddRootNodeView);
+    	this.AddRootNode.on("show", function(view){
+    		window.setTimeout(function(){
+    			Cure.initTour.start();
+    		},600);
+    	});
+    	this.AddRootNode.show(new AddRootNodeView());
+  		
     },
     onBeforeClose: function(){
     }

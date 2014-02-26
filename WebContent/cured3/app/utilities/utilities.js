@@ -235,12 +235,14 @@ CureUtils.showDetailsOfNode = function(content, top, left){
 
 CureUtils.ToggleHelp = function(check, helptext){
 	if(!check){
-    	$("#HelpText").css({"position":"relative","cursor": "auto","background": "#FFF","color": "#000","width":"50%","height":"300px","overflow":"auto"});
+		$("#HelpText").removeClass("HelpButton");
+		$("#HelpText").addClass("HelpWindow");
     	window.setTimeout(function(){
         	$("#HelpText").html(helptext);
 		},500);
 	} else {
-		$("#HelpText").css({"position":"absolute","overflow":"hidden","background": "#F69","color": "#FFF","cursor": "pointer","width":"45px","height":"30px"});
+		$("#HelpText").removeClass("HelpWindow");
+		$("#HelpText").addClass("HelpButton");
 		$("#HelpText").html("");
 		window.setTimeout(function(){
 			$("#HelpText").html("Help");
@@ -440,6 +442,20 @@ CureUtils.transformRegion = function(transformAttr,scaleLevel){
 	    {
 	      "transform" : transformString.treeregion
 	    });
+}
+
+CureUtils.highlightNodes = function(seednode, ListofIds){
+	var children = seednode.get('children');
+	if(jQuery.inArray( seednode.get('cid'), ListofIds )!= -1){
+		seednode.set('highlight',1);
+	} else {
+		seednode.set('highlight',0);
+	}
+	if (seednode.get('children').length > 0) {
+		for (var i=0;i < children.models.length;i++) {
+			CureUtils.highlightNodes(children.models[i], ListofIds);
+		}
+	}
 }
 
 return CureUtils;

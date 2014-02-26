@@ -33,15 +33,16 @@ NodeView = Marionette.ItemView.extend({
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			});
+		} else if(serialized_model.options.kind=="leaf_node"){
+			return LeafNodeTemplate({
+				name : serialized_model.name,
+				highlight : serialized_model.highlight,
+				options : serialized_model.options,
+				cid : serialized_model.cid,
+				posNodeName : Cure.posNodeName,
+				negNodeName : Cure.negNodeName
+			});
 		}
-		return LeafNodeTemplate({
-			name : serialized_model.name,
-			highlight : serialized_model.highlight,
-			options : serialized_model.options,
-			cid : serialized_model.cid,
-			posNodeName : Cure.posNodeName,
-			negNodeName : Cure.negNodeName
-		});
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
@@ -59,13 +60,21 @@ NodeView = Marionette.ItemView.extend({
 		} else {
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit');
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight');
 		this.model.bind('change:x', this.render);
 		this.model.bind('change:y', this.render);
+		this.model.bind('change:highlight', this.highlight);
 		this.model.bind('add:children', this.setaccLimit);
 		this.model.bind('remove', this.remove);
 		
 		this.model.set("cid",this.cid);
+	},
+	highlight: function(){
+		if(this.model.get('highlight')!=0){
+			this.$el.addClass("highlightNode");
+		} else {
+			this.$el.removeClass("highlightNode");
+		}
 	},
 	setaccLimit : function(children){
 		if(children.get('options').kind=="leaf_node") {
@@ -158,7 +167,6 @@ NodeView = Marionette.ItemView.extend({
 		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
 		this.$el.css(styleObject);
 		this.$el.addClass(this.model.get("options").kind);
-		console.log(this.$el.width());
 		this.model.set("viewCSS",{'width':this.$el.outerWidth()});
 	}, 
 	onRender: function(){

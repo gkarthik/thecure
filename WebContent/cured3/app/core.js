@@ -5,30 +5,31 @@ define(
     // Collection
     'app/collections/ClinicalFeatureCollection',
         'app/collections/NodeCollection', 'app/collections/ScoreBoard',
+        'app/collections/TreeBranchCollection',
         // Models
         'app/models/Comment', 'app/models/Score',
         // Views
         'app/views/CommentView', 'app/views/JSONCollectionView',
-        'app/views/NodeCollectionView', 'app/views/ScoreBoardView',
+        'app/views/NodeCollectionView','app/views/TreeBranchCollectionView', 'app/views/ScoreBoardView',
         'app/views/ScoreView',
         // Utilitites
         'app/utilities/utilities',
         //Tour
-        //'app/tour/tour',
-        //'app/tour/treeTour'
+        'app/tour/tour',
+        'app/tour/treeTour'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, Comment, Score, CommentView, JSONCollectionView,
-        NodeCollectionView, ScoreBoardView, ScoreView, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, Comment, Score, CommentView, JSONCollectionView,
+        NodeCollectionView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
 	    //Tours
-	    //Cure.initTour = InitTour;
-	    //Cure.treeTour = TreeTour;
+	    Cure.initTour = InitTour;
+	    Cure.treeTour = TreeTour;
 	    //Initialize Tours
-	    //Cure.initTour.init();
-	    //Cure.treeTour.init();
+	    Cure.initTour.init();
+	    Cure.treeTour.init();
 	    
 	    Cure
 	        .addInitializer(function(options) {
@@ -65,17 +66,21 @@ define(
 		        Cure.scaleLevel = 1;
 		        
 		        $(".zoomin").on("click",function(){
-		        	if(Cure.scaleLevel <= 3){
-			        	Cure.scaleLevel += 0.1;
+		        	if (Cure.PlayerNodeCollection.models.length > 0){
+		        		if(Cure.scaleLevel <= 1.5){
+				        	Cure.scaleLevel += 0.1;
+			        	}
+			        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
 		        	}
-		        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
 		        });
 		        
 		        $(".zoomout").on("click",function(){
-		        	if(Cure.scaleLevel >= -3){
-			        	Cure.scaleLevel -= 0.1;
-		        	}
-		        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        	if (Cure.PlayerNodeCollection.models.length > 0){
+		        		if(Cure.scaleLevel >= 0.5){
+				        	Cure.scaleLevel -= 0.1;
+			        	}
+			        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        	} 
 		        });
 		        
       				function zoomed() {
@@ -242,6 +247,7 @@ define(
 		        // Sync Score Board
 		        Cure.ScoreBoard.fetch();
 		        Cure.PlayerNodeCollection = new NodeCollection();
+		        Cure.TreeBranchCollection = new TreeBranchCollection();
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
 		        Cure.ScoreView = new ScoreView({
@@ -259,12 +265,15 @@ define(
 		        Cure.ScoreBoardView = new ScoreBoardView({
 			        collection : Cure.ScoreBoard
 		        });
-
+		        Cure.TreeBranchCollectionView = new TreeBranchCollectionView({
+		        	collection: Cure.TreeBranchCollection
+		        });
 		        Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 		        Cure.ScoreRegion.show(Cure.ScoreView);
 		        Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.CommentRegion.show(Cure.CommentView);
+		        Cure.TreeBranchRegion.show(Cure.TreeBranchCollectionView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 	        });
 	    

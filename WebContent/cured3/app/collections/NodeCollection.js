@@ -4,8 +4,6 @@ define([
    'backbone',
    //Models
 	'app/models/Node',
-	//Templates
-	'text!app/templates/NodeCollectionText.html'
     ], function($, Backbone, Node, TextTmpl) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
@@ -113,54 +111,18 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		Cure.utils.hideLoading();
 		if(Cure.PlayerNodeCollection.models.length==5){
-			//Cure.treeTour.start();
+			Cure.treeTour.start();
+		} else if(Cure.PlayerNodeCollection.models.length == 0){
+			Cure.scaleLevel = 1;
+			Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
 		}
 		Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 		Cure.Score.set(scoreArray);
-		
+		Cure.TreeBranchCollection.updateCollection();
 		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
 	},
 	error : function(data) {
 		console.log("Error Receiving Data From Server.");
-	},
-	getTreeinText : function(node){
-		if(node == undefined){
-			node = this.models[0];
-			this.text_branches = {
-					branches :[]
-			};
-		}
-		if(node.get('options').kind == "leaf_node" && node.get('children').length == 0){
-				var branch = {
-						splitnodes: [],
-						splitvalues: [],
-						leafnode: {}
-				};
-				branch.leafnode = node.toJSON();
-				var tempNode = node.get('parentNode');
-				while(tempNode != null){
-					if(tempNode.get('options').kind == "split_node"){
-						if(tempNode.get('options').id.indexOf("metabric") == -1){
-							branch.splitnodes.push({node: tempNode.toJSON(), type: "gene"});
-						} else if(tempNode.get('options').id.indexOf("metabric") != -1) {
-							branch.splitnodes.push({node: tempNode.toJSON(), type: "cf"});
-						} 
-					} else if(tempNode.get('options').kind == "split_value") {
-						branch.splitvalues.push(tempNode.toJSON());
-					}
-					tempNode = tempNode.get('parentNode');
-				}
-				this.text_branches.branches.push(branch);
-		}
-		if(node.get('children').length>0){
-			for(var temp in node.get('children').models){
-				this.getTreeinText(node.get('children').models[temp]);
-			}
-		}
-	},
-	renderText : function(){
-		var html = TextTmpl(this.text_branches);
-		$("body").append(html);
 	}
 });
 

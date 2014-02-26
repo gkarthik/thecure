@@ -347,6 +347,7 @@ public class Tree {
 				if(features!=null){
 					for(Feature f : features){
 						conn.executeUpdate("insert into tree_feature values("+newid+","+f.getId()+")");
+						//tree_feature(Unique_Key) duplicated if same node added. Causes MySQL integrity error.
 					}
 				}else{
 					throw new Exception("Creating tree failed, no features detected.");
