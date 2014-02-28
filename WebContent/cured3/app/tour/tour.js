@@ -5,6 +5,11 @@ define([
 var AddRootNodeTour = new Tour({
 	name: 'inittour',
 	  steps: [
+{
+  title: "<h4 style='color:red;'>Disclaimers</h4>",
+  content: "<b><ol><li>This resource is intended for purely research, educational and entertainment purposes. It should not be used for medical or professional advice.</li><li>Unless otherwise noted, all non-personally identifiable data entered into this site is stored in a database that will be publicly accessible.</ol></b>",
+  	orphan: true
+},
 	          {
 	    element: "#gene_query",
 	    title: "#1 Selecting A Gene",

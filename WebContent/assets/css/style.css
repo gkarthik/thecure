@@ -416,11 +416,22 @@ div#footer {
 }
 
 div#footer div.column {
-  padding: 40px 40px 60px 40px;
+  padding: 40px 60px 0px 40px;
   float: left;
 }
+
+div#footer div.row{
+	padding: 10px 60px 20px 60px;
+	color: #999;
+	font-weight: 300;
+  	font-size: 12px;
+}
+
+div#footer div.row h5{
+	text-align:center;
+}
 div#footer div.column.c1 { width: 480px; }
-div#footer div.column.c2 { width: 320px; text-align: right; }
+div#footer div.column.c2 { width: 280px; text-align: right; }
 
 div#footer div.column p {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 

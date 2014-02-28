@@ -329,6 +329,10 @@ div#footer {
   overflow: hidden;
 }
 
+div#footer div.row{
+	display: none;
+}
+
 div#footer div.column {
   padding: 40px 40px 60px 40px;
   float: left;
