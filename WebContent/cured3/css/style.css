@@ -4,12 +4,6 @@ html, body{
   height:100%;
 }
 
-#zoom-controls{
-	z-index: 10;
-	position:fixed;
-	margin-top:5px;
-}
-
 .CureContainer {
   padding-top:40px;
 }
@@ -461,6 +455,26 @@ width: 310px;
 
 #scoreboard_wrapper .table .tree-score-entry:hover .text-info{
 	color: #F69;
+}
+
+#zoom-controls{
+	z-index: 10;
+	position:fixed;
+	margin-top:5px;
+}
+
+.branch-nodes-list{
+	font-weight: bold;
+	color: #000;
+	text-transform: capitalize;	
+}
+
+.negBranchItem{
+	color: red;
+}
+
+.posBranchItem{
+	color: blue;
 }
 
 #summary_header{

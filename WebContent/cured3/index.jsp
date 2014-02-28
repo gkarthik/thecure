@@ -34,9 +34,10 @@ Player player = (Player) session.getAttribute("player");
 <div id="loading-wrapper">
 	<div class="panel panel-default">
 	<div class="panel-heading">
-	<center>Drawing Tree ...</center>
+	<center>LOADING</center>
 	</div>
 	<div class="panel-content">
+	<center>Drawing Nodes <span id="loadingCount"></span></center>
 	<div class="progress progress-striped active">
 	  <div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
 	</div>
@@ -114,6 +115,8 @@ Player player = (Player) session.getAttribute("player");
 				<div class="panel panel-default">
 					<div class='panel-heading'>Tree Explanation <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Explanation <i class="glyphicon glyphicon-th-list"></i></button></div>
 					<div class='panel-body panel-static'>
+						<h2>Tree in Text</h2>
+						<hr>
 						<div id="tree-explanation-wrapper"></div>
 				</div>
 					</div>
@@ -124,9 +127,7 @@ Player player = (Player) session.getAttribute("player");
 					<div class='panel-body panel-static'>
 					<h2 class="renderPink">Score Board</h2>
 						<div id="scoreboard_outerWrapper">
-					<div id="scoreboard_wrapper">				
-						
-					</div>
+					<div id='scoreboard_wrapper'></div>
 				</div>
 					</div>
 				</div>
