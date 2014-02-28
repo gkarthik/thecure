@@ -263,11 +263,15 @@ CureUtils.isJSON = function(str) {
     return true;
 }
 
-CureUtils.showLoading = function(){
+CureUtils.showLoading = function(countString){
+	if(countString!=null){
+		$("#loadingCount").html(countString);
+	}
 	$("#loading-wrapper").show();
 }
 
 CureUtils.hideLoading = function(){
+	$("#loadingCount").html("");
 	$("#loading-wrapper").hide();
 }
 
