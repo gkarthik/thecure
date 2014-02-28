@@ -14,4 +14,11 @@
     <p>10550 North Torrey Pines Road</p>
     <p>La Jolla, CA 92037</p>
   </div>
+  <div class="pull-left row">
+  <h5>Disclaimers</h5>
+  <ol>
+  <li>This resource is intended for purely research, educational and entertainment purposes. It should not be used for medical or professional advice.</li>
+  <li>Unless otherwise noted, all non-personally identifiable data entered into this site is stored in a database that will be publicly accessible.</li>
+  </ol>
+</div>
 </div>

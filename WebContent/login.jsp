@@ -91,6 +91,13 @@
                   <option value="no">No</option>
                   <option value="yes">Yes</option>
                 </select> <input type="hidden" name="newuser" value="1" /> <br />
+                <div class="well" style="text-align:left;">
+                	<h5><center>Disclaimers</center></h5>
+  					<ol>
+  						<li>This resource is intended for purely research, educational and entertainment purposes. It should not be used for medical or professional advice.</li>
+  						<li>Unless otherwise noted, all non-personally identifiable data entered into this site is stored in a database that will be publicly accessible.</li>
+  					</ol>
+              	</div>
                 <input type="submit" value="Submit" id="loginSubmit" />
               </form>
               <div id="message">
