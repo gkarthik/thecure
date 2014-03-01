@@ -19,6 +19,7 @@ define([
 			"generif" : {},
 			"name" : ""
 		},
+		accLimit: 0,
 		showJSON : 0,
 		x: 0,
 		y: 0,

@@ -52,9 +52,6 @@ NodeView = Marionette.ItemView.extend({
 		'click .chart': 'showNodeDetails'
 	},
 	initialize : function() {
-		if(this.model.get('options').kind != "split_value") {
-				this.model.set('accLimit',0);																																																																																																																																																																												
-		}
 		if(Cure.PlayerNodeCollection.models.length > 0) {
 			Cure.binScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).range([ 0, 100 ]);
 		} else {
@@ -78,12 +75,14 @@ NodeView = Marionette.ItemView.extend({
 		}
 	},
 	setaccLimit : function(children){
-		if(children.get('options').kind=="leaf_node") {
+		if(children.get('options').kind!="split_value") {
 			var accLimit = 0;
 			if(children.get('name')==Cure.negNodeName) {
 				accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
 			} else if(children.get('name') == Cure.posNodeName) {
 				accLimit += Cure.binScale(children.get('options').bin_size)*(children.get('options').pct_correct);
+			} else if(children.get('options').kind=="split_node"){
+				accLimit += children.get('accLimit');
 			}
 			accLimit += this.model.get('parentNode').get('accLimit');
 			this.model.get('parentNode').set('accLimit',accLimit);
