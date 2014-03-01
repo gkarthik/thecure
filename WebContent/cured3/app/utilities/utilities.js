@@ -46,6 +46,7 @@ CureUtils.updatepositions = function(NodeCollection) {
 	d3nodes = Cure.cluster.nodes(Collection);
 	Cure.cluster.nodes(Collection);
 	var depthDiff = 180;
+	var maxDepth = 0;
 	d3nodes.forEach(function(d) {
 			d.y = 0;
 			for(i=1;i<=d.depth;i++){
@@ -55,8 +56,12 @@ CureUtils.updatepositions = function(NodeCollection) {
 					depthDiff = 100;
 				}
 				d.y += depthDiff;
+				if (d.y > maxDepth) {
+					maxDepth = d.y;
+				}
 			}
 	});
+	d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
 		d.y0 = d.y;
@@ -115,7 +120,6 @@ CureUtils.render_network = function(dataset) {
 	if (dataset) {
 		SVG = Cure.PlayerSvg;
 		var nodes = Cure.cluster.nodes(dataset), links = Cure.cluster.links(nodes);
-		var maxDepth = 0;
 		var depthDiff = 180;
 		nodes.forEach(function(d) {
 			d.y = 0;
@@ -127,14 +131,10 @@ CureUtils.render_network = function(dataset) {
 				}
 				d.y += depthDiff;
 			}
-			if (d.y > maxDepth) {
-				maxDepth = d.y;
-			}
 			if (!d.options) {
 				d.options = [];
 			}
 		});
-		d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth + 300);
 		
 		//Drawing Edges
 		var node = Cure.PlayerNodeCollection.models[0];
@@ -460,6 +460,19 @@ CureUtils.highlightNodes = function(seednode, ListofIds){
 			CureUtils.highlightNodes(children.models[i], ListofIds);
 		}
 	}
+}
+
+CureUtils.getNumNodesinJSON = function(node){
+	var num = 0;
+	if(node!=null){
+		num++;
+		if(node.children){
+			for(var temp in node.children){
+				num+=CureUtils.getNumNodesinJSON(node.children[temp]);
+			}
+		}
+	}
+	return num;
 }
 
 return CureUtils;

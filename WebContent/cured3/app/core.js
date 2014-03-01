@@ -167,16 +167,16 @@ define(
 		          });
 
 		        Cure.ScoreBoardRequestSent = false;
-		        $("#scoreboard_wrapper").scroll(
+		        $("#scoreboard_outerWrapper").scroll(
 		            function() {
-		            	console.log("hello");
-			            if ($("#scoreboard_wrapper").scrollTop() >= $(
-			                "#scoreboard_wrapper .ScoreBoardInnerWrapper").height()
-			                - $("#scoreboard_wrapper").height()) {
-				            if (!Cure.ScoreBoardRequestSent) {
-					            Cure.ScoreBoard.fetch();
-					            Cure.ScoreBoardRequestSent = true;
-				            }
+			            if ($("#scoreboard_outerWrapper").scrollTop()+$("#scoreboard_outerWrapper").height() >= $("#scoreboard_wrapper").height()) {
+			            	var t = window.setTimeout(function(){
+					            if (!Cure.ScoreBoardRequestSent) {
+						            window.clearTimeout(t);
+						            Cure.ScoreBoard.fetch();
+						            Cure.ScoreBoardRequestSent = true;
+					            }
+			            	}, 500);
 			            }
 		            });
 

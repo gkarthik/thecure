@@ -448,6 +448,10 @@ width: 310px;
 	border-radius: 5px;
 }
 
+#scoreboard_wrapper{
+	font-size: 10px;
+}
+
 #scoreboard_wrapper .table .tree-score-entry:hover{
 	color: #F69;
 	cursor: pointer;
