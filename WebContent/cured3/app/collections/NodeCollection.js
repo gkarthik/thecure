@@ -90,7 +90,7 @@ NodeCollection = Backbone.Collection.extend({
 					for ( var temp in json_node.children) {
 						thisCollection.updateCollection(json_node.children[temp], null, newNode);
 					}
-					Cure.utils.showLoading(Cure.PlayerNodeCollection.getSize()+" of "+Cure.PlayerNodeCollection.responseSize);
+					Cure.utils.showLoading(Cure.PlayerNodeCollection.length+" of "+Cure.PlayerNodeCollection.responseSize);
 			}	
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}, 10);
@@ -103,16 +103,17 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	responseSize : 0,
 	parseResponse : function(data) {
+		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
-			Cure.PlayerNodeCollection.responseSize = data.size;
+			Cure.PlayerNodeCollection.responseSize = jsonsize;
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
 		} else {
 		//If server returns json with tree render and update positions of nodes.
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}
 		var renderT = window.setInterval(function(){
-			if(Cure.PlayerNodeCollection.getSize() == parseInt(data.size) || parseInt(data.size)==1){
+			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
 				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 				Cure.utils.hideLoading();
 				//Storing Score in a Score Model.
