@@ -12,6 +12,7 @@ NodeCollection = Backbone.Collection.extend({
 	text_branches:{
 		branches: [],
 	},
+	tree_id: 0,
 	url : "/cure/MetaServer",
 	sync : function() {
 		//Function to send request to Server with current tree information.
@@ -95,14 +96,9 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}, 10);
 	},
-	getSize: function(){
-		var filtered = this.filter(function(model){
-			return (model.get('options').kind == "split_node" || model.get('options').kind == "leaf_node");
-		});
-		return filtered.length;
-	},
 	responseSize : 0,
 	parseResponse : function(data) {
+		Cure.PlayerNodeCollection.tree_id = data.tree_id;
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
@@ -135,6 +131,38 @@ NodeCollection = Backbone.Collection.extend({
 			}
 		},10);
 		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
+	},
+	saveTree: function(){
+		var tree;
+    if (Cure.PlayerNodeCollection.models[0]) {
+      tree = Cure.PlayerNodeCollection.models[0].toJSON();
+      var args = {
+        command : "savetree",
+        dataset : "metabric_with_clinical",
+        treestruct : tree,
+        player_id : cure_user_id,
+        comment : Cure.Comment.get("content")
+      };
+      $.ajax({
+            type : 'POST',
+            url : '/cure/MetaServer',
+            data : JSON.stringify(args),
+            dataType : 'json',
+            contentType : "application/json; charset=utf-8",
+            success : function(){
+            	Cure.utils.showAlert("saved")
+            	Cure.ScoreBoard.refresh();
+            },
+            error : function(){
+            	Cure.utils.showAlert("saved")
+            	Cure.ScoreBoard.refresh();
+            }
+          });
+    } else {
+      tree = [];
+      Cure.utils
+          .showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
+    }
 	},
 	error : function(data) {
 		console.log("Error Receiving Data From Server.");

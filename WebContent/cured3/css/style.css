@@ -461,6 +461,12 @@ width: 310px;
 	color: #F69;
 }
 
+#scoreboard_wrapper .current_tree{
+	background: #F69;
+	color: #FFF;
+	font-weight: bold;
+}
+
 #zoom-controls{
 	z-index: 10;
 	position:fixed;
