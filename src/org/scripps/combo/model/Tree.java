@@ -298,6 +298,7 @@ public class Tree {
 	public List<Tree> getWithLimit(String lowerLimit, String upperLimit, String orderby){
 		List<Tree> trees = new ArrayList<Tree>();
 		JdbcConnection conn = new JdbcConnection();
+		conn.executeQuery("SET @i = 0;");
 		String q = "";
 		conn.executeQuery("set @i = "+lowerLimit);
 		if(orderby.equals("score")){
@@ -356,11 +357,11 @@ public class Tree {
 	}
 	
 	
-	public int insert() throws Exception{
+	public int insert(int previous_tree_id) throws Exception{
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null;
-		String insert = "insert into tree (player_id, ip, json_tree, comment, user_saved) values(?,?,?,?,?)";
+		String insert = "insert into tree (player_id, ip, json_tree, comment, user_saved, prev_tree_id) values(?,?,?,?,?,?)";
 
 		PreparedStatement p = null;
 		try {
@@ -370,6 +371,7 @@ public class Tree {
 			p.setString(3, json_tree);
 			p.setString(4, comment);
 			p.setInt(5, user_saved);
+			p.setInt(6, previous_tree_id);
 			int affectedRows = p.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Creating tree failed, no rows affected.");

@@ -13,6 +13,7 @@ NodeCollection = Backbone.Collection.extend({
 		branches: [],
 	},
 	tree_id: 0,
+	prevTreeId : -1,
 	url : "/cure/MetaServer",
 	sync : function() {
 		//Function to send request to Server with current tree information.
@@ -99,6 +100,7 @@ NodeCollection = Backbone.Collection.extend({
 	responseSize : 0,
 	parseResponse : function(data) {
 		Cure.PlayerNodeCollection.tree_id = data.tree_id;
+		console.log(data.tree_id);
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
@@ -141,7 +143,8 @@ NodeCollection = Backbone.Collection.extend({
         dataset : "metabric_with_clinical",
         treestruct : tree,
         player_id : cure_user_id,
-        comment : Cure.Comment.get("content")
+        comment : Cure.Comment.get("content"),
+        previous_tree_id: Cure.PlayerNodeCollection.prevTreeId
       };
       $.ajax({
             type : 'POST',
@@ -149,9 +152,10 @@ NodeCollection = Backbone.Collection.extend({
             data : JSON.stringify(args),
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
-            success : function(){
-            	Cure.utils.showAlert("saved")
+            success : function(data){
+            	Cure.utils.showAlert("saved");
             	Cure.ScoreBoard.refresh();
+            	Cure.PlayerNodeCollection.tree_id = data.tree_id;
             },
             error : function(){
             	Cure.utils.showAlert("saved")
