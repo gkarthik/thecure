@@ -167,7 +167,7 @@ NodeView = Marionette.ItemView.extend({
 		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
 		this.$el.css(styleObject);
 		this.$el.addClass(this.model.get("options").kind);
-		this.model.set("viewCSS",{'width':this.$el.outerWidth()});
+		this.model.set("viewCSS",{'width':width});
 	}, 
 	onRender: function(){
 		var id = this.$el.find(".chart").attr('id');
@@ -181,7 +181,7 @@ NodeView = Marionette.ItemView.extend({
 			id = "#"+id;
 			var radius = 4;
 			var width = this.model.get('viewCSS').width-20;
-			radius = (width - 4)/20;
+			radius = parseFloat((width - 4)/20);
 			var limit = Cure.binScale(this.model.get('options').bin_size);
 			Cure.utils.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];

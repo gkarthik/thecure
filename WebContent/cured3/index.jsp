@@ -8,12 +8,14 @@
 <%
 int player_id = 0;
 int player_experience = 0;
+String player_name = "";
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
     	response.sendRedirect("/cure/login.jsp"); 
   } else {
     player_id = player.getId();
     player_experience = 0;
+    player_name = player.getName();
   }
 %>
 <!DOCTYPE html>
@@ -92,6 +94,8 @@ Player player = (Player) session.getAttribute("player");
 				</div>
 				<div id="PlayerTreeRegion"></div>
 				<div id="cure-panel">
+				<div id="CollaboratorsRegion">
+				</div>
 				<div id="score-panel">
 				<div class="panel panel-default">
 					<div class='panel-heading'>Score <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score <i class="glyphicon glyphicon-th-list"></i></button></div>
@@ -141,7 +145,8 @@ Player player = (Player) session.getAttribute("player");
 	<jsp:include page="/footer.jsp" />
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
-        cure_user_id = "<%=player_id%>";
+        cure_user_id = "<%=player_id%>",
+        cure_user_name = "<%= player_name %>";
   </script>
 	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
 </body>

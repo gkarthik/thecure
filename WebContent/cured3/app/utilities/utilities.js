@@ -174,7 +174,7 @@ CureUtils.render_network = function(dataset) {
 		var source = {};
 		var target = {};
 		var nodeOffsets = CureUtils.setOffsets();
-		
+
 		link.enter().append("path").attr("class", "link").style("stroke-width", "1").style("stroke",function(d){
 			if(d.name==Cure.negNodeName){
 				return "red";

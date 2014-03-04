@@ -2,9 +2,10 @@ define([
   //Libraries
 	'jquery',
 	'marionette',
+	'backbone',
 	//Templates
 	'text!app/templates/ScoreEntry.html'
-    ], function($, Marionette, ScoreEntryTemplate) {
+    ], function($, Marionette, Backbone, ScoreEntryTemplate) {
 ScoreEntryView = Marionette.ItemView.extend({
 	tagName: 'tr',
 	className: function(){
@@ -25,6 +26,8 @@ ScoreEntryView = Marionette.ItemView.extend({
 		if(this.$el.hasClass("tree-score-entry")){
 			Cure.utils.showLoading();
 			var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
+			Backbone.Relational.store.reset()
+			Cure.CollaboratorCollection.reset();
 			Cure.PlayerNodeCollection.reset();
 			Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
 			Cure.utils.hideLoading();

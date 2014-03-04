@@ -283,7 +283,7 @@ public class Tree {
 	public int get_rank(int tree_id){
 		JdbcConnection conn = new JdbcConnection();
 		conn.executeQuery("SET @i = 0;");
-		String q = "select rank from (select @i:=@i+1 as rank,tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 order by tree_dataset_score.score desc) as T where id="+tree_id;
+		String q = "select rank from (select @i:=@i+1 as rank,tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 order by tree_dataset_score.score desc) as T where id="+tree_id;
 		ResultSet ranks = conn.executeQuery(q);
 		try{
 			while(ranks.next()){
@@ -301,7 +301,7 @@ public class Tree {
 		String q = "";
 		conn.executeQuery("set @i = "+lowerLimit);
 		if(orderby.equals("score")){
-			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 order by tree_dataset_score.score desc limit "+lowerLimit+","+upperLimit;
+			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 order by tree_dataset_score.score desc limit "+lowerLimit+","+upperLimit;
 		} 
 		try {
 			ResultSet ts = conn.executeQuery(q);

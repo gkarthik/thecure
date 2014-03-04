@@ -79,7 +79,8 @@ require([ "app/core" ], function() {
 	    "CommentRegion" : "#CommentRegion",
 	    "ScoreBoardRegion" : "#scoreboard_wrapper",
 	    "JSONSummaryRegion" : "#jsonSummary",
-	    "TreeBranchRegion": "#tree-explanation-wrapper"
+	    "TreeBranchRegion": "#tree-explanation-wrapper",
+	    "CollaboratorsRegion": "#CollaboratorsRegion"
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n"

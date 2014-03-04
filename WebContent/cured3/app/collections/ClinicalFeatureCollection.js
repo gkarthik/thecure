@@ -22,7 +22,6 @@ ClinicalFeatureCollection = Backbone.Collection.extend({
 			contentType : "application/json; charset=utf-8",
 			success : this.parseResponse,
 			error : this.error,
-			async: true
 		});
 	},
 	parseResponse : function(data) {

@@ -5,13 +5,13 @@ define(
     // Collection
     'app/collections/ClinicalFeatureCollection',
         'app/collections/NodeCollection', 'app/collections/ScoreBoard',
-        'app/collections/TreeBranchCollection',
+        'app/collections/TreeBranchCollection', 'app/collections/CollaboratorCollection',
         // Models
         'app/models/Comment', 'app/models/Score',
         // Views
         'app/views/CommentView', 'app/views/JSONCollectionView',
         'app/views/NodeCollectionView','app/views/TreeBranchCollectionView', 'app/views/ScoreBoardView',
-        'app/views/ScoreView',
+        'app/views/ScoreView', 'app/views/CollaboratorCollectionView',
         // Utilitites
         'app/utilities/utilities',
         //Tour
@@ -19,8 +19,8 @@ define(
         'app/tour/treeTour'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, Comment, Score, CommentView, JSONCollectionView,
-        NodeCollectionView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, CommentView, JSONCollectionView,
+        NodeCollectionView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
@@ -224,6 +224,7 @@ define(
 		        Cure.ScoreBoard.fetch();
 		        Cure.PlayerNodeCollection = new NodeCollection();
 		        Cure.TreeBranchCollection = new TreeBranchCollection();
+		        Cure.CollaboratorCollection = new CollaboratorCollection();
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
 		        Cure.ScoreView = new ScoreView({
@@ -244,13 +245,18 @@ define(
 		        Cure.TreeBranchCollectionView = new TreeBranchCollectionView({
 		        	collection: Cure.TreeBranchCollection
 		        });
+		        Cure.CollaboratorCollectionView = new CollaborativeCollectionView({
+		        	collection: Cure.CollaboratorCollection
+		        });
 		        Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
+		        Cure.CollaboratorsRegion.show(Cure.CollaboratorCollectionView);
 		        Cure.ScoreRegion.show(Cure.ScoreView);
 		        Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.CommentRegion.show(Cure.CommentView);
 		        Cure.TreeBranchRegion.show(Cure.TreeBranchCollectionView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
+		        Cure.collaborators = [];
 	        });
 	    
 	    return Cure;
