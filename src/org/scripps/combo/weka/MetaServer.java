@@ -345,7 +345,7 @@ public class MetaServer extends HttpServlet {
 	 */
 	private void scoreSaveManualTree(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 		String command = data.get("command").asText(); //scoretree or savetree
-		
+		int prev_tree_id = -1;
 		String dataset = data.get("dataset").asText();
 		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
 		
@@ -392,9 +392,10 @@ public class MetaServer extends HttpServlet {
 		}
 		if(command.equals("savetree")){
 			user_saved = 1;
+			prev_tree_id = data.get("previous_tree_id").asInt();
 		}
 		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
-		int tid = tree.insert();
+		int tid = tree.insert(prev_tree_id);
 		float score = 0; 
 		score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
