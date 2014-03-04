@@ -8,6 +8,7 @@ ScoreEntry = Backbone.RelationalModel.extend({
 		created: 0,
 		id: 0,
 		ip: "",
+		rank: 0,
 		player_name: "",
 		json_tree :{
 			novelty : 0,
@@ -19,6 +20,7 @@ ScoreEntry = Backbone.RelationalModel.extend({
 		}
 	},
 	initialize: function(){
+		_.bindAll(this, 'updateScore');
 		this.bind('change', this.updateScore);
 		this.updateScore();
 	},

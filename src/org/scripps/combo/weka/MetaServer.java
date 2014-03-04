@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -200,6 +201,8 @@ public class MetaServer extends HttpServlet {
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to get clinical features: "+json);
 							}						
+						}else if(command.equals("get_rank")){  
+							getRankofTree((int)postData.get("tree_id"), request, response);
 						}else if(command.startsWith("get_trees")){  //get_trees_all, get_trees_ip, get_trees_user_id
 							//TODO clean this up so we aren't parsing the json twice.. 
 							JsonNode data = mapper.readTree(json);	
@@ -373,10 +376,6 @@ public class MetaServer extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		String result_json = mapper.writeValueAsString(result);
 
-	//	System.out.println(result_json);
-		out.write(result_json);
-		out.close();
-
 		//now store it in the database
 		//TODO only store trees where they have pressed "save"
 		//TODO actually capture the player id and comment
@@ -396,13 +395,19 @@ public class MetaServer extends HttpServlet {
 		}
 		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
 		int tid = tree.insert();
-		float score = 0; //Score Equation to be put in here, I think - @gkarthik
+		float score = 0; 
+		score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
 		
+		result.put("tree_id", tid);
+		result_json = mapper.writeValueAsString(result);
+		//	System.out.println(result_json);
+		out.write(result_json);
+		out.close();
 	}
 
 //	
-		
+	
 	private void getClinicalFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 		//String command = data.get("command").asText(); //get_clinical_features 
 		String dataset = data.get("dataset").asText();
@@ -435,7 +440,8 @@ public class MetaServer extends HttpServlet {
 		} else if(command.equals("get_trees_with_range")) {
 			String lowerLimit = data.get("lowerLimit").asText();
 			String upperLimit = data.get("upperLimit").asText();
-			trees = tree_.getWithLimit(lowerLimit,upperLimit);
+			String orderby = data.get("orderby").asText();
+			trees = tree_.getWithLimit(lowerLimit,upperLimit, orderby);
 		}
 		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
 		String json_trees = mapper.writeValueAsString(treelist);
@@ -446,6 +452,15 @@ public class MetaServer extends HttpServlet {
 		
 	}
 	
+	private void getRankofTree(int tree_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		Tree _tree = new Tree();
+		int rank = _tree.get_rank(tree_id);
+		String rank_json = "{\"rank\":"+rank+"}";
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(rank_json);
+		out.close();
+	}
 
 	private void saveHand(LinkedHashMap data, HttpServletRequest request, HttpServletResponse response) {
 		Game game = new Game();

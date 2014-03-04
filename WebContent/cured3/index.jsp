@@ -10,7 +10,7 @@ int player_id = 0;
 int player_experience = 0;
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
-     response.sendRedirect("/cure/login.jsp"); 
+    	response.sendRedirect("/cure/login.jsp"); 
   } else {
     player_id = player.getId();
     player_experience = 0;
@@ -128,6 +128,9 @@ Player player = (Player) session.getAttribute("player");
 					<h2 class="renderPink">Score Board</h2>
 						<div id="scoreboard_outerWrapper">
 					<div id='scoreboard_wrapper'></div>
+				</div>
+				<div id="current-tree-rank">
+					
 				</div>
 					</div>
 				</div>

@@ -67,6 +67,7 @@ public class Tree {
 	String comment;
 	int user_saved;
 	String player_name;
+	int rank;
 
 	public class TreeScore{
 		float size;
@@ -93,7 +94,7 @@ public class Tree {
 		this.features = features;
 		this.json_tree = json_tree;
 		this.comment = comment;
-		this.user_saved = user_saved;
+		this.user_saved = user_saved; 
 	}
 
 	/**
@@ -121,18 +122,8 @@ public class Tree {
 			treeobj.put("created", tree.created.getTime());
 			treeobj.put("user_saved",tree.user_saved);
 			treeobj.put("player_id", tree.player_id);
-			
-			String player_name = "";
-			JdbcConnection conn = new JdbcConnection();
-			try{
-				ResultSet player = conn.executeQuery("select * from player where id="+tree.player_id);
-				while(player.next()){
-					player_name = player.getString("name");
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			treeobj.put("player_name", player_name);
+			treeobj.put("rank", tree.rank);
+			treeobj.put("player_name", tree.player_name);
 			JsonNode jtree;
 			try {
 				jtree = mapper.readTree(tree.json_tree);
@@ -289,15 +280,45 @@ public class Tree {
 		return tree;
 	}
 	
-	public List<Tree> getWithLimit(String lowerLimit, String upperLimit){
-		List<Tree> trees = new ArrayList<Tree>();
-		String q = "select * from tree where user_saved='1' order by id desc limit "+lowerLimit+","+upperLimit;
+	public int get_rank(int tree_id){
 		JdbcConnection conn = new JdbcConnection();
+		conn.executeQuery("SET @i = 0;");
+		String q = "select rank from (select @i:=@i+1 as rank,tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 order by tree_dataset_score.score desc) as T where id="+tree_id;
+		ResultSet ranks = conn.executeQuery(q);
+		try{
+			while(ranks.next()){
+				rank = ranks.getInt("rank");
+			}
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+		return rank;
+	}
+	
+	public List<Tree> getWithLimit(String lowerLimit, String upperLimit, String orderby){
+		List<Tree> trees = new ArrayList<Tree>();
+		JdbcConnection conn = new JdbcConnection();
+		String q = "";
+		conn.executeQuery("set @i = "+lowerLimit);
+		if(orderby.equals("score")){
+			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 order by tree_dataset_score.score desc limit "+lowerLimit+","+upperLimit;
+		} 
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
+				tree.rank = ts.getInt("rank");
+				String player_name = "";
+				try{
+					ResultSet player = conn.executeQuery("select * from player where id="+ts.getInt("player_id"));
+					while(player.next()){
+						player_name = player.getString("name");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				tree.player_name = player_name;
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
