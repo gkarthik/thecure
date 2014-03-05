@@ -26,8 +26,7 @@ NodeView = Marionette.ItemView.extend({
 				options : serialized_model.options,
 				cid : serialized_model.cid
 			});
-		} else if (serialized_model.children.length > 0
-				&& serialized_model.options.kind == "split_node") {
+		} else if (serialized_model.options.kind == "split_node") {
 			return splitNodeTemplate({
 				name : serialized_model.name,
 				highlight : serialized_model.highlight,
@@ -58,14 +57,23 @@ NodeView = Marionette.ItemView.extend({
 		} else {
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight');
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition');
 		this.model.bind('change:x', this.render);
 		this.model.bind('change:y', this.render);
 		this.model.bind('change:accLimit', this.render);
 		this.model.bind('change:highlight', this.highlight);
-		this.model.bind('add:children', this.setaccLimit);
+		this.model.bind('add:children', this.checkNodeAddition);
 		this.model.bind('remove', this.remove);
 		
+		if(parseFloat(this.model.get('accLimit'))!=0){
+			this.model.set('modifyAccLimit',0);
+		}
+		var accLimit = 0;
+		//Setting up accLimit for leaf_node
+		if(this.model.get('options').kind=="leaf_node" && this.model.get('modifyAccLimit')==1) {
+			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
+			this.model.set('accLimit',accLimit,{silent: true});
+		}
 		this.model.set("cid",this.cid);
 	},
 	highlight: function(){
@@ -75,20 +83,24 @@ NodeView = Marionette.ItemView.extend({
 			this.$el.removeClass("highlightNode");
 		}
 	},
-	setaccLimit : function(children){
-		if(children.get('options').kind!="split_value") {
-			var accLimit = 0;
-			if(children.get('name')==Cure.negNodeName) {
-				accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
-			} else if(children.get('name') == Cure.posNodeName) {
-				accLimit += Cure.binScale(children.get('options').bin_size)*(children.get('options').pct_correct);
-			} else if(children.get('options').kind=="split_node"){
-				accLimit += children.get('accLimit');
-			}
-			accLimit += this.model.get('parentNode').get('accLimit');
-			this.model.get('parentNode').set('accLimit',accLimit);
+	checkNodeAddition: function(children){
+		if(this.model.get('modifyAccLimit')){
+			this.setaccLimit(children);
 		}
-		this.render;
+	},
+	setaccLimit : function(children){
+		if(children.get('options').kind=="leaf_node") {
+			if(this.model.get('parentNode').get('modifyAccLimit')){
+				var accLimit = 0;
+				if(children.get('name')==Cure.negNodeName) {
+					accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
+				} else if(children.get('name') == Cure.posNodeName) {
+					accLimit += Cure.binScale(children.get('options').bin_size)*(children.get('options').pct_correct);
+				}
+				accLimit += this.model.get('parentNode').get('accLimit');
+				this.model.get('parentNode').set('accLimit',accLimit);
+			}
+		}
 	},
 	showNodeDetails: function(){
 		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').bin_size;
@@ -124,7 +136,7 @@ NodeView = Marionette.ItemView.extend({
 				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.	
 				height: 'auto',
 				'font-size': '0.5vw',
-				'min-width': '0px'
+				'min-width': '0'
 			});
 		} else {
 			if(this.$el.hasClass('shrink_'+this.model.get('options').kind)){
@@ -133,19 +145,19 @@ NodeView = Marionette.ItemView.extend({
 			if(this.model.get('options').kind=='leaf_node'||this.model.get('options').kind=='split_node'){
 				try{
 					this.$el.css({
-						'width': this.model.get('parentNode').get('parentNode').get('viewCSS').width+"px",
-						'min-width': '0px'
+						'width': parseFloat(this.model.get('parentNode').get('parentNode').get('viewCSS').width)+"px",
+						'min-width': '0'
 					});
 				} catch(e){
 						this.$el.css({
-							'min-width': "100px"
+							'width': "100px"
 						});
 					}
 				} else {
 					if(this.model.get('parentNode')!=null){
 						this.$el.css({
 							'width': parseFloat(this.model.get('parentNode').get('viewCSS').width)+"px",
-							'min-width': '0px'
+							'min-width': '0'
 						});
 					}
 				}
@@ -173,21 +185,15 @@ NodeView = Marionette.ItemView.extend({
 	onRender: function(){
 		this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
 			background: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
-		});
-		var id = this.$el.find(".chart").attr('id');
-		var accLimit = 0;
-		//Setting up accLimit for leaf_node
-		if(this.model.get('options').kind=="leaf_node") {
-			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
-			this.model.set('accLimit',accLimit);
-		}
-		if(id!=undefined){
-			id = "#"+id;
+		});		
+		if(this.model.get('options').kind=="leaf_node" || this.model.get('options').kind=="split_node"){
+			var id = "#chart"+this.model.get('cid');
 			var radius = 4;
 			var width = this.model.get('viewCSS').width-20;
 			radius = parseFloat((width - 4)/20);
 			var limit = Cure.binScale(this.model.get('options').bin_size);
-			Cure.utils.drawChart(d3.select(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
+			console.log(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
+			Cure.utils.drawChart(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
 			var classToChoose = [{"className":""},{"color":""}];
 			if(this.model.get('name') == Cure.negNodeName){
 				classToChoose["className"]= " .posCircle";
@@ -197,7 +203,7 @@ NodeView = Marionette.ItemView.extend({
 				classToChoose["color"]= "blue";
 			}
 			d3.selectAll(id+classToChoose["className"]).style("fill",classToChoose["color"]);
-		}		
+	}
 		/*
 		else if(this.$el.hasClass("shrink_leaf_node") && id!= undefined){
 			var bin_size = this.model.get('options').bin_size;
@@ -215,6 +221,9 @@ NodeView = Marionette.ItemView.extend({
 				return 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
 			});
 		}*/
+	},
+	onShow: function(){
+		this.render();//To draw chart for final element.
 	},
 	remove : function() {
 		//Remove and destroy current node.
