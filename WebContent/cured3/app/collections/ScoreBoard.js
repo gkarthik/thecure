@@ -81,7 +81,7 @@ ScoreBoard = Backbone.Collection.extend({
 	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
 	            },
 	            error : function(data){
-	            	//$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
+	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
 	            }
 	          });
 		} else {

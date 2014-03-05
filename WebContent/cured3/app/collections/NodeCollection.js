@@ -158,7 +158,7 @@ NodeCollection = Backbone.Collection.extend({
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
             },
             error : function(){
-            	Cure.utils.showAlert("saved")
+            	Cure.utils.showAlert("saved");
             	Cure.ScoreBoard.refresh();
             }
           });

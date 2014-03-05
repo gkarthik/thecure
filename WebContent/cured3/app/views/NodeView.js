@@ -15,7 +15,8 @@ NodeView = Marionette.ItemView.extend({
 		input : ".edit",
 		addgeneinfo : ".addgeneinfo",
 		name : ".name",
-		chart : ".chart"
+		chart : ".chart",
+		collaboratorIcon: ".collaborator-icon"
 	},
 	template : function(serialized_model) {
 		if (serialized_model.options.kind == "split_value") {
@@ -170,6 +171,9 @@ NodeView = Marionette.ItemView.extend({
 		this.model.set("viewCSS",{'width':width});
 	}, 
 	onRender: function(){
+		this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
+			background: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
+		});
 		var id = this.$el.find(".chart").attr('id');
 		var accLimit = 0;
 		//Setting up accLimit for leaf_node

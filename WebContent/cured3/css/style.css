@@ -58,6 +58,18 @@ html, body{
 	min-width:100px;
 }
 
+#CollaboratorsRegion{
+	position: absolute;
+	background: none repeat scroll 0% 0% rgb(255, 255, 255);
+	padding: 5px;
+	margin-left: -110px;
+	margin-top: 25px;
+}
+
+#CollaboratorsRegion .collaborator-icon{
+	margin: 2px;
+}
+
 .score-panel-extend .btn{
 	display:none;
 }
@@ -136,6 +148,15 @@ input.edit{
   	min-width: 100px;
   	max-width:100px;
   	max-height:300px;
+}
+.collaborator-icon{
+	height:20px;
+	width:20px;
+}
+
+.node .collaborator-icon{
+	position: absolute;
+	margin-top: -30px;
 }
 
 .highlightNode{
