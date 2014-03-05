@@ -190,6 +190,8 @@ input.edit{
 	display:block;
 	margin: 0 auto;	
 	cursor:pointer;
+	max-width: 100px;
+	max-height:100px;
 }
 
 .split_node{

@@ -92,6 +92,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
+						model.set('modifyAccLimit', 1, {silent:true});
 						if(Cure.utils.isJSON(ui.item.description)){
 							model.set("options", {
 								id : ui.item.unique_id,

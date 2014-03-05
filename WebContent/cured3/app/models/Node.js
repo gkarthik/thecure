@@ -12,6 +12,7 @@ define([
 		},
 		edit : 0,
 		highlight : 0,
+		modifyAccLimit: 1,
 		children : [],
 		gene_summary : {
 			"summaryText" : "",
