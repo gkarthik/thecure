@@ -31,6 +31,7 @@
 					class="brand" href="/cure/">The Cure</a>
 				<div class="nav-collapse">
 					<ul class="nav">
+					<li><a href="cured3/index.jsp">Advanced Cure</a></li>
 						<li><a href="contact.jsp">Contact</a>
 						</li>
 						<li><a href="boardroom.jsp">Boardroom</a>

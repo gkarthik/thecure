@@ -49,6 +49,7 @@ Player player = (Player) session.getAttribute("player");
                 <li><a href="round1.jsp">DREAM R1</a></li>
                 <li><a href="round2.jsp">DREAM R2</a></li>
                 <li><a href="round3.jsp">Griffith R3</a></li>
+                <li><a href="cured3/index.jsp">Advanced Cure</a></li>
                 <li><a href="contact.jsp">Contact</a></li>
                 <li><a href="logout.jsp">Logout</a></li>
                 <li><a href="help.jsp">Help</a></li>
@@ -59,7 +60,7 @@ Player player = (Player) session.getAttribute("player");
       </div>
 
       <div class="container boardroom">
-        <div class="hero-unit">
+        <div class="hero-unit" style="padding-top:80px">
           <div class="row">
       <!--    <h2>The Cure is paused for an update...</h2>
           <p>Please have a look at a protoype part of the new version that allows you to <a href="cured3/assets/">interactively construct decision trees</a> for predicting breast cancer prognosis based on gene expression.</p>
@@ -74,7 +75,7 @@ Player player = (Player) session.getAttribute("player");
             <div id="boards" class="span7"></div>
             <div id="back" class="span3">
               <div id="expert">
-              	<p>Well done, you have earned access to the <a href="cured3/assets/">Interactive Tree Builder</a>!</p>
+              	<p>Well done, you have earned access to the <a href="cured3/">Interactive Tree Builder</a>!</p>
               </div>
               <jsp:include page="scoreboard_table.jsp" />
             </div>
