@@ -61,6 +61,7 @@
         <a class="brand" href="./">The Cure : training</a>
         <div class="nav-collapse">
           <ul class="nav">
+          <li><a href="cured3/index.jsp">Advanced Cure</a></li>
             <li><a href="contact.jsp">Contact</a></li>
             <li><a href="logout.jsp">logout</a></li>
           </ul>

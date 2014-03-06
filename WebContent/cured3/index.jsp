@@ -62,7 +62,9 @@ Player player = (Player) session.getAttribute("player");
             </a>
              <ul class="nav navbar-nav">
                <li><a class="brand" href="/cure/">The Cure</a></li>
+               <li><a href="/cure/boardroom.jsp">Boardroom</a></li>
                 <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
+            	<li><a style="color:#FFF;" href="/cure/logout.jsp">logout</a></li>
              </ul>
           </div>
         </div>
@@ -76,17 +78,24 @@ Player player = (Player) session.getAttribute("player");
 				<div id="HelpText" class="HelpButton">
 					<button type="button" id="closeHelp">×</button>
 					<h5>Help</h5>
-					<ul>
-						<li>To decide split criteria, type and choose a gene in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
-						<li>To view information regarding the genes in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
-						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="glyphicon glyphicon-plus-sign"></i><span style="float: none;">Add</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
-						<li>To remove a particular gene from the tree, click on <i class="glyphicon glyphicon-remove"></i> and the node along with its children will be deleted.</li>
-						<li>To view the information of a gene in the tree, simply click on the gene name in the node.</li>
-						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
-						<li>To view a detailed chart regarding your score, click on <button class="btn btn-small btn-link"><i class="glyphicon glyphicon-remove"></i> Show Chart</button>. Hover over the chart for numerical data as well.</li>
-					</ul>
-					<h5>Terminology</h5>
 						<img src="img/helpimage.png" width="500" />
+					<h5>Controls and Directions</h5>
+					<ul>
+						<li>To choose a gene you can start typing the name in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
+						<li>You can also choose a clinical feature by clicking on <img src="./img/doctor.png">. Click on the text box that appears to view a drop down of the available clinical features.</li>
+						<li>To view information regarding the genes/clinical features in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
+						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="glyphicon glyphicon-plus-sign"></i><span style="float: none;">Add</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
+						<li>To remove a particular split node from the tree, click on <i class="glyphicon glyphicon-remove"></i> and the node along with its children will be deleted.</li>
+						<li>To view the information of a gene/clinical feature in the tree, simply click on the gene/clinical feature name in the node.</li>
+						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
+						<li><font color="blue">Y</font> represents a favorable outcome i.e., the cases are predicted to survive beyond ten years.</li>
+						<li><font color="red">N</font> represents an unfavorable outcome i.e., the cases are not predicted to survive beyond ten years.</li>
+						<li>On top of each node, you can see a colored square representing the user who added that node. A list of users and their place holders is displayed on the right to serve as a key.</li>
+						<li>Once you build a tree, be sure to save it by toggling the Save Options panel on the right and clicking on "Save".</li>
+						<li>You can also enter a comment by clicking on "Enter Comment" in the Save Options panel.</li>
+						<li>To view a textual description of the tree, click on Toggle Panel in Tree Explanation on the right.</li>
+						<li>You can toggle the score board panel on the right to see high scores among users. You can click on the high score to view the tree.</li>						
+					</ul>
 				</div>
 				<div id="zoom-controls">
 				<button class="zoomin"><i class="glyphicon glyphicon-zoom-in"></i></button>
