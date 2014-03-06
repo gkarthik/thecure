@@ -4,6 +4,7 @@ define([
 	'marionette',
 	//Models
 	'app/models/Node',
+	'app/models/Collaborator',
 	//Templates
 	'text!app/templates/GeneSummary.html',
 	'text!app/templates/ClinicalFeatureSummary.html',
@@ -11,7 +12,7 @@ define([
 	//Plugins
 	'myGeneAutocomplete',
 	'jqueryui'
-    ], function($, Marionette, Node, geneinfosummary, cfsummary, AddNodeTemplate) {
+    ], function($, Marionette, Node, Collaborator, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 	},
@@ -93,6 +94,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
 						model.set('modifyAccLimit', 1, {silent:true});
+						
 						if(Cure.utils.isJSON(ui.item.description)){
 							model.set("options", {
 								id : ui.item.unique_id,
@@ -214,10 +216,12 @@ AddRootNodeView = Marionette.ItemView.extend({
 						kind_value = model.get("options").kind;
 					} catch (exception) {
 					}
+
 					if (kind_value == "leaf_node") {
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.symbol);
 						model.set('accLimit', 0, {silent:true});
+						model.set('modifyAccLimit', 1, {silent:true});
 						model.set("options", {
 							id : ui.item.id,
 							"kind" : "split_node",
