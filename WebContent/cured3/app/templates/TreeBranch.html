@@ -9,12 +9,8 @@ are predicted to survive beyond ten years.
 <% } else if(leafnode.name == Cure.negNodeName) { %>
 are predicted to have a span less than 10 years.
 <% } %>
-</p>
-<p> 
 <span style="color:steelblue;font-weight:bold;font-size:15px;"><% print(Math.round(Cure.binScale(leafnode.options.bin_size)*100)/100) %>%</span> of all cases match these conditions.
-</p>
-<p>
 Among these cases, this rule is <span style="color:orange;font-weight:bold;font-size:15px;"><% print(Math.round(Cure.accuracyScale(leafnode.options.pct_correct)*100)) %>%</span> accurate.
 </p>
-<button class="btn btn-primary highlightBranch">Show in Tree</button>
+<button class="btn btn-primary btn-block highlightBranch">Show in Tree</button>
 </div>     

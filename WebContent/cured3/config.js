@@ -77,7 +77,7 @@ require([ "app/core" ], function() {
 	    "PlayerTreeRegion" : "#PlayerTreeRegion",
 	    "ScoreRegion" : "#ScoreRegion",
 	    "CommentRegion" : "#CommentRegion",
-	    "ScoreBoardRegion" : "#scoreboard_wrapper",
+	    "ScoreBoardRegion" : "#scoreboard_innerwrapper",
 	    "JSONSummaryRegion" : "#jsonSummary",
 	    "TreeBranchRegion": "#tree-explanation-wrapper",
 	    "CollaboratorsRegion": "#CollaboratorsRegion"

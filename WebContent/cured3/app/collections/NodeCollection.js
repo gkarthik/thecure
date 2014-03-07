@@ -131,11 +131,13 @@ NodeCollection = Backbone.Collection.extend({
 				window.clearInterval(renderT);
 			}
 		},20);
-		//Cure.Comment.set("content",data["comment"]); TODO: Include comment in json_tree on server side.
+		if(Cure.PlayerNodeCollection.length == 0){
+			Cure.Comment.set("content","");
+		}
 	},
 	saveTree: function(){
 		var tree;
-    if (Cure.PlayerNodeCollection.models[0]) {
+    if (Cure.PlayerNodeCollection.models[0] && Cure.Comment.get('content')!="") {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
         command : "savetree",
@@ -152,19 +154,22 @@ NodeCollection = Backbone.Collection.extend({
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
             success : function(data){
-            	Cure.utils.showAlert("saved");
+            	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
             	Cure.ScoreBoard.refresh();
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
             },
             error : function(){
-            	Cure.utils.showAlert("saved");
             	Cure.ScoreBoard.refresh();
             }
           });
-    } else {
+    } else if(Cure.PlayerNodeCollection.length == 0) {
       tree = [];
       Cure.utils
-          .showAlert("Empty Tree!<br>Please build a tree by using the auto complete box.");
+          .showAlert("<strong>Empty Tree!</strong><br>Please build a tree by using the auto complete box.", 0);
+    } else if(Cure.Comment.get('content') == "" && Cure.PlayerNodeCollection.length > 0) {
+      tree = [];
+      Cure.utils
+          .showAlert("<strong>Please enter a comment!</strong><br>Using comments will help increase collaboration between players. Thanks!", 0);
     }
 	},
 	error : function(data) {

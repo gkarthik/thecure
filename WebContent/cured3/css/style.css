@@ -22,7 +22,7 @@ html, body{
 }
 
 #cure-panel .panel-body{
-	display:none;
+	
 }
 
 #score-panel{
@@ -30,6 +30,10 @@ html, body{
   	-moz-transition: transform 0.5s ease-in-out;
   	-o-transition: transform 0.5s ease-in-out;
   	transition: transform 0.5s ease-in-out;
+}
+
+#CommentRegion{
+	
 }
 
 .score-panel-extend{
@@ -390,7 +394,6 @@ width: 310px;
 	border: 2px solid steelblue;
 	position: relative;
 	background: #FFF;
-	float:left;
 }
 
 #ScoreChangesWrapper table{
@@ -457,13 +460,22 @@ width: 310px;
 	float:right;
 }
 
+.panel-outer-wrapper{
+	max-height:500px;
+	display:none;
+}
+
+.nav-boards{
+	margin-top: 10px;
+}
+
 #tree-explanation-wrapper{
-	height:400px;
+	height:350px;
 	overflow: auto;	
 }
 
-#scoreboard_outerWrapper{
-	height:400px;
+#scoreboard_wrapper{
+	height:350px;
 	overflow:auto;
 	width:290px;
 	padding:10px;
@@ -471,23 +483,36 @@ width: 310px;
 	border-radius: 5px;
 }
 
-#scoreboard_wrapper{
+#scoreboard_innerwrapper{
 	font-size: 10px;
 }
 
-#scoreboard_wrapper .table .tree-score-entry:hover{
+#scoreboard_innerwrapper .table .tree-score-entry:hover{
 	color: #F69;
 	cursor: pointer;
 }
 
-#scoreboard_wrapper .table .tree-score-entry:hover .text-info{
+#scoreboard_innerwrapper .table .tree-score-entry:hover .text-info{
 	color: #F69;
 }
 
-#scoreboard_wrapper .current_tree{
+#scoreboard_innerwrapper .current_tree{
 	background: #F69;
 	color: #FFF;
 	font-weight: bold;
+}
+
+#current-tree-rank{
+background: #F69;
+color: #FFF;
+font-weight: bold;
+font-size: 12px;
+margin-top: 5px;
+border-radius: 5px;
+}
+
+#current-tree-rank td{
+	padding: 5px;
 }
 
 #zoom-controls{
@@ -575,7 +600,7 @@ text-align:left;
 
 #alertWrapper{
 	display: none;
-	position: absolute;
+	position: fixed;
 	width: 30%;
 	top: 54px;
 	z-index: 10;
