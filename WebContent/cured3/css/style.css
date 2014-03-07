@@ -43,8 +43,17 @@ html, body{
 	text-align: center;
 }
 #ScoreChangesWrapper{
-	font-size:18px;
-	font-weight:bold;
+	font-size: 18px;
+	font-weight: bold;
+	position: absolute;
+	max-width: 250px;
+	margin-left: -250px;
+	background: none repeat scroll 0% 0% #FFF;
+	margin-top: -150px;
+	border-radius: 5px;
+	border: 2px solid #4682B4;
+	padding: 5px;
+	display:none;
 }
 
 #ScoreChangesWrapper label{
@@ -440,14 +449,6 @@ width: 310px;
 	color: #FFF;
 	text-align: right;
 	padding: 2px;
-}
-
-.showSVG{
-	float:right;
-}
-
-.closeSVG{
-	float:right;
 }
 
 .panel-outer-wrapper{
