@@ -85,24 +85,39 @@ JSONItemView = Marionette.ItemView.extend({
 		}
 	},
 	ShowJSON : function() {
+		var description =null;
 		if(this.model.get('options').kind == "split_node"){
 			if(this.model.get('options').id.indexOf("metabric") == -1){
 				this.getSummary();
 			} else {
-				var summary = {};
-				summary.name = this.model.get('name');
-				summary.summaryText = this.model.get('options').description;
-				this.model.set("gene_summary",summary);
+				description = this.model.get('options').description;
 			}
+		} else if(this.model.get('options').kind == "split_value") {
+				if(this.model.get('parentNode').get('options').id.indexOf("metabric")!=-1){
+					var summaryTextArray = this.model.get('parentNode').get('options').description.split("\n");
+					for(var temp in summaryTextArray){
+						if(summaryTextArray[temp].match(this.model.get('name'))){
+							description = summaryTextArray[temp]; 
+						}
+					}
+					if(description == null || description.length < 3){
+						description = this.model.get('name') + " " + this.model.get('parentNode').get('name');
+					}
+				} else {
+					description = this.model.get('name')+" expression level of "+ this.model.get('parentNode').get('name');
+				}
 		} else {
-			if(Cure.utils.isJSON(this.model.get('parentNode').get('options').description)){
-				var json_string = JSON.parse(this.model.get('parentNode').get('options').description);
-				var summary = {};
-				summary.name = this.model.get('name');
-				summary.summaryText = json_string[this.model.get('name')];
-				this.model.set("gene_summary",summary);
+			if(this.model.get('name')==Cure.posNodeName){
+				description = "Predicted to survive beyond ten years.";
+			} else {
+				description = "Predicted to survive beyond ten years.";
 			}
 		}
+		var summary = {};
+		summary.name = this.model.get('name');
+		summary.summaryText = description;
+		this.model.set("gene_summary",summary);
+		
 		this.$el.find(this.ui.showjson).addClass("disabled");
 		this.$el.find(this.ui.jsondata).css({
 			'display' : 'block'
