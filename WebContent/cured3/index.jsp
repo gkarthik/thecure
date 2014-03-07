@@ -110,6 +110,7 @@ Player player = (Player) session.getAttribute("player");
 						<button class="btn btn-primary btn-block" id="save_tree"><i class="glyphicon glyphicon-save"></i> Save Tree</button>
 						<div id="CommentRegion"></div>
 							<div id="ScoreRegion"></div>
+							<div id="current-tree-rank"></div>
 				<ul class="nav nav-pills nav-boards">
   					<li><a id="tree-explanation-pill" href="#"><i class="glyphicon glyphicon-pencil"></i> Tree Explanation</a></li>
   					<li><a id="score-board-pill" href="#"><i class="glyphicon glyphicon-list-alt"></i> Score Board</a></li>
@@ -122,7 +123,6 @@ Player player = (Player) session.getAttribute("player");
 					<div id="scoreboard_wrapper">
 						<div id='scoreboard_innerwrapper'></div>
 					</div>
-				<div id="current-tree-rank"></div>
 				</div>
 				</div>
 			</div>

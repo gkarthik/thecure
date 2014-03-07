@@ -99,7 +99,6 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	responseSize : 0,
 	parseResponse : function(data) {
-		Cure.PlayerNodeCollection.tree_id = data.tree_id;
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
@@ -133,6 +132,8 @@ NodeCollection = Backbone.Collection.extend({
 		},20);
 		if(Cure.PlayerNodeCollection.length == 0){
 			Cure.Comment.set("content","");
+			Cure.ScoreBoard.refresh();
+			Cure.PlayerNodeCollection.tree_id = 0;
 		}
 	},
 	saveTree: function(){

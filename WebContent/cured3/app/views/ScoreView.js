@@ -12,7 +12,7 @@ define([
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
-		this.model.bind("change:scoreDiff", this.updateScore);
+		this.model.bind("change", this.updateScore);
 		var thisView = this;
 		$(document).mouseup(function(e){
 			var classToclose = $('.score-panel-extend');
@@ -28,7 +28,9 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	events: {
 		'click .showSVG': 'showSVG',
-		'click .closeSVG': 'closeSVG'
+		'click .closeSVG': 'closeSVG',
+		'click .showChangeSummary': 'showChangeSum',
+		'click .closeChangeSummary': 'closeChangeSum'
 	},
 	template : scoreTemplate,
 	showSVG: function(){
@@ -42,6 +44,18 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		$(".closeSVG").html('<i class="glyphicon glyphicon-resize-full"></i>Show Chart');
 		$(".closeSVG").addClass("showSVG");
 		$(".closeSVG").removeClass("closeSVG");
+	},
+	showChangeSum: function(){
+		$("#ScoreChangesWrapper").show();
+		$(".showChangeSummary").html('<i class="glyphicon glyphicon-resize-small"></i>Hide Score Transition');
+		$(".showChangeSummary").addClass("closeChangeSummary");
+		$(".showChangeSummary").removeClass("showChangeSummary");
+	},
+	closeChangeSum: function(){
+		$("#ScoreChangesWrapper").hide();
+		$(".closeChangeSummary").html('<i class="glyphicon glyphicon-resize-small"></i>Show Score Transition');
+		$(".closeChangeSummary").addClass("showChangeSummary");
+		$(".closeChangeSummary").removeClass("closeChangeSummary");
 	},
 	drawAxis : function() {
 		var json = [];
@@ -188,15 +202,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 						"fill", "none").attr("class", "maxHalfPolygon");
 	},
 	showScoreDiff: function(){
-		if($("#score-panel .panel-body").css('display')=="none"){
-			$("#score-panel .togglePanel").trigger('click');
-		}
-		//$("#score-panel").addClass('score-panel-extend');
 		$(this.ui.scoreDetails).html(scoreChangeTemplate(this.model.toJSON()));
-			$(this.ui.scoreDetails).show();
-	},
-	hideScoreDiff: function(){
-		$("#score-panel").removeClass('score-panel-extend');
+		this.showChangeSum();
 	},
 	updateScore : function() {
 		var thisView = this;
@@ -382,8 +389,8 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		window.setTimeout(function(){
 			$(thisView.ui.scoreEL).html(thisView.model.get("score"));
 			window,setTimeout(function(){
-				thisView.hideScoreDiff();
-			}, 8000);
+				thisView.closeChangeSum();
+			}, 6000);
 		}, Cure.duration * 7);
 	},
 	onRender : function() {
