@@ -292,26 +292,16 @@ input.edit{
   margin: 2px;
   padding:2px 4px;
 }
-.name
+
+.node .name
 {
   display:block;
   text-align:center;
+  cursor:pointer;
 }
 
-.split_node .name{
-	  cursor:pointer;
-}
-
-.split_node .name:hover{
+.node .name:hover{
 	  color: #333;
-}
-
-.split_value .name{
-	cursor: pointer;
-}
-
-.split_value .name:hover{
-	color: #333;
 }
 
 .showjson
