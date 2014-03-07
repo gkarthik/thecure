@@ -70,8 +70,8 @@ Player player = (Player) session.getAttribute("player");
         </div>
       </div>
 	<div class="container-fluid CureContainer">
-	<div class="alert" id="alertWrapper">
-  		<button type="button" class="close">&times;</button>
+	<div class="alert alert-warning alert-dismissable" id="alertWrapper">
+  		 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   		<strong id="alertMsg"></strong>
 	</div>
 		<div class="row">
@@ -102,55 +102,30 @@ Player player = (Player) session.getAttribute("player");
 				<button class="zoomout"><i class="glyphicon glyphicon-zoom-out"></i></button>
 				</div>
 				<div id="PlayerTreeRegion"></div>
-				<div id="cure-panel">
-				<div id="CollaboratorsRegion">
-				</div>
-				<div id="score-panel">
-				<div class="panel panel-default">
-					<div class='panel-heading'>Score <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score <i class="glyphicon glyphicon-th-list"></i></button></div>
-					<div class='panel-body panel-static'>
-						<div id="ScoreRegion"></div>
+				<div id="cure-panel" class="panel panel-default">
+					<div id="CollaboratorsRegion">
 					</div>
-				</div>
-				</div>
-				<div id="control-panel">
-			<div class=" panel panel-default">
-				<div class="panel-heading">Save Options <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Save Options <i class="glyphicon glyphicon-th-list"></i></button></div>
-				<div class="panel-body panel-static">
-  					<button class="btn btn-primary btn-block" id="save_tree">Save Tree</button>
+					<div class='panel-heading'>Controls</div>
+						<div class='panel-body panel-static'>
+						<button class="btn btn-primary btn-block" id="save_tree"><i class="glyphicon glyphicon-save"></i> Save Tree</button>
+						<div id="CommentRegion"></div>
+							<div id="ScoreRegion"></div>
+				<ul class="nav nav-pills nav-boards">
+  					<li><a id="tree-explanation-pill" href="#"><i class="glyphicon glyphicon-pencil"></i> Tree Explanation</a></li>
+  					<li><a id="score-board-pill" href="#"><i class="glyphicon glyphicon-list-alt"></i> Score Board</a></li>
+				</ul>
 				<hr>
-				<div id="CommentRegion"></div>
-				</table>
-  				</div>
-  				</div>
-			</div>
-			<div id="explanation-panel">
-				<div class="panel panel-default">
-					<div class='panel-heading'>Tree Explanation <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Explanation <i class="glyphicon glyphicon-th-list"></i></button></div>
-					<div class='panel-body panel-static'>
-						<h2>Tree in Text</h2>
-						<hr>
+				<div id="tree-explanation-outerWrapper" class="panel-outer-wrapper">
 						<div id="tree-explanation-wrapper"></div>
 				</div>
+				<div id="score-board-outerWrapper" class="panel-outer-wrapper">
+					<div id="scoreboard_wrapper">
+						<div id='scoreboard_innerwrapper'></div>
 					</div>
-				</div>
-				<div id="scoreboard-panel">
-				<div class="panel panel-default">
-					<div class='panel-heading'>Score Board <button class="btn btn-sm btn-default togglePanel pull-right">Toggle Score Board <i class="glyphicon glyphicon-th-list"></i></button></div>
-					<div class='panel-body panel-static'>
-					<h2 class="renderPink">Score Board</h2>
-						<div id="scoreboard_outerWrapper">
-					<div id='scoreboard_wrapper'></div>
-				</div>
-				<div id="current-tree-rank">
-					
-				</div>
-					</div>
+				<div id="current-tree-rank"></div>
 				</div>
 				</div>
-				</div>
-		</div>
-	</div>
+			</div>
 	<jsp:include page="/footer.jsp" />
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",

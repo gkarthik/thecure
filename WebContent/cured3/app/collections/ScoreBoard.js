@@ -65,7 +65,7 @@ ScoreBoard = Backbone.Collection.extend({
 			this.allowRequest = 0;
 		}
 		Cure.ScoreBoardRequestSent = false;
-		if(Cure.ScoreBoard.pluck("id").indexOf(Cure.PlayerNodeCollection.tree_id)=="-1" && Cure.PlayerNodeCollection.length>0){
+		if(Cure.ScoreBoard.pluck("id").indexOf(Cure.PlayerNodeCollection.tree_id)==-1 && Cure.PlayerNodeCollection.length>0){
 			var args = {
 	        command : "get_rank",
 	        dataset : "metabric_with_clinical",

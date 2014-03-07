@@ -137,7 +137,7 @@ define(
 		        });
 
 		        $("body").delegate(".close", "click", function() {
-			        if ($(this).parent().attr("class") == "alert") {
+			        if ($(this).parent().hasClass("alert")) {
 				        $(this).parent().hide();
 			        } else {
 				        $(this).parent().parent().parent().hide();
@@ -167,9 +167,9 @@ define(
 		          });
 
 		        Cure.ScoreBoardRequestSent = false;
-		        $("#scoreboard_outerWrapper").scroll(
+		        $("#scoreboard_wrapper").scroll(
 		            function() {
-			            if ($("#scoreboard_outerWrapper").scrollTop()+$("#scoreboard_outerWrapper").height() >= $("#scoreboard_wrapper").height()) {
+			            if ($("#scoreboard_wrapper").scrollTop()+$("#scoreboard_wrapper").height() >= $("#scoreboard_innerwrapper").height()) {
 			            	var t = window.setTimeout(function(){
 					            if (!Cure.ScoreBoardRequestSent) {
 						            window.clearTimeout(t);
@@ -179,21 +179,24 @@ define(
 			            	}, 500);
 			            }
 		            });
-
-		        $(".togglePanel").on("click", function() {
-		        	var panelBody = $(this).parent().parent().find(".panel-body");
-		        	panelBody.removeClass("panel-static");
-			        $(".panel-static").slideUp();
-			        panelBody.slideToggle();
-			        panelBody.addClass("panel-static");
-		        });
-
+		        	
 		        $("#save_tree")
 		            .on(
 		                "click",
 		                function() {
 			                Cure.PlayerNodeCollection.saveTree();
-		                });
+		        });
+		        
+		        $("#cure-panel .nav-boards a").on("click",function(){
+		        	if(!$(this).parent().hasClass("active")){
+			        	$(".panel-outer-wrapper").hide();
+			        	$("#cure-panel .nav-boards li").removeClass("active");
+			        	$(this).parent().addClass("active");
+			        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
+			        	$(id).show();
+			        	console.log(id);
+		        	}
+		        });
 
 		        options.regions.PlayerTreeRegion += "Tree";
 		        Cure.addRegions(options.regions);

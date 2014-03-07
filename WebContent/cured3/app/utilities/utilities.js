@@ -216,12 +216,19 @@ CureUtils.render_network = function(dataset) {
 	}
 }
 
-CureUtils.showAlert = function(message){
+CureUtils.showAlert = function(message, success){
+	if(success){
+		$("#alertWrapper").removeClass("alert-danger");
+		$("#alertWrapper").addClass("alert-success");
+	} else {
+		$("#alertWrapper").removeClass("alert-success");
+		$("#alertWrapper").addClass("alert-danger");		
+	}
 	$("#alertMsg").html(message);
 	$("#alertWrapper").fadeIn();
 	window.setTimeout(function(){
 		$("#alertWrapper").hide();
-	},2000);
+	},4000);
 }
 
 CureUtils.showDetailsOfNode = function(content, top, left){

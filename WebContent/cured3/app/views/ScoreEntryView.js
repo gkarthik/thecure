@@ -31,6 +31,7 @@ ScoreEntryView = Marionette.ItemView.extend({
 			Cure.PlayerNodeCollection.reset();
 			Cure.PlayerNodeCollection.prevTreeId = this.model.get('id');
 			Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
+			Cure.Comment.set("content",this.model.get('comment'));
 			Cure.utils.hideLoading();
 		}
 	},
