@@ -483,6 +483,10 @@ width: 310px;
 	border-radius: 5px;
 }
 
+#ScoreBoardInnerWrapper > tbody > tr > td{
+	border-top :0px;
+}
+
 #scoreboard_innerwrapper{
 	font-size: 10px;
 }
@@ -500,6 +504,10 @@ width: 310px;
 	background: #F69;
 	color: #FFF;
 	font-weight: bold;
+}
+
+.comment-table{
+	margin-bottom: 0px;
 }
 
 #current-tree-rank{

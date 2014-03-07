@@ -49,10 +49,10 @@ ScoreBoard = Backbone.Collection.extend({
 			created: "Created",
 			id: "id",
 			ip: "ip",
-			player_name: "Player",
+			player_name: "<i class='glyphicon glyphicon-user'></i>",
 			json_tree :{
-				novelty : "Novelty",
-				pct_correct : "Accuracy",
+				novelty : "Nov",
+				pct_correct : "Acc",
 				size : "Size",
 				score : "Score",
 				text_tree : '',
