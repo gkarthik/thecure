@@ -121,10 +121,7 @@ NodeView = Marionette.ItemView.extend({
 		this.model.set('highlight',0);
 	},
 	showSummary : function() {
-		//showJSON is used to render the Gene Info POP Up.
-		if (this.model.get("options").kind == "split_node" || this.model.get("options").kind == "split_value") {
 			this.model.set("showJSON", 1);
-		}
 	},
 	onBeforeRender : function() {
 		//Render the positions of each node as obtained from d3.

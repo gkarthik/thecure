@@ -96,11 +96,11 @@ JSONItemView = Marionette.ItemView.extend({
 				if(this.model.get('parentNode').get('options').id.indexOf("metabric")!=-1){
 					var summaryTextArray = this.model.get('parentNode').get('options').description.split("\n");
 					for(var temp in summaryTextArray){
-						if(summaryTextArray[temp].match(this.model.get('name'))){
+						if(summaryTextArray[temp].match(this.model.get('name').replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))){//To escape +
 							description = summaryTextArray[temp]; 
 						}
 					}
-					if(description == null || description.length < 3){
+					if(description == null || description.split(" ").length < 3){
 						description = this.model.get('name') + " " + this.model.get('parentNode').get('name');
 					}
 				} else {
@@ -110,7 +110,7 @@ JSONItemView = Marionette.ItemView.extend({
 			if(this.model.get('name')==Cure.posNodeName){
 				description = "Predicted to survive beyond ten years.";
 			} else {
-				description = "Predicted to survive beyond ten years.";
+				description = "<b>Not</b> Predicted to survive beyond ten years.";
 			}
 		}
 		var summary = {};

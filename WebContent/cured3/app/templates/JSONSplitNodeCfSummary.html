@@ -4,14 +4,6 @@
 					<h2><%= name %></h2>
 				</div>
 				<div id="summary_content">
-				<p><% if(Cure.utils.isJSON(summary.summaryText)){
-				var json_string = JSON.parse(summary.summaryText);
-				for(var temp in json_string){
-					print("<h4>"+temp+"</h4>"+"<p>"+json_string[temp]+"</p>");
-				}
-			  } else {
-					print(summary.summaryText);
-				}
-			%></p>
+				<p><%= summary.summaryText	%></p>
 				</div>
 	</div>
