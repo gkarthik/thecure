@@ -169,7 +169,7 @@ define(
 		        Cure.ScoreBoardRequestSent = false;
 		        $("#scoreboard_wrapper").scroll(
 		            function() {
-			            if ($("#scoreboard_wrapper").scrollTop()+$("#scoreboard_wrapper").height() >= $("#scoreboard_innerwrapper").height()) {
+			            if ($("#scoreboard_wrapper").scrollTop()+$("#scoreboard_wrapper").height() >= $("#scoreboard_innerwrapper").height() && (Cure.ScoreBoardView.children.length >= 11)) {
 			            	var t = window.setTimeout(function(){
 					            if (!Cure.ScoreBoardRequestSent) {
 						            window.clearTimeout(t);

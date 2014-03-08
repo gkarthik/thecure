@@ -9,14 +9,9 @@ ScoreBoard = Backbone.Collection.extend({
 	initialize : function(){
 		_.bindAll(this, 'parseResponse');
 	},
-	refresh: function(){
-    this.lowerLimit = 0;
-    this.upperLimit = 10;
-    this.reset();
-    this.fetch();
-	},
 	upperLimit: 10,
 	lowerLimit: 0,
+	comparator: 'rank',
 	url : '/cure/MetaServer',
 	fetch: function(){
 		if(this.allowRequest){
@@ -65,28 +60,6 @@ ScoreBoard = Backbone.Collection.extend({
 			this.allowRequest = 0;
 		}
 		Cure.ScoreBoardRequestSent = false;
-		if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
-			var args = {
-	        command : "get_rank",
-	        dataset : "metabric_with_clinical",
-	        tree_id: Cure.PlayerNodeCollection.tree_id
-	      };
-	      $.ajax({
-	            type : 'POST',
-	            url : '/cure/MetaServer',
-	            data : JSON.stringify(args),
-	            dataType : 'json',
-	            contentType : "application/json; charset=utf-8",
-	            success : function(data){
-	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
-	            },
-	            error : function(data){
-	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
-	            }
-	          });
-		} else {
-			$("#current-tree-rank").html("");
-		}
 	},
 	error : function(data) {
 

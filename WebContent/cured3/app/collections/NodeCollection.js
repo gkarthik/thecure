@@ -4,7 +4,8 @@ define([
    'backbone',
    //Models
 	'app/models/Node',
-    ], function($, Backbone, Node, TextTmpl) {
+	'text!app/templates/currentRank.html'
+    ], function($, Backbone, Node, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
@@ -132,7 +133,7 @@ NodeCollection = Backbone.Collection.extend({
 		},20);
 		if(Cure.PlayerNodeCollection.length == 0){
 			Cure.Comment.set("content","");
-			Cure.ScoreBoard.refresh();
+			Cure.ScoreBoardView.render();
 			Cure.PlayerNodeCollection.tree_id = 0;
 		}
 	},
@@ -156,11 +157,35 @@ NodeCollection = Backbone.Collection.extend({
             contentType : "application/json; charset=utf-8",
             success : function(data){
             	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
-            	Cure.ScoreBoard.refresh();
+            	Cure.ScoreBoard.lowerLimit = 0;
+            	Cure.ScoreBoard.upperLimit = 10;
+            	Cure.ScoreBoard.reset();
+            	Cure.ScoreBoard.fetch();//PROBLEM!
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
+            	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
+          			var args = {
+          	        command : "get_rank",
+          	        dataset : "metabric_with_clinical",
+          	        tree_id: Cure.PlayerNodeCollection.tree_id
+          	      };
+          	      $.ajax({
+          	            type : 'POST',
+          	            url : '/cure/MetaServer',
+          	            data : JSON.stringify(args),
+          	            dataType : 'json',
+          	            contentType : "application/json; charset=utf-8",
+          	            success : function(data){
+          	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
+          	            },
+          	            error : function(data){
+          	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
+          	            }
+          	          });
+          		} else {
+          			$("#current-tree-rank").html("");
+          		}
             },
             error : function(){
-            	Cure.ScoreBoard.refresh();
             }
           });
     } else if(Cure.PlayerNodeCollection.length == 0) {

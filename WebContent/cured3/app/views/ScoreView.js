@@ -13,13 +13,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
 		this.model.bind("change", this.updateScore);
-		var thisView = this;
-		$(document).mouseup(function(e){
-			var classToclose = $('.score-panel-extend');
-	    if(!classToclose.is(e.target) && classToclose.has(e.target).length == 0) {
-	    	thisView.hideScoreDiff();
-	    }
-		});
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
