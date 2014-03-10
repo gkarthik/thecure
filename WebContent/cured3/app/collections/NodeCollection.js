@@ -157,10 +157,7 @@ NodeCollection = Backbone.Collection.extend({
             contentType : "application/json; charset=utf-8",
             success : function(data){
             	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
-            	Cure.ScoreBoard.lowerLimit = 0;
-            	Cure.ScoreBoard.upperLimit = 10;
-            	Cure.ScoreBoard.reset();
-            	Cure.ScoreBoard.fetch();//PROBLEM!
+            	Cure.ScoreBoard.updateCurrent();
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
             	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
           			var args = {

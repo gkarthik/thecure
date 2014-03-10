@@ -11,6 +11,53 @@ ScoreBoard = Backbone.Collection.extend({
 	},
 	upperLimit: 10,
 	lowerLimit: 0,
+	updateCurrent: function(){
+			this.lowerLimit = 0;
+			this.upperLimit = 10;
+			var args = {
+					command : "get_trees_with_range",
+					lowerLimit : this.lowerLimit,
+					upperLimit : this.upperLimit,
+					orderby: "score"
+			};
+			this.lowerLimit+=10;
+			this.upperLimit+=10;
+			var thisCollection = this;
+			$.ajax({
+				type : 'POST',
+				url : this.url,
+				data : JSON.stringify(args),
+				dataType : 'json',
+				contentType : "application/json; charset=utf-8",
+				success : function(data){
+					var trees = data.trees;
+					trees.unshift({
+						comment: "Comment",
+						created: "Created",
+						id: "id",
+						ip: "ip",
+						player_name: "<i class='glyphicon glyphicon-user'></i>",
+						json_tree :{
+							novelty : "Nov",
+							pct_correct : "Acc",
+							size : "Size",
+							score : "Score",
+							text_tree : '',
+							treestruct : {}
+						}
+					});
+					
+					if(data.n_trees > 0) {
+						thisCollection.reset(trees);
+						thisCollection.allowRequest = 1;
+					} else {
+						thisCollection.allowRequest = 0;
+					}
+				},
+				error : this.error,
+				async: true
+			});
+	},
 	comparator: 'rank',
 	url : '/cure/MetaServer',
 	fetch: function(){
@@ -54,8 +101,10 @@ ScoreBoard = Backbone.Collection.extend({
 				treestruct : {}
 			}
 		});
+		
 		if(data.n_trees > 0) {
 			this.add(trees);
+			this.allowRequest = 1;
 		} else {
 			this.allowRequest = 0;
 		}
