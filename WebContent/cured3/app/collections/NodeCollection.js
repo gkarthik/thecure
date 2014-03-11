@@ -139,7 +139,7 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	saveTree: function(){
 		var tree;
-    if (Cure.PlayerNodeCollection.models[0] && Cure.Comment.get('content')!="") {
+    if (Cure.PlayerNodeCollection.models[0]) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
         command : "savetree",
@@ -189,14 +189,11 @@ NodeCollection = Backbone.Collection.extend({
       tree = [];
       Cure.utils
           .showAlert("<strong>Empty Tree!</strong><br>Please build a tree by using the auto complete box.", 0);
-    } else if(Cure.Comment.get('content') == "" && Cure.PlayerNodeCollection.length > 0) {
-      tree = [];
-      Cure.utils
-          .showAlert("<strong>Please enter a comment!</strong><br>Using comments will help increase collaboration between players. Thanks!", 0);
     }
 	},
 	error : function(data) {
-		console.log("Error Receiving Data From Server.");
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
 	}
 });
 

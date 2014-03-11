@@ -57,13 +57,14 @@ NodeView = Marionette.ItemView.extend({
 		} else {
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition');
-		this.model.bind('change:x', this.render);
-		this.model.bind('change:y', this.render);
-		this.model.bind('change:accLimit', this.render);
-		this.model.bind('change:highlight', this.highlight);
-		this.model.bind('add:children', this.checkNodeAddition);
-		this.model.bind('remove', this.remove);
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition', 'renderPlaceholder');
+		this.listenTo(this.model, 'change:x', this.render);
+		this.listenTo(this.model, 'change:y', this.render);
+		this.listenTo(this.model, 'change:accLimit', this.render);
+		this.listenTo(this.model, 'change:highlight', this.highlight);
+		this.listenTo(this.model, 'add:children', this.checkNodeAddition);
+		this.listenTo(this.model, 'remove', this.remove);
+		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
 		
 		if(parseFloat(this.model.get('accLimit'))!=0){
 			this.model.set('modifyAccLimit',0);
@@ -75,6 +76,12 @@ NodeView = Marionette.ItemView.extend({
 			this.model.set('accLimit',accLimit,{silent: true});
 		}
 		this.model.set("cid",this.cid);
+	},
+	renderPlaceholder: function(){
+		this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
+			color: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator'))),
+			border: "2px solid "+Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
+		});	
 	},
 	highlight: function(){
 		if(this.model.get('highlight')!=0){
@@ -180,9 +187,7 @@ NodeView = Marionette.ItemView.extend({
 		this.model.set("viewCSS",{'width':width});
 	}, 
 	onRender: function(){
-		this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
-			background: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
-		});		
+		this.renderPlaceholder();	
 		if(this.model.get('options').kind=="leaf_node" || this.model.get('options').kind=="split_node"){
 			var id = "#chart"+this.model.get('cid');
 			var radius = 4;
@@ -190,7 +195,7 @@ NodeView = Marionette.ItemView.extend({
 			radius = parseFloat((width - 4)/20);
 			var limit = Cure.binScale(this.model.get('options').bin_size);
 			Cure.utils.drawChart(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
-			var classToChoose = [{"className":""},{"color":""}];
+			var classToChoose = {"className":"","color":""};
 			if(this.model.get('name') == Cure.negNodeName){
 				classToChoose["className"]= " .posCircle";
 				classToChoose["color"]= "red";

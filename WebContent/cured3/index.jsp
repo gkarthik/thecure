@@ -70,6 +70,13 @@ Player player = (Player) session.getAttribute("player");
         </div>
       </div>
 	<div class="container-fluid CureContainer">
+	<div id="score-board-outerWrapper" class="panel-outer-wrapper">
+	<h2 class="renderPink">Score Board<span><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button></span></h2>
+	<hr>
+		<div id="scoreboard_wrapper">
+			<div id='scoreboard_innerwrapper'></div>
+		</div>
+	</div>
 	<div class="alert alert-warning alert-dismissable" id="alertWrapper">
   		 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   		<strong id="alertMsg"></strong>
@@ -107,8 +114,8 @@ Player player = (Player) session.getAttribute("player");
 					</div>
 					<div class='panel-heading'>Controls</div>
 						<div class='panel-body panel-static'>
-						<button class="btn btn-primary btn-block" id="save_tree"><i class="glyphicon glyphicon-save"></i> Save Tree</button>
 						<div id="CommentRegion"></div>
+												<button class="btn btn-primary btn-block" id="save_tree"><i class="glyphicon glyphicon-save"></i> Save Tree</button>
 							<div id="ScoreRegion"></div>
 							<div id="current-tree-rank"></div>
 				<ul class="nav nav-pills nav-boards">
@@ -118,11 +125,6 @@ Player player = (Player) session.getAttribute("player");
 				<hr>
 				<div id="tree-explanation-outerWrapper" class="panel-outer-wrapper">
 						<div id="tree-explanation-wrapper"></div>
-				</div>
-				<div id="score-board-outerWrapper" class="panel-outer-wrapper">
-					<div id="scoreboard_wrapper">
-						<div id='scoreboard_innerwrapper'></div>
-					</div>
 				</div>
 				</div>
 			</div>

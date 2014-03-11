@@ -95,6 +95,21 @@ AddRootNodeView = Marionette.ItemView.extend({
 						model.set('accLimit', 0, {silent:true});
 						model.set('modifyAccLimit', 1, {silent:true});
 						
+						var index = Cure.CollaboratorCollection.pluck("id").indexOf(cure_user_id);
+						var newCollaborator;
+						if(index!=-1){
+							newCollaborator = Cure.CollaboratorCollection.at(index);
+						} else {
+							newCollaborator = new Collaborator({
+								"name": cure_user_name,
+								"id": cure_user_id,
+								"created" : new Date()
+							});
+							Cure.CollaboratorCollection.add(newCollaborator);
+							index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+						}
+						//model.attributes.collaborator = Cure.CollaboratorCollection.at(index);
+						
 						if(Cure.utils.isJSON(ui.item.description)){
 							model.set("options", {
 								id : ui.item.unique_id,

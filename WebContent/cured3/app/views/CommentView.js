@@ -16,21 +16,15 @@ CommentView = Backbone.Marionette.ItemView.extend({
 	},
 	template : CommentTemplate,
 	events: {
-		"click .enter-comment": 'changeView',
-		"click .save-comment": 'saveComment'
+		"change .commentContent": 'saveComment',
 	},
 	initialize : function(){
 		_.bindAll(this, 'saveComment');
 		this.model.bind('change', this.render);
 	},
-	changeView: function(){
-		this.model.set("editView",1);
-	},
 	saveComment: function(){
 		var content = $(this.ui.commentContent).val();
 		this.model.set("content",content);
-		this.model.set("editView",0);
-		Cure.PlayerNodeCollection.saveTree();
 	}
 });
 

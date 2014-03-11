@@ -111,7 +111,8 @@ ScoreBoard = Backbone.Collection.extend({
 		Cure.ScoreBoardRequestSent = false;
 	},
 	error : function(data) {
-
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
 	}
 });
 
