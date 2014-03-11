@@ -7,7 +7,7 @@ define([
 ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	itemView : ScoreEntryView,
 	tagName: 'table',
-	className: 'table table-condensed ScoreBoardInnerWrapper',
+	className: 'table table-bordered ScoreBoardInnerWrapper',
 	collection : ScoreBoard,
 	initialize : function() {
 		
@@ -19,13 +19,6 @@ ScoreBoardView = Backbone.Marionette.CollectionView.extend({
     		collectionView.$el.append(itemView.$el);
     	}
     }
-  /*
-	appendHtml: function(collectionView, itemView) {
-	  var itemIndex;
-	  itemIndex = collectionView.collection.indexOf(itemView.model);
-	  return 
-	}
-	*/
 });
 
 return ScoreBoardView;

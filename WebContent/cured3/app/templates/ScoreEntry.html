@@ -1,6 +1,3 @@
-<td>
-<table class="table table-bordered comment-table">
-	<tr>
 <%	if(json_tree.score != "Score"){ %>
 	<% if(Cure.PlayerNodeCollection.tree_id != id){ %>
 	<td><span class='keyValue'><%= rank %></span></td>
@@ -9,6 +6,7 @@
 	<td><span class='keyValue'><%= json_tree.size %></span></td>
 	<td><span class='keyValue'><% print(Math.round(json_tree.pct_correct*10)/10) %></span></td>
 	<td><span class='keyValue'><% print(Math.round(json_tree.novelty*10)/10) %></span></td>
+	<td><center><%= comment %></center></td>
 	<% } else { %>
 	<td class="current_tree"><span class='keyValue'><%= rank %></span></td>
 	<td class="current_tree"><span class='keyValue'><%= player_name %></span></td>
@@ -16,6 +14,7 @@
 	<td class="current_tree"><span class='keyValue'><%= json_tree.size %></span></td>
 	<td class="current_tree"><span class='keyValue'><% print(Math.round(json_tree.pct_correct*10)/10) %></span></td>
 	<td class="current_tree"><span class='keyValue'><% print(Math.round(json_tree.novelty*10)/10) %></span></td>
+	<td class="current_tree"><center><%= comment %></center></td>
 	<% } %>
 <% } else { %>
 	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
@@ -24,12 +23,5 @@
 	<th><span class='keyValue'><%= json_tree.size %></span></th>
 	<th><span class='keyValue'><%= json_tree.pct_correct %></span></th>
 	<th><span class='keyValue'><%= json_tree.novelty %></span></th>
+	<th><center><%= comment %></center></th>
 <% } %>
-</tr>
-<tr>
-<td colspan="6">
-<center><%= comment %></center>
-</td>
-</tr>
-</table>
-</td>

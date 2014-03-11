@@ -1,7 +1,8 @@
 define([
       	'backbone',
+      	'app/models/Collaborator',
       	'backboneRelational'
-    ], function(Backbone) {
+    ], function(Backbone, Collaborator) {
 	Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',

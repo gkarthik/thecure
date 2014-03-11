@@ -1,11 +1,1 @@
-	<% if(editView == 0) { %>
-		<% if(content == "") { %>
-		<button class="btn btn-primary btn-block enter-comment"><i class="glyphicon glyphicon-comment"></i> Enter Comment</button>
-		<% } else { %>
-		<p><%= content %></p>
-		<button class="btn btn-primary btn-block enter-comment"><i class="glyphicon glyphicon-comment"></i> Change Comment</button>
-		<% } %>
-	<% } else if(editView == 1){%>
-		<textarea class="commentContent"><%= content %></textarea>
-		<button class="btn btn-primary btn-block save-comment"><i class="glyphicon glyphicon-comment"></i> Save Comment</button>
-	<% } %>
+<textarea placeholder="You can store a comment along with the tree ..." class="commentContent"><%= content %></textarea>
