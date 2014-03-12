@@ -119,11 +119,10 @@ Player player = (Player) session.getAttribute("player");
 							<div id="ScoreRegion"></div>
 							<div id="current-tree-rank"></div>
 				<ul class="nav nav-pills nav-boards">
-  					<li><a id="tree-explanation-pill" href="#"><i class="glyphicon glyphicon-pencil"></i> Tree Explanation</a></li>
-  					<li><a id="score-board-pill" href="#"><i class="glyphicon glyphicon-list-alt"></i> Score Board</a></li>
+  					<li><a id="tree-explanation-pill" href="#"><i class="glyphicon glyphicon-pencil"></i>Show Tree Explanation</a></li>
 				</ul>
-				<hr>
 				<div id="tree-explanation-outerWrapper" class="panel-outer-wrapper">
+				<h2 class="renderPink">Tree in Text</h2>
 						<div id="tree-explanation-wrapper"></div>
 				</div>
 				</div>

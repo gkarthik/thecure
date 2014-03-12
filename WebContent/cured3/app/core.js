@@ -169,11 +169,11 @@ define(
 		        Cure.ScoreBoardRequestSent = false;
 		        $("#scoreboard_wrapper").scroll(
 		            function() {
-			            if ($("#scoreboard_wrapper").scrollTop()+$("#scoreboard_wrapper").height() >= $("#scoreboard_innerwrapper").height() && (Cure.ScoreBoardView.children.length >= 11)) {
+			            if ($("#scoreboard_wrapper").scrollTop()+$("#scoreboard_wrapper").height() >= $("#scoreboard_innerwrapper").height()) {
 			            	var t = window.setTimeout(function(){
 					            if (!Cure.ScoreBoardRequestSent) {
 						            window.clearTimeout(t);
-						            Cure.ScoreBoard.fetch();
+							          Cure.ScoreBoard.fetch();
 						            Cure.ScoreBoardRequestSent = true;
 					            }
 			            	}, 500);
@@ -187,14 +187,29 @@ define(
 			                Cure.PlayerNodeCollection.saveTree();
 		        });
 		        
+		        $("#current-tree-rank").on("click",function(){
+		        	$("#score-board-outerWrapper").show();
+		        	$("#scoreboard_wrapper").scrollTop($('.current_tree').offset().top - $(".ScoreBoardInnerWrapper").offset().top);
+		        });
+		        
 		        $("#cure-panel .nav-boards a").on("click",function(){
-		        	if(!$(this).parent().hasClass("active")){
-			        	$(".panel-outer-wrapper").hide();
-			        	$("#cure-panel .nav-boards li").removeClass("active");
-			        	$(this).parent().addClass("active");
-			        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
-			        	$(id).show();
-			        	console.log(id);
+		        	if(Cure.PlayerNodeCollection.length != 0){
+		        		if(!$(this).parent().hasClass("active")){
+				        	$(".panel-outer-wrapper").hide();
+				        	$("#cure-panel .nav-boards li").removeClass("active");
+				        	$(this).parent().addClass("active");
+				        	$(this).html('<i class="glyphicon glyphicon-pencil"></i>Close Tree Explanation');
+				        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
+				        	$(id).show();
+			        	} else {
+			        		$(this).html('<i class="glyphicon glyphicon-pencil"></i>Show Tree Explanation');
+			        		$(this).parent().removeClass("active");
+				        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
+				        	$(id).hide();
+			        	}
+		        	} else {
+		        		Cure.utils
+		            .showAlert("<strong>Empty Tree!</strong><br>You can build the tree by using the autocomplete.", 0);
 		        	}
 		        });
 
@@ -224,7 +239,6 @@ define(
 		        Cure.ClinicalFeatureCollection.fetch();
 		        Cure.ScoreBoard = new ScoreBoard();
 		        // Sync Score Board
-		        Cure.ScoreBoard.fetch();
 		        Cure.PlayerNodeCollection = new NodeCollection();
 		        Cure.TreeBranchCollection = new TreeBranchCollection();
 		        Cure.CollaboratorCollection = new CollaboratorCollection();

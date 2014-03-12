@@ -7,21 +7,23 @@ define([
 ScoreBoard = Backbone.Collection.extend({
 	model: ScoreEntry,
 	initialize : function(){
-		_.bindAll(this, 'parseResponse');
+		_.bindAll(this, 'parseResponse', 'updateCurrent');
 	},
+	rank: -1,
 	upperLimit: 10,
 	lowerLimit: 0,
 	updateCurrent: function(){
-			this.lowerLimit = 0;
-			this.upperLimit = 10;
+		this.allowRequest = 1;
+			if(this.rank!=-1){
+				this.lowerLimit = 0;
+				this.upperLimit = this.rank + 10;
+			}
 			var args = {
 					command : "get_trees_with_range",
 					lowerLimit : this.lowerLimit,
 					upperLimit : this.upperLimit,
 					orderby: "score"
 			};
-			this.lowerLimit+=10;
-			this.upperLimit+=10;
 			var thisCollection = this;
 			$.ajax({
 				type : 'POST',
@@ -57,19 +59,22 @@ ScoreBoard = Backbone.Collection.extend({
 				error : this.error,
 				async: true
 			});
+			Cure.ScoreBoardRequestSent = false;
 	},
 	comparator: 'rank',
 	url : '/cure/MetaServer',
-	fetch: function(){
+	fetch: function(direction){
+		console.log(this.allowRequest);
 		if(this.allowRequest){
+			this.lowerLimit = Cure.ScoreBoard.at(Cure.ScoreBoard.length-1).get('rank');
+			this.upperLimit = this.lowerLimit + 10;
 			var args = {
 					command : "get_trees_with_range",
 					lowerLimit : this.lowerLimit,
 					upperLimit : this.upperLimit,
 					orderby: "score"
 			};
-			this.lowerLimit+=10;
-			this.upperLimit+=10;
+			console.log(this.lowerLimit,this.upperLimit);
 			$.ajax({
 				type : 'POST',
 				url : this.url,

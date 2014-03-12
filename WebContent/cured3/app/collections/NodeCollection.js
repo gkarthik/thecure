@@ -136,6 +136,9 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.ScoreBoardView.render();
 			Cure.PlayerNodeCollection.tree_id = 0;
 		}
+		if($("#current-tree-rank").html("")!=""){
+			$("#current-tree-rank").html("");
+		}
 	},
 	saveTree: function(){
 		var tree;
@@ -157,7 +160,6 @@ NodeCollection = Backbone.Collection.extend({
             contentType : "application/json; charset=utf-8",
             success : function(data){
             	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
-            	Cure.ScoreBoard.updateCurrent();
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
             	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
           			var args = {
@@ -172,10 +174,12 @@ NodeCollection = Backbone.Collection.extend({
           	            dataType : 'json',
           	            contentType : "application/json; charset=utf-8",
           	            success : function(data){
+          	            	Cure.ScoreBoard.rank = data.rank;
+          	            	Cure.ScoreBoard.updateCurrent();
           	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
           	            },
           	            error : function(data){
-          	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
+          	            	
           	            }
           	          });
           		} else {
