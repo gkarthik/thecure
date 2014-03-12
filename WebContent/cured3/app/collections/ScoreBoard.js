@@ -55,11 +55,18 @@ ScoreBoard = Backbone.Collection.extend({
 					} else {
 						thisCollection.allowRequest = 0;
 					}
+					$("#score-board-outerWrapper").show();
+					$("#scoreboard_wrapper").css({
+						scrollTop: 0
+					});
+		    	$("#scoreboard_wrapper").animate({
+		    		scrollTop: $('.current_tree').offset().top - $(".ScoreBoardInnerWrapper").offset().top 
+		    	}, 2000);
+					Cure.ScoreBoardRequestSent = false;
 				},
 				error : this.error,
 				async: true
 			});
-			Cure.ScoreBoardRequestSent = false;
 	},
 	comparator: 'rank',
 	url : '/cure/MetaServer',
