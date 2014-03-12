@@ -75,12 +75,8 @@ require([ "app/core" ], function() {
 	  "Scoreheight" : 200,
 	  "regions" : {
 	    "PlayerTreeRegion" : "#PlayerTreeRegion",
-	    "ScoreRegion" : "#ScoreRegion",
-	    "CommentRegion" : "#CommentRegion",
-	    "ScoreBoardRegion" : "#scoreboard_innerwrapper",
 	    "JSONSummaryRegion" : "#jsonSummary",
-	    "TreeBranchRegion": "#tree-explanation-wrapper",
-	    "CollaboratorsRegion": "#CollaboratorsRegion"
+	    "SideBarRegion": "#cure-panel-wrapper"
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n"

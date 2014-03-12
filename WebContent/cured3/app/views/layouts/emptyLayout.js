@@ -11,9 +11,6 @@ emptyLayout = Marionette.Layout.extend({
     regions: {
       AddRootNode: "#AddRootNodeWrapper"
     },
-    onBeforeRender: function(){
-    	//Cure.ToggleHelp(false);
-    },
     onRender: function(){
     	if(!Cure.helpText){
         	Cure.helpText = $("#HelpText").html();	
@@ -26,8 +23,6 @@ emptyLayout = Marionette.Layout.extend({
     	});
     	this.AddRootNode.show(new AddRootNodeView());
   		
-    },
-    onBeforeClose: function(){
     }
 });
 return emptyLayout;

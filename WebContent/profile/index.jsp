@@ -1,0 +1,96 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@ page import="org.scripps.combo.model.Player"%>
+<%@ page import="org.scripps.combo.model.Board"%>
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.Map"%>
+<%@ page import="java.util.ArrayList"%>
+<%
+int player_id = 0;
+int player_experience = 0;
+String player_name = "";
+Player player = (Player) session.getAttribute("player");
+  if (player == null) {
+    	response.sendRedirect("/cure/login.jsp"); 
+  } else {
+    player_id = player.getId();
+    player_experience = 0;
+    player_name = player.getName();
+  }
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link href='/cure/assets/css/style.css' rel='stylesheet' type='text/css'>
+<link href='./css/style.css' rel='stylesheet' type='text/css'>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Profile</title>
+</head>
+<body>
+<div class="row">
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<a class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span>
+				</a>
+				<ul class="nav navbar-nav">
+					<li><a class="brand" href="/cure/">The Cure</a></li>
+					<li><a href="/cure/boardroom.jsp">Boardroom</a></li>
+					<li><a style="color: #FFF;" href="/cure/contact.jsp">Contact</a></li>
+					<li><a style="color: #FFF;" href="/cure/logout.jsp">logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	</div>
+	<div class="container" id="profile-container">
+		
+	</div>
+	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="main-layout-template">
+		<div class="col-md-4">
+		<ul class="nav nav-pills nav-stacked" id="sidebar-fixed">
+		  <li class="active" id="user-treecollection-button"><a href="#">My Tree Collection</a></li>
+			  <li id="community-treecollection-button"><a href="#">Community</a></li>
+		</ul>
+	</div>
+	<div class="col-md-8 collection-wrapper" id="user-treecollection-wrapper">
+	</div>
+	<div class="col-md-8 collection-wrapper" id="community-treecollection-wrapper" style="display:none;">
+	</div>
+	</script>
+	<script type="text/template" id="score-entry-template">
+	<@	if(json_tree.score != "Score"){ @>
+	<td><span class='keyValue'><@= rank @></span></td>
+	<td><span class='keyValue'><@= player_name @></span></td>
+	<td><span class='keyValue'><@= json_tree.score @></span></td>
+	<td><span class='keyValue'><@= json_tree.size @></span></td>
+	<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*10)/10) @></span></td>
+	<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*10)/10) @></span></td>
+	<td><center><@= comment @></center></td>
+	<@ } else { @>
+	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
+	<th><span class='keyValue'><@= player_name @></span></th>
+	<th><span class='keyValue'><@= json_tree.score @></span></th>
+	<th><span class='keyValue'><@= json_tree.size @></span></th>
+	<th><span class='keyValue'><@= json_tree.pct_correct @></span></th>
+	<th><span class='keyValue'><@= json_tree.novelty @></span></th>
+	<th><center><@= comment @></center></th>
+	<@ } @>
+	</script>
+	<script type="text/javascript">
+    var cure_user_experience = "<%=player_experience%>",
+        cure_user_id = "<%=player_id%>",
+        cure_user_name = "<%= player_name %>";
+	</script>
+	<script src="./js/underscore.js"></script>
+	<script src="./js/jquery-1.10.1.js"></script>
+	<script src="./js/backbone.js"></script>
+	<script src="./js/marionette.backbone.min.js"></script>
+	<script src="./js/d3.v3.js"></script>
+	<script src="./js/script.js"></script>
+</body>
+</html>

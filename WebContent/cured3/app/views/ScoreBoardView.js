@@ -10,7 +10,6 @@ ScoreBoardView = Backbone.Marionette.CollectionView.extend({
 	className: 'table table-bordered ScoreBoardInnerWrapper',
 	collection : ScoreBoard,
 	initialize : function() {
-		
 	},
 	appendHtml: function(collectionView, itemView, index){
     	if(collectionView.children.findByModel(index-1)){
@@ -18,7 +17,8 @@ ScoreBoardView = Backbone.Marionette.CollectionView.extend({
     	} else {
     		collectionView.$el.append(itemView.$el);
     	}
-    }
+   },
+   ScoreBoardRequestSent: false
 });
 
 return ScoreBoardView;

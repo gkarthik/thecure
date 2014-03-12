@@ -1,0 +1,23 @@
+#profile-container{
+	padding-top: 60px;
+}
+
+#sidebar-fixed{
+	position:fixed;
+}
+
+/*
+Navbar Style
+*/
+
+.navbar .nav > li > a{
+	color:#FFF;
+}
+
+.navbar .nav > li > a:hover{
+	background-color: #E04B7D;
+}
+
+body div.navbar-inner div.container a.brand{
+	padding: 15px 5px;
+}

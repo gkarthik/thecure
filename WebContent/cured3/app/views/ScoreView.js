@@ -5,10 +5,8 @@ define([
 	'd3',
 	//Templates
 	'text!app/templates/Score.html',
-	'text!app/templates/ScoreChangeSummary.html',
-	//Plugins
-	'odometer'
-    ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate, Odometer) {
+	'text!app/templates/ScoreChangeSummary.html'
+    ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate) {
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore');
@@ -27,14 +25,14 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	template : scoreTemplate,
 	showSVG: function(){
-		$("#ScoreSVG").slideDown();
+		$("#ScoreSVG").show();
 		$(".showSVG").html('<i class="glyphicon glyphicon-resize-small"></i>Hide Chart');
 		$(".showSVG").addClass("closeSVG");
 		$(".showSVG").removeClass("showSVG");
 	},
 	closeSVG: function(){
-		$("#ScoreSVG").slideUp();
-		$(".closeSVG").html('<i class="glyphicon glyphicon-resize-full"></i>Show Chart');
+		$("#ScoreSVG").hide();
+		$(".closeSVG").html('<i class="glyphicon glyphicon-resize-full"></i>Explain Score');
 		$(".closeSVG").addClass("showSVG");
 		$(".closeSVG").removeClass("closeSVG");
 	},
@@ -46,7 +44,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	closeChangeSum: function(){
 		$("#ScoreChangesWrapper").hide();
-		$(".closeChangeSummary").html('<i class="glyphicon glyphicon-resize-small"></i>Show Score Transition');
+		$(".closeChangeSummary").html('<i class="glyphicon glyphicon-resize-full"></i>Show Score Transition');
 		$(".closeChangeSummary").addClass("showChangeSummary");
 		$(".closeChangeSummary").removeClass("closeChangeSummary");
 	},
@@ -391,16 +389,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 				.attr("height", Cure.Scoreheight);
 		this.drawAxis();
 		this.updateScore();
-	},
-	onShow : function(){
-		var el = document.getElementById("score");
-		od = new Odometer({
-		  el: el,
-		  value: 0,
-		  duration: '2000',
-		  format: '',
-		  theme: 'train-station'
-		});
 	}
 });
 return ScoreView;
