@@ -324,8 +324,8 @@ public class Tree {
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
 				while(fs.next()){
-					int fid = fs.getInt("feature_id");
-					Feature f = Feature.getByDbId(fid);
+					String fid = fs.getString("feature_id");
+					Feature f = Feature.getByUniqueId(fid);
 					if(f!=null){
 						features.add(f);
 					}
@@ -356,6 +356,45 @@ public class Tree {
 		return trees;
 	}
 	
+	public static double getUniqueIdNovelty(List<String> unique_id){
+		double nov = 1;
+		//select count(*) from card where unique_id = 2261 or unique_id = 1717 or unique_id = 9135;
+		JdbcConnection conn = new JdbcConnection();
+		String q = "select (select count(*) as total from card)+(select count(*) as total from tree_feature) as total";
+		String q1 = "select ";
+		String q2 = "select count(*) as n from card where ";
+		String q3 = "select count(*) as n from tree_feature where ";
+		for(String uid : unique_id){
+			q2 += " unique_id = '"+uid+"' or ";// quotes('') for unique ids of clinical features like 'metabric_clinical_5'
+			q3 += " feature_id = '"+uid+"' or ";
+		}
+		q2 = q2.substring(0,q2.length()-3);
+		q3 = q3.substring(0,q3.length()-3);
+		q1 = q1 +"("+q2+")"+"+"+"("+q3+") as n";
+		double base = 1; double n = 1;
+		ResultSet rslt = conn.executeQuery(q);
+		try {
+			if(rslt.next()){
+				base = rslt.getDouble("total");
+			}
+			rslt.close();
+			rslt = conn.executeQuery(q1);
+			if(rslt.next()){//returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
+				n = rslt.getDouble("n");
+			}
+			if(base>0 && n > 0){
+				nov = (1 - Math.log(n)/Math.log(base));
+			}else if(base == 0 && n == 0){//With this condition, novelty = Infinity error resolved.
+				nov = 1; //First time card used.
+			}
+			
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return nov;
+	}
 	
 	public int insert(int previous_tree_id) throws Exception{
 		int newid = 0;
@@ -382,7 +421,7 @@ public class Tree {
 				newid = id;
 				if(features!=null){
 					for(Feature f : features){
-						conn.executeUpdate("insert into tree_feature values("+newid+","+f.getId()+")");
+						conn.executeUpdate("insert into tree_feature values("+newid+",'"+f.getUnique_id()+"')");
 						//tree_feature(Unique_Key) duplicated if same node added. Causes MySQL integrity error.
 					}
 				}else{

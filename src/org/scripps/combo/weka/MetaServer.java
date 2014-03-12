@@ -366,7 +366,7 @@ public class MetaServer extends HttpServlet {
 		ObjectNode result = mapper.createObjectNode();
 		result.put("pct_correct", eval.pctCorrect());
 		result.put("size", numnodes);
-		double nov = Card.getUniqueIdNovelty(entrez_ids);
+		double nov = Tree.getUniqueIdNovelty(entrez_ids);
 		result.put("novelty", nov);//
 		result.put("text_tree", readtree.toString());
 		//serialize and return the result		
