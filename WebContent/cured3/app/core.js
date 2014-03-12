@@ -189,7 +189,6 @@ define(
 		        
 		        $("#current-tree-rank").on("click",function(){
 		        	$("#score-board-outerWrapper").show();
-		        	$("#scoreboard_wrapper").scrollTop($('.current_tree').offset().top - $(".ScoreBoardInnerWrapper").offset().top);
 		        });
 		        
 		        $("#cure-panel .nav-boards a").on("click",function(){
