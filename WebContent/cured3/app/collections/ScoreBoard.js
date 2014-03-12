@@ -71,7 +71,6 @@ ScoreBoard = Backbone.Collection.extend({
 	comparator: 'rank',
 	url : '/cure/MetaServer',
 	fetch: function(direction){
-		console.log(this.allowRequest);
 		if(this.allowRequest){
 			this.lowerLimit = Cure.ScoreBoard.at(Cure.ScoreBoard.length-1).get('rank');
 			this.upperLimit = this.lowerLimit + 10;
@@ -81,7 +80,6 @@ ScoreBoard = Backbone.Collection.extend({
 					upperLimit : this.upperLimit,
 					orderby: "score"
 			};
-			console.log(this.lowerLimit,this.upperLimit);
 			$.ajax({
 				type : 'POST',
 				url : this.url,

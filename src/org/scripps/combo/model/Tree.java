@@ -324,8 +324,8 @@ public class Tree {
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
 				while(fs.next()){
-					String fid = fs.getString("feature_id");
-					Feature f = Feature.getByUniqueId(fid);
+					int fid = fs.getInt("feature_id");
+					Feature f = Feature.getByDbId(fid);
 					if(f!=null){
 						features.add(f);
 					}
@@ -363,10 +363,10 @@ public class Tree {
 		String q = "select (select count(*) as total from card)+(select count(*) as total from tree_feature) as total";
 		String q1 = "select ";
 		String q2 = "select count(*) as n from card where ";
-		String q3 = "select count(*) as n from tree_feature where ";
+		String q3 = "select count(*) as n from tree_feature, feature where tree_feature.feature_id = feature.id and ";
 		for(String uid : unique_id){
 			q2 += " unique_id = '"+uid+"' or ";// quotes('') for unique ids of clinical features like 'metabric_clinical_5'
-			q3 += " feature_id = '"+uid+"' or ";
+			q3 += " feature.unique_id = '"+uid+"' or ";
 		}
 		q2 = q2.substring(0,q2.length()-3);
 		q3 = q3.substring(0,q3.length()-3);
@@ -378,9 +378,13 @@ public class Tree {
 				base = rslt.getDouble("total");
 			}
 			rslt.close();
-			rslt = conn.executeQuery(q1);
-			if(rslt.next()){//returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
-				n = rslt.getDouble("n");
+			if(!unique_id.isEmpty()){
+				rslt = conn.executeQuery(q1);
+				if(rslt.next()){//returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
+					n = rslt.getDouble("n");
+				}
+			} else {
+				n=0;
 			}
 			if(base>0 && n > 0){
 				nov = (1 - Math.log(n)/Math.log(base));
@@ -421,7 +425,7 @@ public class Tree {
 				newid = id;
 				if(features!=null){
 					for(Feature f : features){
-						conn.executeUpdate("insert into tree_feature values("+newid+",'"+f.getUnique_id()+"')");
+						conn.executeUpdate("insert into tree_feature values("+newid+",'"+f.getId()+"')");
 						//tree_feature(Unique_Key) duplicated if same node added. Causes MySQL integrity error.
 					}
 				}else{
