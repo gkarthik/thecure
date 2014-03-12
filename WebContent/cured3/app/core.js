@@ -9,9 +9,8 @@ define(
         // Models
         'app/models/Comment', 'app/models/Score',
         // Views
-        'app/views/CommentView', 'app/views/JSONCollectionView',
-        'app/views/NodeCollectionView','app/views/TreeBranchCollectionView', 'app/views/ScoreBoardView',
-        'app/views/ScoreView', 'app/views/CollaboratorCollectionView',
+        'app/views/JSONCollectionView',
+        'app/views/NodeCollectionView','app/views/layouts/sidebarLayout',
         // Utilitites
         'app/utilities/utilities',
         //Tour
@@ -19,8 +18,8 @@ define(
         'app/tour/treeTour'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, CommentView, JSONCollectionView,
-        NodeCollectionView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, JSONCollectionView,
+        NodeCollectionView, sidebarLayout, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
@@ -63,6 +62,7 @@ define(
 		        Cure.sizeScale = d3.scale.linear().domain([ 0, 1 ]).range(
 		            [ 0, 100 ]);
 		        
+		        //Zoom Controls TODO: Move to view.
 		        Cure.scaleLevel = 1;
 		        
 		        $(".zoomin").on("click",function(){
@@ -126,12 +126,11 @@ define(
 		                "dragSvgGroup");
 
 		        // Event Initializers
-
 		        $("#HelpText").on("click", function() {
 			        var html = $(this).html();
 			        Cure.utils.ToggleHelp(false, Cure.helpText);
 		        });
-
+		        
 		        $("body").delegate("#closeHelp", "click", function() {
 			        Cure.utils.ToggleHelp(true);
 		        });
@@ -143,7 +142,6 @@ define(
 				        $(this).parent().parent().parent().hide();
 			        }
 		        });
-
 		        $(document).mouseup(
 		            function(e) {
 			            var container = $(".addnode_wrapper");
@@ -165,7 +163,7 @@ define(
 				            classToclose.hide();
 			            }
 		          });
-
+		        //TODO: MOVE TO ScoreBoardView
 		        Cure.ScoreBoardRequestSent = false;
 		        $("#scoreboard_wrapper").scroll(
 		            function() {
@@ -179,39 +177,6 @@ define(
 			            	}, 500);
 			            }
 		            });
-		        	
-		        $("#save_tree")
-		            .on(
-		                "click",
-		                function() {
-			                Cure.PlayerNodeCollection.saveTree();
-		        });
-		        
-		        $("#current-tree-rank").on("click",function(){
-		        	$("#score-board-outerWrapper").show();
-		        });
-		        
-		        $("#cure-panel .nav-boards a").on("click",function(){
-		        	if(Cure.PlayerNodeCollection.length != 0){
-		        		if(!$(this).parent().hasClass("active")){
-				        	$(".panel-outer-wrapper").hide();
-				        	$("#cure-panel .nav-boards li").removeClass("active");
-				        	$(this).parent().addClass("active");
-				        	$(this).html('<i class="glyphicon glyphicon-pencil"></i>Close Tree Explanation');
-				        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
-				        	$(id).show();
-			        	} else {
-			        		$(this).html('<i class="glyphicon glyphicon-pencil"></i>Show Tree Explanation');
-			        		$(this).parent().removeClass("active");
-				        	var id = "#"+$(this).attr('id').replace("pill","outerWrapper");
-				        	$(id).hide();
-			        	}
-		        	} else {
-		        		Cure.utils
-		            .showAlert("<strong>Empty Tree!</strong><br>You can build the tree by using the autocomplete.", 0);
-		        	}
-		        });
-
 		        options.regions.PlayerTreeRegion += "Tree";
 		        Cure.addRegions(options.regions);
 		        Cure.colorScale = d3.scale.category10();
@@ -219,7 +184,6 @@ define(
 		        Cure.Scorewidth = options["Scorewidth"];
 		        Cure.Scoreheight = options["Scoreheight"];
 		        Cure.duration = 500;
-		        var width = 0;
 		        Cure.cluster = d3.layout.tree().size([ (Cure.width-100), "auto" ])
 		            .separation(function(a, b) {
 			            try {
@@ -243,37 +207,17 @@ define(
 		        Cure.CollaboratorCollection = new CollaboratorCollection();
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
-		        Cure.ScoreView = new ScoreView({
-			        "model" : Cure.Score
-		        });
-		        Cure.CommentView = new CommentView({
-			        model : Cure.Comment
-		        });
 		        Cure.PlayerNodeCollectionView = new NodeCollectionView({
 			        collection : Cure.PlayerNodeCollection
 		        });
 		        Cure.JSONCollectionView = new JSONCollectionView({
 			        collection : Cure.PlayerNodeCollection
 		        });
-		        Cure.ScoreBoardView = new ScoreBoardView({
-			        collection : Cure.ScoreBoard
-		        });
-		        Cure.TreeBranchCollectionView = new TreeBranchCollectionView({
-		        	collection: Cure.TreeBranchCollection
-		        });
-		        Cure.CollaboratorCollectionView = new CollaborativeCollectionView({
-		        	collection: Cure.CollaboratorCollection
-		        });
+		        Cure.sidebarLayout = new sidebarLayout();
 		        Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
-		        Cure.CollaboratorsRegion.show(Cure.CollaboratorCollectionView);
-		        Cure.ScoreRegion.show(Cure.ScoreView);
-		        Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
-		        Cure.CommentRegion.show(Cure.CommentView);
-		        Cure.TreeBranchRegion.show(Cure.TreeBranchCollectionView);
+		        Cure.SideBarRegion.show(Cure.sidebarLayout);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
-		        Cure.collaborators = [];
 	        });
-	    
 	    return Cure;
     });

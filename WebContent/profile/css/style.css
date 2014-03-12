@@ -1,57 +1,9 @@
-@font-face {
-      font-family: "Modern Pictograms";
-      src: url(/cure/cure2.0/css/fonts/ModernPictograms/modernpics.otf);
-		font-style: normal;
-}
-
 #profile-container{
 	padding-top: 60px;
 }
 
 #sidebar-fixed{
 	position:fixed;
-	width: 20%;
-	border: 2px solid #CCC;
-	padding:10px;
-}
-
-#sidebar-fixed .input-group{
-	margin-top:20px;
-}
-
-.previewTree{
-	cursor:pointer;
-}
-
-.table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td{
-	vertical-align:middle;
-}
-
-.link{
-	fill: none;
-stroke: steelblue;
-stroke-width: 1.5px;
-}
-
-#loading-wrapper{
-	display:none;
-}
-
-.privateTree{
-		
-}
-
-.player-badge{
-background: none repeat scroll 0% 0% #3276B1;
-padding: 5px;	
-}
-
-.player-badge .pictogram{
-	font-family: "Modern Pictograms";
-    font-size: 40px;
-    display: block;
-    font-weight: 300;
-    color: yellow;
 }
 
 /*

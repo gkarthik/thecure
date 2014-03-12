@@ -391,6 +391,7 @@ width: 310px;
 }
 
 #ScoreSVG{
+	display:none;
 	border: 2px solid steelblue;
 	position: relative;
 	background: #FFF;
@@ -462,9 +463,6 @@ width: 310px;
 }
 
 #tree-explanation-outerWrapper{
-position: absolute;
-top: 50px;
-height: 420px;
 background: #FFF;	
 }
 

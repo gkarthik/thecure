@@ -89,14 +89,7 @@ CommunityTreeCollection = Backbone.Collection.extend({
 	},
 	lowerLimit: 0,
 	upperLimit: 200,
-	sort_key: 'rank',
-	comparator: function(a, b) {
-    a = a.get(this.sort_key);
-    b = b.get(this.sort_key);
-    return a > b ?  1
-         : a < b ? -1
-         :          0;
-	},   
+	comparator: 'rank',
 	url : '/cure/MetaServer',
 	fetch: function(direction){
 		if(this.allowRequest){
@@ -148,7 +141,8 @@ CommunityTreeCollection = Backbone.Collection.extend({
 		}
 	},
 	error : function(data) {
-		console.log("server error");
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
 	}
 });
 
@@ -156,59 +150,19 @@ CommunityTreeCollection = Backbone.Collection.extend({
 TreeItemView = Marionette.ItemView.extend({
 	tagName: 'tr',
 	className: function(){
-		if(this.model.get('json_tree').pct_correct!="Acc"){
-			if(this.model.get('private')==1){
-				return "tree-score-entry privateTree";
-			}
+		if(this.model.get('json_tree').pct_correct!="Accuracy"){
 			return "tree-score-entry";
 		}
 		return "";
 	},
-	ui: {
-		"SvgPreview": 'svg'
+	ui : {
+
 	},
 	initialize : function() {
+		this.model.bind('change', this.render);
 		this.$el.click(this.loadNewTree);
-		this.model.set("cid",this.model.cid);
 	},
-	template: "#score-entry-template",
-	renderTreePreview: function(){
-		var id = $(this.ui.SvgPreview).attr('id');
-		var svg = d3.select("#"+id)
-			.attr("width",300)
-			.attr("height",300)
-			.append("g")
-			.attr("transform","translate(0,20)");
-		var cluster = d3.layout.tree().size([ 250, 250 ]);
-		var diagonal = d3.svg.diagonal().projection(function(d) { return [d.x, d.y]; });
-		var json = JSON.stringify(this.model.get('json_tree').treestruct);
-		var nodes = cluster.nodes(JSON.parse(json)),
-    links = cluster.links(nodes);
-	  var link = svg.selectAll(".link")
-	      .data(links)
-	    .enter().append("path")
-	      .attr("class", "link")
-	      .attr("d", diagonal)
-	      .style("stroke","steelblue")
-	      .style("stroke-width", "2");
-	
-	  var node = svg.selectAll(".node")
-	      .data(nodes)
-	    .enter().append("g")
-	      .attr("class", "node")
-	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-	
-	  node.append("text")
-	      .attr("dx", function(d) { return d.children ? -8 : 8; })
-	      .attr("dy", 3)
-	      .style("text-anchor", "middle")
-	      .text(function(d) { return d.name; });
-	},
-	onShow: function(){
-		if(this.model.get('rank')!=0){
-			this.renderTreePreview();
-		}
-	}
+	template: "#score-entry-template"
 });
 
 TreeCollectionView = Backbone.Marionette.CollectionView.extend({
@@ -232,81 +186,34 @@ MainLayout = Marionette.Layout.extend({
   className: 'row',
   regions: {
   	"UserRegion" : "#user-treecollection-wrapper",
-  	"CommunityRegion" : "#community-treecollection-wrapper",
-  	"SearchRegion": '#search-treecollection-wrapper'
+  	"CommunityRegion" : "#community-treecollection-wrapper"
   },
   ui:{
-  	'navLinks':'#sidebar-fixed li',
-  	'searchInput': '#search_collection'
+  	'navLinks':'#sidebar-fixed li'
   },
   events:{
-  	'click #sidebar-fixed li a': 'toggleNav',
-  	'keypress #search_collection': 'searchCollection'
+  	'click #sidebar-fixed li a': 'toggleNav'
   },
+  className: 'panel panel-default',
   initialize: function(){
-  	_.bindAll(this,'toggleNav','searchCollection');
+  	_.bindAll(this,'toggleNav');
   },
   toggleNav: function(ev){
   		if(!$(ev.target).parent().hasClass("active")){
-  			$(this.ui.searchInput).val("");
   			$(this.ui.navLinks).removeClass("active");
       	$(ev.target).parent().addClass("active");
       	var elid = "#"+$(ev.target).parent().attr('id').replace("button","wrapper");
+      	console.log(elid);
       	$('.collection-wrapper').hide();
       	$(elid).show();
     	}
   },
-  searchCollection: function(evt){
-  	var thisLayout = this;
-  	if(evt.keyCode<37 || evt.keyCode>40){
-  		$("#loading-wrapper").show();
-  		var t = window.setTimeout(function(){
-  			if($(thisLayout.ui.searchInput).val()!=""){
-  				var args = {
-  						command : "get_trees_by_search",
-  						query: $(thisLayout.ui.searchInput).val()
-  				};
-  				$.ajax({
-  					type : 'POST',
-  					url : '/cure/MetaServer',
-  					data : JSON.stringify(args),
-  					dataType : 'json',
-  					contentType : "application/json; charset=utf-8",
-  					success : function(data){
-  						var trees = data.trees;
-  						trees.unshift({
-  							comment: "Comment",
-  							created: "Created",
-  							id: "id",
-  							ip: "ip",
-  							player_name: "<i class='glyphicon glyphicon-user'></i>",
-  							json_tree :{
-  								novelty : "Nov",
-  								pct_correct : "Acc",
-  								size : "Size",
-  								score : "Score",
-  								text_tree : '',
-  								treestruct : {}
-  							}
-  						});
-  						Library.SearchTreeCollection.reset(trees);
-  						thisLayout.SearchRegion.show(Library.SearchTreeCollectionView);
-  				  	$(thisLayout.ui.navLinks).removeClass("active");
-  		      	$('.collection-wrapper').hide();
-  		      	$('#search-treecollection-wrapper').show();
-  		      	$("#loading-wrapper").hide();
-  					},
-  					error : this.error,
-  					async: true
-  				});
-  			}
-  			window.clearTimeout(t);
-  		},300);
-  	}
-  },
-  onShow: function(){
+  onRender: function(){
   	this.UserRegion.show(Library.UserTreeCollectionView);
   	this.CommunityRegion.show(Library.CommunityTreeCollectionView);
+  },
+  onShow: function(){
+
   }
 });
 
@@ -326,7 +233,6 @@ Library.UserTreeCollection = new UserTreeCollection();
 Library.UserTreeCollection.fetch();
 Library.CommunityTreeCollection = new CommunityTreeCollection();
 Library.CommunityTreeCollection.fetch();
-Library.SearchTreeCollection = new CommunityTreeCollection();
 
 Library.UserTreeCollectionView = new TreeCollectionView({
 	collection: Library.UserTreeCollection
@@ -334,10 +240,6 @@ Library.UserTreeCollectionView = new TreeCollectionView({
 Library.CommunityTreeCollectionView = new TreeCollectionView({
 	collection: Library.CommunityTreeCollection
 });
-Library.SearchTreeCollectionView = new TreeCollectionView({
-	collection: Library.SearchTreeCollection
-});
-
 Library.MainLayout = new MainLayout();
 Library.mainWrapper.show(Library.MainLayout);
 });
