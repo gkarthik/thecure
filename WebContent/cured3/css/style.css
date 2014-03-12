@@ -525,6 +525,7 @@ z-index: 9999;
 }
 
 #current-tree-rank{
+	cursor: pointer;
 background: #F69;
 color: #FFF;
 font-weight: bold;
