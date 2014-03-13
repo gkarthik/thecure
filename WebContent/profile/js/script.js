@@ -156,13 +156,21 @@ TreeItemView = Marionette.ItemView.extend({
 		return "";
 	},
 	ui : {
-
+		
 	},
 	initialize : function() {
-		this.model.bind('change', this.render);
 		this.$el.click(this.loadNewTree);
 	},
-	template: "#score-entry-template"
+	template: "#score-entry-template",
+	render: function(){
+		if(this.model.get('rank')!=0){
+			console.log("#treePreview"+this.model.get('rank'));
+			d3.selectAll("#treePreview"+this.model.get('rank'))
+				.attr("width",200)
+				.attr("height",200)
+				.append("svg:g");
+		}
+	}
 });
 
 TreeCollectionView = Backbone.Marionette.CollectionView.extend({
