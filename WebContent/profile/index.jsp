@@ -46,21 +46,29 @@ Player player = (Player) session.getAttribute("player");
 		</div>
 	</div>
 	</div>
-	<div class="container" id="profile-container">
+	<div class="container-fluid" id="profile-container">
 		
 	</div>
 	<jsp:include page="/footer.jsp" />
 	<script type="text/template" id="main-layout-template">
 		<div class="col-md-4">
+		<div id="sidebar-fixed">
 		<h3>Hey <%= player_name %>,</h3>
-		<ul class="nav nav-pills nav-stacked" id="sidebar-fixed">
+		<ul class="nav nav-pills nav-stacked">
 		  <li class="active" id="user-treecollection-button"><a href="#">My Tree Collection</a></li>
 			  <li id="community-treecollection-button"><a href="#">Community</a></li>
 		</ul>
+<div class="input-group">
+	<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+	<input type="text" class="form-control" id="search_collection" placeholder="Search through users, genes and comments.">
+</div>
+</div>
 	</div>
 	<div class="col-md-8 collection-wrapper" id="user-treecollection-wrapper">
 	</div>
 	<div class="col-md-8 collection-wrapper" id="community-treecollection-wrapper" style="display:none;">
+	</div>
+	<div class="col-md-8 collection-wrapper" id="search-treecollection-wrapper" style="display:none;">
 	</div>
 	</script>
 	<script type="text/template" id="score-entry-template">
