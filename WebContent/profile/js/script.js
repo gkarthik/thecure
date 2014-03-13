@@ -141,8 +141,7 @@ CommunityTreeCollection = Backbone.Collection.extend({
 		}
 	},
 	error : function(data) {
-		Cure.utils
-    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
+		console.log("server error");
 	}
 });
 
@@ -155,20 +154,47 @@ TreeItemView = Marionette.ItemView.extend({
 		}
 		return "";
 	},
-	ui : {
-		
-	},
 	initialize : function() {
 		this.$el.click(this.loadNewTree);
+		this.model.set("cid",this.model.cid);
 	},
 	template: "#score-entry-template",
-	render: function(){
+	onRender: function(){
+		
+	},
+	onShow: function(){
 		if(this.model.get('rank')!=0){
-			console.log("#treePreview"+this.model.get('rank'));
-			d3.selectAll("#treePreview"+this.model.get('rank'))
-				.attr("width",200)
-				.attr("height",200)
-				.append("svg:g");
+			var cid = this.model.get('cid');
+			var svg = d3.selectAll("#treePreview"+cid)
+				.attr("width",300)
+				.attr("height",300)
+				.append("g")
+				.attr("transform","translate(0,20)");
+			var cluster = d3.layout.tree().size([ 250, 250 ]);
+			var diagonal = d3.svg.diagonal().projection(function(d) { return [d.x, d.y]; });
+			var json = JSON.stringify(this.model.get('json_tree').treestruct);
+			var nodes = cluster.nodes(JSON.parse(json)),
+      links = cluster.links(nodes);
+		  var link = svg.selectAll(".link")
+		      .data(links)
+		    .enter().append("path")
+		      .attr("class", "link")
+		      .attr("d", diagonal)
+		      .style("stroke","steelblue")
+		      .style("stroke-width", "2");
+		
+		  var node = svg.selectAll(".node")
+		      .data(nodes)
+		    .enter().append("g")
+		      .attr("class", "node")
+		      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+		
+		  node.append("text")
+		      .attr("dx", function(d) { return d.children ? -8 : 8; })
+		      .attr("dy", 3)
+		      .style("text-anchor", "middle")
+		      .text(function(d) { return d.name; });
+			
 		}
 	}
 });
