@@ -145,6 +145,7 @@ NodeCollection = Backbone.Collection.extend({
 			Cure.Comment.set("content","");
 			Cure.ScoreBoardView.render();
 			Cure.PlayerNodeCollection.tree_id = 0;
+			Cure.CollaboratorCollection.reset();
 		}
 		if($("#current-tree-rank").html("")!=""){
 			$("#current-tree-rank").html("");
