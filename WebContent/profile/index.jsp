@@ -73,6 +73,7 @@ Player player = (Player) session.getAttribute("player");
 	<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*10)/10) @></span></td>
 	<td><center><@= comment @></center></td>
 	<td><svg id="treePreview<@= cid @>"></svg></td>
+	<td><center><a href="/cure/cured3/index.jsp?treeid=<@= id @>"><i class="glyphicon glyphicon-edit"></i></a></center></td>
 	<@ } else { @>
 	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
 	<th><span class='keyValue'><@= player_name @></span></th>
@@ -82,6 +83,7 @@ Player player = (Player) session.getAttribute("player");
 	<th><span class='keyValue'><@= json_tree.novelty @></span></th>
 	<th><center><@= comment @></center></th>
 	<th><center>Preview</center></th>
+	<th><center>Edit Tree</center></td>
 	<@ } @>
 	</script>
 	<script type="text/javascript">

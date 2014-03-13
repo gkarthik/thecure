@@ -276,16 +276,25 @@ public class Tree {
 		return trees;
 	}	
 	
-	public Tree getById(String id){
-		Tree tree = new Tree();
+	public List<Tree> getById(String id){
+		List<Tree> trees = new ArrayList<Tree>();
 		String q = "select * from tree where id="+id;
 		JdbcConnection conn = new JdbcConnection();
 		try {
 			ResultSet ts = conn.executeQuery(q);
-			if(ts.next()){
-				tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
+			while(ts.next()){
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
-				//TODO stop being lazy and do this properly in SQL...
+				String player_name = "";
+				try{
+					ResultSet player = conn.executeQuery("select * from player where id="+ts.getInt("player_id"));
+					while(player.next()){
+						player_name = player.getString("name");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				tree.player_name = player_name;
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -297,6 +306,21 @@ public class Tree {
 					}
 				}
 				tree.features = features;
+				//scores
+				ResultSet scores = conn.executeQuery("select * from tree_dataset_score where tree_id="+tree.id);
+				if(scores!=null){
+					Map<String, TreeScore> data_score = new HashMap<String, TreeScore>();
+					while(scores.next()){
+						TreeScore score = new TreeScore();
+						score.novelty = scores.getFloat("novelty");
+						score.percent_correct = scores.getFloat("percent_correct");
+						score.size = scores.getFloat("size");
+						score.score = scores.getFloat("score");
+						data_score.put(scores.getString("dataset"), score);
+					}
+					tree.dataset_score = data_score;
+				}
+				trees.add(tree);
 			}
 			ts.close();
 			conn.connection.close();
@@ -304,7 +328,7 @@ public class Tree {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return tree;
+		return trees;		
 	}
 	
 	public int get_rank(int tree_id){
