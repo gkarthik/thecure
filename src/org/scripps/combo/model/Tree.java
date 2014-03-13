@@ -188,13 +188,26 @@ public class Tree {
 
 	public List<Tree> getForPlayer(int player_id){
 		List<Tree> trees = new ArrayList<Tree>();
-		String q = "select * from tree where player_id="+player_id;
 		JdbcConnection conn = new JdbcConnection();
+		String q0 = "SET @i=0;";
+		conn.executeQuery(q0);
+		String q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 and tree.player_id="+player_id+" order by tree_dataset_score.score desc";
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
 				tree.created = ts.getDate("created");
+				tree.rank = ts.getInt("rank");
+				String player_name = "";
+				try{
+					ResultSet player = conn.executeQuery("select * from player where id="+ts.getInt("player_id"));
+					while(player.next()){
+						player_name = player.getString("name");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				tree.player_name = player_name;
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -206,6 +219,20 @@ public class Tree {
 					}
 				}
 				tree.features = features;
+				//scores
+				ResultSet scores = conn.executeQuery("select * from tree_dataset_score where tree_id="+tree.id);
+				if(scores!=null){
+					Map<String, TreeScore> data_score = new HashMap<String, TreeScore>();
+					while(scores.next()){
+						TreeScore score = new TreeScore();
+						score.novelty = scores.getFloat("novelty");
+						score.percent_correct = scores.getFloat("percent_correct");
+						score.size = scores.getFloat("size");
+						score.score = scores.getFloat("score");
+						data_score.put(scores.getString("dataset"), score);
+					}
+					tree.dataset_score = data_score;
+				}
 				trees.add(tree);
 			}
 			ts.close();
