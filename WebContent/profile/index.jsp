@@ -72,7 +72,7 @@ Player player = (Player) session.getAttribute("player");
 	<td><span class='keyValue'><@ print(Math.round(json_tree.pct_correct*10)/10) @></span></td>
 	<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*10)/10) @></span></td>
 	<td><center><@= comment @></center></td>
-	<td><svg id="treePreview<@= rank @>"></svg></td>
+	<td><svg id="treePreview<@= cid @>"></svg></td>
 	<@ } else { @>
 	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
 	<th><span class='keyValue'><@= player_name @></span></th>
