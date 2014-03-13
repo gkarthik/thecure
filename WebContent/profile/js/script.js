@@ -160,7 +160,7 @@ TreeItemView = Marionette.ItemView.extend({
 	},
 	template: "#score-entry-template",
 	onRender: function(){
-		
+		this.onShow();
 	},
 	onShow: function(){
 		if(this.model.get('rank')!=0){
@@ -220,16 +220,19 @@ MainLayout = Marionette.Layout.extend({
   className: 'row',
   regions: {
   	"UserRegion" : "#user-treecollection-wrapper",
-  	"CommunityRegion" : "#community-treecollection-wrapper"
+  	"CommunityRegion" : "#community-treecollection-wrapper",
+  	"SearchRegion": '#search-treecollection-wrapper'
   },
   ui:{
-  	'navLinks':'#sidebar-fixed li'
+  	'navLinks':'#sidebar-fixed li',
+  	'searchInput': '#search_collection'
   },
   events:{
-  	'click #sidebar-fixed li a': 'toggleNav'
+  	'click #sidebar-fixed li a': 'toggleNav',
+  	'keypress #search_collection': 'searchCollection'
   },
   initialize: function(){
-  	_.bindAll(this,'toggleNav');
+  	_.bindAll(this,'toggleNav','searchCollection');
   },
   toggleNav: function(ev){
   		if(!$(ev.target).parent().hasClass("active")){
@@ -241,9 +244,57 @@ MainLayout = Marionette.Layout.extend({
       	$(elid).show();
     	}
   },
+  searchCollection: function(evt){
+  	var uielement = $(this.ui.searchInput);
+  	var navLinks = $(this.ui.navLinks);
+  	if(evt.keyCode<37 || evt.keyCode>40){
+  		console.log("search!");
+  		var t = window.setTimeout(function(){
+  			if(uielement.val()!=""){
+  				var args = {
+  						command : "get_trees_by_search",
+  						query: uielement.val()
+  				};
+  				$.ajax({
+  					type : 'POST',
+  					url : '/cure/MetaServer',
+  					data : JSON.stringify(args),
+  					dataType : 'json',
+  					contentType : "application/json; charset=utf-8",
+  					success : function(data){
+  						var trees = data.trees;
+  						trees.unshift({
+  							comment: "Comment",
+  							created: "Created",
+  							id: "id",
+  							ip: "ip",
+  							player_name: "<i class='glyphicon glyphicon-user'></i>",
+  							json_tree :{
+  								novelty : "Nov",
+  								pct_correct : "Acc",
+  								size : "Size",
+  								score : "Score",
+  								text_tree : '',
+  								treestruct : {}
+  							}
+  						});
+  						Library.SearchTreeCollection.reset(trees);
+  						navLinks.removeClass("active");
+  		      	$('.collection-wrapper').hide();
+  		      	$('#search-treecollection-wrapper').show();
+  					},
+  					error : this.error,
+  					async: true
+  				});
+  			}
+  			window.clearTimeout(t);
+  		},300);
+  	}
+  },
   onRender: function(){
   	this.UserRegion.show(Library.UserTreeCollectionView);
   	this.CommunityRegion.show(Library.CommunityTreeCollectionView);
+  	this.SearchRegion.show(Library.SearchTreeCollectionView);
   },
   onShow: function(){
 
@@ -266,6 +317,7 @@ Library.UserTreeCollection = new UserTreeCollection();
 Library.UserTreeCollection.fetch();
 Library.CommunityTreeCollection = new CommunityTreeCollection();
 Library.CommunityTreeCollection.fetch();
+Library.SearchTreeCollection = new CommunityTreeCollection();
 
 Library.UserTreeCollectionView = new TreeCollectionView({
 	collection: Library.UserTreeCollection
@@ -273,6 +325,10 @@ Library.UserTreeCollectionView = new TreeCollectionView({
 Library.CommunityTreeCollectionView = new TreeCollectionView({
 	collection: Library.CommunityTreeCollection
 });
+Library.SearchTreeCollectionView = new TreeCollectionView({
+	collection: Library.SearchTreeCollection
+});
+
 Library.MainLayout = new MainLayout();
 Library.mainWrapper.show(Library.MainLayout);
 });

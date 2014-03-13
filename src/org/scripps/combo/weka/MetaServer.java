@@ -446,6 +446,9 @@ public class MetaServer extends HttpServlet {
 		} else if(command.equals("get_tree_by_id")) {
 			String tree_id = data.get("treeid").asText();
 			trees = tree_.getById(tree_id);
+		} else if(command.equals("get_trees_by_search")){
+			String query = data.get("query").asText();
+			trees = tree_.getBySearch(query);
 		}
 		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
 		String json_trees = mapper.writeValueAsString(treelist);

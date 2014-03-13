@@ -407,6 +407,55 @@ public class Tree {
 		return trees;
 	}
 	
+	public List<Tree> getBySearch(String query){
+		List<Tree> trees = new ArrayList<Tree>();
+		JdbcConnection conn = new JdbcConnection();
+		conn.executeQuery("SET @i = 0;");
+		String q = "";
+		q = "select @i:=@i+1 as rank, player.name, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 inner join player on player.id = tree.player_id where tree.json_tree like '%"+query+"%' or tree.comment like '%"+query+"%' or player.name like '%"+query+"%' order by tree_dataset_score.score desc";
+		try {
+			ResultSet ts = conn.executeQuery(q);
+			while(ts.next()){
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				tree.created = ts.getDate("created");
+				tree.rank = ts.getInt("rank");
+				tree.player_name = ts.getString("name");
+				String fq = "select * from tree_feature where tree_id="+tree.id;
+				ResultSet fs = conn.executeQuery(fq);
+				List<Feature> features = new ArrayList<Feature>();
+				while(fs.next()){
+					int fid = fs.getInt("feature_id");
+					Feature f = Feature.getByDbId(fid);
+					if(f!=null){
+						features.add(f);
+					}
+				}
+				tree.features = features;
+				//scores
+				ResultSet scores = conn.executeQuery("select * from tree_dataset_score where tree_id="+tree.id);
+				if(scores!=null){
+					Map<String, TreeScore> data_score = new HashMap<String, TreeScore>();
+					while(scores.next()){
+						TreeScore score = new TreeScore();
+						score.novelty = scores.getFloat("novelty");
+						score.percent_correct = scores.getFloat("percent_correct");
+						score.size = scores.getFloat("size");
+						score.score = scores.getFloat("score");
+						data_score.put(scores.getString("dataset"), score);
+					}
+					tree.dataset_score = data_score;
+				}
+				trees.add(tree);
+			}
+			ts.close();
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return trees;
+	}
+	
 	public static double getUniqueIdNovelty(List<String> unique_id){
 		double nov = 1;
 		//select count(*) from card where unique_id = 2261 or unique_id = 1717 or unique_id = 9135;

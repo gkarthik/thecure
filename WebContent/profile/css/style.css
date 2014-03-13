@@ -4,6 +4,11 @@
 
 #sidebar-fixed{
 	position:fixed;
+	width: 20%;
+}
+
+#sidebar-fixed .input-group{
+	margin-top:20px;
 }
 
 .previewTree{
