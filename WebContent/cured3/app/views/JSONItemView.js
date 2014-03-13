@@ -86,8 +86,10 @@ JSONItemView = Marionette.ItemView.extend({
 	},
 	ShowJSON : function() {
 		var description =null;
+		var idFlag = 1;
 		if(this.model.get('options').kind == "split_node"){
 			if(this.model.get('options').id.indexOf("metabric") == -1){
+				idFlag = 0;
 				this.getSummary();
 			} else {
 				description = this.model.get('options').description;
@@ -113,15 +115,18 @@ JSONItemView = Marionette.ItemView.extend({
 				description = "<b>Not</b> Predicted to survive beyond ten years.";
 			}
 		}
-		var summary = {};
-		summary.name = this.model.get('name');
-		summary.summaryText = description;
-		this.model.set("gene_summary",summary);
+		if(idFlag){
+			var summary = {};
+			summary.name = this.model.get('name');
+			summary.summaryText = description;
+			this.model.set("gene_summary",summary);
+		}
 		
 		this.$el.find(this.ui.showjson).addClass("disabled");
 		this.$el.find(this.ui.jsondata).css({
 			'display' : 'block'
 		});
+		return 1;
 	},
 	HideJSON : function() {
 		$(this.ui.jsondata).css({

@@ -111,9 +111,10 @@ Player player = (Player) session.getAttribute("player");
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>",
-        cure_user_name = "<%= player_name %>";
+        cure_user_name = "<%= player_name %>",
+        cure_tree_id = null;
     <% if(request.getParameter("treeid")!=null){ %> 
-    var cure_tree_id = <%= request.getParameter("treeid") %>; 
+     	cure_tree_id = <%= request.getParameter("treeid") %>;
     <% } %>
   </script>
 	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>

@@ -218,7 +218,7 @@ define(
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
-		        if(cure_tree_id){
+		        if(cure_tree_id!=undefined){
 		        	var args = {
 		        			command : "get_tree_by_id",
 		        			dataset : "metabric_with_clinical",
