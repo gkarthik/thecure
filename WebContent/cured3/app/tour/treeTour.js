@@ -43,9 +43,9 @@ define([
 	    placement: "left"
   },
   {
-  	element: "#ScoreSVG",
+  	element: ".showSVG",
     title: "Score Chart",
-    content: "You can see the various factors contributing to your score in this radar chart.",
+    content: "Click to expand. You can see the various factors contributing to your score in a radar chart.",
     placement: "left"
 },
 {
@@ -55,13 +55,7 @@ define([
   placement: "left"
 },
 {
-	element: "#control-panel .togglePanel",
-  title: "Show Save Options",
-  content: "You can click on Toggle Save Options to view options to save your current tree and to enter a comment.",
-  placement: "left"
-},
-{
-	element: "#explanation-panel .togglePanel",
+	element: "#tree-explanation-button",
   title: "Explain the Tree",
   content: "You can click on Toggle Explanation to view a textual description of the tree that you have built.",
   placement: "left",
@@ -85,12 +79,6 @@ define([
   onNext: function(){
   	$("#explanation-panel .togglePanel").trigger('click');
   }
-},
-{
-	element: "#scoreboard-panel .togglePanel",
-  title: "Show Score Board",
-  content: "You can click on Toggle Score Board to view the score board and compare your tree. You can view other trees by clicking on their respective scores.",
-  placement: "left"
 }
   ],
 	  storage: window.localStorage

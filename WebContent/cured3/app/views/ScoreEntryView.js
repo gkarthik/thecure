@@ -14,9 +14,6 @@ ScoreEntryView = Marionette.ItemView.extend({
 		}
 		return "";
 	},
-	ui : {
-
-	},
 	initialize : function() {
 		_.bindAll(this, 'loadNewTree');
 		this.model.bind('change', this.render);
