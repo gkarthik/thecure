@@ -5,7 +5,8 @@ define([
 Comment = Backbone.RelationalModel.extend({
 	defaults: {
 		content: "",
-		editView: 0
+		editView: 0,
+		saving: 0
 	}
 });
 return Comment;
