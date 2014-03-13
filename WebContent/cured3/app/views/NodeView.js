@@ -121,6 +121,8 @@ NodeView = Marionette.ItemView.extend({
 		//Accuracy
 		if(this.model.get('options').pct_correct){
 			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
+		} else if(this.model.get('options').kind=="split_node") {
+			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('accLimit')/Cure.binScale(this.model.get('options').bin_size))*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 		}
 		Cure.utils.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
 	},
