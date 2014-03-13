@@ -194,7 +194,6 @@ MainLayout = Marionette.Layout.extend({
   events:{
   	'click #sidebar-fixed li a': 'toggleNav'
   },
-  className: 'panel panel-default',
   initialize: function(){
   	_.bindAll(this,'toggleNav');
   },

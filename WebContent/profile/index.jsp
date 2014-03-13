@@ -38,7 +38,7 @@ Player player = (Player) session.getAttribute("player");
 				</a>
 				<ul class="nav navbar-nav">
 					<li><a class="brand" href="/cure/">The Cure</a></li>
-					<li><a href="/cure/boardroom.jsp">Boardroom</a></li>
+					<li><a href="/cure/cured3">Advanced Cure</a></li>
 					<li><a style="color: #FFF;" href="/cure/contact.jsp">Contact</a></li>
 					<li><a style="color: #FFF;" href="/cure/logout.jsp">logout</a></li>
 				</ul>
@@ -52,6 +52,7 @@ Player player = (Player) session.getAttribute("player");
 	<jsp:include page="/footer.jsp" />
 	<script type="text/template" id="main-layout-template">
 		<div class="col-md-4">
+		<h3>Hey <%= player_name %>,</h3>
 		<ul class="nav nav-pills nav-stacked" id="sidebar-fixed">
 		  <li class="active" id="user-treecollection-button"><a href="#">My Tree Collection</a></li>
 			  <li id="community-treecollection-button"><a href="#">Community</a></li>
