@@ -1,1 +1,16 @@
+<% if(editView==0 && saving==0){ %>
+<p><%= content %></p>
+<button class="btn btn-primary btn-block" id="init_save_tree">
+	<i class="glyphicon glyphicon-save"></i> Save Tree
+</button>
+<% } else if(editView==1 && saving == 0){ %>
 <textarea placeholder="You can store a comment along with the tree ..." class="commentContent"><%= content %></textarea>
+<button class="btn btn-primary btn-block" id="save_tree">
+	Done editing comment?<br />
+	<b><i class="glyphicon glyphicon-save"></i> SAVE</b>
+</button>
+<% } else if(saving ==1) { %>
+<button class="btn btn-primary btn-block" id="init_save_tree">
+	Saving...
+</button>
+<% } %>

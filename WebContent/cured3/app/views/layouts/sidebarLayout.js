@@ -34,9 +34,6 @@ sidebarLayout = Marionette.Layout.extend({
     initialize: function(){
     	_.bindAll(this,'toggleTreeExp');
     },
-    saveTree: function(){
-    	Cure.PlayerNodeCollection.saveTree();
-    },
     showCurrentRank: function(){
     	$(this.ui.ScoreWrapper).show();
     },

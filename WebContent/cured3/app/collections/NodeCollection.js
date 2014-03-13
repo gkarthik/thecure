@@ -185,6 +185,8 @@ NodeCollection = Backbone.Collection.extend({
           	            dataType : 'json',
           	            contentType : "application/json; charset=utf-8",
           	            success : function(data){
+          	            	Cure.Comment.set("editView",0);
+          	            	Cure.Comment.set("saving",0);
           	            	Cure.ScoreBoard.rank = data.rank;
           	            	Cure.ScoreBoard.updateCurrent();
           	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
