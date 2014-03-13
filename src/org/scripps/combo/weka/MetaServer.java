@@ -203,7 +203,7 @@ public class MetaServer extends HttpServlet {
 							}						
 						}else if(command.equals("get_rank")){  
 							getRankofTree((int)postData.get("tree_id"), request, response);
-						}else if(command.startsWith("get_trees")){  //get_trees_all, get_trees_ip, get_trees_user_id
+						}else if(command.startsWith("get_tree")){  //get_trees_all, get_trees_ip, get_trees_user_id
 							//TODO clean this up so we aren't parsing the json twice.. 
 							JsonNode data = mapper.readTree(json);	
 							try{
@@ -443,6 +443,9 @@ public class MetaServer extends HttpServlet {
 			String upperLimit = data.get("upperLimit").asText();
 			String orderby = data.get("orderby").asText();
 			trees = tree_.getWithLimit(lowerLimit,upperLimit, orderby);
+		} else if(command.equals("get_tree_by_id")) {
+			String tree_id = data.get("treeid").asText();
+			trees = tree_.getById(tree_id);
 		}
 		ObjectNode treelist = tree_.getTreeListAsJson(trees, mapper);
 		String json_trees = mapper.writeValueAsString(treelist);

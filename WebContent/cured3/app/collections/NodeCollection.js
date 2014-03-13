@@ -99,6 +99,16 @@ NodeCollection = Backbone.Collection.extend({
 		}, 10);
 	},
 	responseSize : 0,
+	parseTreeinList: function(data){
+		Cure.utils.showLoading();
+		Backbone.Relational.store.reset();//To remove previous relations.
+		Cure.CollaboratorCollection.reset();
+		Cure.PlayerNodeCollection.reset();
+		Cure.PlayerNodeCollection.prevTreeId = data.id;
+		Cure.PlayerNodeCollection.parseResponse(data.json_tree);
+		Cure.Comment.set("content",data.comment);
+		Cure.utils.hideLoading();
+	},
 	parseResponse : function(data) {
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
 		//If empty tree is returned, no tree rendered.

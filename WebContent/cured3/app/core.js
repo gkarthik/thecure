@@ -218,6 +218,35 @@ define(
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
+		        if(cure_tree_id){
+		        	var args = {
+		        			command : "get_tree_by_id",
+		        			dataset : "metabric_with_clinical",
+		        			treeid : cure_tree_id
+		        		};
+		        		
+		        		//POST request to server.		
+		        		$.ajax({
+		        			type : 'POST',
+		        			url : '/cure/MetaServer',
+		        			data : JSON.stringify(args),
+		        			dataType : 'json',
+		        			contentType : "application/json; charset=utf-8",
+		        			success : function(data){
+		        				if(data.n_trees==1){
+		        					data = data.trees[0];
+		        					Cure.PlayerNodeCollection.parseTreeinList(data);
+		        				} else {
+		        					Cure.utils
+			        		    .showAlert("<strong>Server Error</strong><br>Please try again in a while.", 0);
+		        				}
+		        			},
+		        			error : function(){
+		        				Cure.utils
+		        		    .showAlert("<strong>Server Error</strong><br>Please try again in a while.", 0);
+		        			}
+		        		});
+		        }
 	        });
 	    return Cure;
     });

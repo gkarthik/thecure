@@ -24,15 +24,8 @@ ScoreEntryView = Marionette.ItemView.extend({
 	},
 	loadNewTree: function(){
 		if(this.$el.hasClass("tree-score-entry")){
-			Cure.utils.showLoading();
-			var json_struct = JSON.stringify(this.model.get('json_tree'));//JSON.stringify to not pass model reference.
-			Backbone.Relational.store.reset();//To remove previous relations.
-			Cure.CollaboratorCollection.reset();
-			Cure.PlayerNodeCollection.reset();
-			Cure.PlayerNodeCollection.prevTreeId = this.model.get('id');
-			Cure.PlayerNodeCollection.parseResponse(JSON.parse(json_struct));
-			Cure.Comment.set("content",this.model.get('comment'));
-			Cure.utils.hideLoading();
+			var data = JSON.stringify(this.model.toJSON());
+			Cure.PlayerNodeCollection.parseTreeinList(JSON.parse(data));
 		}
 	},
 	template: ScoreEntryTemplate

@@ -5,6 +5,7 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.*" %>
 <%
 int player_id = 0;
 int player_experience = 0;
@@ -111,6 +112,9 @@ Player player = (Player) session.getAttribute("player");
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>",
         cure_user_name = "<%= player_name %>";
+    <% if(request.getParameter("treeid")!=null){ %> 
+    var cure_tree_id = <%= request.getParameter("treeid") %>; 
+    <% } %>
   </script>
 	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
 </body>
