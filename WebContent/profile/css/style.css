@@ -5,6 +5,8 @@
 #sidebar-fixed{
 	position:fixed;
 	width: 20%;
+	border: 2px solid #CCC;
+	padding:10px;
 }
 
 #sidebar-fixed .input-group{
