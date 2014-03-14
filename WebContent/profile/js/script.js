@@ -154,44 +154,49 @@ TreeItemView = Marionette.ItemView.extend({
 		}
 		return "";
 	},
+	ui: {
+		"SvgPreview": 'svg'
+	},
 	initialize : function() {
 		this.$el.click(this.loadNewTree);
 		this.model.set("cid",this.model.cid);
 	},
 	template: "#score-entry-template",
+	renderTreePreview: function(){
+		var id = $(this.ui.SvgPreview).attr('id');
+		var svg = d3.select("#"+id)
+			.attr("width",300)
+			.attr("height",300)
+			.append("g")
+			.attr("transform","translate(0,20)");
+		var cluster = d3.layout.tree().size([ 250, 250 ]);
+		var diagonal = d3.svg.diagonal().projection(function(d) { return [d.x, d.y]; });
+		var json = JSON.stringify(this.model.get('json_tree').treestruct);
+		var nodes = cluster.nodes(JSON.parse(json)),
+    links = cluster.links(nodes);
+	  var link = svg.selectAll(".link")
+	      .data(links)
+	    .enter().append("path")
+	      .attr("class", "link")
+	      .attr("d", diagonal)
+	      .style("stroke","steelblue")
+	      .style("stroke-width", "2");
+	
+	  var node = svg.selectAll(".node")
+	      .data(nodes)
+	    .enter().append("g")
+	      .attr("class", "node")
+	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	
+	  node.append("text")
+	      .attr("dx", function(d) { return d.children ? -8 : 8; })
+	      .attr("dy", 3)
+	      .style("text-anchor", "middle")
+	      .text(function(d) { return d.name; });
+	},
 	onShow: function(){
 		if(this.model.get('rank')!=0){
-			var cid = this.model.get('cid');
-			var svg = d3.selectAll("#treePreview"+cid)
-				.attr("width",300)
-				.attr("height",300)
-				.append("g")
-				.attr("transform","translate(0,20)");
-			var cluster = d3.layout.tree().size([ 250, 250 ]);
-			var diagonal = d3.svg.diagonal().projection(function(d) { return [d.x, d.y]; });
-			var json = JSON.stringify(this.model.get('json_tree').treestruct);
-			var nodes = cluster.nodes(JSON.parse(json)),
-      links = cluster.links(nodes);
-		  var link = svg.selectAll(".link")
-		      .data(links)
-		    .enter().append("path")
-		      .attr("class", "link")
-		      .attr("d", diagonal)
-		      .style("stroke","steelblue")
-		      .style("stroke-width", "2");
-		
-		  var node = svg.selectAll(".node")
-		      .data(nodes)
-		    .enter().append("g")
-		      .attr("class", "node")
-		      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-		
-		  node.append("text")
-		      .attr("dx", function(d) { return d.children ? -8 : 8; })
-		      .attr("dy", 3)
-		      .style("text-anchor", "middle")
-		      .text(function(d) { return d.name; });
-			
+			this.renderTreePreview();
 		}
 	}
 });
@@ -237,21 +242,19 @@ MainLayout = Marionette.Layout.extend({
   			$(this.ui.navLinks).removeClass("active");
       	$(ev.target).parent().addClass("active");
       	var elid = "#"+$(ev.target).parent().attr('id').replace("button","wrapper");
-      	console.log(elid);
       	$('.collection-wrapper').hide();
       	$(elid).show();
     	}
   },
   searchCollection: function(evt){
-  	var uielement = $(this.ui.searchInput);
-  	var navLinks = $(this.ui.navLinks);
+  	var thisLayout = this;
   	if(evt.keyCode<37 || evt.keyCode>40){
   		console.log("search!");
   		var t = window.setTimeout(function(){
-  			if(uielement.val()!=""){
+  			if($(thisLayout.ui.searchInput).val()!=""){
   				var args = {
   						command : "get_trees_by_search",
-  						query: uielement.val()
+  						query: $(thisLayout.ui.searchInput).val()
   				};
   				$.ajax({
   					type : 'POST',
@@ -277,7 +280,8 @@ MainLayout = Marionette.Layout.extend({
   							}
   						});
   						Library.SearchTreeCollection.reset(trees);
-  						navLinks.removeClass("active");
+  						thisLayout.SearchRegion.show(Library.SearchTreeCollectionView);
+  				  	$(thisLayout.ui.navLinks).removeClass("active");
   		      	$('.collection-wrapper').hide();
   		      	$('#search-treecollection-wrapper').show();
   					},
@@ -292,7 +296,6 @@ MainLayout = Marionette.Layout.extend({
   onShow: function(){
   	this.UserRegion.show(Library.UserTreeCollectionView);
   	this.CommunityRegion.show(Library.CommunityTreeCollectionView);
-  	this.SearchRegion.show(Library.SearchTreeCollectionView);
   }
 });
 
