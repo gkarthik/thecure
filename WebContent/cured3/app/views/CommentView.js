@@ -22,12 +22,7 @@ CommentView = Backbone.Marionette.ItemView.extend({
 		'click #init_save_tree': 'initSave'
 	},
 	initialize : function(){
-		_.bindAll(this, 'saveComment');
 		this.model.bind('change', this.render);
-	},
-	saveComment: function(){
-		var content = $(this.ui.commentContent).val();
-		this.model.set("content",content);
 	},
 	initSave: function(){
 		if(Cure.PlayerNodeCollection.length>0){

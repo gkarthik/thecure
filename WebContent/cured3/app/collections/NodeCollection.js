@@ -153,6 +153,7 @@ NodeCollection = Backbone.Collection.extend({
 		}
 	},
 	saveTree: function(){
+		Cure.Comment.set("saving",1);
 		var tree;
     if (Cure.PlayerNodeCollection.models[0]) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
