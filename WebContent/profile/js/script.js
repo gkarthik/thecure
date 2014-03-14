@@ -159,9 +159,6 @@ TreeItemView = Marionette.ItemView.extend({
 		this.model.set("cid",this.model.cid);
 	},
 	template: "#score-entry-template",
-	onRender: function(){
-		this.onShow();
-	},
 	onShow: function(){
 		if(this.model.get('rank')!=0){
 			var cid = this.model.get('cid');
@@ -236,6 +233,7 @@ MainLayout = Marionette.Layout.extend({
   },
   toggleNav: function(ev){
   		if(!$(ev.target).parent().hasClass("active")){
+  			$(this.ui.searchInput).val("");
   			$(this.ui.navLinks).removeClass("active");
       	$(ev.target).parent().addClass("active");
       	var elid = "#"+$(ev.target).parent().attr('id').replace("button","wrapper");
@@ -291,13 +289,10 @@ MainLayout = Marionette.Layout.extend({
   		},300);
   	}
   },
-  onRender: function(){
+  onShow: function(){
   	this.UserRegion.show(Library.UserTreeCollectionView);
   	this.CommunityRegion.show(Library.CommunityTreeCollectionView);
   	this.SearchRegion.show(Library.SearchTreeCollectionView);
-  },
-  onShow: function(){
-
   }
 });
 
