@@ -249,7 +249,7 @@ MainLayout = Marionette.Layout.extend({
   searchCollection: function(evt){
   	var thisLayout = this;
   	if(evt.keyCode<37 || evt.keyCode>40){
-  		console.log("search!");
+  		$("#loading-wrapper").show();
   		var t = window.setTimeout(function(){
   			if($(thisLayout.ui.searchInput).val()!=""){
   				var args = {
@@ -284,6 +284,7 @@ MainLayout = Marionette.Layout.extend({
   				  	$(thisLayout.ui.navLinks).removeClass("active");
   		      	$('.collection-wrapper').hide();
   		      	$('#search-treecollection-wrapper').show();
+  		      	$("#loading-wrapper").hide();
   					},
   					error : this.error,
   					async: true

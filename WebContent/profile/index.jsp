@@ -5,10 +5,11 @@
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
-<%
+<% 
 int player_id = 0;
 int player_experience = 0;
 String player_name = "";
+if(request.getParameter("playerid")==null){
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
     	response.sendRedirect("/cure/login.jsp"); 
@@ -17,6 +18,18 @@ Player player = (Player) session.getAttribute("player");
     player_experience = 0;
     player_name = player.getName();
   }
+} else {
+	int id = Integer.parseInt(request.getParameter("playerid"));
+	Player player_ = (Player) session.getAttribute("player");
+	Player player = (Player) player_.lookupPlayerById(id);
+	  if (player == null) {
+	    	response.sendRedirect("/cure/login.jsp"); 
+	  } else {
+	    player_id = player.getId();
+	    player_experience = 0;
+	    player_name = player.getName();
+	  }
+}
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -53,15 +66,16 @@ Player player = (Player) session.getAttribute("player");
 	<script type="text/template" id="main-layout-template">
 		<div class="col-md-4">
 		<div id="sidebar-fixed">
-		<h3>Hey <%= player_name %>,</h3>
+		<h3><%= player_name %></h3>
 		<ul class="nav nav-pills nav-stacked">
-		  <li class="active" id="user-treecollection-button"><a href="#">My Tree Collection</a></li>
+		  <li class="active" id="user-treecollection-button"><a href="#">Tree Collection</a></li>
 			  <li id="community-treecollection-button"><a href="#">Community</a></li>
 		</ul>
 <div class="input-group">
 	<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
 	<input type="text" class="form-control" id="search_collection" placeholder="Search through users, genes and comments.">
 </div>
+	<span id="loading-wrapper">Searching... </span>
 </div>
 	</div>
 	<div class="col-md-8 collection-wrapper" id="user-treecollection-wrapper">

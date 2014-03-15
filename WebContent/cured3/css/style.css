@@ -163,9 +163,10 @@ input.edit{
   	max-height:300px;
 }
 .collaborator-icon{
-	height:20px;
-	width:20px;
-	cursor: default;
+height: 20px;
+width: 20px;
+cursor: pointer;
+display: block;
 }
 
 .node .collaborator-icon{

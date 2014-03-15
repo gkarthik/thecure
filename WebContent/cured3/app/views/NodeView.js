@@ -24,14 +24,16 @@ NodeView = Marionette.ItemView.extend({
 				name : serialized_model.name,
 				highlight : serialized_model.highlight,
 				options : serialized_model.options,
-				cid : serialized_model.cid
+				cid : serialized_model.cid,
+				collaborator: serialized_model.collaborator
 			});
 		} else if (serialized_model.options.kind == "split_node") {
 			return splitNodeTemplate({
 				name : serialized_model.name,
 				highlight : serialized_model.highlight,
 				options : serialized_model.options,
-				cid : serialized_model.cid
+				cid : serialized_model.cid,
+				collaborator: serialized_model.collaborator
 			});
 		} else if(serialized_model.options.kind=="leaf_node"){
 			return LeafNodeTemplate({
@@ -40,7 +42,8 @@ NodeView = Marionette.ItemView.extend({
 				options : serialized_model.options,
 				cid : serialized_model.cid,
 				posNodeName : Cure.posNodeName,
-				negNodeName : Cure.negNodeName
+				negNodeName : Cure.negNodeName,
+				collaborator: serialized_model.collaborator
 			});
 		}
 	},

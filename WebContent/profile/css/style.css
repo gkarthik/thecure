@@ -27,6 +27,10 @@ stroke: steelblue;
 stroke-width: 1.5px;
 }
 
+#loading-wrapper{
+	display:none;
+}
+
 /*
 Navbar Style
 */

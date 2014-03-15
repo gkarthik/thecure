@@ -1,2 +1,2 @@
-<td><div class="collaborator-icon" style="color:<% print(Cure.colorScale(Cure.CollaboratorCollection.pluck('id').indexOf(id))) %>;border: 2px solid <% print(Cure.colorScale(Cure.CollaboratorCollection.pluck('id').indexOf(id))) %>"><i class="glyphicon glyphicon-user"></i></div></td>
-<td><span><%= name %></span></td>
+<td><a target="_blank" href="/cure/profile?playerid=<%= id %>" class="collaborator-icon" style="color:<% print(Cure.colorScale(Cure.CollaboratorCollection.pluck('id').indexOf(id))) %>;border: 2px solid <% print(Cure.colorScale(Cure.CollaboratorCollection.pluck('id').indexOf(id))) %>"><i class="glyphicon glyphicon-user"></i></a></td>
+<td><a target="_blank" href="/cure/profile?playerid=<%= id %>"><%= name %></a></td>
