@@ -64,6 +64,7 @@ Player player = (Player) session.getAttribute("player");
              <ul class="nav navbar-nav">
                <li><a class="brand" href="/cure/">The Cure</a></li>
                <li><a href="/cure/profile/">Explore!</a></li>
+               <li><a href="#" id="showDataInf">Data</a></li>
                <li><a href="/cure/boardroom.jsp">Boardroom</a></li>
                 <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
             	<li><a style="color:#FFF;" href="/cure/logout.jsp">logout</a></li>
@@ -76,12 +77,24 @@ Player player = (Player) session.getAttribute("player");
   		 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   		<strong id="alertMsg"></strong>
 	</div>
+	<div id="InfoWrapper" class="panel panel-default">
+	<div class="panel-heading"><span>Data</span>
+	<span><button class="close">&times;</button></span>
+	</div>
+	<div class="panel-body">
+	Current Dataset: METABRIC <br /> <br />
+	<p>The version of the METABRIC dataset that is currently loaded contains 12 clinical features and expression values for 17,920 genes across 1,226 samples.  527 (43%) of the samples have recorded survival times greater than 10 years while the remaining 699 (57%) have less than 10 year survival.  Survival time is measured from the point of diagnosis.</p>
+<p>The 12 clinical features include: age, tumor size, # of lymph nodes positive, grade, histological type, ER_IHC_status, ER expression, PR expression, HER2_IHC_status, HER2_SNP6_state, HER2 expression, and Treatment.</p>   
+<p>The complete METABRIC dataset contains clinical traits, gene expression values, CNV profiles, and SNP genotypes derived from breast tumors collected from participants of the METABRIC trial. Details about the METABRIC cohort have been published here: Curtis C, et.al. The genomic and transcriptomic architecture of 2,000 breast tumours reveals novel subgroups. Nature. 2012 Apr 18;486(7403):346-52.</p>
+	</div>
+	</div>
 		<div class="row">
 				<div id="HelpText" class="HelpButton">
-					<button type="button" id="closeHelp">×</button>
-					<h5>Help</h5>
-						<img src="img/helpimage.png" width="500" />
-					<h5>Controls and Directions</h5>
+					<button type="button" class="close">&times;</button>
+					<h3 class="renderPink">Help</h3>
+					<p>
+					<button class="btn btn-sm btn-default" id="taketour">Take Tour</button>
+						<img align="right" src="img/helpimage.png" width="500" />
 					<ul>
 						<li>To choose a gene you can start typing the name in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
 						<li>You can also choose a clinical feature by clicking on <img src="./img/doctor.png">. Click on the text box that appears to view a drop down of the available clinical features.</li>
@@ -98,6 +111,7 @@ Player player = (Player) session.getAttribute("player");
 						<li>To view a textual description of the tree, click on Toggle Panel in Tree Explanation on the right.</li>
 						<li>You can toggle the score board panel on the right to see high scores among users. You can click on the high score to view the tree.</li>						
 					</ul>
+					</p>
 				</div>
 				<div id="zoom-controls">
 				

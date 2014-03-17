@@ -47,7 +47,7 @@ if (success) {
     session.setAttribute("username", username);
     session.setAttribute("player", player);
     //if they've passed training, they will be taken to the main game area
-    response.sendRedirect("training.jsp"); 
+    response.sendRedirect("cured3/index.jsp"); 
 }else if(nametaken==true){ //something went wrong 
 	response.sendRedirect("login.jsp?bad=nametaken");    
 }else if(passwordfailed){
