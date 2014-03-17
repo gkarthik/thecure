@@ -33,6 +33,7 @@ CommentView = Backbone.Marionette.ItemView.extend({
 		}
 	},
 	saveTree: function(){
+		this.model.set("content",$(this.ui.commentContent).val());
 		Cure.PlayerNodeCollection.saveTree();
 	}
 });
