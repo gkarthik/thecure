@@ -64,6 +64,7 @@ define(
 		        
 		        //Zoom Controls TODO: Move to view.
 		        Cure.scaleLevel = 1;
+		        Cure.fitToScreen = 1;
 		        
 		        $(".zoomin").on("click",function(){
 		        	if (Cure.PlayerNodeCollection.models.length > 0){
@@ -81,6 +82,16 @@ define(
 			        	}
 			        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
 		        	} 
+		        });
+		        
+		        $('#toggle-fittoscreen').on("click",function(){
+		        	if($(this).is(':checked')){
+		        		Cure.scaleLevel =  (window.innerHeight - 100)/(d3.select("#PlayerTreeRegionSVG").attr("height"));
+		        		Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        	} else {
+		        		Cure.scaleLevel = 1;
+		        		Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+		        	}
 		        });
 		        
       				function zoomed() {
