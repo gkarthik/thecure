@@ -76,7 +76,8 @@ require([ "app/core" ], function() {
 	  "regions" : {
 	    "PlayerTreeRegion" : "#PlayerTreeRegion",
 	    "JSONSummaryRegion" : "#jsonSummary",
-	    "SideBarRegion": "#cure-panel-wrapper"
+	    "SideBarRegion": "#cure-panel-wrapper",
+	    "ZoomControlsRegion": "#zoom-controls"
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n"

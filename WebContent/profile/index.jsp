@@ -105,7 +105,7 @@ Player player = (Player) session.getAttribute("player");
 	<th><span class='keyValue'><@= json_tree.novelty @></span></th>
 	<th><center><@= comment @></center></th>
 	<th><center>Preview</center></th>
-	<th><center>Edit Tree</center></td>
+	<th><center>View Tree</center></td>
 	<@ } @>
 	</script>
 	<script type="text/javascript">

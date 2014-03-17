@@ -8,9 +8,11 @@ define(
         'app/collections/TreeBranchCollection', 'app/collections/CollaboratorCollection',
         // Models
         'app/models/Comment', 'app/models/Score',
+        'app/models/zoom',
         // Views
         'app/views/JSONCollectionView',
         'app/views/NodeCollectionView','app/views/layouts/sidebarLayout',
+        'app/views/zoomView',
         // Utilitites
         'app/utilities/utilities',
         //Tour
@@ -18,8 +20,8 @@ define(
         'app/tour/treeTour'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, JSONCollectionView,
-        NodeCollectionView, sidebarLayout, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, Zoom, JSONCollectionView,
+        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
@@ -61,74 +63,41 @@ define(
 		            [ 0, 100 ]);
 		        Cure.sizeScale = d3.scale.linear().domain([ 0, 1 ]).range(
 		            [ 0, 100 ]);
-		        
-		        //Zoom Controls TODO: Move to view.
-		        Cure.scaleLevel = 1;
-		        Cure.fitToScreen = 1;
-		        
-		        $(".zoomin").on("click",function(){
-		        	if (Cure.PlayerNodeCollection.models.length > 0){
-		        		if(Cure.scaleLevel <= 1.5){
-				        	Cure.scaleLevel += 0.1;
-			        	}
-			        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
-		        	}
-		        });
-		        
-		        $(".zoomout").on("click",function(){
-		        	if (Cure.PlayerNodeCollection.models.length > 0){
-		        		if(Cure.scaleLevel >= 0.5){
-				        	Cure.scaleLevel -= 0.1;
-			        	}
-			        	Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
-		        	} 
-		        });
-		        
-		        $('#toggle-fittoscreen').on("click",function(){
-		        	if($(this).is(':checked')){
-		        		Cure.scaleLevel =  (window.innerHeight - 100)/(d3.select("#PlayerTreeRegionSVG").attr("height"));
-		        		Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
-		        	} else {
-		        		Cure.scaleLevel = 1;
-		        		Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
-		        	}
-		        });
-		        
-      				function zoomed() {
-      					if(d3.event.sourceEvent.type!="mousemove"){
-      						var top = $("body").scrollTop();
-  			        	$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
-      					} else {
-      						if (Cure.PlayerNodeCollection.models.length > 0) {
-    				        var t = d3.event.translate, s = d3.event.scale, height = Cure.height, width = Cure.width;
-    				        if (Cure.PlayerSvg.attr('width') != null
-    				            && Cure.PlayerSvg.attr('height') != null) {
-    					        width = Cure.PlayerSvg.attr('width') * (8 / 9),
-    					            height = Cure.PlayerSvg.attr('height');
-    				        }
-    				        t[0] = Math.min(width / 2 * (s), Math.max(width / 2 * (-1 * s),
-    				            t[0]));
-    				        t[1] = Math.min(height / 2 * (s), Math.max(height / 2
-    				            * (-1 * s), t[1]));
-    				        zoom.translate(t);
-    				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")scale("+Cure.scaleLevel+")");
-    				        var splitTranslate = String(t).match(/-?[0-9\.]+/g);
-    				        $("#PlayerTreeRegionTree").css(
-    				            {
-    					            "transform" : "translate(" + splitTranslate[0] + "px,"
-    					                + splitTranslate[1] + "px)scale("+Cure.scaleLevel+")"
-    				            });
-    			        }
-      					}
-  			        
-  		        }
 
-  		        var zoom = d3.behavior.zoom().scaleExtent([ 1, 1 ]).on("zoom",
-  		            zoomed);
+      			function zoomed() {
+      				if(d3.event.sourceEvent.type!="mousemove"){
+    						var top = $("body").scrollTop();
+			        	$("body").scrollTop(top+d3.event.sourceEvent.deltaY);
+    					} else {
+    						if (Cure.PlayerNodeCollection.models.length > 0) {
+  				        var t = d3.event.translate, s = d3.event.scale, height = Cure.height, width = Cure.width;
+  				        if (Cure.PlayerSvg.attr('width') != null
+  				            && Cure.PlayerSvg.attr('height') != null) {
+  					        width = Cure.PlayerSvg.attr('width') * (8 / 9),
+  					            height = Cure.PlayerSvg.attr('height');
+  				        }
+  				        t[0] = Math.min(width / 2 * (s), Math.max(width / 2 * (-1 * s),
+  				            t[0]));
+  				        t[1] = Math.min(height / 2 * (s), Math.max(height / 2
+  				            * (-1 * s), t[1]));
+  				        zoom.translate(t);
+  				        Cure.PlayerSvg.attr("transform", "translate(" + t + ")scale("+Cure.Zoom.get('scaleLevel')+")");
+  				        var splitTranslate = String(t).match(/-?[0-9\.]+/g);
+  				        $("#PlayerTreeRegionTree").css(
+  				            {
+  					            "transform" : "translate(" + splitTranslate[0] + "px,"
+  					                + splitTranslate[1] + "px)scale("+Cure.Zoom.get('scaleLevel')+")"
+  				            });
+  			        }
+    					}
+  		      }
 		        
 		        $(options.regions.PlayerTreeRegion + "Tree").css({
 			        "width" : Cure.width
 		        });
+		        
+  		      var zoom = d3.behavior.zoom().scaleExtent([ 1, 1 ]).on("zoom",
+		            zoomed);
 		        
 		        Cure.PlayerSvg = d3
 		            .select(options.regions.PlayerTreeRegion + "SVG").attr("width",
@@ -174,6 +143,7 @@ define(
 				            classToclose.hide();
 			            }
 		          });
+		        
 		        //TODO: MOVE TO ScoreBoardView
 		        Cure.ScoreBoardRequestSent = false;
 		        $("#scoreboard_wrapper").scroll(
@@ -188,6 +158,7 @@ define(
 			            	}, 500);
 			            }
 		            });
+		        
 		        options.regions.PlayerTreeRegion += "Tree";
 		        Cure.addRegions(options.regions);
 		        Cure.colorScale = d3.scale.category10();
@@ -212,12 +183,15 @@ define(
 		        Cure.ClinicalFeatureCollection = new ClinicalFeatureCollection();
 		        Cure.ClinicalFeatureCollection.fetch();
 		        Cure.ScoreBoard = new ScoreBoard();
-		        // Sync Score Board
 		        Cure.PlayerNodeCollection = new NodeCollection();
 		        Cure.TreeBranchCollection = new TreeBranchCollection();
 		        Cure.CollaboratorCollection = new CollaboratorCollection();
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
+		        Cure.Zoom = new Zoom();
+		        Cure.ZoomView = new ZoomView({
+		        	model: Cure.Zoom
+		        });
 		        Cure.PlayerNodeCollectionView = new NodeCollectionView({
 			        collection : Cure.PlayerNodeCollection
 		        });
@@ -228,6 +202,7 @@ define(
 		        Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
+		        Cure.ZoomControlsRegion.show(Cure.ZoomView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 		        if(cure_tree_id!=undefined){
 		        	var args = {

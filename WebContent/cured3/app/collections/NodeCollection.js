@@ -129,11 +129,10 @@ NodeCollection = Backbone.Collection.extend({
 				if(scoreArray.novelty == "Infinity"){
 					scoreArray.novelty = 0;
 				}
-				if(Cure.PlayerNodeCollection.models.length==5){
+				if(Cure.PlayerNodeCollection.models.length>=5){
 					Cure.treeTour.start();
 				} else if(Cure.PlayerNodeCollection.models.length == 0){
-					Cure.scaleLevel = 1;
-					Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+					Cure.Zoom.set('scaleLevel',1);
 				}
 				Cure.Score.set("previousAttributes",Cure.Score.toJSON());
 				Cure.Score.set(scoreArray);
