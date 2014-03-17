@@ -62,9 +62,11 @@ CureUtils.updatepositions = function(NodeCollection) {
 			}
 	});
 	d3.select("#PlayerTreeRegionSVG").attr("height", maxDepth+300);
-	if((window.innerHeight - 100)<(maxDepth) && $('#toggle-fittoscreen').is(':checked')){
-		Cure.scaleLevel =  (window.innerHeight - 100)/(maxDepth+300);
-		Cure.utils.transformRegion(Cure.PlayerSvg.attr('transform'),Cure.scaleLevel);
+	//If fit to screen is checked.
+	if((window.innerHeight - 100)<(maxDepth+300) && Cure.Zoom.get('fitToScreen')){
+		Cure.Zoom.set({
+			'scaleLevel': (window.innerHeight - 100)/(maxDepth+300) 
+		});
 	}
 	d3nodes.forEach(function(d) {
 		d.x0 = d.x;
@@ -445,24 +447,6 @@ CureUtils.shiftNodes = function(translateX,translateY,nodeOffsets){
 		$(this).css({"transform":"translate("+parseFloat(translateX)+"px,"+parseFloat(translateY)+"px)"});
 		temp++;
 	});
-}
-
-CureUtils.transformRegion = function(transformAttr,scaleLevel){
-	var transformArray = String(transformAttr).match(/-?[0-9\.]+/g);
-	var transformString= {};
-	if(Cure.PlayerNodeCollection.length!=0 && $('#toggle-fittoscreen').is(':checked')){
-		transformArray[0] = parseFloat(((Cure.width-100)/2)*scaleLevel);
-	} else {
-		transformArray[0] = 0;
-		transformArray[1] = 0;
-	}
-	transformString.svg = "translate("+transformArray[0]+","+transformArray[1]+")scale("+scaleLevel+")"; 
-	transformString.treeregion = "translate("+transformArray[0]+"px,"+transformArray[1]+"px)scale("+scaleLevel+")";
-	Cure.PlayerSvg.attr("transform", transformString.svg);
-	$("#PlayerTreeRegionTree").css(
-	    {
-	      "transform" : transformString.treeregion
-	    });
 }
 
 CureUtils.highlightNodes = function(seednode, ListofIds){
