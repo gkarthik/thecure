@@ -102,6 +102,11 @@ Player player = (Player) session.getAttribute("player");
 				<div id="zoom-controls">
 				<button class="zoomin"><i class="glyphicon glyphicon-zoom-in"></i></button>
 				<button class="zoomout"><i class="glyphicon glyphicon-zoom-out"></i></button>
+				<div class="checkbox">
+        			<label>
+          				<input id="toggle-fittoscreen" type="checkbox" checked> Fit To Screen
+        			</label>
+      			</div>
 				</div>
 				<div id="PlayerTreeRegion"></div>
 				<div id="cure-panel-wrapper">
