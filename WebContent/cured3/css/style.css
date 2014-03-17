@@ -719,8 +719,7 @@ text-align:left;
 	cursor: auto;
 	background: #FFF;
 	color: #000;
-	width: 50%;
-	height: 300px;
+	height: auto;
 	overflow: auto;
 }
 
@@ -746,14 +745,14 @@ text-align:left;
 	font-weight:bold;
 }
 
-.aimWrapper h3{
+.aimWrapper h1{
 	text-align:center;
 }
 
 .aimWrapper p{
 	color: #555;
 	text-align: center;
-	font-size: 15px;
+	font-size: 1.5em;
 }
 
 .renderPink{
@@ -783,6 +782,20 @@ text-align:left;
 
 #loading-wrapper .progress-bar{
 	background-color: #F69;
+}
+
+#InfoWrapper{
+	position:fixed;
+	width:50%;
+	left: 25%;
+	top:10%;
+	display:none;
+	z-index: 9999;
+}
+
+#InfoWrapper .panel-heading{
+	background: #F69;
+	color: #FFF;
 }
 
 /*

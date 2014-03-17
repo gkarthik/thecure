@@ -17,21 +17,17 @@ define(
         'app/utilities/utilities',
         //Tour
         'app/tour/tour',
-        'app/tour/treeTour'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
         ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, Zoom, JSONCollectionView,
-        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
+        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
-	    //Tours
+	    //Tour Init
 	    Cure.initTour = InitTour;
-	    Cure.treeTour = TreeTour;
-	    //Initialize Tours
-	    Cure.initTour.init();
-	    Cure.treeTour.init();
-	    
+			Cure.initTour.init();
+			
 	    Cure
 	        .addInitializer(function(options) {
 		        // JSP Uses <% %> to render elements and this clashes
@@ -111,17 +107,27 @@ define(
 			        Cure.utils.ToggleHelp(false, Cure.helpText);
 		        });
 		        
-		        $("body").delegate("#closeHelp", "click", function() {
-			        Cure.utils.ToggleHelp(true);
+		        $("#showDataInf").on("click",function(){
+		        	$("#InfoWrapper").show();
 		        });
 
 		        $("body").delegate(".close", "click", function() {
 			        if ($(this).parent().hasClass("alert")) {
 				        $(this).parent().hide();
-			        } else {
+			        } else if($(this).parent().attr('id')=="HelpText"){
+			        	Cure.utils.ToggleHelp(true);
+			        }	else {
 				        $(this).parent().parent().parent().hide();
 			        }
 		        });
+		        
+		        $("body").delegate("#taketour","click",function(){
+		        	Cure.utils.ToggleHelp(true);
+		        	window.localStorage.clear();
+		        	Cure.initTour.init();
+		        	Cure.initTour.start();
+		        });
+		        
 		        $(document).mouseup(
 		            function(e) {
 			            var container = $(".addnode_wrapper");

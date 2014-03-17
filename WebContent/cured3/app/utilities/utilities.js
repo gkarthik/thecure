@@ -250,12 +250,18 @@ CureUtils.ToggleHelp = function(check, helptext){
 	if(!check){
 		$("#HelpText").removeClass("HelpButton");
 		$("#HelpText").addClass("HelpWindow");
+		$("#HelpText").css({
+			width: Cure.width+"px"
+		});
     	window.setTimeout(function(){
         	$("#HelpText").html(helptext);
 		},500);
 	} else {
 		$("#HelpText").removeClass("HelpWindow");
 		$("#HelpText").addClass("HelpButton");
+		$("#HelpText").css({
+			width: "45px"
+		});
 		$("#HelpText").html("");
 		window.setTimeout(function(){
 			$("#HelpText").html("Help");

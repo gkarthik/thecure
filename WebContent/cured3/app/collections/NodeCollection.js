@@ -129,8 +129,10 @@ NodeCollection = Backbone.Collection.extend({
 				if(scoreArray.novelty == "Infinity"){
 					scoreArray.novelty = 0;
 				}
-				if(Cure.PlayerNodeCollection.models.length>=5){
-					Cure.treeTour.start();
+				if(Cure.PlayerNodeCollection.models.length==5){
+					if(window.localStorage.inittour_current_step == "4" || window.localStorage.inittour_end=="no"){
+						Cure.initTour.goTo(5);
+					}
 				} else if(Cure.PlayerNodeCollection.models.length == 0){
 					Cure.Zoom.set('scaleLevel',1);
 				}
