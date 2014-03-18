@@ -210,7 +210,7 @@ NodeCollection = Backbone.Collection.extend({
       tree = [];
       Cure.utils
           .showAlert("<strong>Empty Tree!</strong><br>Please build a tree by using the auto complete box.", 0);
-    }
+    } 
 	},
 	error : function(data) {
 		Cure.utils
