@@ -130,8 +130,9 @@ NodeCollection = Backbone.Collection.extend({
 					scoreArray.novelty = 0;
 				}
 				if(Cure.PlayerNodeCollection.models.length==5){
-					if(window.localStorage.inittour_current_step == "4" || window.localStorage.inittour_end=="no"){
-						Cure.initTour.goTo(5);
+					if(!Cure.treeTour.ended()){
+						Cure.treeTour.init();
+						Cure.treeTour.start();
 					}
 				} else if(Cure.PlayerNodeCollection.models.length == 0){
 					Cure.Zoom.set('scaleLevel',1);

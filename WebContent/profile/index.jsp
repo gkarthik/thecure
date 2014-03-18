@@ -51,7 +51,7 @@ Player player = (Player) session.getAttribute("player");
 				</a>
 				<ul class="nav navbar-nav">
 					<li><a class="brand" href="/cure/">The Cure</a></li>
-					<li><a href="/cure/cured3">Advanced Cure</a></li>
+					<li><a href="cure2%2E0/index.jsp">Cure 2.0</a></li>
 					<li><a style="color: #FFF;" href="/cure/contact.jsp">Contact</a></li>
 					<li><a style="color: #FFF;" href="/cure/logout.jsp">logout</a></li>
 				</ul>

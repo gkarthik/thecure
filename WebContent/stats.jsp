@@ -27,6 +27,7 @@
             <a class="brand" href="/cure/">The Cure</a>
             <div class="nav-collapse">
               <ul class="nav">
+              <li><a href="cure2%2E0/index.jsp">Cure 2.0</a></li>
                 <li><a href="contact.jsp">Contact</a></li>
                 <li><a href="logout.jsp">logout</a></li>
               </ul>

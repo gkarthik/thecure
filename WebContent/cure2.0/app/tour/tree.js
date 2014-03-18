@@ -2,41 +2,9 @@ define([
         'jquery',
       	'bootstrapTour'
       ], function($) {
-var AddRootNodeTour = new Tour({
-	name: 'inittour',
+var TreeTour = new Tour({
+	name: 'treetour',
 	  steps: [
-{
-  title: "<h4 style='color:red;'>Disclaimers</h4>",
-  content: "<b><ol><li>This resource is intended for purely research, educational and entertainment purposes. It should not be used for medical or professional advice.</li><li>Unless otherwise noted, all non-personally identifiable data entered into this site is stored in a database that will be publicly accessible.</ol></b>",
-  	orphan: true
-},
-	          {
-	    element: "#gene_query",
-	    title: "#1 Selecting A Gene",
-	    content: "You can pick a gene by typing the gene name or function in the text box and selecting one from the dropdown that appears."
-	  },
-	  {
-	    element: "#showCf",
-	    title: "#2 Switching  To Clinical Features",
-	    content: "Click on the icon to switch between choosing clinical features and gene names.",
-	    placement: "left",
-	    onNext: function(){
-	    	$("#showCf").trigger('click');
-	    }
-	  },
-	  {
-	  	element: "#cf_query",
-	    title: "#3 Selecting a Clinical Feature",
-	    content: "You can select Clinical Feature by clicking on the textbox and choosing from the list that appears. You can also search by typing into the textbox.",
-	    onNext: function(){
-	    	$("#hideCf").trigger('click');
-	    }
-	  },
-	  {
-	    title: "Choose a gene!",
-	    content: "Lets begin! Start typing 'AURKA' and select 'AURKA: aurora kinase A' from the dropdown that appears.",
-	    orphan: true
-	  },
 	  {
 			element: ".split_node",
 		  title: "Split Node",
@@ -123,7 +91,7 @@ var AddRootNodeTour = new Tour({
 		},
 		{
 		element: "#zoom-controls",
-		title: "Zoom Cotnrols",
+		title: "Zoom Controls",
 		content: "Click on + and - to zoom in and out. You can uncheck the 'fit to screen' option if you don't want the tree to scale to the screen. You might have to use the scroll to view your entire tree if you uncheck this option.",
 		onNext: function(){
 		$("#tree-explanation-button").trigger('click');
@@ -133,5 +101,5 @@ var AddRootNodeTour = new Tour({
 	  storage: window.localStorage
 });
 
-return AddRootNodeTour;
+return TreeTour;
 });

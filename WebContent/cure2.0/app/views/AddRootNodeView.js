@@ -83,6 +83,9 @@ AddRootNodeView = Marionette.ItemView.extend({
 			},
 			select : function(event, ui) {
 				if(ui.item.long_name != undefined){//To ensure "no gene name has been selected" is not accepted.
+					if(!Cure.initTour.ended()){
+						Cure.initTour.end();
+					}
 					$("#SpeechBubble").remove();
 					var kind_value = "";
 					try {
@@ -225,6 +228,9 @@ AddRootNodeView = Marionette.ItemView.extend({
 			},
 			select : function(event, ui) {
 				if(ui.item.name != undefined){//To ensure "no gene name has been selected" is not accepted.
+					if(!Cure.initTour.ended()){
+						Cure.initTour.end();
+					}
 					$("#SpeechBubble").remove();
 					var kind_value = "";
 					try {

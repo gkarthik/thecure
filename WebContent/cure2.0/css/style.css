@@ -545,8 +545,10 @@ border-radius: 5px;
 
 #zoom-controls{
 	z-index: 10;
-	position:fixed;
-	margin-top:5px;
+position: fixed;
+margin-top: 5px;
+margin-left: 5px;
+width: 200px;
 }
 
 .branch-nodes-list{

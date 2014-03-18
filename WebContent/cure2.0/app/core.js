@@ -17,16 +17,17 @@ define(
         'app/utilities/utilities',
         //Tour
         'app/tour/tour',
+        'app/tour/tree'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
         ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, Zoom, JSONCollectionView,
-        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour) {
+        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
 	    //Tour Init
 	    Cure.initTour = InitTour;
-			Cure.initTour.init();
+	    Cure.treeTour = TreeTour;
 			
 	    Cure
 	        .addInitializer(function(options) {
@@ -124,8 +125,12 @@ define(
 		        $("body").delegate("#taketour","click",function(){
 		        	Cure.utils.ToggleHelp(true);
 		        	window.localStorage.clear();
-		        	Cure.initTour.init();
-		        	Cure.initTour.start();
+		        	if(Cure.PlayerNodeCollection.length==0){
+			        	Cure.initTour.init();
+			        	Cure.initTour.start();
+		        	} else {
+		        		alert("Taking a tour will delete your current tree. Refresh page once you're done working to take the tour.");
+		        	}
 		        });
 		        
 		        $(document).mouseup(
