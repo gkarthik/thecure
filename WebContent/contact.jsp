@@ -21,7 +21,7 @@
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="boardroom.jsp">Play!</a></li>
-              <li><a href="cured3/index.jsp">Advanced Cure</a></li>
+              <li><a href="cure2%2E0/index.jsp">Cure 2.0</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

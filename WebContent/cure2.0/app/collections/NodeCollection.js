@@ -2,25 +2,20 @@ define([
   //Libraries
 	'jquery',
    'backbone',
-   'csb',
    //Models
 	'app/models/Node',
-	'app/models/DistributionData',
-	//Views
-	'app/views/distributionChartView',
 	'text!app/templates/currentRank.html'
-    ], function($, Backbone, csb, Node, DistributionData, distributionChartView, CurrentRankTemplate) {
+    ], function($, Backbone, Node, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
-		_.bindAll(this, 'setDistributionData');
 	},
 	text_branches:{
 		branches: [],
 	},
 	tree_id: 0,
 	prevTreeId : -1,
-	url : base_url+"MetaServer",
+	url : "/cure/MetaServer",
 	sync : function() {
 		//Function to send request to Server with current tree information.
 		var tree = [];
@@ -35,13 +30,13 @@ NodeCollection = Backbone.Collection.extend({
 			dataset : "metabric_with_clinical",
 			treestruct : tree,
 			comment: Cure.Comment.get("content"),
-			player_id : Cure.Player.get('id')
+			player_id : cure_user_id
 		};
 		
 		//POST request to server.		
 		$.ajax({
 			type : 'POST',
-			url : this.url,
+			url : '/cure/MetaServer',
 			data : JSON.stringify(args),
 			dataType : 'json',
 			contentType : "application/json; charset=utf-8",
@@ -49,30 +44,14 @@ NodeCollection = Backbone.Collection.extend({
 			error : this.error
 		});
 	},
-	getSplitNodeArray: function(){
-		var kindArray = this.toJSON();
-		var splitNodeArray = [];
-		for(var temp in kindArray){
-			if(kindArray[temp].options.kind=="split_node"){
-				splitNodeArray.push({
-					'name': kindArray[temp].name,
-					'cid': kindArray[temp].options.cid,
-					'nodeGroup':[]//Holds the nodes that are pushed by syncSplitNodeArray in Score View.
-				});
-			}
-		}
-		return splitNodeArray;
-	},
 	updateCollection : function(json_node, node, parent) {
 		var thisCollection = this;
 		setTimeout(function(){
 			if (node != null && json_node != null) {
 				for ( var key in json_node) {
-					if (key != "children" && key!= "options") {
+					if (key != "children") {
 						node.set(key, json_node[key]);
-					} else if(key=="options"){
-						node.get(key).set(json_node[key]);
-					} 
+					}
 				}
 				if (json_node.children.length > 0
 						&& json_node.children.length == node.get('children').length) {
@@ -117,11 +96,9 @@ NodeCollection = Backbone.Collection.extend({
 					Cure.utils.showLoading(Cure.PlayerNodeCollection.length+" of "+Cure.PlayerNodeCollection.responseSize);
 			}	
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
-			thisCollection.numOfNodesAdded++;
 		}, 10);
 	},
 	responseSize : 0,
-	numOfNodesAdded: 0,
 	parseTreeinList: function(data){
 		Cure.utils.showLoading();
 		Backbone.Relational.store.reset();//To remove previous relations.
@@ -130,55 +107,42 @@ NodeCollection = Backbone.Collection.extend({
 		Cure.PlayerNodeCollection.prevTreeId = data.id;
 		Cure.PlayerNodeCollection.parseResponse(data.json_tree);
 		Cure.Comment.set("content",data.comment);
-		Cure.Comment.set("flagPrivate",data.private);
 		Cure.utils.hideLoading();
 	},
 	parseResponse : function(data) {
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
-		Cure.PlayerNodeCollection.numOfNodesAdded = 0;
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
 			Cure.PlayerNodeCollection.responseSize = jsonsize;
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
 		} else {
-		//If server returns json, render and update positions of nodes.
+		//If server returns json with tree render and update positions of nodes.
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}
-		var updateScore = true;
 		var renderT = window.setInterval(function(){
-			if(Cure.PlayerNodeCollection.numOfNodesAdded == parseInt(jsonsize) || parseInt(jsonsize)==1){
-				Cure.utils.render_network();
+			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
+				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 				Cure.utils.hideLoading();
-				if(data.distribution_data){
-					if(data.distribution_data.dataArray){
-						Cure.PlayerNodeCollection.setDistributionData(data.distribution_data);
-						updateScore = false;
-					}
-				}
-				if(updateScore){
-					//Storing Score in a Score Model.
-					var scoreArray = data;
-					scoreArray.treestruct = null;
-					if(scoreArray.novelty == "Infinity"){
-						scoreArray.novelty = 0;
-					}
-					Cure.Score.set("previousAttributes",Cure.Score.toJSON());
-					Cure.Score.set(scoreArray);
+				//Storing Score in a Score Model.
+				var scoreArray = data;
+				scoreArray.treestruct = null;
+				if(scoreArray.novelty == "Infinity"){
+					scoreArray.novelty = 0;
 				}
 				if(Cure.PlayerNodeCollection.models.length==5){
 					if(!Cure.treeTour.ended()){
 						Cure.treeTour.init();
-						if(Cure.startTour){
-							Cure.treeTour.start();
-						}
+						Cure.treeTour.start();
 					}
 				} else if(Cure.PlayerNodeCollection.models.length == 0){
 					Cure.Zoom.set('scaleLevel',1);
 				}
+				Cure.Score.set("previousAttributes",Cure.Score.toJSON());
+				Cure.Score.set(scoreArray);
 				Cure.TreeBranchCollection.updateCollection();
 				window.clearInterval(renderT);
 			}
-		},10);
+		},20);
 		if(Cure.PlayerNodeCollection.length == 0){
 			Cure.Comment.set("content","");
 			Cure.ScoreBoardView.render();
@@ -190,45 +154,29 @@ NodeCollection = Backbone.Collection.extend({
 			$("#current-tree-rank").html("");
 		}
 	},
-	setDistributionData: function(data){
-		var requiredModel = this.findWhere({getSplitData: true});
-		if(requiredModel){
-			if(requiredModel.get('distribution_data')==null){
-				var newDistData = new DistributionData(data);//Assuming only data of 1 model is sent with any request
-				requiredModel.set('distribution_data', newDistData);
-			} else {
-				requiredModel.get('distribution_data').set(data);
-			}
-			requiredModel.set('getSplitData',false);
-			requiredModel.set('showDistChart',true);
-		}
-	},
 	saveTree: function(){
 		Cure.Comment.set("saving",1);
 		var tree;
-		var thisURL = this.url;
     if (Cure.PlayerNodeCollection.models[0]) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
         command : "savetree",
         dataset : "metabric_with_clinical",
         treestruct : tree,
-        player_id : Cure.Player.get('id'),
+        player_id : cure_user_id,
         comment : Cure.Comment.get("content"),
-        previous_tree_id: Cure.PlayerNodeCollection.prevTreeId,
-        privateflag : Cure.Comment.get('flagPrivate')
+        previous_tree_id: Cure.PlayerNodeCollection.prevTreeId
       };
       $.ajax({
             type : 'POST',
-            url : thisURL,
+            url : '/cure/MetaServer',
             data : JSON.stringify(args),
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
             success : function(data){
-            	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved.", 1);
+            	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
-            	var badges = data.badges;
-            	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0 && Cure.Comment.get('flagPrivate')==0){
+            	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
           			var args = {
           	        command : "get_rank",
           	        dataset : "metabric_with_clinical",
@@ -236,7 +184,7 @@ NodeCollection = Backbone.Collection.extend({
           	      };
           	      $.ajax({
           	            type : 'POST',
-          	            url : thisURL,
+          	            url : '/cure/MetaServer',
           	            data : JSON.stringify(args),
           	            dataType : 'json',
           	            contentType : "application/json; charset=utf-8",
@@ -245,17 +193,6 @@ NodeCollection = Backbone.Collection.extend({
           	            	Cure.Comment.set("saving",0);
           	            	Cure.ScoreBoard.rank = data.rank;
           	            	Cure.ScoreBoard.updateCurrent();
-          	            	Cure.BadgeCollection.reset(badges);
-          	            	if(Cure.BadgeCollection.length>0){
-          	            		if(Cure.BadgeCollection.pluck("id").indexOf(badge_id)!=-1){
-          	            			if(csb.inSession()){
-          	            				csb.complete();
-          	            			}
-          	            		}
-          	            		$("#BadgesPlaceholder").html("New Badges Earned!<br><small style='font-size:12px;' class='btn btn-link'>Click to view badges earned.</small>");
-          	            	} else {
-          	            		$("#BadgesPlaceholder").html("");
-          	            	}
           	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
           	            },
           	            error : function(data){
@@ -263,8 +200,6 @@ NodeCollection = Backbone.Collection.extend({
           	            }
           	          });
           		} else {
-          			Cure.Comment.set("editView",0);
-	            	Cure.Comment.set("saving",0);
           			$("#current-tree-rank").html("");
           		}
             },

@@ -28,7 +28,7 @@ NodeCollection = Backbone.Collection.extend({
 		//POST request to server.		
 		$.ajax({
 			type : 'POST',
-			url : this.url,
+			url : '/cure/MetaServer',
 			data : JSON.stringify(args),
 			dataType : 'json',
 			contentType : "application/json; charset=utf-8",

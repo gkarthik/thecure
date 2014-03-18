@@ -21,16 +21,16 @@ TreeBranchView = Backbone.Marionette.ItemView.extend({
 	},
 	highlightBranch: function(){
 		var ListofIds = [];
-		ListofIds.push(this.model.get('leafnode').options.cid);
+		ListofIds.push(this.model.get('leafnode').cid);
 		var splitnodes = this.model.get('splitnodes');
 		for(var temp in splitnodes){
-			ListofIds.push(splitnodes[temp].node.options.cid);
+			ListofIds.push(splitnodes[temp].node.cid);
 		}
 		var splitvalues = this.model.get('splitvalues');
 		for(var temp in splitvalues){
-			ListofIds.push(splitvalues[temp].options.cid);
+			ListofIds.push(splitvalues[temp].cid);
 		}
-		ListofIds.push(Cure.PlayerNodeCollection.models[0].get('options').get('cid'));//Since Root Node always is highlighted.
+		ListofIds.push(Cure.PlayerNodeCollection.models[0].get('cid'));//Since Root Node always is highlighted.
 		Cure.utils.highlightNodes(Cure.PlayerNodeCollection.models[0],ListofIds);
 	}
 });

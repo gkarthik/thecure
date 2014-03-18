@@ -1,20 +1,20 @@
 define([
       	'backbone',
       	'app/models/Collaborator',
-      	'app/models/DistributionData',
-      	'app/models/NodeOptions',
       	'backboneRelational'
-    ], function(Backbone, Collaborator, DistributionData, NodeOptions) {
+    ], function(Backbone, Collaborator) {
 	Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',
 		'cid' : 0,
-		getSplitData: false,
+		'options' : {
+			"id" : "",
+			"kind" : "split_node"
+		},
 		edit : 0,
 		highlight : 0,
 		modifyAccLimit: 1,
 		children : [],
-		manual_pct_correct: 0,
 		gene_summary : {
 			"summaryText" : "",
 			"goTerms" : {},
@@ -31,14 +31,14 @@ define([
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);
 		if(this.get('collaborator')==null){
-			var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
+			var index = Cure.CollaboratorCollection.pluck("id").indexOf(cure_user_id);
 			var newCollaborator;
 			if(index!=-1){
 				newCollaborator = Cure.CollaboratorCollection.at(index);
 			} else {
 				newCollaborator = new Collaborator({
-					"name": Cure.Player.get('username'),
-					"id": Cure.Player.get('id'),
+					"name": cure_user_name,
+					"id": cure_user_id,
 					"created" : new Date()
 				});
 				Cure.CollaboratorCollection.add(newCollaborator);
@@ -68,26 +68,6 @@ define([
 		reverseRelation : {
 			type : Backbone.HasOne,	
 			key : 'parentNode',
-			includeInJSON: false
-		}
-	},
-	{
-		type : Backbone.HasOne,
-		key : 'distribution_data',
-		relatedModel : 'DistributionData',
-		includeInJSON: false,
-		reverseRelation : {
-			type : Backbone.HasOne,	
-			key : 'splitNode'
-		}
-	},
-	{
-		type : Backbone.HasOne,
-		key : 'options',
-		relatedModel : 'NodeOptions',
-		reverseRelation : {
-			type : Backbone.HasOne,	
-			key : 'AttributeNode',
 			includeInJSON: false
 		}
 	}]

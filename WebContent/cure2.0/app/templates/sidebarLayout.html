@@ -1,12 +1,9 @@
-<div class='panel-heading panel-heading-main'>Controls</div>
-<div id="PathwaySearchRegion"></div>
-<div id="AggNodeRegion"></div>
+<div class='panel-heading'>Controls</div>
 <div id="score-board-outerWrapper" class="panel-outer-wrapper">
 	<h2 class="renderPink">
 		Score Board<span><button type="button" class="close"
 				data-dismiss="alert" aria-hidden="true">&times;</button></span>
 	</h2>
-	<div id="BadgesPlaceholder"></div>
 	<hr>
 	<div id="scoreboard_wrapper">
 		<div id='scoreboard_innerwrapper'></div>
@@ -15,25 +12,14 @@
 <div id="CollaboratorsRegion"></div>
 <div class='panel-body panel-static'>
 <div id='displayWrapper'>
-	<button class="btn btn-primary btn-block" id="new-tree">
-		<i class="glyphicon glyphicon-off"></i> New
-	</button>
 	<div id="CommentRegion"></div>
 	<div id="ScoreRegion"></div>
-	<div id="ScoreKeyRegion"></div>
-	<div id="badge-outer-wrapper">
-	<h2 class="renderPink">New Badges Earned!<span><button type="button" class="close"
-				data-dismiss="alert" aria-hidden="true">&times;</button></span></h2>				
-		<div id="BadgeRegion"></div>
-		<p>You can see your badge collection in your profile.</p>
-		<a class="btn btn-sm btn-default" target="_blank" href="/cure/profile/"><i class="glyphicon glyphicon-user"></i> Open my Profile</a>
-	</div>
 	<div id="current-tree-rank"></div>
 </div>
 	<div id="tree-explanation-outerWrapper" class="panel-outer-wrapper">
 		<h2 class="renderPink">Tree in Text</h2>
 		<div id="tree-explanation-wrapper"></div>
 	</div>
-<button id="tree-explanation-button" class="btn btn-sm btn-default btn-block showTreeExp"><i class="glyphicon glyphicon-pencil"></i> Show Tree Explanation</button>
-<a class="btn btn-sm btn-default btn-block" id="my-tree-collection-link" target="_blank" href="<% print(base_url); %>profile/"><i class="glyphicon glyphicon-user"></i> My Profile</a>
+<button id="tree-explanation-button" class="btn btn-sm btn-default showTreeExp"><i class="glyphicon glyphicon-pencil"></i>Show Tree Explanation</button>
+<a class="btn btn-sm btn-default" id="my-tree-collection-link" target="_blank" href="/cure/profile?playerid=<% print(cure_user_id); %>"><i class="glyphicon glyphicon-user"></i>My Tree Collection</a>
 </div>

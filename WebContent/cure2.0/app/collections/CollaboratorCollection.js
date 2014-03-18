@@ -6,9 +6,8 @@ define([
 	CollaboratorCollection = Backbone.Collection.extend({
 	model: Collaborator,
 	initialize: function(){
-		
+
 	}
-	
 });
 return CollaboratorCollection;
 });

@@ -9,8 +9,8 @@ define([
     ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate) {
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
-		_.bindAll(this, 'updateScore', 'updateAxis', 'drawAxis', 'zoom');
-		this.listenTo(this.model,"change:score", this.updateScore);
+		_.bindAll(this, 'updateScore');
+		this.model.bind("change", this.updateScore);
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
@@ -19,7 +19,9 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	events: {
 		'click .showSVG': 'showSVG',
-		'click .closeSVG': 'closeSVG'
+		'click .closeSVG': 'closeSVG',
+		'click .showChangeSummary': 'showChangeSum',
+		'click .closeChangeSummary': 'closeChangeSum'
 	},
 	template : scoreTemplate,
 	showSVG: function(){
@@ -34,290 +36,359 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		$(".closeSVG").addClass("showSVG");
 		$(".closeSVG").removeClass("closeSVG");
 	},
+	showChangeSum: function(){
+		$("#ScoreChangesWrapper").show();
+		$(".showChangeSummary").html('<i class="glyphicon glyphicon-resize-small"></i>Hide Score Transition');
+		$(".showChangeSummary").addClass("closeChangeSummary");
+		$(".showChangeSummary").removeClass("showChangeSummary");
+	},
+	closeChangeSum: function(){
+		$("#ScoreChangesWrapper").hide();
+		$(".closeChangeSummary").html('<i class="glyphicon glyphicon-resize-full"></i>Show Score Transition');
+		$(".closeChangeSummary").addClass("showChangeSummary");
+		$(".closeChangeSummary").removeClass("closeChangeSummary");
+	},
 	drawAxis : function() {
+		var json = [];
 		var thisModel = this.model;
-		var xLimit = 10;
-		var yLimit = 8000;
-		if(thisModel.get('size')>0){
-			xLimit = thisModel.get('size')+2;
-			yLimit = thisModel.get('score')+1000;
+		for ( var temp in this.model.toJSON()) {
+			if (temp == "pct_correct" || temp == "novelty" || temp == "size") {
+				json.push({});
+				json[json.length - 1][temp] = this.model.toJSON()[temp];
+			}
 		}
-		this.xAxisScale = d3.scale.linear().domain([0, xLimit]).range([0, Cure.Scorewidth-70]);
-		this.yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scorewidth-30, 0]);
-		
-		var xAxis = d3.svg.axis().scale(this.xAxisScale).orient("bottom").ticks(5);
-		var yAxis = d3.svg.axis().scale(this.yAxisScale).orient("left").tickFormat(function (d) {
-    	var prefix = d3.formatPrefix(d);
-    	return prefix.scale(d) + "k";
-		}).ticks(5);
-		var yAxis2 = d3.svg.axis().scale(this.yAxisScale).orient("right").tickFormat(function (d) {
-    	var prefix = d3.formatPrefix(d);
-    	return prefix.scale(d) + "k";
-		}).ticks(5);
-		
-		this.SVG = d3.selectAll(this.ui.svg).call(d3.behavior.zoom().scaleExtent([1, 1]).on("zoom", this.zoom));
-		this.SVG.append("svg:g").attr("class","layerGroup").attr("transform","translate(0,0)");
-		
-		this.xaxis = this.SVG.append("svg:g").attr("transform","translate(35,"+parseFloat(Cure.Scoreheight-20)+")")
-											 .attr("class", "xaxis axis").call(xAxis);
-		
-		this.yaxis = this.SVG.append("svg:g").attr("transform","translate(35,10)")
-		 .attr("class", "yaxis axis").call(yAxis);
-		
-		this.yaxis2 = this.SVG.append("svg:g").attr("transform","translate("+parseFloat(Cure.Scorewidth-35)+",10)")
-		 .attr("class", "yaxis axis").call(yAxis2);
-		this.splitTranslate = [30,Cure.Scorewidth-20,1];
+		var interval_angle = 2 * Math.PI / json.length;
+		var center = {
+			"x" : parseInt((Cure.Scorewidth / 2) - 50),
+			"y" : Cure.Scoreheight / 2
+		};
+		var ctr = -1;
+		var maxlimit = [ {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		} ];
+		var maxHalflimit = [ {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		}, {
+			'x' : 0,
+			'y' : 0
+		} ];
+		var axes = Cure.ScoreSVG.selectAll(".axis").data(json).enter().append(
+				"svg:line").attr("x1", center.x).attr("y1", center.y).attr(
+				"x2",
+				function(d) {
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].x = (center.x)
+							+ (length * Math.cos(ctr * interval_angle));
+					maxHalflimit[ctr].x = (center.x)
+							+ (length / 2 * Math.cos(ctr * interval_angle));
+					return maxlimit[ctr].x;
+				}).attr(
+				"y2",
+				function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].y = (center.y)
+							+ (length * Math.sin(ctr * interval_angle));
+					maxHalflimit[ctr].y = (center.y)
+							+ (length / 2 * Math.sin(ctr * interval_angle));
+					return maxlimit[ctr].y;
+				}).attr("class", "axis").style("stroke", function() {
+			if (ctr >= 2) {
+				ctr = -1;
+			}
+			ctr++;
+			return Cure.colorScale(ctr);
+		}).style("stroke-width", "1px");
+		ctr = -1;
+		var axesUpdate = Cure.ScoreSVG.selectAll(".axis").transition().duration(
+				Cure.duration).attr("x1", center.x).attr("y1", center.y).attr(
+				"x2",
+				function(d) {
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].x = (center.x)
+							+ (length * Math.cos(ctr * interval_angle));
+					maxHalflimit[ctr].x = (center.x)
+							+ (length / 2 * Math.cos(ctr * interval_angle));
+					return maxlimit[ctr].x;
+				}).attr(
+				"y2",
+				function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					maxlimit[ctr].y = (center.y)
+							+ (length * Math.sin(ctr * interval_angle));
+					maxHalflimit[ctr].y = (center.y)
+							+ (length / 2 * Math.sin(ctr * interval_angle));
+					return maxlimit[ctr].y;
+				}).attr("class", "axis").attr("class", "axis").style("stroke",
+				function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).style("stroke-width", "1px");
+		ctr = -1;
+		var axesText = Cure.ScoreSVG.selectAll(".axisText").data(json).enter()
+				.append("svg:text").attr("x", function(d) {
+					var length = 100;
+					ctr++;
+					return (center.x) + (length * Math.cos(ctr * interval_angle)) + 10;
+				}).attr("y", function(d) {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					var length = 100;
+					ctr++;
+					return (center.y) + (length * Math.sin(ctr * interval_angle)) + 5;
+				}).attr("class", "axisText").style("stroke", function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).style("stroke-width", "0.5px").text(function(d) {
+					var text = "";
+					if (d.pct_correct != null) {
+						text = "(100) Accuracy";
+					} else if (d.size != null) {
+						text = "(1) Size";
+					} else if (d.novelty != null) {
+						text = "(1) Novelty";
+					}
+					return text;
+				});
+		Cure.ScoreSVG.selectAll(".maxPolygon").data([ maxlimit ]).enter().append(
+				"polygon").attr("points", function(d) {
+			return d.map(function(d) {
+				return [ d.x, d.y ].join(",");
+			}).join(" ");
+		}).attr("stroke", "rgba(3,3,3,0.15)").attr("stroke-width", "1px").attr(
+				"fill", "none").attr("class", "maxPolygon");
+		Cure.ScoreSVG.selectAll(".maxHalfPolygon").data([ maxHalflimit ]).enter()
+				.append("polygon").attr("points", function(d) {
+					return d.map(function(d) {
+						return [ d.x, d.y ].join(",");
+					}).join(" ");
+				}).attr("stroke", "rgba(3,3,3,0.15)").attr("stroke-width", "1px").attr(
+						"fill", "none").attr("class", "maxHalfPolygon");
 	},
-	splitNodeArray: [],
-	splitTranslate: [],
-	zoom: function(){
-		var splitTranslate = this.splitTranslate;
-    this.SVG.selectAll(".layerGroup").attr("transform", "translate(" + parseFloat(d3.event.translate[0]-30+parseFloat(splitTranslate[0])) + ",0)scale(" + d3.event.scale + ", 1)");
-    this.SVG.selectAll(".xaxis").attr("transform", "translate(" + parseFloat(d3.event.translate[0] + parseFloat(splitTranslate[0])) + ","+ splitTranslate[1] +")scale(" + d3.event.scale + ", 1)");
+	showScoreDiff: function(){
+		$(this.ui.scoreDetails).html(scoreChangeTemplate(this.model.toJSON()));
+		this.showChangeSum();
 	},
-	syncSplitNodeArray: function(){
-		//Sync splitNodeArray and tempSplitNodeArray
-		var tempSplitNodeArray = Cure.PlayerNodeCollection.getSplitNodeArray();
-		var splitNodeArray = this.splitNodeArray;
-		var pushNodes = [];
-		for(var i=0;i<splitNodeArray.length;i++){
-			var j = tempSplitNodeArray.length;
-			while( j-- ) {
-			    if( tempSplitNodeArray[j].cid ==  splitNodeArray[i].cid) break;
-			}
-			if(j==-1){
-				splitNodeArray.splice(i,1);
-				i--;
-			}
-		}
-		for(var temp in tempSplitNodeArray){
-			var i = splitNodeArray.length;
-			while( i-- ) {
-			    if( splitNodeArray[i].cid ==  tempSplitNodeArray[temp].cid) break;
-			    else if(splitNodeArray[i].nodeGroup.indexOf(tempSplitNodeArray[temp].cid)!=-1) break; 
-			}
-			if(i==-1){
-				splitNodeArray.push(tempSplitNodeArray[temp]);
-				pushNodes.push(tempSplitNodeArray[temp].cid);
-			}
-		}
-		
-		if(pushNodes.length > 1) {
-			splitNodeArray.splice(0,splitNodeArray.length-1);
-			splitNodeArray[splitNodeArray.length-1].name = 'tree';
-		}
-		
-		if(splitNodeArray.length>0){
-			splitNodeArray[splitNodeArray.length-1].score = [{label:'Accuracy', value: parseFloat(Cure.scoreWeights.pct_correct*this.model.get('pct_correct'))}, {label: 'Size', value: parseFloat(Cure.scoreWeights.size * (1/this.model.get('size')))}, {label: 'Novelty', value: parseFloat(Cure.scoreWeights.novelty * this.model.get('novelty'))}];
-			splitNodeArray[splitNodeArray.length-1].scoreLiteral = [{label:'Accuracy', value: (Math.round(this.model.get('pct_correct')*100)/100)+"%", color:Cure.colorScale(0)}, {label: 'Size', value: this.model.get('size'), color:Cure.colorScale(1)}, {label: 'Novelty', value: Math.round(this.model.get('novelty')*100)+"%", color:Cure.colorScale(2)}, {label: 'Score', value: this.model.get('score'), color:"#F69"}];
-			splitNodeArray[splitNodeArray.length-1].scoreValue = this.model.get('score');
-			splitNodeArray[splitNodeArray.length-1].nodeGroup = pushNodes;
-		}
-	},
-	updateAxis: function(){	
-		var thisModel = this.model;
-		var thisView = this;
-		var yLimit = 80000;
-		var yLowerLimit = 0;
-		var xLength = Cure.Scorewidth-70;
-		
-		this.syncSplitNodeArray();
-		var splitNodeArray = this.splitNodeArray;
-		
-		if(thisModel.get('size')>0){
-			yLowerLimit = splitNodeArray[0].score[0].value;
-			yLimit = splitNodeArray[0].scoreValue;
-			for(var temp in splitNodeArray){
-				if(splitNodeArray[temp].score[0].value<yLowerLimit){
-					yLowerLimit = (splitNodeArray[temp].score[0].value);
-				}
-				if(splitNodeArray[temp].scoreValue>yLimit){
-					yLimit = splitNodeArray[temp].scoreValue;
-				}
-			}
-			yLimit += 100;
-			yLowerLimit -= 2000;
-			xLength = (splitNodeArray.length+1) * 50;
-		}
-		thisView.xAxisScale = d3.scale.ordinal().domain(splitNodeArray.map(function(d){ return d.cid;})).rangeRoundBands([0, xLength], 1);
-		thisView.yAxisScale = d3.scale.linear().domain([yLowerLimit, yLimit]).range([Cure.Scoreheight-30, 0 ]);
-		thisView.yAxisKinkScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
-		
-		//Update axis
-		var xAxis = d3.svg.axis().scale(thisView.xAxisScale).orient("bottom").tickFormat(function(d){
-			var i = splitNodeArray.length;
-			while( i-- ) {
-		    if( splitNodeArray[i].cid ==  d ) break;
-			}
-			return splitNodeArray[i].name;
-		});
-		
-		var yAxis = d3.svg.axis().scale(thisView.yAxisScale).orient("left").tickFormat(function (d) {
-    	var prefix = d3.formatPrefix(d);
-    	if(d>=1000){
-    		return prefix.scale(d)+"k";
-    	}
-    	return prefix.scale(d);
-		}).ticks(5);
-		
-		var yAxis2 = d3.svg.axis().scale(thisView.yAxisScale).orient("right").tickFormat(function (d) {
-    	var prefix = d3.formatPrefix(d);
-    	if(d>=1000){
-    		return prefix.scale(d)+"k";
-    	}
-    	return prefix.scale(d);
-		}).ticks(5);
-		
-		this.xaxis.transition().duration(Cure.duration).call(xAxis);
-		this.yaxis.transition().duration(Cure.duration).call(yAxis);
-		this.yaxis2.transition().duration(Cure.duration).call(yAxis2);
-		
-		//Insert line breaks(<tspan>) in axis text
-		this.SVG.selectAll('.xaxis g text').each(thisView.insertLinebreaks);
-		
-		var translateX = 0;
-		var SVG = this.SVG; 
-		var layer = SVG.selectAll(".layerGroup").selectAll(".layer").data(splitNodeArray);
-		
-		var layerEnter = layer.enter().append("g").attr("class","layer")
-		.attr("transform",function(d){
-			translateX = parseFloat(thisView.xAxisScale(d.cid)+25);
-			return "translate("+parseFloat(thisView.xAxisScale(d.cid)+25)+",0)";
-		})
-		.on("mouseover",function(d){
-			SVG.append("rect")
-			.attr("x",15).attr("y",10)
-			.attr("class","hoverRect")
-			.attr("width",110)
-			.attr("height",60)
-			.style("fill","#FFF");
-			
-			SVG.selectAll(".scoreBarHover").data(d.scoreLiteral).enter()
-			.append("text")
-			.attr("class","scoreBarHover")
-			.text(function(d){
-				return d.label+" : "+d.value;
-			}).attr("x",20).attr("y",function(d,i){
-				return 15+(i*14);
-			}).style("stroke",function(d){
-				return d.color;
-			});
-		}).on("mouseleave",function(){
-			d3.selectAll(".scoreBarHover").remove();
-			d3.selectAll(".hoverRect").remove();
-		});
-		
-		y=Cure.Scoreheight-20;
-		var value = 0;
-		
-		//Insert rect on layerEnter
-		var layerRect = layerEnter.selectAll(".scoreRect").data(function(d){return d.score; });
-		
-		layerRect.enter().append("rect").attr("class","scoreRect")
-		.attr("width",30)
-    .style("fill", function(d, i) { return Cure.colorScale(i); })
-    .attr("y",function(d){
-    	if(d.label=="Accuracy"){
-				return thisView.yAxisScale(yLimit-d.value+yLowerLimit);
-			} 
-    	var h = (thisView.yAxisScale(yLimit-(d.value+value)+yLowerLimit)-thisView.yAxisScale(yLimit-value+yLowerLimit));
-    	value+=d.value;
-    	return h;
-    })
-    .attr("height", 0);
-		
-		//Update rect height based on changing scale.
-		y = Cure.Scoreheight-20;
-		value = 0;
-		
-		layer.selectAll(".scoreRect").data(function(d){return d.score; }).transition().duration(function(d,i){
-			return Cure.duration*(i);
-		}).attr("y",function(d, i){
-			if(i==0){
-				y = Cure.Scoreheight-20;
-				value = 0;
-			}
-			if(d.label=="Accuracy"){
-				y-=thisView.yAxisScale(yLimit-d.value+yLowerLimit);
-			} else {
-				y-=(thisView.yAxisScale(yLimit-(d.value+value)+yLowerLimit)-thisView.yAxisScale(yLimit-value+yLowerLimit));
-			}
-    	return y;
-    }).attr("height", function(d,i) {
-    	if(i==0){
-				y = Cure.Scoreheight-20;
-				value = 0;
-			}
-    	if(d.label=="Accuracy"){
-				return thisView.yAxisScale(yLimit-d.value+yLowerLimit);
-			} 
-    	var h = (thisView.yAxisScale(yLimit-(d.value+value)+yLowerLimit)-thisView.yAxisScale(yLimit-value+yLowerLimit));
-			value+=d.value;
-			return h;
-			});
-		
-		/*
-		y=Cure.Scoreheight-20 - thisView.yAxisScale(yLimit-thisModel.get('score'));
-		
-		layerEnter.append("svg:text").html(function(d){
-			var text = "";
-			if(d.diff>=0){
-				text+="+";
-			} else {
-				text+="-";
-			}
-			text+=" "+Math.abs(d.diff);
-			return text;
-		}).attr("transform",function(d,i){
-			return "translate("+0+","+(y-5-(11*i))+")";
-		})
-		.style("font-size","10px")
-		.style("font-weight","bold")
-		.style("fill",function(d,i){
-			return Cure.colorScale(i);
-		});
-		*/
-		
-		layer.exit().transition().duration(Cure.duration).attr("transform",function(d){
-			return "translate("+Cure.Scorewidth+",0)";
-		}).remove();
-		
-		if(translateX==0 && thisView.splitNodeArray.length>=1){
-			translateX = thisView.xAxisScale(thisView.splitNodeArray[thisView.splitNodeArray.length-1].cid)+20;
-		} else if(thisView.splitNodeArray.length==0){
-			translateX = Cure.Scorewidth-95;
-		}
-		translateX=(Cure.Scorewidth-95)-translateX;
-		
-    SVG.selectAll(".layerGroup").attr("transform", "translate(" + translateX + ",0)scale(1)");
-    var transformString = this.SVG.selectAll(".xaxis").attr("transform");
-    var splitTranslate = String(transformString).match(/-?[0-9\.]+/g);
-    SVG.selectAll(".xaxis").attr("transform", "translate(" + (translateX+35) + ","+ splitTranslate[1] +")scale(1)");
-    transformString = this.SVG.selectAll(".xaxis").attr("transform");
-    this.splitTranslate = String(transformString).match(/-?[0-9\.]+/g);
-	},
-	insertLinebreaks: function (d) {
-	  var el = d3.select(this);
-	  var words=d3.select(this).text().split(' ');
-
-	  el.text('');
-
-	  for (var i = 0; i < words.length; i++) {
-	var tspan = el.append('tspan').text(words[i]);
-	if (i > 0)
-	      tspan.attr('x', 0).attr('dy', '15');
-	  }
-	 },
 	updateScore : function() {
-		this.updateAxis();
-		$(this.ui.scoreEL).html(this.model.get("score"));
-	},
-	onShow: function(){
-		this.drawAxis();
+		var thisView = this;
+		this.showScoreDiff();
+		var json = [];
+		var thisModel = this.model;
+		for ( var temp in this.model.toJSON()) {
+			if (temp == "pct_correct" || temp == "novelty" || temp == "size") {
+				json.push({});
+				json[json.length - 1][temp] = this.model.toJSON()[temp];
+			}
+		}
+		var interval_angle = 2 * Math.PI / json.length;
+		var center = {
+				"x" : parseInt((Cure.Scorewidth / 2) - 50),
+				"y" : Cure.Scoreheight / 2
+		};
+		var ctr = -1;//Universal counter to loop through datapoints
+		var datapoints = [ {
+			"x" : 0,
+			"y" : 0
+		}, {
+			"x" : 0,
+			"y" : 0
+		}, {
+			"x" : 0,
+			"y" : 0
+		} ];
+		
+		var pointEnter = Cure.ScoreSVG.selectAll(".data-point-group").data(json).enter().append("svg:g").attr("class","data-point-group")
+		.attr("transform",function(d){
+			ctr++;
+			var length = 0;
+			if (d.pct_correct) {
+				length = Cure.accuracyScale(d.pct_correct);
+			} else if (d.size) {
+				length = Cure.sizeScale(1 / d.size);
+			} else if (d.novelty) {
+				length = Cure.noveltyScale(d.novelty);
+			}
+			datapoints[ctr].x = (center.x)
+					+ (length * Math.cos(ctr * interval_angle));
+			var translateX = datapoints[ctr].x;
+			var length = 0;
+			if (d.pct_correct) {
+				length = Cure.accuracyScale(d.pct_correct);
+			} else if (d.size) {
+				length = Cure.sizeScale(1 / d.size);
+			} else if (d.novelty) {
+				length = Cure.noveltyScale(d.novelty);
+			}
+			datapoints[ctr].y = (center.y)
+					+ (length * Math.sin(ctr * interval_angle));
+			var translateY = datapoints[ctr].y;
+			return "translate("+translateX+","+translateY+")";
+		});
+		
+		pointEnter.append("circle").attr("class", "datapoint").attr("fill", function() {
+					if (ctr >= 2) {
+						ctr = -1;
+					}
+					ctr++;
+					return Cure.colorScale(ctr);
+				}).attr("r", 5);
+		
+		pointEnter.append("rect")
+		.attr("height", "19").attr("width", "42").attr("fill",
+		"rgba(255,255,255,0.5)").attr("class", "hoverRect").attr("transform",function(d){
+			var transformString = "";
+			if (d.pct_correct == 0) {
+				transformString = "translate(10,10)";	
+			} else if (d.size == 0) {
+				transformString = "translate(10,0)";
+			} else if (d.novelty == 0) {
+				transformString = "translate(5,15)";
+			}
+			return transformString;
+		});
+
+		pointEnter.append(
+		"svg:text").style({
+			"font-size" : "12px"
+		}).attr("stroke","rgb(255, 102, 153)").text(function() {
+			if (ctr >= 2) {
+				ctr = -1;
+			}
+			ctr++;
+			var text = 0;
+			if (json[ctr].pct_correct) {
+				text = json[ctr].pct_correct;
+			} else if (json[ctr].size) {
+				text = json[ctr].size;
+			} else if (json[ctr].novelty) {
+				text = json[ctr].novelty;
+			}
+			return text.toFixed(3);
+		}).attr("class", "hoverText").attr("transform",function(d){
+			var transformString = "";
+			if (d.pct_correct == 0) {
+				transformString = "translate(10,10)";	
+			} else if (d.size == 0) {
+				transformString = "translate(10,0)";
+			} else if (d.novelty == 0) {
+				transformString = "translate(5,15)";
+			}
+			return transformString;
+		});
+		
+		ctr = -1;
+		var pointsUpdate = Cure.ScoreSVG.selectAll(".data-point-group").transition()
+					.duration(Cure.duration).delay(function(d, i) { return Cure.duration*3*i; }).attr("transform",function(d, i){
+					ctr++;
+					var length = 0;
+					if (d.pct_correct) {
+						window.setTimeout(function(){
+							$(".accuracy-row").show();
+						}, i * Cure.duration*3);
+						length = Cure.accuracyScale(d.pct_correct);
+					} else if (d.size) {
+						window.setTimeout(function(){
+							$(".size-row").show();
+						}, i * Cure.duration*3);
+						length = Cure.sizeScale(1 / d.size);
+					} else if (d.novelty) {
+						window.setTimeout(function(){
+							$(".novelty-row").show();
+						}, i * Cure.duration*3);
+						length = Cure.noveltyScale(d.novelty);
+					}
+					datapoints[ctr].x = (center.x)
+							+ (length * Math.cos(ctr * interval_angle));
+					var translateX = datapoints[ctr].x;
+					var length = 0;
+					if (d.pct_correct) {
+						length = Cure.accuracyScale(d.pct_correct);
+					} else if (d.size) {
+						length = Cure.sizeScale(1 / d.size);
+					} else if (d.novelty) {
+						length = Cure.noveltyScale(d.novelty);
+					}
+					datapoints[ctr].y = (center.y)
+							+ (length * Math.sin(ctr * interval_angle));
+					var translateY = datapoints[ctr].y;
+					
+					return "translate("+translateX+","+translateY+")";
+				});
+				
+		Cure.ScoreSVG.selectAll(".hoverText").transition().duration(Cure.duration).text(function() {
+			if (ctr >= 2) {
+				ctr = -1;
+			}
+			ctr++;
+			var text = 0;
+			if (json[ctr].pct_correct) {
+				text = json[ctr].pct_correct;
+			} else if (json[ctr].size) {
+				text = json[ctr].size;
+			} else if (json[ctr].novelty) {
+				text = json[ctr].novelty;
+			}
+			return Math.round(parseFloat(text)*100)/100;
+		});
+				
+				
+				//Data Polygon Enter
+				Cure.ScoreSVG.selectAll(".dataPolygon").data([ datapoints ]).enter()
+				.append("polygon").attr("class", "dataPolygon").attr("points",
+						function(d) {
+							return d.map(function(d) {
+								return [ d.x, d.y ].join(",");
+							}).join(" ");
+						}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width",
+						"0.5px").attr("fill", "rgba(242,223,191,0.5)");
+				//Data Polygon Transition
+				Cure.ScoreSVG.selectAll(".dataPolygon").transition()
+				.duration(Cure.duration).delay( Cure.duration*6).attr("points", function(d, i) {
+					return d.map(function(d) {
+						return [ d.x, d.y ].join(",");
+					}).join(" ");
+				}).attr("stroke", "rgba(189,189,189,0.25)").attr("stroke-width", "1px")
+				.attr("fill", "rgba(255, 102, 153, 0.25) ");
+				
+		window.setTimeout(function(){
+			$(thisView.ui.scoreEL).html(thisView.model.get("score"));
+			window,setTimeout(function(){
+				thisView.closeChangeSum();
+			}, 6000);
+		}, Cure.duration * 7);
 	},
 	onRender : function() {
 		Cure.ScoreSVG = d3.selectAll(this.ui.svg).attr("width", Cure.Scorewidth)
-				.attr("height", Cure.Scoreheight+50);
+				.attr("height", Cure.Scoreheight);
+		this.drawAxis();
+		this.updateScore();
 	}
 });
 return ScoreView;

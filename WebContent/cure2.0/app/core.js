@@ -1,34 +1,27 @@
-define([
-	    // Libraries
-	    'marionette', 'd3', 'jquery',
-	    // Collection
-	    'app/collections/ClinicalFeatureCollection',
-	    'app/collections/NodeCollection', 
-	    'app/collections/ScoreBoard',
-	    'app/collections/TreeBranchCollection', 
-	    'app/collections/CollaboratorCollection',
-	    'app/collections/BadgeCollection',
-	    'app/collections/GeneCollection',
-	    // Models
-	    'app/models/Comment', 
-	    'app/models/Score',
-	    'app/models/zoom', 
-	    'app/models/Player',
-	    // Views
-	    'app/views/JSONCollectionView',
-	    'app/views/NodeCollectionView',
-	    'app/views/layouts/sidebarLayout',
-	    'app/views/zoomView', 
-	    'app/views/LoginView',
-	    // Utilitites
-	    'app/utilities/utilities',
-	    //Tour
-	    'app/tour/tour',
-	    'app/tour/tree'
-    ],
+define(
+    [
+    // Libraries
+    'marionette', 'd3', 'jquery',
+    // Collection
+    'app/collections/ClinicalFeatureCollection',
+        'app/collections/NodeCollection', 'app/collections/ScoreBoard',
+        'app/collections/TreeBranchCollection', 'app/collections/CollaboratorCollection',
+        // Models
+        'app/models/Comment', 'app/models/Score',
+        'app/models/zoom',
+        // Views
+        'app/views/JSONCollectionView',
+        'app/views/NodeCollectionView','app/views/layouts/sidebarLayout',
+        'app/views/zoomView',
+        // Utilitites
+        'app/utilities/utilities',
+        //Tour
+        'app/tour/tour',
+        'app/tour/tree'
+        ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-    		ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, GeneCollection, Comment, Score, Zoom, Player, JSONCollectionView,
-        NodeCollectionView, sidebarLayout, ZoomView, LoginView, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, Zoom, JSONCollectionView,
+        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
@@ -59,8 +52,6 @@ define([
 		        Cure.height = options["height"];
 		        Cure.posNodeName = options["posNodeName"];
 		        Cure.negNodeName = options["negNodeName"];
-		        Cure.scoreWeights = options.scoreWeights;
-		        Cure.startTour = options.startTour;
 
 		        // Scales
 		        Cure.accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range(
@@ -126,7 +117,7 @@ define([
 				        $(this).parent().hide();
 			        } else if($(this).parent().attr('id')=="HelpText"){
 			        	Cure.utils.ToggleHelp(true);
-			        } else if(!$(this).hasClass("close-json-view")) {
+			        }	else {
 				        $(this).parent().parent().parent().hide();
 			        }
 		        });
@@ -136,16 +127,27 @@ define([
 		        	window.localStorage.clear();
 		        	if(Cure.PlayerNodeCollection.length==0){
 			        	Cure.initTour.init();
-			        	if(Cure.tour.startTour){
-				        	Cure.initTour.start();
-			        	}
+			        	Cure.initTour.start();
 		        	} else {
 		        		alert("Taking a tour will delete your current tree. Refresh page once you're done working to take the tour.");
 		        	}
 		        });
 		        
-		        $(document).on("mouseup",
+		        $(document).mouseup(
 		            function(e) {
+			            var container = $(".addnode_wrapper");
+			            var geneList = $(".ui-autocomplete");
+
+			            if (!container.is(e.target)
+			                && container.has(e.target).length == 0
+			                && !geneList.is(e.target)
+			                && geneList.has(e.target).length == 0) {
+				            $("input.mygene_query_target").val("");
+				            if (Cure.MyGeneInfoRegion) {
+					            Cure.MyGeneInfoRegion.close();
+				            }
+			            }
+
 			            var classToclose = $('.blurCloseElement');
 			            if (!classToclose.is(e.target)
 			                && classToclose.has(e.target).length == 0) {
@@ -198,15 +200,9 @@ define([
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
 		        Cure.Zoom = new Zoom();
-		        Cure.BadgeCollection = new BadgeCollection();
-		        Cure.GeneCollection = new GeneCollection();
 		        Cure.ZoomView = new ZoomView({
 		        	model: Cure.Zoom
 		        });
-		        Cure.Player = new Player();
-		        Cure.Player.set("username",cure_user_name);
-		        Cure.Player.set("id",cure_user_id);
-		        Cure.LoginView = new LoginView({model: Cure.Player});
 		        Cure.PlayerNodeCollectionView = new NodeCollectionView({
 			        collection : Cure.PlayerNodeCollection
 		        });
@@ -218,7 +214,6 @@ define([
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
 		        Cure.ZoomControlsRegion.show(Cure.ZoomView);
-		        Cure.LoginRegion.show(Cure.LoginView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 		        if(cure_tree_id!=undefined){
 		        	var args = {
@@ -230,7 +225,7 @@ define([
 		        		//POST request to server.		
 		        		$.ajax({
 		        			type : 'POST',
-		        			url : base_url+'MetaServer',
+		        			url : '/cure/MetaServer',
 		        			data : JSON.stringify(args),
 		        			dataType : 'json',
 		        			contentType : "application/json; charset=utf-8",

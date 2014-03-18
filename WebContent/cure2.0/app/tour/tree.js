@@ -4,17 +4,6 @@ define([
       ], function($) {
 var TreeTour = new Tour({
 	name: 'treetour',
-	onStart: function(){
-		$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
-	},
-	onShow: function(){
-		if($(".tourOverlay").length==0){
-			$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
-		}
-	},
-	onEnd: function(){
-		$(".tourOverlay").remove();
-	},
 	  steps: [
 	  {
 			element: ".split_node",
@@ -54,33 +43,59 @@ var TreeTour = new Tour({
 		  placement: "left"
 		},
 		{
-		element: "#ScoreSVG",
+		element: ".showSVG",
 		title: "Score Chart",
-		content: "You can see how each node affected your score in this chart.",
+		content: "Click to expand. You can see the various factors contributing to your score in a radar chart.",
+		placement: "left"
+		},
+		{
+		element: ".showChangeSummary",
+		title: "Score Change Summary",
+		content: "Click to see how the last node you added changed your score.",
 		placement: "left"
 		},
 		{
 		element: "#tree-explanation-button",
 		title: "Explain the Tree",
 		content: "You can click on Show Tree Explanation to view a textual description of the tree that you have built.",
-		placement: "left"
+		placement: "left",
+		onNext: function(){
+		$(".showTreeExp").trigger('click');
+		}
+		},
+		{
+		element: ".highlightBranch",
+		title: "Highlight Relevant Nodes",
+		content: "Click here to highlight the split attributes that contributed to each prediction.",
+		placement: "left",
+		onNext: function(){
+		$($(".highlightBranch")[0]).trigger('click');
+		}
+		},
+		{
+		element: ".highlightNode",
+		title: "Highlighted Nodes",
+		content: "These are the split nodes that contributed to the first prediction.",
+		onNext: function(){
+		$(".closeTreeExp").trigger('click');
+		}
 		},
 		{
 		element: "#my-tree-collection-link",
-		title: "My Profile",
-		content: "Click to see your <b>badge collection</b> and <b>tree collection</b> you have built. You can also browse through trees built by other users on your profile.",
+		title: "My Tree Collection",
+		content: "Click to see the collection of trees you have built. You can also browse trees built by other users on the page that opens.",
+		onNext: function(){
+		$("#tree-explanation-button").trigger('click');
+		},
 		placement: 'left'
 		},
 		{
 		element: "#zoom-controls",
 		title: "Zoom Controls",
-		content: "Click on + and - to zoom in and out. You can uncheck the 'fit to screen' option if you don't want the tree to scale to the screen. You might have to use the scroll to view your entire tree if you uncheck this option."
-		},
-		{
-			element: "#init_save_tree",
-			title: "Save Tree",
-			content: "You can save the tree by clicking here, optionally along with a comment. Once you save the tree, you can see your rank on the high score list and the new badges you have earned!",
-			placement: 'left'
+		content: "Click on + and - to zoom in and out. You can uncheck the 'fit to screen' option if you don't want the tree to scale to the screen. You might have to use the scroll to view your entire tree if you uncheck this option.",
+		onNext: function(){
+		$("#tree-explanation-button").trigger('click');
+		}
 		}
 	  ],
 	  storage: window.localStorage

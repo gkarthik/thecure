@@ -109,6 +109,8 @@ NodeView = Marionette.ItemView.extend({
 				}
 				accLimit += this.model.get('parentNode').get('accLimit');
 				this.model.get('parentNode').set('accLimit',accLimit);
+				var mAccuracy = ((children.get('options').bin_size*children.get('options').pct_correct)/(children.get('options').bin_size)*100);
+				this.model.set("manual_pct_correct",this.model.get("manual_pct_correct")+mAccuracy);
 			}
 		}
 	},

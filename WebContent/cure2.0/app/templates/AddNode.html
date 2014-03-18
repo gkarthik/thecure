@@ -1,53 +1,14 @@
-<div id="choose-category" class="btn-group" data-toggle="buttons">
-  <label class="btn btn-primary active choose-category" id="genes">
-    <input type="radio"><img title="Switch to Genes" src="<% print(base_url) %>cure2.0/img/dna.png" class="switch-image" >
-  </label>
-  <label class="btn btn-primary choose-category" id="clinicalfeatures">
-    <input type="radio"><img title="Switch to Clinical Features" src="<% print(base_url) %>cure2.0/img/doctor.png" class="switch-image" >
-  </label>
-  <label class="btn btn-primary choose-category" id="customfeatures">
-    <input type="radio"><img title="Switch to Custom Features" src="<% print(base_url) %>cure2.0/img/customfeature.png" class="switch-image" >
-  </label>
-  <label class="btn btn-primary choose-category" id="aggregatenodes">
-    <input type="radio"><img title="Switch to Aggregate Nodes" src="<% print(base_url) %>cure2.0/img/aggregatenode.png" class="switch-image" >
-  </label>
-  <label class="btn btn-primary choose-category" id="choosetrees">
-    <input type="radio"><i class="switch-image glyphicon glyphicon-folder-open" ></i>
-  </label>
-</div>
-<div id="genes_wrapper" class="category-wrapper">
-  		<div id="addnode_genes">
-  			<span class="label label-default">Add Genes</span>
-  			<input id="gene_query" class="mygene_query_target query_target">
+<div id="mygeneinfo_wrapper" class="addnode_wrapper">
+		<label class="label label-default">Enter a Gene Symbol/Name</label>
+  		<div id="mygene_addnode">
+  			<span title="Switch To Schoosing Clinical Features" id="showCf"><img src="./img/doctor.png"></span>
+  			<input id="gene_query" style="width:250px" class="mygene_query_target">
   		</div>
-</div>
-<div id="clinicalfeatures_wrapper" class="category-wrapper">
- 	<div id="addnode_clinicalfeatures">
-		<span class="label label-default">Add Clinical Features</span>
-  		<input id="cf_query" class="cf_query_target query_target">
-  	</div>
-</div>
-<div id="customfeatures_wrapper" class="category-wrapper">
- 	<div id="addnode_customfeatures">
-		<span class="label label-default">Add Custom Features</span>
-  		<input id="customfeature_query" class="customfeature_query_target query_target">
-  	</div>
-</div>
-<div id="aggregatenodes_wrapper" class="category-wrapper">
- 	<div id="addnode_customfeatures">
-		<span class="label label-default">Add Aggregate Node</span>
-  		<input id="aggregatenode_query" class="aggregatenode_query_target query_target">
-  	</div>
-</div>
-<div id="choosetrees_wrapper" class="category-wrapper">
- 	<div id="addnode_customfeatures">
-		<span class="label label-default">Add Trees</span>
-  		<input id="tree_query" class="tree_query_target query_target">
-  	</div>
-</div>
-<div class="btn-group">
-	<button class="btn btn-xs btn-primary open-pathway-search">Pathway Search</button>
-	<button class="btn btn-xs btn-primary open-feature-builder">Build Feature</button>
-	<button class="btn btn-xs btn-primary open-addnode">Build Agg Node</button>
-</div>
-	
+	</div>
+	<div id="mygenecf_wrapper" class="addnode_wrapper">
+		<label class="label label-default">Click on the textbox and choose a clinical feature</label>
+  		<div id="mygene_addnode_cf">
+  		    <span title="Switch To Choosing Genes" id="hideCf"><img src="./img/dna.png"></span>
+  			<input id="cf_query" style="width:250px" class="cf_query_target">
+  		</div>
+	</div>

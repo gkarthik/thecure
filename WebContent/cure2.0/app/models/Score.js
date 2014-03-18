@@ -12,29 +12,24 @@ define([
 		sizeDiff : 0,
 		pct_correctDiff : 0,
 		noveltyDiff : 0,
-		previousAttributes: {},
-		changeFlag: 0
+		previousAttributes: {}
 	},
 	initialize: function(){
-		this.listenTo(this, 'change:score', this.updateScore);
-		this.listenTo(this, 'change:pct_correct', this.updateScore);
-		this.listenTo(this, 'change:size', this.updateScore);
-		this.listenTo(this, 'change:novelty', this.updateScore);
+		this.bind('change:size', this.updateScore);
 	},
 	updateScore: function(){
-		this.set("changeFlag",(this.get('changeFlag')+1));
 		if (this.get("size") > 1) {
 			var oldScore = this.get('score');
-			var score = Cure.scoreWeights.size * (1 / this.get("size")) + Cure.scoreWeights.novelty
-					* this.get("novelty") + Cure.scoreWeights.pct_correct * this.get("pct_correct");
+			var score = 750 * (1 / this.get("size")) + 500
+					* this.get("novelty") + 1000 * this.get("pct_correct");
 			this.set("score", Math.round(score));
 			if(this.get('previousAttributes').size!=0){
-				this.set("sizeDiff",parseInt((Cure.scoreWeights.size * (1 / this.get("size")) - (Cure.scoreWeights.size * (1 / this.get('previousAttributes').size)))));
+				this.set("sizeDiff",parseInt((750 * (1 / this.get("size")) - (750 * (1 / this.get('previousAttributes').size)))));
 			} else {
-				this.set("sizeDiff",parseInt(Cure.scoreWeights.size * (1 / this.get("size"))));
+				this.set("sizeDiff",parseInt(750 * (1 / this.get("size"))));
 			}
-			this.set("pct_correctDiff",parseInt((Cure.scoreWeights.pct_correct * this.get("pct_correct"))-(Cure.scoreWeights.pct_correct * this.get('previousAttributes').pct_correct)));
-			this.set("noveltyDiff",parseInt((Cure.scoreWeights.novelty*this.get('novelty'))-(Cure.scoreWeights.novelty*this.get('previousAttributes').novelty)));
+			this.set("pct_correctDiff",parseInt((1000 * this.get("pct_correct"))-(1000 * this.get('previousAttributes').pct_correct)));
+			this.set("noveltyDiff",parseInt((500*this.get('novelty'))-(500*this.get('previousAttributes').novelty)));
 			this.set("scoreDiff",parseInt(Math.round(score)-oldScore));
 		} else {
 			this.set({
