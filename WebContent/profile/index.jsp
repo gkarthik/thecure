@@ -51,7 +51,7 @@ Player player = (Player) session.getAttribute("player");
 				</a>
 				<ul class="nav navbar-nav">
 					<li><a class="brand" href="/cure/">The Cure</a></li>
-					<li><a href="cure2%2E0/index.jsp">Cure 2.0</a></li>
+					<li><a href="/cure/cure2%2E0/index.jsp">Cure 2.0</a></li>
 					<li><a style="color: #FFF;" href="/cure/contact.jsp">Contact</a></li>
 					<li><a style="color: #FFF;" href="/cure/logout.jsp">logout</a></li>
 				</ul>
@@ -95,7 +95,7 @@ Player player = (Player) session.getAttribute("player");
 	<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*10)/10) @></span></td>
 	<td><center><@= comment @></center></td>
 	<td><svg id="treePreview<@= cid @>"></svg></td>
-	<td><center><a href="/cure/cured3/index.jsp?treeid=<@= id @>"><i class="glyphicon glyphicon-edit"></i></a></center></td>
+	<td><center><a href="/cure/cure2%2E0/index.jsp?treeid=<@= id @>"><i class="glyphicon glyphicon-edit"></i></a></center></td>
 	<@ } else { @>
 	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
 	<th><span class='keyValue'><@= player_name @></span></th>
