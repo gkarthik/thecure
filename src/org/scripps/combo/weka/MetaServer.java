@@ -382,6 +382,7 @@ public class MetaServer extends HttpServlet {
 		String comment = "";
 		int player_id = 0;
 		int user_saved = 0;
+		int privateflag = 0;
 		player_id = data.get("player_id").asInt();
 		comment = data.get("comment").asText();
 		String ip = request_.getRemoteAddr();
@@ -393,9 +394,10 @@ public class MetaServer extends HttpServlet {
 		if(command.equals("savetree")){
 			user_saved = 1;
 			prev_tree_id = data.get("previous_tree_id").asInt();
+			privateflag = data.get("privateflag").asInt();
 		}
-		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved);
-		int tid = tree.insert(prev_tree_id);
+		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved, privateflag);
+		int tid = tree.insert(prev_tree_id, privateflag);
 		float score = 0; 
 		score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
@@ -435,9 +437,15 @@ public class MetaServer extends HttpServlet {
 		} else if(command.equals("get_trees_ip")){
 			trees = tree_.getByIP(ip);
 		} else if(command.equals("get_trees_user_id")){
+			HttpSession session = request_.getSession();
+			Player player = (Player) session.getAttribute("player");
 			int user_id = data.get("user_id").asInt();
+			boolean getPrivate = false;
+			if(player.getId()==user_id){
+				getPrivate = true;
+			}
 			tree_.setPlayer_id(user_id);
-			trees = tree_.getForPlayer(user_id);
+			trees = tree_.getForPlayer(user_id, getPrivate);
 		} else if(command.equals("get_trees_with_range")) {
 			String lowerLimit = data.get("lowerLimit").asText();
 			String upperLimit = data.get("upperLimit").asText();
