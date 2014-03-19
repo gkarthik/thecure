@@ -88,7 +88,7 @@ if(request.getParameter("playerid")==null){
 	</script>
 	<script type="text/template" id="score-entry-template">
 	<@	if(json_tree.score != "Score"){ @>
-	<td><span class='keyValue'><@= rank @><@ if(private ==1){print("<font color='red'>*</font>")} @></span></td>
+	<td><span class='keyValue'><@ if(private ==1){print("<i title='Private Tree' style='cursor: default;color:red;' class='glyphicon glyphicon-eye-close'></i>")} @> <@= rank @></span></td>
 	<td><span class='keyValue'><@= player_name @></span></td>
 	<td><span class='keyValue'><@= json_tree.score @></span></td>
 	<td><span class='keyValue'><@= json_tree.size @></span></td>
@@ -96,6 +96,7 @@ if(request.getParameter("playerid")==null){
 	<td><span class='keyValue'><@ print(Math.round(json_tree.novelty*10)/10) @></span></td>
 	<td><center><@= comment @></center></td>
 	<td><svg id="treePreview<@= cid @>"></svg></td>
+	<td><@ print(new Date(created)); @></td>
 	<td><center><a href="/cure/cure2%2E0/index.jsp?treeid=<@= id @>"><i class="glyphicon glyphicon-edit"></i></a></center></td>
 	<@ } else { @>
 	<th><span class='keyValue'><i class="glyphicon glyphicon-star"></i></span></th>
@@ -106,6 +107,7 @@ if(request.getParameter("playerid")==null){
 	<th><span class='keyValue'><@= json_tree.novelty @></span></th>
 	<th><center><@= comment @></center></th>
 	<th><center>Preview</center></th>
+	<th>Created</th>
 	<th><center>View Tree</center></td>
 	<@ } @>
 	</script>

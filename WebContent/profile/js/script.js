@@ -149,7 +149,10 @@ CommunityTreeCollection = Backbone.Collection.extend({
 TreeItemView = Marionette.ItemView.extend({
 	tagName: 'tr',
 	className: function(){
-		if(this.model.get('json_tree').pct_correct!="Accuracy"){
+		if(this.model.get('json_tree').pct_correct!="Acc"){
+			if(this.model.get('private')==1){
+				return "tree-score-entry privateTree";
+			}
 			return "tree-score-entry";
 		}
 		return "";
