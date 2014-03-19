@@ -8,9 +8,10 @@
 <% 
 int player_id = 0;
 int player_experience = 0;
+int private_flag = 1;
 String player_name = "";
 if(request.getParameter("playerid")==null){
-Player player = (Player) session.getAttribute("player");
+  Player player = (Player) session.getAttribute("player");
   if (player == null) {
     	response.sendRedirect("/cure/login.jsp"); 
   } else {
@@ -87,7 +88,7 @@ Player player = (Player) session.getAttribute("player");
 	</script>
 	<script type="text/template" id="score-entry-template">
 	<@	if(json_tree.score != "Score"){ @>
-	<td><span class='keyValue'><@= rank @></span></td>
+	<td><span class='keyValue'><@= rank @><@ if(private ==1){print("<font color='red'>*</font>")} @></span></td>
 	<td><span class='keyValue'><@= player_name @></span></td>
 	<td><span class='keyValue'><@= json_tree.score @></span></td>
 	<td><span class='keyValue'><@= json_tree.size @></span></td>

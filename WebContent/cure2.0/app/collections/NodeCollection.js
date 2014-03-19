@@ -107,6 +107,7 @@ NodeCollection = Backbone.Collection.extend({
 		Cure.PlayerNodeCollection.prevTreeId = data.id;
 		Cure.PlayerNodeCollection.parseResponse(data.json_tree);
 		Cure.Comment.set("content",data.comment);
+		Cure.Comment.set("flagPrivate",data.private);
 		Cure.utils.hideLoading();
 	},
 	parseResponse : function(data) {
@@ -165,7 +166,8 @@ NodeCollection = Backbone.Collection.extend({
         treestruct : tree,
         player_id : cure_user_id,
         comment : Cure.Comment.get("content"),
-        previous_tree_id: Cure.PlayerNodeCollection.prevTreeId
+        previous_tree_id: Cure.PlayerNodeCollection.prevTreeId,
+        privateflag : Cure.Comment.get('flagPrivate')
       };
       $.ajax({
             type : 'POST',
@@ -174,9 +176,9 @@ NodeCollection = Backbone.Collection.extend({
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
             success : function(data){
-            	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved. You can open the Score Board to see your tree's rank.", 1);
+            	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved.", 1);
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
-            	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0){
+            	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0 && Cure.Comment.get('flagPrivate')==0){
           			var args = {
           	        command : "get_rank",
           	        dataset : "metabric_with_clinical",
@@ -200,6 +202,8 @@ NodeCollection = Backbone.Collection.extend({
           	            }
           	          });
           		} else {
+          			Cure.Comment.set("editView",0);
+	            	Cure.Comment.set("saving",0);
           			$("#current-tree-rank").html("");
           		}
             },

@@ -68,6 +68,7 @@ public class Tree {
 	int user_saved;
 	String player_name;
 	int rank;
+	int privateflag;
 
 	public class TreeScore{
 		float size;
@@ -87,7 +88,7 @@ public class Tree {
 		this.features = new ArrayList<Feature>();
 	}
 
-	public Tree (int id, int player_id, String ip, List<Feature> features, String json_tree, String comment, int user_saved) {
+	public Tree (int id, int player_id, String ip, List<Feature> features, String json_tree, String comment, int user_saved, int privateflag) {
 		this.player_id = player_id;
 		this.id = id;
 		this.ip = ip;
@@ -95,6 +96,7 @@ public class Tree {
 		this.json_tree = json_tree;
 		this.comment = comment;
 		this.user_saved = user_saved; 
+		this.privateflag = privateflag;
 	}
 
 	/**
@@ -121,6 +123,7 @@ public class Tree {
 			treeobj.put("ip",tree.ip);
 			treeobj.put("created", tree.created.getTime());
 			treeobj.put("user_saved",tree.user_saved);
+			treeobj.put("private",tree.privateflag);
 			treeobj.put("player_id", tree.player_id);
 			treeobj.put("rank", tree.rank);
 			treeobj.put("player_name", tree.player_name);
@@ -148,7 +151,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
@@ -186,16 +189,21 @@ public class Tree {
 		return trees;
 	}
 
-	public List<Tree> getForPlayer(int player_id){
+	public List<Tree> getForPlayer(int player_id, boolean getPrivate){
 		List<Tree> trees = new ArrayList<Tree>();
 		JdbcConnection conn = new JdbcConnection();
 		String q0 = "SET @i=0;";
 		conn.executeQuery(q0);
-		String q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 and tree.player_id="+player_id+" order by tree_dataset_score.score desc";
+		String q="";
+		if(getPrivate){
+			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 and tree.player_id="+player_id+" order by tree_dataset_score.score desc";
+		} else {
+			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 and tree.private=0 and tree.player_id="+player_id+" order by tree_dataset_score.score desc";
+		}
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				tree.rank = ts.getInt("rank");
 				String player_name = "";
@@ -251,7 +259,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				//TODO stop being lazy and do this properly in SQL...
 				String fq = "select * from tree_feature where tree_id="+tree.id;
@@ -283,7 +291,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				String player_name = "";
 				try{
@@ -353,12 +361,12 @@ public class Tree {
 		String q = "";
 		conn.executeQuery("set @i = "+lowerLimit);
 		if(orderby.equals("score")){
-			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 order by tree_dataset_score.score desc limit "+lowerLimit+","+upperLimit;
+			q = "select @i:=@i+1 as rank, tree.* from tree inner join tree_dataset_score on tree.id=tree_dataset_score.tree_id and tree_dataset_score.score!=0 and tree.user_saved=1 and tree.private=0 order by tree_dataset_score.score desc limit "+lowerLimit+","+upperLimit;
 		} 
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				tree.rank = ts.getInt("rank");
 				String player_name = "";
@@ -416,7 +424,7 @@ public class Tree {
 		try {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
-				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"));
+				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
 				tree.created = ts.getDate("created");
 				tree.rank = ts.getInt("rank");
 				tree.player_name = ts.getString("name");
@@ -500,11 +508,11 @@ public class Tree {
 		return nov;
 	}
 	
-	public int insert(int previous_tree_id) throws Exception{
+	public int insert(int previous_tree_id, int privateflag) throws Exception{
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null;
-		String insert = "insert into tree (player_id, ip, json_tree, comment, user_saved, prev_tree_id) values(?,?,?,?,?,?)";
+		String insert = "insert into tree (player_id, ip, json_tree, comment, user_saved, prev_tree_id, private) values(?,?,?,?,?,?,?)";
 
 		PreparedStatement p = null;
 		try {
@@ -515,6 +523,7 @@ public class Tree {
 			p.setString(4, comment);
 			p.setInt(5, user_saved);
 			p.setInt(6, previous_tree_id);
+			p.setInt(7, privateflag);
 			int affectedRows = p.executeUpdate();
 			if (affectedRows == 0) {
 				throw new SQLException("Creating tree failed, no rows affected.");

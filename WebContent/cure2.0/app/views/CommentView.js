@@ -13,13 +13,15 @@ CommentView = Backbone.Marionette.ItemView.extend({
 	className: 'commentBox',
 	ui: {
 		commentContent: ".commentContent",
-  	saveButton: "#save_tree"
+  	saveButton: "#save_tree",
+  	flagPrivate: '#save-private'
 	},
 	template : CommentTemplate,
 	events: {
 		"change .commentContent": 'saveComment',
 		'click #save_tree': 'saveTree',
-		'click #init_save_tree': 'initSave'
+		'click #init_save_tree': 'initSave',
+		'click #save-private': 'flagPrivate'
 	},
 	initialize : function(){
 		this.model.bind('change', this.render);
@@ -38,6 +40,13 @@ CommentView = Backbone.Marionette.ItemView.extend({
 	saveTree: function(){
 		this.model.set("content",$(this.ui.commentContent).val());
 		Cure.PlayerNodeCollection.saveTree();
+	},
+	flagPrivate: function(){
+		if($(this.ui.flagPrivate).is(':checked')){
+			this.model.set("flagPrivate",1);
+		} else {
+			this.model.set("flagPrivate",0);
+		}
 	}
 });
 
