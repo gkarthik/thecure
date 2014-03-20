@@ -1,8 +1,25 @@
 <%@ page language="java" contentType="text/html; charset=utf-8"
 	pageEncoding="utf-8"%>
 	<%@ page import="org.scripps.combo.model.Player"%>
+	<%@ page import="java.security.MessageDigest"%>
 <%
+/*
+---- To use md5 hash on password -----
 
+StringBuffer hexString = new StringBuffer();
+MessageDigest md = MessageDigest.getInstance("MD5");
+byte[] hash = md.digest(request.getParameter("password").getBytes());
+
+        for (int i = 0; i < hash.length; i++) {
+            if ((0xff & hash[i]) < 0x10) {
+                hexString.append("0"
+                        + Integer.toHexString((0xFF & hash[i])));
+            } else {
+                hexString.append(Integer.toHexString(0xFF & hash[i]));
+            }
+        }
+        String password = hexString.toString();
+ */
 String username = request.getParameter("username");
 String password = request.getParameter("password");
 String newuser = request.getParameter("newuser");
