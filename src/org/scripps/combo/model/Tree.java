@@ -4,7 +4,8 @@
 package org.scripps.combo.model;
 
 import java.io.IOException;
-import java.sql.Date;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -121,7 +122,8 @@ public class Tree {
 			treeobj.put("comment",tree.comment);
 			treeobj.put("id",tree.id);
 			treeobj.put("ip",tree.ip);
-			treeobj.put("created", tree.created.getTime());
+			String date = new SimpleDateFormat("EEE, d MMM yyyy 'at' HH:mm").format(tree.created);
+			treeobj.put("created", date);
 			treeobj.put("user_saved",tree.user_saved);
 			treeobj.put("private",tree.privateflag);
 			treeobj.put("player_id", tree.player_id);
@@ -152,7 +154,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
 				List<Feature> features = new ArrayList<Feature>();
@@ -204,7 +206,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				tree.rank = ts.getInt("rank");
 				String player_name = "";
 				try{
@@ -260,7 +262,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), player_id, ts.getString("ip"), null, ts.getString("json_tree"),ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				//TODO stop being lazy and do this properly in SQL...
 				String fq = "select * from tree_feature where tree_id="+tree.id;
 				ResultSet fs = conn.executeQuery(fq);
@@ -292,7 +294,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				String player_name = "";
 				try{
 					ResultSet player = conn.executeQuery("select * from player where id="+ts.getInt("player_id"));
@@ -367,7 +369,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				tree.rank = ts.getInt("rank");
 				String player_name = "";
 				try{
@@ -425,7 +427,7 @@ public class Tree {
 			ResultSet ts = conn.executeQuery(q);
 			while(ts.next()){
 				Tree tree = new Tree(ts.getInt("id"), ts.getInt("player_id"), ts.getString("ip"), null, ts.getString("json_tree"), ts.getString("comment"), ts.getInt("user_saved"), ts.getInt("private"));
-				tree.created = ts.getDate("created");
+				tree.created = ts.getTimestamp("created");
 				tree.rank = ts.getInt("rank");
 				tree.player_name = ts.getString("name");
 				String fq = "select * from tree_feature where tree_id="+tree.id;
