@@ -50,7 +50,8 @@ NodeCollection = Backbone.Collection.extend({
 		for(var temp in kindArray){
 			if(kindArray[temp].options.kind=="split_node"){
 				splitNodeArray.push({
-					'name': kindArray[temp].name
+					'name': kindArray[temp].name,
+					'cid': kindArray[temp].cid
 				});
 			}
 		}
