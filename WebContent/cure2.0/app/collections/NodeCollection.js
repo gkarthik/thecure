@@ -44,6 +44,18 @@ NodeCollection = Backbone.Collection.extend({
 			error : this.error
 		});
 	},
+	getSplitNodeArray: function(){
+		var kindArray = this.toJSON();
+		var splitNodeArray = [];
+		for(var temp in kindArray){
+			if(kindArray[temp].options.kind=="split_node"){
+				splitNodeArray.push({
+					'name': kindArray[temp].name
+				});
+			}
+		}
+		return splitNodeArray;
+	},
 	updateCollection : function(json_node, node, parent) {
 		var thisCollection = this;
 		setTimeout(function(){
