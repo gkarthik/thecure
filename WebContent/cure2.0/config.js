@@ -71,8 +71,8 @@ require([ "app/core" ], function() {
 	Cure.start({
 	  "height" : 300,
 	  "width" : window.innerWidth - 365,
-	  "Scorewidth" : 268,
-	  "Scoreheight" : 200,
+	  "Scorewidth" : 270,
+	  "Scoreheight" : 270,
 	  "regions" : {
 	    "PlayerTreeRegion" : "#PlayerTreeRegion",
 	    "JSONSummaryRegion" : "#jsonSummary",
