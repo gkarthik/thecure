@@ -473,13 +473,14 @@ public class Tree {
 		String q = "select (select count(*) as total from card)+(select count(*) as total from tree_feature) as total";
 		String q1 = "select ";
 		String q2 = "select count(*) as n from card where ";
-		String q3 = "select count(*) as n from tree_feature, feature where tree_feature.feature_id = feature.id and ";
+		String q3 = "select count(*) as n from tree_feature, feature, tree where tree_feature.feature_id = feature.id and tree_feature.feature_id = tree.id and ";
 		for(String uid : unique_id){
 			q2 += " unique_id = '"+uid+"' or ";// quotes('') for unique ids of clinical features like 'metabric_clinical_5'
 			q3 += " feature.unique_id = '"+uid+"' or ";
 		}
 		q2 = q2.substring(0,q2.length()-3);
 		q3 = q3.substring(0,q3.length()-3);
+		q3+=" group by tree.player_id, tree_feature.feature_id";
 		q1 = q1 +"("+q2+")"+"+"+"("+q3+") as n";
 		double base = 1; double n = 1;
 		ResultSet rslt = conn.executeQuery(q);

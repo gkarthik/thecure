@@ -38,10 +38,10 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		var thisModel = this.model;
 		this.SVG = d3.selectAll(this.ui.svg).append("svg:g");		
 		var xLimit = 10;
-		var yLimit = 80000;
+		var yLimit = 8000;
 		if(thisModel.get('size')>0){
 			xLimit = thisModel.get('size')+2;
-			yLimit = thisModel.get('score')+10000;
+			yLimit = thisModel.get('score')+1000;
 		}
 		var xAxisScale = d3.scale.linear().domain([0, xLimit]).range([0, Cure.Scorewidth-50]);
 		var yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scorewidth-30, 0]);
@@ -59,7 +59,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	splitNodeArray: [],
 	updateAxis: function(){
 		var thisModel = this.model;
-		var yLimit = 80000;
+		var yLimit = 8000;
 		var xLength = Cure.Scorewidth-50;
 		var tempSplitNodeArray = Cure.PlayerNodeCollection.getSplitNodeArray();
 		var splitNodeArray = this.splitNodeArray;
@@ -87,15 +87,16 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			splitNodeArray.splice(0,splitNodeArray.length-1);
 		}
 		if(splitNodeArray.length>0){
-			splitNodeArray[splitNodeArray.length-1].score = [parseFloat(1000 * this.model.get('pct_correct')), parseFloat(750 * (1/this.model.get('size'))), parseFloat(500 * this.model.get('novelty'))];
+			splitNodeArray[splitNodeArray.length-1].score = [{label:'Accuracy', value: parseFloat(50*this.model.get('pct_correct'))}, {label: 'Size', value: parseFloat(750 * (1/this.model.get('size')))}, {label: 'Novelty', value: parseFloat(500 * this.model.get('novelty'))}];
 		}
 		
 		if(thisModel.get('size')>0){
-			yLimit = this.model.get('score')+10000;
+			yLimit = this.model.get('score')+1000;
 			xLength = (splitNodeArray.length+1) * 50;
 		}
 		var	xAxisScale = d3.scale.ordinal().domain(splitNodeArray.map(function(d){ return d.cid;})).rangeRoundBands([0, xLength], 1);
 		var yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
+		
 		//Update axis
 		var xAxis = d3.svg.axis().scale(xAxisScale).orient("bottom").tickFormat(function(d){
 			var i = splitNodeArray.length;
@@ -106,7 +107,10 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		});
 		var yAxis = d3.svg.axis().scale(yAxisScale).orient("left").tickFormat(function (d) {
     	var prefix = d3.formatPrefix(d);
-    	return prefix.scale(d) + "k";
+    	if(d>=1000){
+    		return prefix.scale(d)+"k";
+    	}
+    	return prefix.scale(d);
 		});
 		this.xaxis.transition().duration(Cure.duration).call(xAxis);
 		this.yaxis.transition().duration(Cure.duration).call(yAxis);
@@ -116,17 +120,47 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			return "translate("+parseFloat(xAxisScale(d.cid)+15)+",0)";
 		});
 		
-		var y=Cure.Scoreheight-20;
-		layer.selectAll("scoreRect").data(function(d){return d.score; }).enter().append("rect").attr("class","scoreRect")
+		var y=Cure.Scoreheight-20 - yAxisScale(yLimit-thisModel.get('score'));
+		
+		layer.append("svg:text").text(function(){return thisModel.get('score');}).style("fill","#F69")
+		.attr("y",function(){
+			return y-40;
+		});	
+		
+		y=Cure.Scoreheight-20;
+				
+		var layerEnter = layer.selectAll("scoreRect").data(function(d){return d.score; }).enter().append("g").attr("class","attributeGroup");
+		
+		layerEnter.append("rect").attr("class","scoreRect")
 		.attr("width",30)
     .style("fill", function(d, i) { return Cure.colorScale(i); })
-    .attr("y", function(d) { return y; })
+    .attr("y",y)
     .attr("height", 0)
-		.transition().duration(Cure.duration)
-		.attr("y", function(d) { y-=yAxisScale(yLimit-d);return y; })
-    .attr("height", function(d) { return yAxisScale(yLimit-d); });
+		.transition().duration(function(d,i){
+			return Cure.duration*(i+1);
+		})
+		.attr("y",function(d){
+    	y-=yAxisScale(yLimit-d.value);
+    	return y;
+    })
+    .attr("height", function(d) { return yAxisScale(yLimit-d.value); });
 		
-		this.SVG.selectAll(".layer").data(splitNodeArray).exit().transition().duration(Cure.duration).attr("height",0).remove();
+		y=Cure.Scoreheight-20 - yAxisScale(yLimit-thisModel.get('score'));
+		
+		layerEnter.append("svg:text").text(function(d){
+			return Math.round(d.value*100)/100;
+		}).attr("transform",function(d,i){
+			return "translate("+0+","+(y-5-(11*i))+")";
+		})
+		.style("font-size","10px")
+		.style("font-weight","bold")
+		.style("fill",function(d,i){
+			return Cure.colorScale(i);
+		});
+		
+		this.SVG.selectAll(".layer").data(splitNodeArray).exit().transition().duration(Cure.duration).attr("transform",function(d){
+			return "translate("+Cure.Scorewidth+",0)";
+		}).remove();
 	},
 	updateScore : function() {
 		this.updateAxis();
