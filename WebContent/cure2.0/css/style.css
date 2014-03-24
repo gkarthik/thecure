@@ -394,6 +394,7 @@ width: 310px;
 #ScoreSVG{
 	position: relative;
 	background: #FFF;
+	cursor:move;
 }
 
 .axis path,
@@ -405,6 +406,10 @@ width: 310px;
 
 .axis text {
     font-size: 10px;
+}
+
+#ScoreSVG .layer{
+	cursor:pointer;
 }
 
 #ScoreChangesWrapper table{
