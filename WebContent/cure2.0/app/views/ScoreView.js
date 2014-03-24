@@ -9,7 +9,7 @@ define([
     ], function($, Marionette, d3, scoreTemplate, scoreChangeTemplate) {
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
-		_.bindAll(this, 'updateScore', 'updateAxis');
+		_.bindAll(this, 'updateScore', 'updateAxis', 'drawAxis', 'zoom');
 		this.model.bind("change:size", this.updateScore);
 	},
 	ui : {
@@ -36,29 +36,42 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	},
 	drawAxis : function() {
 		var thisModel = this.model;
-		this.SVG = d3.selectAll(this.ui.svg).append("svg:g");		
 		var xLimit = 10;
 		var yLimit = 8000;
 		if(thisModel.get('size')>0){
 			xLimit = thisModel.get('size')+2;
 			yLimit = thisModel.get('score')+1000;
 		}
-		var xAxisScale = d3.scale.linear().domain([0, xLimit]).range([0, Cure.Scorewidth-50]);
-		var yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scorewidth-30, 0]);
-		var xAxis = d3.svg.axis().scale(xAxisScale).orient("bottom");
-		var yAxis = d3.svg.axis().scale(yAxisScale).orient("left").tickFormat(function (d) {
+		this.xAxisScale = d3.scale.linear().domain([0, xLimit]).range([0, Cure.Scorewidth-50]);
+		this.yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scorewidth-30, 0]);
+		
+		var xAxis = d3.svg.axis().scale(this.xAxisScale).orient("bottom");
+		var yAxis = d3.svg.axis().scale(this.yAxisScale).orient("left").tickFormat(function (d) {
     	var prefix = d3.formatPrefix(d);
     	return prefix.scale(d) + "k";
 		});
 		
+		this.SVG = d3.selectAll(this.ui.svg).call(d3.behavior.zoom().scaleExtent([1, 1]).on("zoom", this.zoom));
+		
 		this.xaxis = this.SVG.append("svg:g").attr("transform","translate(30,"+parseFloat(Cure.Scoreheight-20)+")")
-											 .attr("class", "axis").call(xAxis);
+											 .attr("class", "xaxis axis").call(xAxis);
 		this.yaxis = this.SVG.append("svg:g").attr("transform","translate(30,10)")
-		 .attr("class", "axis").call(yAxis);
+		 .attr("class", "yaxis axis").call(yAxis);
+		this.SVG.append("svg:g").attr("class","layerGroup");
 	},
 	splitNodeArray: [],
-	updateAxis: function(){
+	zoom: function(){
+		var thisView = this;
+    this.SVG.select(".xaxis").call(thisView.xAxisScale);
+    this.SVG.select(".yaxis").call(thisView.yAxisScale);
+    this.SVG.selectAll(".layerGroup").attr("transform", "translate(" + d3.event.translate[0] + ",0)scale(" + d3.event.scale + ", 1)");
+    var transformString = this.SVG.selectAll(".xaxis").attr("transform");
+    var splitTranslate = String(transformString).match(/-?[0-9\.]+/g);
+    this.SVG.selectAll(".xaxis").attr("transform", "translate(" + (d3.event.translate[0]+30) + ","+ splitTranslate[1] +")scale(" + d3.event.scale + ", 1)");
+	},
+	updateAxis: function(){	
 		var thisModel = this.model;
+		var thisView = this;
 		var yLimit = 8000;
 		var xLength = Cure.Scorewidth-50;
 		var tempSplitNodeArray = Cure.PlayerNodeCollection.getSplitNodeArray();
@@ -94,33 +107,34 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			yLimit = this.model.get('score')+1000;
 			xLength = (splitNodeArray.length+1) * 50;
 		}
-		var	xAxisScale = d3.scale.ordinal().domain(splitNodeArray.map(function(d){ return d.cid;})).rangeRoundBands([0, xLength], 1);
-		var yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
+		thisView.xAxisScale = d3.scale.ordinal().domain(splitNodeArray.map(function(d){ return d.cid;})).rangeRoundBands([0, xLength], 1);
+		thisView.yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
 		
 		//Update axis
-		var xAxis = d3.svg.axis().scale(xAxisScale).orient("bottom").tickFormat(function(d){
+		var xAxis = d3.svg.axis().scale(thisView.xAxisScale).orient("bottom").tickFormat(function(d){
 			var i = splitNodeArray.length;
 			while( i-- ) {
 		    if( splitNodeArray[i].cid ==  d ) break;
 			}
 			return splitNodeArray[i].name; 
 		});
-		var yAxis = d3.svg.axis().scale(yAxisScale).orient("left").tickFormat(function (d) {
+		var yAxis = d3.svg.axis().scale(thisView.yAxisScale).orient("left").tickFormat(function (d) {
     	var prefix = d3.formatPrefix(d);
     	if(d>=1000){
     		return prefix.scale(d)+"k";
     	}
     	return prefix.scale(d);
 		});
+		
 		this.xaxis.transition().duration(Cure.duration).call(xAxis);
 		this.yaxis.transition().duration(Cure.duration).call(yAxis);
 		
-		var layer = this.SVG.selectAll(".layer").data(splitNodeArray).enter().append("g").attr("class","layer")
+		var layer = this.SVG.selectAll(".layerGroup").selectAll(".layer").data(splitNodeArray).enter().append("g").attr("class","layer")
 		.attr("transform",function(d){
-			return "translate("+parseFloat(xAxisScale(d.cid)+15)+",0)";
+			return "translate("+parseFloat(thisView.xAxisScale(d.cid)+15)+",0)";
 		});
 		
-		var y=Cure.Scoreheight-20 - yAxisScale(yLimit-thisModel.get('score'));
+		var y=Cure.Scoreheight-20 - thisView.yAxisScale(yLimit-thisModel.get('score'));
 		
 		layer.append("svg:text").text(function(){return thisModel.get('score');}).style("fill","#F69")
 		.attr("y",function(){
@@ -128,24 +142,29 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		});	
 		
 		y=Cure.Scoreheight-20;
+		var prevY = Cure.Scoreheight - 20;
 				
 		var layerEnter = layer.selectAll("scoreRect").data(function(d){return d.score; }).enter().append("g").attr("class","attributeGroup");
 		
 		layerEnter.append("rect").attr("class","scoreRect")
 		.attr("width",30)
     .style("fill", function(d, i) { return Cure.colorScale(i); })
-    .attr("y",y)
+    .attr("y",function(d){
+    	var tempY = prevY;
+    	prevY-=thisView.yAxisScale(yLimit-d.value);
+    	return tempY;
+    })
     .attr("height", 0)
 		.transition().duration(function(d,i){
-			return Cure.duration*(i+1);
+			return Cure.duration*(i+2);
 		})
-		.attr("y",function(d){
-    	y-=yAxisScale(yLimit-d.value);
+		.attr("y",function(d, i){
+    	y-=thisView.yAxisScale(yLimit-d.value);
     	return y;
     })
-    .attr("height", function(d) { return yAxisScale(yLimit-d.value); });
+    .attr("height", function(d) { return thisView.yAxisScale(yLimit-d.value); });
 		
-		y=Cure.Scoreheight-20 - yAxisScale(yLimit-thisModel.get('score'));
+		y=Cure.Scoreheight-20 - thisView.yAxisScale(yLimit-thisModel.get('score'));
 		
 		layerEnter.append("svg:text").text(function(d){
 			return Math.round(d.value*100)/100;

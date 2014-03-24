@@ -349,6 +349,10 @@ public class MetaServer extends HttpServlet {
 		String dataset = data.get("dataset").asText();
 		dataset = "metabric_with_clinical";//todo fix this so javascript and serverside agree about this..
 		
+		//To avoid penalizing user for genes added to his/her own tree.
+		HttpSession session = request_.getSession();
+		Player player = (Player) session.getAttribute("player");
+		int PlayerId = player.getId();
 		Weka weka = name_dataset.get(dataset);	
 		if(weka==null){
 			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
@@ -366,7 +370,7 @@ public class MetaServer extends HttpServlet {
 		ObjectNode result = mapper.createObjectNode();
 		result.put("pct_correct", eval.pctCorrect());
 		result.put("size", numnodes);
-		double nov = Tree.getUniqueIdNovelty(entrez_ids);
+		double nov = Tree.getUniqueIdNovelty(entrez_ids, PlayerId);
 		result.put("novelty", nov);//
 		result.put("text_tree", readtree.toString());
 		//serialize and return the result		

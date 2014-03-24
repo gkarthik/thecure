@@ -466,22 +466,22 @@ public class Tree {
 		return trees;
 	}
 	
-	public static double getUniqueIdNovelty(List<String> unique_id){
+	public static double getUniqueIdNovelty(List<String> unique_id, int PlayerId){
 		double nov = 1;
 		//select count(*) from card where unique_id = 2261 or unique_id = 1717 or unique_id = 9135;
 		JdbcConnection conn = new JdbcConnection();
 		String q = "select (select count(*) as total from card)+(select count(*) as total from tree_feature) as total";
 		String q1 = "select ";
-		String q2 = "select count(*) as n from card where ";
-		//select count(*) from (select tree.* from tree_feature, feature, tree where tree_feature.feature_id = feature.id and tree_feature.feature_id = tree.id and feature.unique_id = '28998' or  feature.unique_id = 'metabric_with_clinical_6' group by tree.player_id, tree_feature.feature_id) as n
-		String q3 = "select count(*) from (select tree.* from tree_feature, feature, tree where tree_feature.feature_id = feature.id and tree_feature.feature_id = tree.id and";
+		String q2 = "select count(*) as n from card where user_id != "+PlayerId+" and (";
+		String q3 = "select count(*) from (select tree.* from tree_feature, feature, tree where tree_feature.feature_id = feature.id and tree_feature.tree_id = tree.id and tree.player_id != '"+PlayerId+"' and (";
 		for(String uid : unique_id){
 			q2 += " unique_id = '"+uid+"' or ";// quotes('') for unique ids of clinical features like 'metabric_clinical_5'
 			q3 += " feature.unique_id = '"+uid+"' or ";
 		}
 		q2 = q2.substring(0,q2.length()-3);
+		q2+=")";
 		q3 = q3.substring(0,q3.length()-3);
-		q3+=" group by tree.player_id, tree_feature.feature_id) as n";
+		q3+=" ) group by tree.player_id, tree_feature.feature_id) as n";
 		q1 = q1 +"("+q2+")"+"+"+"("+q3+") as n";
 		double base = 1; double n = 1;
 		ResultSet rslt = conn.executeQuery(q);
