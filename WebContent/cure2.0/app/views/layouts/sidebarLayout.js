@@ -6,11 +6,12 @@ define([
 	'app/views/CommentView', 
   'app/views/TreeBranchCollectionView', 'app/views/ScoreBoardView',
   'app/views/ScoreView', 'app/views/CollaboratorCollectionView', 
+  'app/views/ScoreKey',
 	//Templates
 	'text!app/templates/sidebarLayout.html',
 	//Plugins
 	'odometer'
-    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, sidebarLayoutTemplate, Odometer) {
+    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, ScoreKeyView, sidebarLayoutTemplate, Odometer) {
 sidebarLayout = Marionette.Layout.extend({
     template: sidebarLayoutTemplate,
     regions: {
@@ -18,7 +19,8 @@ sidebarLayout = Marionette.Layout.extend({
 	    "CommentRegion" : "#CommentRegion",
 	    "ScoreBoardRegion" : "#scoreboard_innerwrapper",
 	    "TreeBranchRegion": "#tree-explanation-wrapper",
-	    "CollaboratorsRegion": "#CollaboratorsRegion"
+	    "CollaboratorsRegion": "#CollaboratorsRegion",
+	    "ScoreKeyRegion": "#ScoreKeyRegion"
     },
     ui: {
     	ScoreWrapper: "#score-board-outerWrapper",
@@ -73,11 +75,15 @@ sidebarLayout = Marionette.Layout.extend({
       Cure.CollaboratorCollectionView = new CollaborativeCollectionView({
       	collection: Cure.CollaboratorCollection
       });
+      Cure.ScoreKeyView = new ScoreKeyView({
+      	model: Cure.Score
+      });
       this.ScoreRegion.show(Cure.ScoreView);
       this.ScoreBoardRegion.show(Cure.ScoreBoardView);
       this.CommentRegion.show(Cure.CommentView);
       this.TreeBranchRegion.show(Cure.TreeBranchCollectionView);
       this.CollaboratorsRegion.show(Cure.CollaboratorCollectionView);
+      this.ScoreKeyRegion.show(Cure.ScoreKeyView);
     },
     onShow: function(){
     	this.$el.attr('id',"cure-panel");
