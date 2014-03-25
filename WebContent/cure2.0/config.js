@@ -80,6 +80,11 @@ require([ "app/core" ], function() {
 	    "ZoomControlsRegion": "#zoom-controls"
 	  },
 	  posNodeName : "y",
-	  negNodeName : "n"
+	  negNodeName : "n",
+	  scoreWeights: {
+	  	pct_correct: 1000,
+	  	novelty: 500,
+	  	size: 750
+	  }
 	});
 });

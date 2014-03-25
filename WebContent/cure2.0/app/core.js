@@ -52,6 +52,7 @@ define(
 		        Cure.height = options["height"];
 		        Cure.posNodeName = options["posNodeName"];
 		        Cure.negNodeName = options["negNodeName"];
+		        Cure.scoreWeights = options.scoreWeights;
 
 		        // Scales
 		        Cure.accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range(

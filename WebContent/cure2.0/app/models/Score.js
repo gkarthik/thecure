@@ -20,16 +20,16 @@ define([
 	updateScore: function(){
 		if (this.get("size") > 1) {
 			var oldScore = this.get('score');
-			var score = 750 * (1 / this.get("size")) + 500
-					* this.get("novelty") + 50 * this.get("pct_correct");
+			var score = Cure.scoreWeights.size * (1 / this.get("size")) + Cure.scoreWeights.novelty
+					* this.get("novelty") + Cure.scoreWeights.pct_correct * this.get("pct_correct");
 			this.set("score", Math.round(score));
 			if(this.get('previousAttributes').size!=0){
-				this.set("sizeDiff",parseInt((750 * (1 / this.get("size")) - (750 * (1 / this.get('previousAttributes').size)))));
+				this.set("sizeDiff",parseInt((Cure.scoreWeights.size * (1 / this.get("size")) - (Cure.scoreWeights.size * (1 / this.get('previousAttributes').size)))));
 			} else {
-				this.set("sizeDiff",parseInt(750 * (1 / this.get("size"))));
+				this.set("sizeDiff",parseInt(Cure.scoreWeights.size * (1 / this.get("size"))));
 			}
-			this.set("pct_correctDiff",parseInt((50 * this.get("pct_correct"))-(50 * this.get('previousAttributes').pct_correct)));
-			this.set("noveltyDiff",parseInt((500*this.get('novelty'))-(500*this.get('previousAttributes').novelty)));
+			this.set("pct_correctDiff",parseInt((Cure.scoreWeights.pct_correct * this.get("pct_correct"))-(Cure.scoreWeights.pct_correct * this.get('previousAttributes').pct_correct)));
+			this.set("noveltyDiff",parseInt((Cure.scoreWeights.novelty*this.get('novelty'))-(Cure.scoreWeights.novelty*this.get('previousAttributes').novelty)));
 			this.set("scoreDiff",parseInt(Math.round(score)-oldScore));
 		} else {
 			this.set({

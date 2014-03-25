@@ -106,15 +106,17 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			splitNodeArray.splice(0,splitNodeArray.length-1);
 		}
 		if(splitNodeArray.length>0){
-			splitNodeArray[splitNodeArray.length-1].score = [{label:'Accuracy', value: parseFloat(50*this.model.get('pct_correct'))}, {label: 'Size', value: parseFloat(750 * (1/this.model.get('size')))}, {label: 'Novelty', value: parseFloat(500 * this.model.get('novelty'))}];
+			splitNodeArray[splitNodeArray.length-1].score = [{label:'Accuracy', value: parseFloat(Cure.scoreWeights.pct_correct*this.model.get('pct_correct'))}, {label: 'Size', value: parseFloat(Cure.scoreWeights.size * (1/this.model.get('size')))}, {label: 'Novelty', value: parseFloat(Cure.scoreWeights.novelty * this.model.get('novelty'))}];
 		}
 		
 		if(thisModel.get('size')>0){
-			yLimit = this.model.get('score')+1000;
+			yLimit = this.model.get('score') + 500;
+			yLowerLimit = (this.model.get('pct_correct')*Cure.scoreWeights.pct_correct)-500;
 			xLength = (splitNodeArray.length+1) * 50;
 		}
 		thisView.xAxisScale = d3.scale.ordinal().domain(splitNodeArray.map(function(d){ return d.cid;})).rangeRoundBands([0, xLength], 1);
-		thisView.yAxisScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
+		thisView.yAxisScale = d3.scale.linear().domain([yLowerLimit, yLimit]).range([Cure.Scoreheight-30, 0 ]);
+		thisView.yAxisKinkScale = d3.scale.linear().domain([0, yLimit]).range([Cure.Scoreheight-30, 0 ]);
 		
 		//Update axis
 		var xAxis = d3.svg.axis().scale(thisView.xAxisScale).orient("bottom").tickFormat(function(d){
@@ -160,6 +162,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		});	
 		
 		y=Cure.Scoreheight-20;
+		var value = 0;
 		var prevY = Cure.Scoreheight - 20;
 				
 		var layerEnter = layer.selectAll("scoreRect").data(function(d){return d.score; }).enter().append("g").attr("class","attributeGroup");
@@ -177,10 +180,21 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			return Cure.duration*(i+2);
 		})
 		.attr("y",function(d, i){
-    	y-=thisView.yAxisScale(yLimit-d.value);
+			if(d.label=="Accuracy"){
+				y-=thisView.yAxisScale(yLimit-d.value+yLowerLimit);
+			} else {
+				y-=(thisView.yAxisScale(yLimit-(d.value+value)+yLowerLimit)-thisView.yAxisScale(yLimit-value+yLowerLimit));
+			}
     	return y;
     })
-    .attr("height", function(d) { return thisView.yAxisScale(yLimit-d.value); });
+    .attr("height", function(d) {
+    	if(d.label=="Accuracy"){
+				return thisView.yAxisScale(yLimit-d.value+yLowerLimit);
+			} 
+    	var h = (thisView.yAxisScale(yLimit-(d.value+value)+yLowerLimit)-thisView.yAxisScale(yLimit-value+yLowerLimit));
+			value+=d.value;
+			return h;
+			});
 		
 		y=Cure.Scoreheight-20 - thisView.yAxisScale(yLimit-thisModel.get('score'));
 		
