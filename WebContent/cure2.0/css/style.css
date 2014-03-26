@@ -408,6 +408,12 @@ width: 310px;
     font-size: 10px;
 }
 
+.scoreBarHover{
+	font-size: 12px;
+	shape-rendering: crispEdges;
+	stroke-width:1px;
+}
+
 #ScoreSVG .layer{
 	cursor:pointer;
 }
