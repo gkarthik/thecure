@@ -75,21 +75,15 @@ ScoreView = Backbone.Marionette.ItemView.extend({
     this.SVG.selectAll(".layerGroup").attr("transform", "translate(" + parseFloat(d3.event.translate[0]-30+parseFloat(splitTranslate[0])) + ",0)scale(" + d3.event.scale + ", 1)");
     this.SVG.selectAll(".xaxis").attr("transform", "translate(" + parseFloat(d3.event.translate[0] + parseFloat(splitTranslate[0])) + ","+ splitTranslate[1] +")scale(" + d3.event.scale + ", 1)");
 	},
-	updateAxis: function(){	
-		var thisModel = this.model;
-		var thisView = this;
-		var yLimit = 80000;
-		var yLowerLimit = 0;
-		var xLength = Cure.Scorewidth-70;
+	syncSplitNodeArray: function(){
+		//Sync splitNodeArray and tempSplitNodeArray
 		var tempSplitNodeArray = Cure.PlayerNodeCollection.getSplitNodeArray();
 		var splitNodeArray = this.splitNodeArray;
-		var pushCount = 0;
-		
-		//Sync splitNodeArray and tempSplitNodeArray
+		var pushNodes = [];
 		for(var i=0;i<splitNodeArray.length;i++){
 			var j = tempSplitNodeArray.length;
 			while( j-- ) {
-			    if( tempSplitNodeArray[j].cid ==  splitNodeArray[i].cid ) break;
+			    if( tempSplitNodeArray[j].cid ==  splitNodeArray[i].cid) break;
 			}
 			if(j==-1){
 				splitNodeArray.splice(i,1);
@@ -99,21 +93,36 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		for(var temp in tempSplitNodeArray){
 			var i = splitNodeArray.length;
 			while( i-- ) {
-			    if( splitNodeArray[i].cid ==  tempSplitNodeArray[temp].cid ) break;
+			    if( splitNodeArray[i].cid ==  tempSplitNodeArray[temp].cid) break;
+			    else if(splitNodeArray[i].nodeGroup.indexOf(tempSplitNodeArray[temp].cid)!=-1) break; 
 			}
 			if(i==-1){
 				splitNodeArray.push(tempSplitNodeArray[temp]);
-				pushCount++;
+				pushNodes.push(tempSplitNodeArray[temp].cid);
 			}
 		}
 		
-		if(pushCount > 1) {
+		if(pushNodes.length > 1) {
 			splitNodeArray.splice(0,splitNodeArray.length-1);
+			splitNodeArray[splitNodeArray.length-1].name = 'tree';
 		}
+		
 		if(splitNodeArray.length>0){
 			splitNodeArray[splitNodeArray.length-1].score = [{label:'Accuracy', value: parseFloat(Cure.scoreWeights.pct_correct*this.model.get('pct_correct'))}, {label: 'Size', value: parseFloat(Cure.scoreWeights.size * (1/this.model.get('size')))}, {label: 'Novelty', value: parseFloat(Cure.scoreWeights.novelty * this.model.get('novelty'))}];
-			splitNodeArray[splitNodeArray.length-1].scoreValue = thisModel.get('score');
+			splitNodeArray[splitNodeArray.length-1].scoreLiteral = [{label:'Accuracy', value: (Math.round(this.model.get('pct_correct')*100)/100)+"%", color:Cure.colorScale(0)}, {label: 'Size', value: this.model.get('size'), color:Cure.colorScale(1)}, {label: 'Novelty', value: Math.round(this.model.get('novelty')*100)+"%", color:Cure.colorScale(2)}, {label: 'Score', value: this.model.get('score'), color:"#F69"}];
+			splitNodeArray[splitNodeArray.length-1].scoreValue = this.model.get('score');
+			splitNodeArray[splitNodeArray.length-1].nodeGroup = pushNodes;
 		}
+	},
+	updateAxis: function(){	
+		var thisModel = this.model;
+		var thisView = this;
+		var yLimit = 80000;
+		var yLowerLimit = 0;
+		var xLength = Cure.Scorewidth-70;
+		
+		this.syncSplitNodeArray();
+		var splitNodeArray = this.splitNodeArray;
 		
 		if(thisModel.get('size')>0){
 			yLowerLimit = splitNodeArray[0].score[0].value;
@@ -167,12 +176,35 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		this.SVG.selectAll('.xaxis g text').each(thisView.insertLinebreaks);
 		
 		var translateX = 0;
-		var layer = this.SVG.selectAll(".layerGroup").selectAll(".layer").data(splitNodeArray);
+		var SVG = this.SVG; 
+		var layer = SVG.selectAll(".layerGroup").selectAll(".layer").data(splitNodeArray);
 		
 		var layerEnter = layer.enter().append("g").attr("class","layer")
 		.attr("transform",function(d){
 			translateX = parseFloat(thisView.xAxisScale(d.cid)+25);
 			return "translate("+parseFloat(thisView.xAxisScale(d.cid)+25)+",0)";
+		})
+		.on("mouseover",function(d){
+			SVG.append("rect")
+			.attr("x",15).attr("y",10)
+			.attr("class","hoverRect")
+			.attr("width",110)
+			.attr("height",60)
+			.style("fill","#FFF");
+			
+			SVG.selectAll(".scoreBarHover").data(d.scoreLiteral).enter()
+			.append("text")
+			.attr("class","scoreBarHover")
+			.text(function(d){
+				return d.label+" : "+d.value;
+			}).attr("x",20).attr("y",function(d,i){
+				return 15+(i*14);
+			}).style("stroke",function(d){
+				return d.color;
+			});
+		}).on("mouseleave",function(){
+			d3.selectAll(".scoreBarHover").remove();
+			d3.selectAll(".hoverRect").remove();
 		});
 		
 		y=Cure.Scoreheight-20;
@@ -257,10 +289,10 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 		}
 		translateX=(Cure.Scorewidth-95)-translateX;
 		
-    this.SVG.selectAll(".layerGroup").attr("transform", "translate(" + translateX + ",0)scale(1)");
+    SVG.selectAll(".layerGroup").attr("transform", "translate(" + translateX + ",0)scale(1)");
     var transformString = this.SVG.selectAll(".xaxis").attr("transform");
     var splitTranslate = String(transformString).match(/-?[0-9\.]+/g);
-    this.SVG.selectAll(".xaxis").attr("transform", "translate(" + (translateX+35) + ","+ splitTranslate[1] +")scale(1)");
+    SVG.selectAll(".xaxis").attr("transform", "translate(" + (translateX+35) + ","+ splitTranslate[1] +")scale(1)");
     transformString = this.SVG.selectAll(".xaxis").attr("transform");
     this.splitTranslate = String(transformString).match(/-?[0-9\.]+/g);
 	},
