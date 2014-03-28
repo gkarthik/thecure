@@ -1,15 +1,15 @@
 <tr style="color: <% print(Cure.colorScale(0)); %>">
 	<td>Accuracy</td>
 	<td><% print((Math.round(pct_correct*100)/100)+"%") %></td>
-	<td><i class="<% if(pct_correctDiff>0){ print('glyphicon glyphicon-plus') } else if(pct_correctDiff<0) { print('glyphicon glyphicon-minus') } else { print('No Change'); } %>"></i><% print(Math.abs(pct_correctDiff)); %></td>
+	<td><i class="<% if(pct_correctDiff>0){ print('glyphicon glyphicon-plus') } else if(pct_correctDiff<0) { print('glyphicon glyphicon-minus') } else { print('nochange'); } %>"></i><% if(pct_correctDiff==0){ print("No Change") } else {print(Math.abs(pct_correctDiff));} %></td>
 </tr>
 <tr style="color: <% print(Cure.colorScale(1)); %>">
 	<td>Size</td>
 	<td><%= size %></td>
-	<td><i class="<% if(sizeDiff>0){ print('glyphicon glyphicon-plus') } else if(sizeDiff<0) { print('glyphicon glyphicon-minus') } else { print('No Change');} %>"></i><% print(Math.abs(sizeDiff)); %></td>
+	<td><i class="<% if(sizeDiff>0){ print('glyphicon glyphicon-plus') } else if(sizeDiff<0) { print('glyphicon glyphicon-minus') } else { print('nochange');} %>"></i><% if(sizeDiff==0){ print("No Change") } else {print(Math.abs(sizeDiff));} %></td>
 </tr>
 <tr style="color: <% print(Cure.colorScale(2)); %>">
 	<td>Novelty</td>
 	<td><% print((Math.round(novelty*100))+"%") %></td>
-	<td><i class="<% if(noveltyDiff>0){ print('glyphicon glyphicon-plus') } else if(noveltyDiff<0) { print('glyphicon glyphicon-minus') } else { print('No Change');} %>"></i><% print(Math.abs(noveltyDiff)); %></td>
+	<td><i class="<% if(noveltyDiff>0){ print('glyphicon glyphicon-plus') } else if(noveltyDiff<0) { print('glyphicon glyphicon-minus') } else { print('nochange');} %>"></i><% if(noveltyDiff==0){ print("No Change") } else {print(Math.abs(noveltyDiff));} %></td>
 </tr>
