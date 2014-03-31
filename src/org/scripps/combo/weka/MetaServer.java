@@ -41,6 +41,7 @@ import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Tree;
+import org.scripps.combo.model.Badge;
 import org.scripps.combo.weka.Weka.execution;
 import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.JdbcConnection;
@@ -53,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
@@ -211,7 +213,18 @@ public class MetaServer extends HttpServlet {
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to get clinical features: "+json);
+								handleBadRequest(request, response, "Failed to get trees: "+json);
+							}
+							
+						}else if(command.equals("add_badge")){  //get_trees_all, get_trees_ip, get_trees_user_id
+							//TODO clean this up so we aren't parsing the json twice.. 
+							JsonNode data = mapper.readTree(json);	
+							try{
+								addBadge(data, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to add bagde: "+json);
 							}
 							
 						}
@@ -567,6 +580,20 @@ public class MetaServer extends HttpServlet {
 				tosave.setTimestamp(new Timestamp(t));
 			}
 			tosave.insert();
+		}
+	}
+	
+	private void addBadge(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
+		Badge _badge = new Badge();
+		Map<String,String> map = new HashMap<String,String>();
+		ObjectMapper mapper = new ObjectMapper();
+		int levelid = data.get("level_id").asInt();
+		String json = data.get("constraints").toString();
+		try {
+			map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>() {});
+			_badge.insert(map, levelid);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
