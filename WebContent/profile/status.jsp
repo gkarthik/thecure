@@ -2,7 +2,6 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.model.Player"%>
 <%@ page import="org.scripps.combo.model.Board"%>
-<%@ page import="org.scripps.combo.model.Badge"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
@@ -14,7 +13,7 @@ String player_name = "";
 if(request.getParameter("playerid")==null){
   Player player = (Player) session.getAttribute("player");
   if (player == null) {
-    	//response.sendRedirect("/cure/login.jsp"); 
+    	response.sendRedirect("/cure/login.jsp"); 
   } else {
     player_id = player.getId();
     player_experience = 0;
@@ -61,33 +60,14 @@ if(request.getParameter("playerid")==null){
 		</div>
 	</div>
 	</div>
-	<div class="container-fluid" id="dashboard-container">
+	<div class="container-fluid" id="profile-container">
 		
 	</div>
-	<script type="text/templatte" id="add-row">
-		<table class="table">
-			<tr>
-				<td>Level Id</td>
-				<td><input type="text" id="level-id" placeholder="Level" /></td>
-			</tr>
-			<% 
-				Badge _badge = new Badge();
-				String columns[] = _badge.getListofAttributes();
-				for(int i = 0; i < columns.length; i++){
-					if(columns[i]!=null){
-					%>
-			<tr>
-				<td><%= columns[i] %></td>
-				<td><input type="text" class="rowvalue" id="<%= columns[i] %>" placeholder="<%= columns[i] %>" /></td>
-			</tr>
-					<%
-					}
-				}
-			%>
-		</table>
-		<button id="add-badge" class="btn btn-primary">Add Badge</button>
-	</script>
 	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="badge-entry-template">
+		<td>Level <@= level_id @></td>
+		<td><@= description @></td>
+	</script>
 	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>",
@@ -98,6 +78,6 @@ if(request.getParameter("playerid")==null){
 	<script src="./js/backbone.js"></script>
 	<script src="./js/marionette.backbone.min.js"></script>
 	<script src="./js/d3.v3.js"></script>
-	<script src="./js/script.js"></script>
+	<script src="./js/status.js"></script>
 </body>
 </html>
