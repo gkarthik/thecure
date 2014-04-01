@@ -216,11 +216,15 @@ public class MetaServer extends HttpServlet {
 								handleBadRequest(request, response, "Failed to get trees: "+json);
 							}
 							
-						}else if(command.equals("add_badge")){  //get_trees_all, get_trees_ip, get_trees_user_id
+						}else if(command.contains("badge")){  //get_trees_all, get_trees_ip, get_trees_user_id
 							//TODO clean this up so we aren't parsing the json twice.. 
 							JsonNode data = mapper.readTree(json);	
 							try{
-								addBadge(data, request, response);
+								if(command.equals("add_badge")){
+									addBadge(data, request, response);
+								} else if(command.equals("get_badges")){
+									getBadges(data, request, response);
+								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -596,7 +600,22 @@ public class MetaServer extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-
+	
+	private void getBadges(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
+		Badge _badge = new Badge();
+		int userid = data.get("user_id").asInt();
+		String json_badges = "";
+		try{
+			json_badges = _badge.getBadgesofUser(userid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(json_badges);
+		out.close();
+	}
+	
 	/**
 	 * Respond with an error message if something went wrong
 	 * @param request
