@@ -16,18 +16,18 @@ Badge = Backbone.Model.extend({
 		var flag = 1;
 		for(var temp in constraints){
 			if(temp == "globaltreeno" || temp == "treeno"){
-				if(temp=="globaltreeno"){
-					desctext += constraints[temp]+" trees to earn this badge";
+				if(temp=="globaltreeno" && constraints[temp]>1){
+					desctext += constraints[temp]+" trees";
 					flag = 0;
 				} 
-				if(temp=="treeno"){
+				if(temp=="treeno" && constraints[temp]>1){
 					desctext += constraints[temp]+" trees ";
 					flag = 0;
 				}
 			}
 		}
 		if(flag){
-			desctext+="a tree ";
+			desctext+="a tree";
 		}
 		for(var temp in constraints){
 			if(ctr>0 && temp!="globaltreeno" && temp!="treeno"){
