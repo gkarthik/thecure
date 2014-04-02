@@ -37,7 +37,7 @@ Badge = Backbone.Model.extend({
 					if(constraints[temp]>1){
 						desctext +=" with "+constraints[temp]+" genes";
 					} else if(constraints[temp]==1){
-						desctext += " with atleast one gene";
+						desctext += " with at least one gene";
 					} else if(constraints[temp]==0){
 						desctext += " with only clinical features";
 					}
@@ -46,15 +46,15 @@ Badge = Backbone.Model.extend({
 					if(constraints[temp]>1){
 						desctext += " with "+constraints[temp]+" clinical features";
 					} else if(constraints[temp]==1){
-						desctext += " with atleast one clinical feature";
+						desctext += " with at least one clinical feature";
 					} else if(constraints[temp]==0){
 						desctext += " with only genes";
 					}
 				}
 			if(temp=="leafnodeacc"){
-				desctext += "where atleast one leaf node is "+constraints[temp]+"% accurate";
+				desctext += "where at least one leaf node is "+constraints[temp]+"% accurate";
 			} else if(temp=="leafnodesize") {
-				desctext += "where atleast one leaf node contains "+constraints[temp]+"% of all cases";
+				desctext += "where at least one leaf node contains "+constraints[temp]+"% of all cases";
 			} else if(temp=="score" || temp == "size" || temp == "novelty" || temp == "accuracy") {
 				desctext += "with a "+temp+" ";
 				var compText="greater";
@@ -65,7 +65,7 @@ Badge = Backbone.Model.extend({
 				}
 			
 			if(temp=="collaborators"){
-				desctext+="by collaborating with atleast "+constraints[temp]+" other players";
+				desctext+="by collaborating with at least "+constraints[temp]+" other players";
 			}
 			ctr++;
 			console.log(ctr);
