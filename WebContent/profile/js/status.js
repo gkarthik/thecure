@@ -8,70 +8,6 @@ Badge = Backbone.Model.extend({
 	},
 	initialize: function(){
 		this.createDescription();
-	},
-	createDescription: function(){
-		var desctext = "Create ";
-		var constraints = this.get('constraints');
-		var ctr = 0;
-		var flag = 1;
-		for(var temp in constraints){
-			if(temp == "globaltreeno" || temp == "treeno"){
-				if(temp=="globaltreeno" && constraints[temp]>1){
-					desctext += constraints[temp]+" trees";
-					flag = 0;
-				} 
-				if(temp=="treeno" && constraints[temp]>1){
-					desctext += constraints[temp]+" trees ";
-					flag = 0;
-				}
-			}
-		}
-		if(flag){
-			desctext+="a tree";
-		}
-		for(var temp in constraints){
-			if(ctr>0 && temp!="globaltreeno" && temp!="treeno"){
-				desctext+=" and ";
-			}
-				if(temp=="genenumber"){
-					if(constraints[temp]>1){
-						desctext +=" with "+constraints[temp]+" genes";
-					} else if(constraints[temp]==1){
-						desctext += " with at least one gene";
-					} else if(constraints[temp]==0){
-						desctext += " with only clinical features";
-					}
-				}
-				if(temp=="cfnumber"){
-					if(constraints[temp]>1){
-						desctext += " with "+constraints[temp]+" clinical features";
-					} else if(constraints[temp]==1){
-						desctext += " with at least one clinical feature";
-					} else if(constraints[temp]==0){
-						desctext += " with only genes";
-					}
-				}
-			if(temp=="leafnodeacc"){
-				desctext += "where at least one leaf node is "+constraints[temp]+"% accurate";
-			} else if(temp=="leafnodesize") {
-				desctext += "where at least one leaf node contains "+constraints[temp]+"% of all cases";
-			} else if(temp=="score" || temp == "size" || temp == "novelty" || temp == "accuracy") {
-				desctext += "with a "+temp+" ";
-				var compText="greater";
-				if(constraints[temp]<0){
-					compText = "lesser";
-				}
-				desctext+=compText+" than "+constraints[temp];
-				}
-			
-			if(temp=="collaborators"){
-				desctext+="by collaborating with at least "+constraints[temp]+" other players";
-			}
-			ctr++;
-			console.log(ctr);
-		}
-		desctext+=".";
-		this.set('description',desctext);
 	}
 });
 
@@ -102,9 +38,11 @@ BadgeCollection = Backbone.Collection.extend({
 		for(var temp in data){
 			json.push({
 				level_id: data[temp].level_id,
+				description: data[temp].description,
 				constraints: data[temp]
 			});
 			delete json[json.length-1].constraints.level_id;
+			delete json[json.length-1].constraints.description;
 		}
 		this.add(json);
 	},

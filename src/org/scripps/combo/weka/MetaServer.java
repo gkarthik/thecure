@@ -595,9 +595,11 @@ public class MetaServer extends HttpServlet {
 		ObjectMapper mapper = new ObjectMapper();
 		int levelid = data.get("level_id").asInt();
 		String json = data.get("constraints").toString();
+		String desc = data.get("description").toString();
+		System.out.println(json);
 		try {
 			map = mapper.readValue(json, new TypeReference<HashMap<String,Object>>() {});
-			_badge.insert(map, levelid);
+			_badge.insert(map, levelid, desc);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

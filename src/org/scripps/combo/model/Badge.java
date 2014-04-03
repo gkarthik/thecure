@@ -73,7 +73,7 @@ public class Badge {
 		int counter = 0;
 		for (int i = 1; i <= count; i++)
 		{
-			if(!metaData.getColumnLabel(i).equals("id") && !metaData.getColumnLabel(i).equals("level_id") && !metaData.getColumnLabel(i).equals("badgehash")){
+			if(!metaData.getColumnLabel(i).equals("id") && !metaData.getColumnLabel(i).equals("level_id") && !metaData.getColumnLabel(i).equals("badgehash") && !metaData.getColumnLabel(i).equals("description")){
 				attributes[counter] = metaData.getColumnLabel(i);
 				counter++;
 			}
@@ -81,7 +81,7 @@ public class Badge {
 		return attributes;
 	}
 	
-	public void insert(Map<String, String> mp, int level) throws Exception{
+	public void insert(Map<String, String> mp, int level, String desc) throws Exception{
 		JdbcConnection conn = new JdbcConnection();
 		String getcount = "select count(*) as n from badge";
 		ResultSet rslt = conn.executeQuery(getcount);
@@ -107,7 +107,7 @@ public class Badge {
 		}
 		row = row.substring(0,row.length()-1);
 		value = value.substring(0,value.length()-1);
-		String insert = "insert into badge(level_id,badgehash,"+row+") values("+level+",'"+badgehash+"',"+value+")";
+		String insert = "insert into badge(level_id,badgehash,description,"+row+") values("+level+",'"+badgehash+"','"+desc+"',"+value+")";
 		try {			
 			conn.executeUpdate(insert);
 		} finally {
@@ -316,8 +316,6 @@ public class Badge {
 					}
 					i-- ;
 				}
-				
-				
 				if(flag == 1){
 					System.out.println(cfid);
 					System.out.println("badge");
