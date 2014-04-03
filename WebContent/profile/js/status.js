@@ -7,7 +7,7 @@ Badge = Backbone.Model.extend({
 		description: ''
 	},
 	initialize: function(){
-		this.createDescription();
+
 	}
 });
 
