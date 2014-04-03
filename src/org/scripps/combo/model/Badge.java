@@ -143,7 +143,7 @@ public class Badge {
 		int prev_tree_id = tree_id, player_id = 0;
 		float score = 0, accuracy = 0, novwlty = 0, size = 0;
 		JdbcConnection conn = new JdbcConnection();
-		List<Integer> collaborators = new ArrayList<Integer>();
+		List<String> collaborators = new ArrayList<String>();
 		List<Double> leafnodeacc = new ArrayList<Double>();
 		List<Integer> leafnodesize = new ArrayList<Integer>();
 		List<String> geneid = new ArrayList<String>();
@@ -153,22 +153,7 @@ public class Badge {
 		ResultSet rslt;
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode treenode;
-		String query = "select prev_tree_id, player_id from tree where id="+prev_tree_id;
-		rslt = conn.executeQuery(query);
-		if(rslt.next()){
-			player_id = rslt.getInt("player_id");
-		}
-		while(prev_tree_id!=-1){
-			if(!collaborators.contains(player_id)){
-				collaborators.add(player_id);
-			}
-			query = "select prev_tree_id, player_id from tree where id="+prev_tree_id;
-			rslt = conn.executeQuery(query);
-			if(rslt.next()){
-				prev_tree_id = rslt.getInt("prev_tree_id");
-				player_id = rslt.getInt("player_id");
-			}
-		}
+		String query = "";
 		
 		/*
 		 * Badge table
@@ -212,9 +197,11 @@ public class Badge {
 				query = "select tree.json_tree,tree_dataset_score.score,tree_dataset_score.size,tree_dataset_score.percent_correct,tree_dataset_score.novelty from tree,tree_dataset_score where tree.id = tree_dataset_score.tree_id and tree.player_id="+player_id;
 			}
 			rslt = conn.executeQuery(query);
+			countglobaltreeno = 0;
+			counttreeno = 0;
 			while(rslt.next()){
 				i = columns;
-				collaborators = new ArrayList<Integer>();
+				collaborators = new ArrayList<String>();
 				leafnodeacc = new ArrayList<Double>();
 				leafnodesize = new ArrayList<Integer>();
 				geneid = new ArrayList<String>();
@@ -225,6 +212,9 @@ public class Badge {
 					cfid.add(treenode.path("options").path("id").asText());
 				} else {
 					geneid.add(treenode.path("options").path("id").asText());
+				}
+				if(!collaborators.contains(treenode.path("collaborator").path("id").asText())){
+					collaborators.add(treenode.path("collaborator").path("id").asText());
 				}
 				JsonNode msgNode = treenode.path("children");
 				Iterator<JsonNode> ite = msgNode.elements();
@@ -239,6 +229,9 @@ public class Badge {
 					if(temp.path("options").path("kind").asText().equals("leaf_node")){
 						leafnodeacc.add(temp.path("options").path("pct_correct").asDouble());
 						leafnodesize.add(temp.path("options").path("size").asInt());
+					}
+					if(!collaborators.contains(temp.path("collaborator").path("id").asText())){
+						collaborators.add(temp.path("collaborator").path("id").asText());
 					}
 					msgNode = temp.path("children");
 					ite = msgNode.elements();
@@ -316,8 +309,12 @@ public class Badge {
 					}
 					i-- ;
 				}
+				if(badgerslt.getInt("collaborators")==2){
+					System.out.println(collaborators);	
+				}
 				if(flag == 1){
-					System.out.println(cfid);
+					countglobaltreeno++;
+					counttreeno++;
 					System.out.println("badge");
 					System.out.println(badgerslt.getInt("id"));
 				}

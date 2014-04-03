@@ -69,11 +69,11 @@ AddRowView = Marionette.ItemView.extend({
 					}
 				}
 			if(temp=="leafnodeacc"){
-				desctext += "where at least one leaf node is "+constraints[temp]+"% accurate";
+				desctext += " where at least one leaf node is "+constraints[temp]+"% accurate";
 			} else if(temp=="leafnodesize") {
-				desctext += "where at least one leaf node contains "+constraints[temp]+"% of all cases";
+				desctext += " where at least one leaf node contains "+constraints[temp]+"% of all cases";
 			} else if(temp=="score" || temp == "size" || temp == "novelty" || temp == "accuracy") {
-				desctext += "with a "+temp+" ";
+				desctext += " with a "+temp+" ";
 				var compText="greater";
 				if(constraints[temp]<0){
 					compText = "lesser";
