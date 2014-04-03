@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jasper.tagplugins.jstl.core.Set;
 import org.scripps.util.JdbcConnection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -138,9 +139,10 @@ public class Badge {
 		return new String(data);
 	}
 	
-	public HashMap getEarnedBadges(int tree_id) throws Exception{
+	public ArrayList getEarnedBadges(int tree_id, int player_id) throws Exception{
+		ArrayList listOfBadges = new ArrayList();
 		HashMap map = new HashMap();
-		int prev_tree_id = tree_id, player_id = 0;
+		int prev_tree_id = tree_id;
 		float score = 0, accuracy = 0, novwlty = 0, size = 0;
 		JdbcConnection conn = new JdbcConnection();
 		List<String> collaborators = new ArrayList<String>();
@@ -148,7 +150,9 @@ public class Badge {
 		List<Integer> leafnodesize = new ArrayList<Integer>();
 		List<String> geneid = new ArrayList<String>();
 		List<String> cfid = new ArrayList<String>();
-		int treeno = 0, globaltreeno = 0, counttreeno = 0, countglobaltreeno = 0;
+		int treeno = 0, globaltreeno = 0, acctreeno = 0, sizetreeno = 0, countglobaltreeno = 0;
+		HashMap<String,Integer> hm = new HashMap<String,Integer>();
+		int tempCount = 0;
 		
 		ResultSet rslt;
 		ObjectMapper mapper = new ObjectMapper();
@@ -194,11 +198,26 @@ public class Badge {
 					treeno = badgerslt.getInt("treeno");
 				}
 			} else {
-				query = "select tree.json_tree,tree_dataset_score.score,tree_dataset_score.size,tree_dataset_score.percent_correct,tree_dataset_score.novelty from tree,tree_dataset_score where tree.id = tree_dataset_score.tree_id and tree.player_id="+player_id;
+				query = "select tree.json_tree,tree_dataset_score.score,tree_dataset_score.size,tree_dataset_score.percent_correct,tree_dataset_score.novelty from tree,tree_dataset_score where tree.id = tree_dataset_score.tree_id and tree.user_saved = 1 and tree.player_id="+player_id;
 			}
 			rslt = conn.executeQuery(query);
+
 			countglobaltreeno = 0;
-			counttreeno = 0;
+			acctreeno = 0;
+			sizetreeno = 0;
+			hm = new HashMap<String,Integer>();
+			
+			//TODO: Better way to do this??
+			hm.put("cfnumber",-1);
+			hm.put("genenumber",-1);
+			hm.put("leafnodeacc",-1);
+			hm.put("leafnodesize",-1);
+			hm.put("score",-1);
+			hm.put("accuracy",-1);
+			hm.put("novelty",-1);
+			hm.put("size",-1);
+			hm.put("collaborators",-1);
+			
 			while(rslt.next()){
 				i = columns;
 				collaborators = new ArrayList<String>();
@@ -231,96 +250,141 @@ public class Badge {
 						leafnodesize.add(temp.path("options").path("size").asInt());
 					}
 					if(!collaborators.contains(temp.path("collaborator").path("id").asText())){
+						
 						collaborators.add(temp.path("collaborator").path("id").asText());
 					}
 					msgNode = temp.path("children");
 					ite = msgNode.elements();
 				}
-				
 				while(i >= 1){
 					if(badgerslt.getObject(md.getColumnName(i))!=null){
+						globaltreeno++;
 						 switch (md.getColumnName(i)) {
 				            case "globaltreeno":  
-				            	if(globaltreeno < badgerslt.getInt("globaltreeno")){
+				            	if(globaltreeno < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
 				            	}
 				                break;
 				            case "treeno":  
-				            	if(treeno < badgerslt.getInt("treeno")){
+				            	if(treeno < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
 				            	}
 				                break;
 				            case "genenumber":  
-				            	if(geneid.size() < badgerslt.getInt("genenumber")){
+				            	if(geneid.size() < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "cfnumber":  
-				            	if(cfid.size() < badgerslt.getInt("cfnumber")){
+				            	if(cfid.size() < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
-				            	if(badgerslt.getInt("cfnumber")==1){
-									System.out.println("---------------");
-									System.out.println(flag);
-									System.out.println(cfid.size());
-									System.out.println(badgerslt.getInt("cfnumber"));	
-								}
 				                break;
 				            case "leafnodeacc":  
+				            	boolean accFlag = true;
 				            	for(Iterator<Double> j = leafnodeacc.iterator(); j.hasNext(); ) {
-				            		if(j.next()<badgerslt.getDouble("leafnodeacc")){
+				            		if(j.next()<badgerslt.getDouble(md.getColumnName(i))){
 				            			flag = 0;
+				            			accFlag = false;
 				            		}
+				            	}
+				            	if(accFlag){
+				            		hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "leafnodesize":  
+				            	boolean sizeFlag = true;
 				            	for(Iterator<Integer> j = leafnodesize.iterator(); j.hasNext(); ) {
-				            		if(j.next()<badgerslt.getInt("leafnodesize")){
+				            		if(j.next()<badgerslt.getInt(md.getColumnName(i))){
 				            			flag = 0;
+				            			sizeFlag =false;
 				            		}
+				            	}
+				            	if(sizeFlag){
+				            		hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "score":  
-				            	if(rslt.getFloat("score") < badgerslt.getFloat("score")){
+				            	if(rslt.getFloat("score") < badgerslt.getFloat(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "size":  
-				            	if(rslt.getFloat("size") < badgerslt.getFloat("size")){
+				            	if(rslt.getFloat("size") < badgerslt.getFloat(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "accuracy":  
-				            	if(rslt.getFloat("percent_correct") < badgerslt.getFloat("accuracy")){
+				            	if(rslt.getFloat("percent_correct") < badgerslt.getFloat(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "novelty":  
-				            	if(rslt.getFloat("novelty") < badgerslt.getFloat("novelty")){
+				            	if(rslt.getFloat("novelty") < badgerslt.getFloat(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				            case "collaborators":  
-				            	if(collaborators.size() < badgerslt.getInt("collaborators")){
+				            	if(collaborators.size() < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
+				            	} else {
+					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
 				            	}
 				                break;
 				        }
 					}
 					i-- ;
+					boolean checkflag = true;
+					int checkvalue = 0;
+					int tempValue = -1;
+					for (Map.Entry<String, Integer> entry : hm.entrySet()) {
+						if(entry.getValue()!=-1){
+							if(entry.getValue() != tempValue && tempValue!=-1){
+								checkflag = false;
+							} else if(entry.getValue() == tempValue) {
+								checkvalue = tempValue;
+							}
+						}
+						tempValue = entry.getValue();
+					}
+					if(checkflag){
+						treeno = (checkvalue+1);
+					}
 				}
-				if(badgerslt.getInt("collaborators")==2){
-					System.out.println(collaborators);	
-				}
+				
 				if(flag == 1){
-					countglobaltreeno++;
-					counttreeno++;
-					System.out.println("badge");
-					System.out.println(badgerslt.getInt("id"));
+					boolean addBadgeFlag = true;
+					for (int a =0; a<listOfBadges.size();a++)
+			        {
+			            HashMap<String, Integer> tmpData = (HashMap<String, Integer>) listOfBadges.get(a);
+			            for (Map.Entry<String, Integer> entry : tmpData.entrySet()) {
+							if(entry.getValue() == badgerslt.getObject("id")){
+								addBadgeFlag = false;
+							}
+						}
+			        }       
+					if(addBadgeFlag){
+						map = new HashMap();
+						map.put("id", badgerslt.getObject("id"));
+						map.put("description", badgerslt.getObject("description"));
+						listOfBadges.add(map);	
+					}
 				}
 
 			}
 		}
-		return map;
+		return listOfBadges;
 	}
 }
