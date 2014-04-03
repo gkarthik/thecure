@@ -422,10 +422,12 @@ public class MetaServer extends HttpServlet {
 		float score = 0; 
 		score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
 		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
-		
+		if(command.equals("savetree")){
+			Badge _badge = new Badge();
+			_badge.getEarnedBadges(tid);
+		}
 		result.put("tree_id", tid);
 		result_json = mapper.writeValueAsString(result);
-		//	System.out.println(result_json);
 		out.write(result_json);
 		out.close();
 	}
