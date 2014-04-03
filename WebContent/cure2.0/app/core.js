@@ -6,6 +6,7 @@ define(
     'app/collections/ClinicalFeatureCollection',
         'app/collections/NodeCollection', 'app/collections/ScoreBoard',
         'app/collections/TreeBranchCollection', 'app/collections/CollaboratorCollection',
+        'app/collections/BadgeCollection',
         // Models
         'app/models/Comment', 'app/models/Score',
         'app/models/zoom',
@@ -20,7 +21,7 @@ define(
         'app/tour/tree'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, CollaboratorCollection, Comment, Score, Zoom, JSONCollectionView,
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, Comment, Score, Zoom, JSONCollectionView,
         NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
@@ -201,6 +202,7 @@ define(
 		        Cure.Comment = new Comment();
 		        Cure.Score = new Score();
 		        Cure.Zoom = new Zoom();
+		        Cure.BadgeCollection = new BadgeCollection();
 		        Cure.ZoomView = new ZoomView({
 		        	model: Cure.Zoom
 		        });

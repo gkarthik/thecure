@@ -192,6 +192,7 @@ NodeCollection = Backbone.Collection.extend({
             success : function(data){
             	Cure.utils.showAlert("Tree Saved!<br />Your tree has been saved.", 1);
             	Cure.PlayerNodeCollection.tree_id = data.tree_id;
+            	var badges = data.badges;
             	if(Cure.PlayerNodeCollection.length>0 && Cure.PlayerNodeCollection.tree_id != 0 && Cure.Comment.get('flagPrivate')==0){
           			var args = {
           	        command : "get_rank",
@@ -209,6 +210,7 @@ NodeCollection = Backbone.Collection.extend({
           	            	Cure.Comment.set("saving",0);
           	            	Cure.ScoreBoard.rank = data.rank;
           	            	Cure.ScoreBoard.updateCurrent();
+          	            	Cure.BadgeCollection.reset(badges);
           	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
           	            },
           	            error : function(data){
