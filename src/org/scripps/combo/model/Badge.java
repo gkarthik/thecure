@@ -226,6 +226,7 @@ public class Badge {
 				geneid = new ArrayList<String>();
 				cfid = new ArrayList<String>();
 				flag = 1;
+				countglobaltreeno++;
 				treenode = mapper.readTree(rslt.getString("json_tree")).path("treestruct");
 				if(treenode.path("options").path("id").asText().contains("metabric")){
 					cfid.add(treenode.path("options").path("id").asText());
@@ -258,10 +259,9 @@ public class Badge {
 				}
 				while(i >= 1){
 					if(badgerslt.getObject(md.getColumnName(i))!=null){
-						globaltreeno++;
 						 switch (md.getColumnName(i)) {
 				            case "globaltreeno":  
-				            	if(globaltreeno < badgerslt.getInt(md.getColumnName(i))){
+				            	if(countglobaltreeno < badgerslt.getInt(md.getColumnName(i))){
 				            		flag = 0;
 				            	}
 				                break;
@@ -271,7 +271,9 @@ public class Badge {
 				            	}
 				                break;
 				            case "genenumber":  
-				            	if(geneid.size() < badgerslt.getInt(md.getColumnName(i))){
+				            	if(geneid.size() < badgerslt.getInt(md.getColumnName(i)) && badgerslt.getInt(md.getColumnName(i))!=0){
+				            		flag = 0;
+				            	} else if(badgerslt.getInt(md.getColumnName(i))==0 && geneid.size()!=0){
 				            		flag = 0;
 				            	} else {
 					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));
@@ -279,6 +281,8 @@ public class Badge {
 				                break;
 				            case "cfnumber":  
 				            	if(cfid.size() < badgerslt.getInt(md.getColumnName(i))){
+				            		flag = 0;
+				            	} else if(badgerslt.getInt(md.getColumnName(i))==0 && cfid.size()!=0){
 				            		flag = 0;
 				            	} else {
 					            	hm.put(md.getColumnName(i),(hm.get(md.getColumnName(i)).intValue()+1));

@@ -31,7 +31,8 @@ sidebarLayout = Marionette.Layout.extend({
     events:{
     	'click #save_tree': 'saveTree',
     	'click #current-tree-rank': 'showCurrentRank',
-    	'click #tree-explanation-button': 'toggleTreeExp'
+    	'click #tree-explanation-button': 'toggleTreeExp',
+    	'click #BadgesPlaceholder': 'showBadges'
     },
     className: 'panel panel-default',
     initialize: function(){
@@ -39,6 +40,9 @@ sidebarLayout = Marionette.Layout.extend({
     },
     showCurrentRank: function(){
     	$(this.ui.ScoreWrapper).show();
+    },
+    showBadges: function(){
+    	$("#badge-outer-wrapper").show();
     },
     toggleTreeExp: function(ev){
     	if(Cure.PlayerNodeCollection.length != 0){

@@ -211,6 +211,9 @@ NodeCollection = Backbone.Collection.extend({
           	            	Cure.ScoreBoard.rank = data.rank;
           	            	Cure.ScoreBoard.updateCurrent();
           	            	Cure.BadgeCollection.reset(badges);
+          	            	if(Cure.BadgeCollection.length>0){
+          	            		$("#BadgesPlaceholder").html("New Badges Earned!");
+          	            	}
           	            	$("#current-tree-rank").html(CurrentRankTemplate({rank:data.rank}));
           	            },
           	            error : function(data){
