@@ -494,14 +494,34 @@ background: #FFF;
 
 #score-board-outerWrapper{
 	display: none;
-width: 50%;
-left: 25%;
-position: fixed;
-top: 70px;
-background: none repeat scroll 0% 0% rgb(255, 255, 255);
-z-index: 9999;
+	width: 50%;
+	left: 25%;
+	position: fixed;
+	top: 70px;
+	background: none repeat scroll 0% 0% rgb(255, 255, 255);
+	z-index: 8000;
 	border:2px solid rgb(255, 102, 153);
 	border-radius: 5px;
+}
+
+#badge-outer-wrapper{
+	position: fixed;
+	background: none repeat scroll 0% 0% #FFF;
+	top: 140px;
+	width: 60%;
+	left: 20%;
+	padding: 1%;
+	border: 5px solid #F69;
+	border-radius: 15px;
+	display: none;
+	z-index: 9000;
+}
+
+#BadgesPlaceholder{
+	width: 100%;
+	font-size: 20px;
+	font-weight:bold;
+	text-align:center;
 }
 
 #score-board-outerWrapper .renderPink{
