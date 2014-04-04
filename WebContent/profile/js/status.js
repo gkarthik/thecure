@@ -12,7 +12,7 @@ Badge = Backbone.Model.extend({
 });
 
 //Collections
-BadgeCollection = Backbone.Collection.extend({
+RecBadgeCollection = Backbone.Collection.extend({
 	model: Badge,
 	initialize : function(){
 		_.bindAll(this,'parseResponse');
@@ -21,7 +21,8 @@ BadgeCollection = Backbone.Collection.extend({
 	fetch: function(){
 		var args = {
 				command : "get_badges",
-				user_id: cure_user_id
+				user_id: cure_user_id,
+				reccomendbadges: 1
 		};
 		$.ajax({
 			type : 'POST',
@@ -39,10 +40,54 @@ BadgeCollection = Backbone.Collection.extend({
 			json.push({
 				level_id: data[temp].level_id,
 				description: data[temp].description,
+				id: data[temp].id,
 				constraints: data[temp]
 			});
 			delete json[json.length-1].constraints.level_id;
 			delete json[json.length-1].constraints.description;
+			delete json[json.length-1].constraints.id;
+		}
+		this.add(json);
+	},
+	error: function(){
+		console.log("Error!");
+	}
+});
+
+PlayerBadgeCollection = Backbone.Collection.extend({
+	model: Badge,
+	initialize : function(){
+		_.bindAll(this,'parseResponse');
+	},
+	url: '/cure/MetaServer',
+	fetch: function(){
+		var args = {
+				command : "get_badges",
+				user_id: cure_user_id,
+				reccomendbadges: 0
+		};
+		$.ajax({
+			type : 'POST',
+			url : '/cure/MetaServer',
+			data : JSON.stringify(args),
+			dataType : 'json',
+			contentType : "application/json; charset=utf-8",
+			success : this.parseResponse,
+			error : this.error
+		});
+	},
+	parseResponse: function(data){
+		var json = [];
+		for(var temp in data){
+			json.push({
+				level_id: data[temp].level_id,
+				description: data[temp].description,
+				id: data[temp].id,
+				constraints: data[temp]
+			});
+			delete json[json.length-1].constraints.level_id;
+			delete json[json.length-1].constraints.description;
+			delete json[json.length-1].constraints.id;
 		}
 		this.add(json);
 	},
@@ -54,16 +99,6 @@ BadgeCollection = Backbone.Collection.extend({
 //Views
 BadgeItemView = Marionette.ItemView.extend({
 	tagName: 'tr',
-	className: function(){
-		
-	},
-	ui: {
-		
-	},
-	initialize : function() {
-		this.$el.click(this.loadNewTree);
-		this.model.set("cid",this.model.cid);
-	},
 	template: "#badge-entry-template",
 });
 
@@ -73,6 +108,22 @@ BadgeCollectionView = Backbone.Marionette.CollectionView.extend({
 	className: 'table table-bordered',
 	initialize : function() {
 	}
+});
+
+MainLayout = Marionette.Layout.extend({
+	template: "#main-layout-tmpl",
+  regions: {
+  	"PlayerBadgeRegion" : "#PlayerBadgeRegion",
+  	"RecBadgeRegion" : "#RecBadgeRegion"
+  },
+  initialize: function(){
+  },
+  onRender: function(){
+  	Status.RecBadgeCollectionView = new BadgeCollectionView({collection: Status.RecBadgeCollection});
+  	this.RecBadgeRegion.show(Status.RecBadgeCollectionView);
+  	Status.PlayerBadgeCollectionView = new BadgeCollectionView({collection: Status.PlayerBadgeCollection});
+  	this.PlayerBadgeRegion.show(Status.PlayerBadgeCollectionView);
+  }
 });
 
 //
@@ -87,11 +138,13 @@ _.templateSettings = {
 };
 Status.addRegions(options.regions);
 
-Status.BadgeCollection = new BadgeCollection();
-Status.BadgeCollection.fetch();
-Status.BadgeCollectionView = new BadgeCollectionView({collection: Status.BadgeCollection});
+Status.RecBadgeCollection = new RecBadgeCollection();
+Status.PlayerBadgeCollection = new PlayerBadgeCollection();
+Status.RecBadgeCollection.fetch();
+Status.PlayerBadgeCollection.fetch();
+Status.MainLayout = new MainLayout();
 
-Status.mainWrapper.show(Status.BadgeCollectionView);
+Status.mainWrapper.show(Status.MainLayout);
 });
 
 //App Start

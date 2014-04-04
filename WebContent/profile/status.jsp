@@ -64,8 +64,21 @@ if(request.getParameter("playerid")==null){
 		
 	</div>
 	<jsp:include page="/footer.jsp" />
+	<script type="text/template" id="main-layout-tmpl">
+		<h2>Hi <%= player_name%>!</h2>
+		<div class="col-md-6">
+			<h3>Your Badge Collection</h3>
+			<div id="PlayerBadgeRegion">
+			</div>
+		</div>
+		<div class="col-md-6">
+			<h3>Badges that can be your own!</h3>
+			<div  id="RecBadgeRegion">
+			</div>
+		</div>
+	</script>
 	<script type="text/template" id="badge-entry-template">
-		<td>Level <@= level_id @></td>
+		<td><span class="badge">BADGE <@= id @></span></td>
 		<td><@= description @></td>
 	</script>
 	<script type="text/javascript">

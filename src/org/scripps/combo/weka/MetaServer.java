@@ -610,9 +610,10 @@ public class MetaServer extends HttpServlet {
 	private void getBadges(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
 		Badge _badge = new Badge();
 		int userid = data.get("user_id").asInt();
+		int recBadgesFlag = data.get("reccomendbadges").asInt();
 		String json_badges = "";
 		try{
-			json_badges = _badge.getBadgesofUser(userid);
+			json_badges = _badge.getBadgesofUser(userid, recBadgesFlag);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
