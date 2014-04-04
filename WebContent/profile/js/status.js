@@ -97,6 +97,10 @@ PlayerBadgeCollection = Backbone.Collection.extend({
 });
 
 //Views
+EmptyBadgeCollectionView = Marionette.ItemView.extend({
+	template: "#empty-badge-collection-template"
+	});
+
 BadgeItemView = Marionette.ItemView.extend({
 	tagName: 'tr',
 	template: "#badge-entry-template",
@@ -104,6 +108,20 @@ BadgeItemView = Marionette.ItemView.extend({
 
 BadgeCollectionView = Backbone.Marionette.CollectionView.extend({
 	itemView : BadgeItemView,
+	emptyView: EmptyBadgeCollectionView,
+	tagName: 'table',
+	className: 'table table-bordered',
+	initialize : function() {
+	}
+});
+
+RecBadgeItemView = Marionette.ItemView.extend({
+	tagName: 'tr',
+	template: "#rec-badge-entry-template",
+});
+
+RecBadgeCollectionView = Backbone.Marionette.CollectionView.extend({
+	itemView : RecBadgeItemView,
 	tagName: 'table',
 	className: 'table table-bordered',
 	initialize : function() {
@@ -119,7 +137,7 @@ MainLayout = Marionette.Layout.extend({
   initialize: function(){
   },
   onRender: function(){
-  	Status.RecBadgeCollectionView = new BadgeCollectionView({collection: Status.RecBadgeCollection});
+  	Status.RecBadgeCollectionView = new RecBadgeCollectionView({collection: Status.RecBadgeCollection});
   	this.RecBadgeRegion.show(Status.RecBadgeCollectionView);
   	Status.PlayerBadgeCollectionView = new BadgeCollectionView({collection: Status.PlayerBadgeCollection});
   	this.PlayerBadgeRegion.show(Status.PlayerBadgeCollectionView);
@@ -150,6 +168,6 @@ Status.mainWrapper.show(Status.MainLayout);
 //App Start
 Status.start({
 	regions:{
-		mainWrapper: '#profile-container'
+		mainWrapper: '#badge-collection-wrapper'
 	}
 });

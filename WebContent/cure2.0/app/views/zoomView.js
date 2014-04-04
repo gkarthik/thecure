@@ -14,6 +14,7 @@ ZoomView = Marionette.ItemView.extend({
 		this.listenTo(this.model,'change:scaleLevel', this.scaleLevelUpdate);
 		this.listenTo(this.model,'change', this.render);
 		this.listenTo(Cure.PlayerNodeCollection,'change', this.render);
+		this.listenTo(Cure.PlayerNodeCollection,'remove', this.render);
 	},
 	ui: {
 		'fitToScreen':'#toggle-fittoscreen',

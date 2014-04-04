@@ -2,6 +2,7 @@
 	pageEncoding="utf-8"%>
 <%@ page import="org.scripps.combo.model.Player"%>
 <%@ page import="org.scripps.combo.model.Board"%>
+<%@ page import="org.scripps.combo.model.Badge"%>
 <%@ page import="java.util.List"%>
 <%@ page import="java.util.Map"%>
 <%@ page import="java.util.ArrayList"%>
@@ -10,6 +11,12 @@
 int player_id = 0;
 int player_experience = 0;
 String player_name = "";
+String badge_desc = null;
+if(request.getParameter("badgeid")!=null){
+	Badge _badge = new Badge();
+	HashMap mp = _badge.getBadgebyId(Integer.parseInt(request.getParameter("badgeid")));
+	badge_desc = mp.get("description").toString();
+}
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
     	response.sendRedirect("/cure/login.jsp"); 
@@ -63,7 +70,7 @@ Player player = (Player) session.getAttribute("player");
             </a>
              <ul class="nav navbar-nav">
                <li><a class="brand" href="/cure/">The Cure</a></li>
-               <li><a href="/cure/profile/">View Trees</a></li>
+               <li><a href="/cure/profile/">My Profile</a></li>
                <li><a href="#" id="showDataInf">Data</a></li>
                <li><a href="/cure/boardroom.jsp">View Cure 1.0 Boardgame</a></li>
                 <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
@@ -125,7 +132,8 @@ Player player = (Player) session.getAttribute("player");
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>",
         cure_user_name = "<%= player_name %>",
-        cure_tree_id = null;
+        cure_tree_id = null,
+        badge_desc = <%= badge_desc %>;
     <% if(request.getParameter("treeid")!=null){ %> 
      	cure_tree_id = <%= request.getParameter("treeid") %>;
     <% } %>
