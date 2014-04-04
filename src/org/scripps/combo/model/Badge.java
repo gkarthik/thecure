@@ -181,7 +181,7 @@ public class Badge {
 			+---------------+-------------+------+-----+---------+----------------+
 		 */
 		
-		query="select * from badge";
+		query="select * from badge where id not in (select badge_id from player_badge where player_id = "+player_id+")";
 		ResultSet badgerslt = conn.executeQuery(query);
 		ResultSetMetaData md = badgerslt.getMetaData();
 		int columns = md.getColumnCount();
@@ -380,6 +380,8 @@ public class Badge {
 						}
 			        }       
 					if(addBadgeFlag){
+						String badgeinsert="insert into player_badge(badge_id, player_id) values("+badgerslt.getObject("id")+","+player_id+")";
+						conn.executeUpdate(badgeinsert);
 						map = new HashMap();
 						map.put("id", badgerslt.getObject("id"));
 						map.put("description", badgerslt.getObject("description"));
