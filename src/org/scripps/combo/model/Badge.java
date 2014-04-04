@@ -116,9 +116,12 @@ public class Badge {
 		}
 	}	
 	
-	public String getBadgesofUser(int user_id) throws Exception{
+	public String getBadgesofUser(int player_id, int reccomendBadges) throws Exception{
 		JdbcConnection conn = new JdbcConnection();
-		String getbadge = "select * from badge";
+		String getbadge =  "select * from badge where id in (select badge_id from player_badge where player_id = "+player_id+")";
+		if(reccomendBadges==1){
+			getbadge = "select * from badge where id not in (select badge_id from player_badge where player_id = "+player_id+")";
+		}
 		ResultSet rslt = conn.executeQuery(getbadge);
 		ResultSetMetaData md = rslt.getMetaData();
 		int columns = md.getColumnCount();
@@ -126,7 +129,7 @@ public class Badge {
 		while (rslt.next()){
 			HashMap row = new HashMap(columns);
 		    for(int i=columns; i>=1; --i){           
-		    	if(!md.getColumnName(i).equals("badgehash") && !md.getColumnName(i).equals("id") && rslt.getObject(i)!=null){
+		    	if(!md.getColumnName(i).equals("badgehash") && rslt.getObject(i)!=null){
 			    	row.put(md.getColumnName(i),rslt.getObject(i));	
 		    	}
 		    }
