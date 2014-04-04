@@ -69,8 +69,9 @@ if(request.getParameter("playerid")==null){
 		<div id="sidebar-fixed">
 		<h3><%= player_name %></h3>
 		<ul class="nav nav-pills nav-stacked">
-		  <li class="active" id="user-treecollection-button"><a href="#">Tree Collection</a></li>
-			  <li id="community-treecollection-button"><a href="#">Community</a></li>
+		  <li class="active" id="badge-collection-button"><a href="#">Badge Collection</a></li>
+		  <li id="user-treecollection-button"><a href="#">Tree Collection</a></li>
+		  <li id="community-treecollection-button"><a href="#">Community</a></li>
 		</ul>
 <div class="input-group">
 	<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
@@ -79,12 +80,13 @@ if(request.getParameter("playerid")==null){
 	<span id="loading-wrapper">Searching... </span>
 </div>
 	</div>
-	<div class="col-md-8 collection-wrapper" id="user-treecollection-wrapper">
+	<div class="col-md-8 collection-wrapper" id="user-treecollection-wrapper" style="display:none;">
 	</div>
 	<div class="col-md-8 collection-wrapper" id="community-treecollection-wrapper" style="display:none;">
 	</div>
 	<div class="col-md-8 collection-wrapper" id="search-treecollection-wrapper" style="display:none;">
 	</div>
+	<div class="col-md-8 collection-wrapper" id="badge-collection-wrapper"></div>
 	</script>
 	<script type="text/template" id="score-entry-template">
 	<@	if(json_tree.score != "Score"){ @>
@@ -111,6 +113,30 @@ if(request.getParameter("playerid")==null){
 	<th><center>View Tree</center></td>
 	<@ } @>
 	</script>
+	<script type="text/template" id="main-layout-tmpl">
+		<div class="col-md-6">
+			<h3>Badges Earned</h3>
+			<div id="PlayerBadgeRegion">
+			</div>
+		</div>
+		<div class="col-md-6">
+			<h3>Badges to be Earned!</h3>
+			<div  id="RecBadgeRegion">
+			</div>
+		</div>
+	</script>
+	<script type="text/template" id="badge-entry-template">
+		<td><span class="badge player-badge">BADGE <@= id @></span></td>
+		<td><@= description @></td>
+	</script>
+	<script type="text/template" id="rec-badge-entry-template">
+		<td><span class="badge player-badge">BADGE <@= id @></span></td>
+		<td><@= description @></td>
+		<td><a class="btn btn-link" href="/cure/cure2.0/index.jsp?badgeid=<@= id @>">Get Badge!</a></td>
+	</script>
+	<script type="text/template" id="empty-badge-collection-template">
+		<h4><center>You are awarded <span class="badge player-badge">BADGES</span> for building trees and completing milestones.<br><br>Start collecting badges by clicking on "Get Badge!" in the "Badges to be Earned" section.</center></h4>
+	</script>
 	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",
         cure_user_id = "<%=player_id%>",
@@ -122,5 +148,6 @@ if(request.getParameter("playerid")==null){
 	<script src="./js/marionette.backbone.min.js"></script>
 	<script src="./js/d3.v3.js"></script>
 	<script src="./js/script.js"></script>
+	<script src="./js/status.js"></script>
 </body>
 </html>

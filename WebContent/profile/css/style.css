@@ -35,6 +35,11 @@ stroke-width: 1.5px;
 		
 }
 
+.player-badge{
+background: none repeat scroll 0% 0% #3276B1;
+padding: 5px;	
+}
+
 /*
 Navbar Style
 */

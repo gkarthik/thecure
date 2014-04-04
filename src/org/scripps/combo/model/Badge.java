@@ -142,6 +142,23 @@ public class Badge {
 		return new String(data);
 	}
 	
+	public HashMap getBadgebyId(int badge_id) throws Exception{
+		HashMap mp = new HashMap();
+		JdbcConnection conn = new JdbcConnection();
+		String query = "select * from badge where id="+badge_id;
+		ResultSet rslt = conn.executeQuery(query);
+		ResultSetMetaData md = rslt.getMetaData();
+		int columns = md.getColumnCount();
+		if(rslt.next()){
+			for(int i=columns; i>=1; --i){           
+		    	if(!md.getColumnName(i).equals("badgehash") && rslt.getObject(i)!=null){
+			    	mp.put(md.getColumnName(i),rslt.getObject(i));	
+		    	}
+		    }
+		}
+		return mp;
+	}
+	
 	public ArrayList getEarnedBadges(int tree_id, int player_id) throws Exception{
 		ArrayList listOfBadges = new ArrayList();
 		HashMap map = new HashMap();

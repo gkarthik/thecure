@@ -43,15 +43,9 @@ var TreeTour = new Tour({
 		  placement: "left"
 		},
 		{
-		element: ".showSVG",
+		element: "#ScoreSVG",
 		title: "Score Chart",
-		content: "Click to expand. You can see the various factors contributing to your score in a radar chart.",
-		placement: "left"
-		},
-		{
-		element: ".showChangeSummary",
-		title: "Score Change Summary",
-		content: "Click to see how the last node you added changed your score.",
+		content: "You can see how each node affected your score in this chart.",
 		placement: "left"
 		},
 		{
@@ -82,11 +76,8 @@ var TreeTour = new Tour({
 		},
 		{
 		element: "#my-tree-collection-link",
-		title: "My Tree Collection",
-		content: "Click to see the collection of trees you have built. You can also browse trees built by other users on the page that opens.",
-		onNext: function(){
-		$("#tree-explanation-button").trigger('click');
-		},
+		title: "My Profile",
+		content: "Click to see your <b>badge collection</b> and <b>tree collection</b> you have built. You can also browse through trees built by other users on your profile.",
 		placement: 'left'
 		},
 		{

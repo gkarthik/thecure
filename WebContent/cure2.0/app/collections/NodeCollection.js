@@ -212,7 +212,7 @@ NodeCollection = Backbone.Collection.extend({
           	            	Cure.ScoreBoard.updateCurrent();
           	            	Cure.BadgeCollection.reset(badges);
           	            	if(Cure.BadgeCollection.length>0){
-          	            		$("#BadgesPlaceholder").html("New Badges Earned!<br><small style='font-size:12px;'>Click to view badges earned.</small>");
+          	            		$("#BadgesPlaceholder").html("New Badges Earned!<br><small style='font-size:12px;' class='btn btn-link'>Click to view badges earned.</small>");
           	            	} else {
           	            		$("#BadgesPlaceholder").html("");
           	            	}
