@@ -102,21 +102,32 @@ Player player = (Player) session.getAttribute("player");
 					<p>
 					<button class="btn btn-sm btn-default" id="taketour">Take Tour</button>
 						<img align="right" src="img/helpimage.png" width="500" />
-					<ul>
-						<li>To choose a gene you can start typing the name in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</li>
-						<li>You can also choose a clinical feature by clicking on <img src="./img/doctor.png">. Click on the text box that appears to view a drop down of the available clinical features.</li>
-						<li>To view information regarding the genes/clinical features in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</li>
-						<li>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="glyphicon glyphicon-plus-sign"></i><span style="float: none;">Add</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</li>
-						<li>To remove a particular split node from the tree, click on <i class="glyphicon glyphicon-remove"></i> and the node along with its children will be deleted.</li>
-						<li>To view the information of a gene/clinical feature in the tree, simply click on the gene/clinical feature name in the node.</li>
-						<li>To view numerical data of classification, click on the square charts displayed along with every node.</li>
-						<li><font color="blue">Y</font> represents a favorable outcome i.e., the cases are predicted to survive beyond ten years.</li>
-						<li><font color="red">N</font> represents an unfavorable outcome i.e., the cases are not predicted to survive beyond ten years.</li>
-						<li>On top of each node, you can see a colored square representing the user who added that node. A list of users and their place holders is displayed on the right to serve as a key.</li>
-						<li>Once you build a tree, be sure to save it by toggling the Save Options panel on the right and clicking on "Save".</li>
-						<li>You can also enter a comment by clicking on "Enter Comment" in the Save Options panel.</li>
-						<li>To view a textual description of the tree, click on Toggle Panel in Tree Explanation on the right.</li>
-						<li>You can toggle the score board panel on the right to see high scores among users. You can click on the high score to view the tree.</li>						
+					<dl class="dl-horizontal">
+					  <dt>Add a Gene</dt>
+					  <dd>To choose a gene you can start typing the name in the text box. As you start typing a drop down will appear and you can choose a gene from the options shown.</dd>
+					  <dt>Add a Clinical Feature</dt>
+					  <dd>You can choose a clinical feature by clicking on <img width="30" src="./img/doctor.png">. Click on the text box that appears to view a drop down of the available clinical features.</dd>
+					  <dt>Gene and Clinical Feature Information</dt>
+					  <dd>To view information regarding the genes/clinical features in the drop down, hover on each option and a window will be shown. You can also use the 'up' and 'down' arrow keys to navigate up and down this drop down.</dd>
+					  <dt>Add a Gene/Clinical Feature to Leaf Nodes</dt>
+					  <dd>To add a node click on <button class="btn btn-small btn-link" type="button"><i class="glyphicon glyphicon-plus-sign"></i><span style="float: none;">Add</span></button> at the bottom of the leaf nodes. The same text box will appear at the bottom.</dd>
+					  <dt>Delete Node</dt>
+					  <dd>To remove a particular split node from the tree, click on <i class="glyphicon glyphicon-remove"></i> and the node along with its children will be deleted.</dd>
+					  <dt>Gene/Clinical Feature Information from Tree</dt>
+					  <dd>To view the information of a gene/clinical feature in the tree, simply click on the gene/clinical feature name in the node.</dd>
+					  <dt>Numerical data of Classification</dt>
+					  <dd>To view numerical data of classification, click on the square charts displayed along with every node.</dd>
+					  <dt>Outcomes</dt>
+					  <dd><font color="blue"><b>Y</b></font> represents a favorable outcome i.e., the cases are predicted to survive beyond ten years.<font color="red"><b>N</b></font> represents an unfavorable outcome i.e., the cases are not predicted to survive beyond ten years.</dd>
+					  <dt>Player Placeholder</dt>
+					  <dd>On top of each node, you can see a colored square representing the user who added that node. A list of users and their place holders is displayed on the right to serve as a key.</dd>
+					  <dt>Save Tree</dt>
+					  <dd>Once you build a tree, be sure to save it by clicking on the Save Button on the right. You can add a comment by typing in the comment box that will appear once you click save. In case you want to protect your tree you can also choose an option to save your tree as private in which case no other player will be able to view that tree but it will not be part of the score baord.</dd>
+					  <dt>Textual Description of Tree</dt>
+					  <dd>To view a textual description of the tree, click on Tree Explanation on the right.</dd>
+					  <dt>Profie</dt>
+					  <dd>You can see your badge collection and your tree collection in your profile page. To view your profile click on My Profile on the right panel.</dd>
+					</dl>						
 					</ul>
 					</p>
 				</div>
