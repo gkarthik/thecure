@@ -129,7 +129,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			yLimit = splitNodeArray[0].scoreValue;
 			for(var temp in splitNodeArray){
 				if(splitNodeArray[temp].score[0].value<yLowerLimit){
-					yLowerLimit = (splitNodeArray[temp].score[0].value*Cure.scoreWeights.pct_correct);
+					yLowerLimit = (splitNodeArray[temp].score[0].value);
 				}
 				if(splitNodeArray[temp].scoreValue>yLimit){
 					yLimit = splitNodeArray[temp].scoreValue;
