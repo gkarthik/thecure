@@ -4,6 +4,12 @@ define([
       ], function($) {
 var AddRootNodeTour = new Tour({
 	name: 'inittour',
+	onStart: function(){
+		$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
+	},
+	onEnd: function(){
+		$(".tourOverlay").remove();
+	},
 	  steps: [
 {
   title: "<h4 style='color:red;'>Disclaimers</h4>",
