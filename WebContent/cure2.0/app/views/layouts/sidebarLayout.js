@@ -29,7 +29,6 @@ sidebarLayout = Marionette.Layout.extend({
     	displayWrapper: "#displayWrapper"
     },
     events:{
-    	'click #save_tree': 'saveTree',
     	'click #current-tree-rank': 'showCurrentRank',
     	'click #tree-explanation-button': 'toggleTreeExp',
     	'click #BadgesPlaceholder': 'showBadges'

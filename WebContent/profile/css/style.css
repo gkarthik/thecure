@@ -55,3 +55,7 @@ Navbar Style
 body div.navbar-inner div.container a.brand{
 	padding: 15px 5px;
 }
+
+body div.navbar-inner{
+	height: 40px;
+}

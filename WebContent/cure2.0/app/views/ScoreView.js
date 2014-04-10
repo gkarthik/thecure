@@ -149,7 +149,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 			while( i-- ) {
 		    if( splitNodeArray[i].cid ==  d ) break;
 			}
-			return splitNodeArray[i].name; 
+			return splitNodeArray[i].name;
 		});
 		
 		var yAxis = d3.svg.axis().scale(thisView.yAxisScale).orient("left").tickFormat(function (d) {

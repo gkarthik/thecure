@@ -6,8 +6,7 @@ define([
 	defaults : {
 		'username' : '',
 		'id': 0,
-		showLogin: 0,
-		signUp: 0
+		showLogin: 0
 	}
 });
 
