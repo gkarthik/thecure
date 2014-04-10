@@ -568,8 +568,8 @@ public class Player {
 		int newid = 0;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null; PreparedStatement p = null;		
-		String insert = "insert into player (id, name, password, email, created) " +
-		"values(null,?,?,?,?)";
+		String insert = "insert into player (name, password, email, created) " +
+		"values(?,?,?,?)";
 		try {
 			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);					
 			p.setString(1, name);
