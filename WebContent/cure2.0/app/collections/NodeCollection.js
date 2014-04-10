@@ -172,7 +172,7 @@ NodeCollection = Backbone.Collection.extend({
 	saveTree: function(){
 		Cure.Comment.set("saving",1);
 		var tree;
-    if (Cure.PlayerNodeCollection.models[0] && Cure.Player.get('id') != -1) {
+    if (Cure.PlayerNodeCollection.models[0]) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
         command : "savetree",
@@ -235,10 +235,6 @@ NodeCollection = Backbone.Collection.extend({
       tree = [];
       Cure.utils
           .showAlert("<strong>Empty Tree!</strong><br>Please build a tree by using the auto complete box.", 0);
-    } else if(Cure.Player.get('id') == -1) {
-    	tree = [];
-      Cure.utils
-      .showAlert("<strong>Login to save tree!</strong><br>Please login to save the tree.", 0);
     }
 	},
 	error : function(data) {
