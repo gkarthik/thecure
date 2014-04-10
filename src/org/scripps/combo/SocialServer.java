@@ -207,6 +207,8 @@ public class SocialServer extends HttpServlet {
 							result.put("success", true);
 							result.put("player_name", player.getName());
 							result.put("player_id", player.getId());
+							session.setAttribute("username", username);
+						    session.setAttribute("player", player);
 							String json = mapper.writeValueAsString(result);
 							out.write(json);
 							out.close();

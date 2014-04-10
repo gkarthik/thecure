@@ -569,7 +569,7 @@ public class Player {
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet generatedKeys = null; PreparedStatement p = null;		
 		String insert = "insert into player (id, name, password, email, created) " +
-		"values(null,?,?,?,?,?,?,?,?)";
+		"values(null,?,?,?,?)";
 		try {
 			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);					
 			p.setString(1, name);
