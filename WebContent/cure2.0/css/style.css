@@ -351,11 +351,17 @@ z-index: 9999;
 width: 25%;
 padding: 3%;
 left: 36%;
-top: 100px;
+top: 200px;
 border: 1px solid #F69;
 background: #FFF;
 border-radius: 10px;
 text-align: center;
+color: #333;
+box-shadow: 0px 0px 10px 0px #333;
+}
+
+#close-login{
+	float: right;
 }
 
 .showjson
@@ -724,7 +730,7 @@ text-align:left;
 	top: 54px;
 	z-index: 10;
 	text-align:center;
-	margin-left:25%;
+	left:35%;
 }
 
 .MetaDataNode{
@@ -898,6 +904,10 @@ body div.navbar-inner div.container div.nav-collapse ul.nav li a{
 
 body div.navbar-inner div.container a.brand{
 	color: #FFF;
+}
+
+body div .navbar-inner{
+	height: 40px;
 }
 
 .navbar .nav > li > a{

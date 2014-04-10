@@ -11,15 +11,22 @@ LoginView = Marionette.ItemView.extend({
 	tagName: 'ul',
 	events: {
 		'click #login-button': 'sendRequest',
-		'click #show-login': 'showLogin'
+		'click #show-login': 'showLogin',
+		'click #close-login': 'closeLogin'
 	},
 	ui: {
 		'username': '#username',
 		'password': '#password',
 		'loginWrapper': "#LoginRegion form"
 	},
+	closeLogin: function(){
+		this.model.set("showLogin",0);
+		$(this.ui.username).val("");
+    $(this.ui.password).val("");
+	},
 	initialize : function() {
 		this.listenTo(this.model,'change', this.render);
+		_.bindAll(this,'parseResponse');
 	},
 	template: LoginTmpl,
 	showLogin: function(){
@@ -42,7 +49,6 @@ LoginView = Marionette.ItemView.extend({
 	      });
 	},
 	parseResponse: function(data){
-		console.log("hello");
 		Cure.Player.set('name',data.player_name);
 		Cure.Player.set('id',data.player_id);
 		if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
@@ -56,6 +62,7 @@ LoginView = Marionette.ItemView.extend({
 		} else {
 			//TODO Remove backbone relational model from store.
 		}
+		this.closeLogin();
 	},
 	error: function(data){
 		if(data.message){

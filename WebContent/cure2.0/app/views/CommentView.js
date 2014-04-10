@@ -27,7 +27,7 @@ CommentView = Backbone.Marionette.ItemView.extend({
 		this.model.bind('change', this.render);
 	},
 	initSave: function(){
-		if(Cure.PlayerNodeCollection.length>0 && Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'))!=-1){
+		if(Cure.PlayerNodeCollection.length>0 && Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'))!=-1 && Cure.Player.get('id')!=-1){
 			this.model.set("editView",1);
 		} else if(Cure.PlayerNodeCollection.length==0) {
 			Cure.utils
@@ -35,7 +35,12 @@ CommentView = Backbone.Marionette.ItemView.extend({
 		} else if(Cure.CollaboratorCollection.pluck("id").indexOf(cure_user_id)==-1) {
       Cure.utils
       .showAlert("<strong>You haven't added anything!</strong><br>Please do not save trees built by other users directly.", 0);
-		} 
+		} else if(Cure.Player.get('id') == -1) {
+    	tree = [];
+      Cure.utils
+      .showAlert("<strong>Login to save tree!</strong><br>Please login to save the tree.", 0);
+      Cure.Player.set("showLogin",1);
+    }
 	},
 	saveTree: function(){
 		this.model.set("content",$(this.ui.commentContent).val());
