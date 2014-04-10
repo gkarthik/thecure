@@ -9,11 +9,11 @@ define(
         'app/collections/BadgeCollection',
         // Models
         'app/models/Comment', 'app/models/Score',
-        'app/models/zoom',
+        'app/models/zoom', 'app/models/Player',
         // Views
         'app/views/JSONCollectionView',
         'app/views/NodeCollectionView','app/views/layouts/sidebarLayout',
-        'app/views/zoomView',
+        'app/views/zoomView', 'app/views/LoginView',
         // Utilitites
         'app/utilities/utilities',
         //Tour
@@ -21,8 +21,8 @@ define(
         'app/tour/tree'
         ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, Comment, Score, Zoom, JSONCollectionView,
-        NodeCollectionView, sidebarLayout, ZoomView, CureUtils, InitTour, TreeTour) {
+        ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, Comment, Score, Zoom, Player, JSONCollectionView,
+        NodeCollectionView, sidebarLayout, ZoomView, LoginView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
 	    Cure.utils = CureUtils;
@@ -206,6 +206,10 @@ define(
 		        Cure.ZoomView = new ZoomView({
 		        	model: Cure.Zoom
 		        });
+		        Cure.Player = new Player();
+		        Cure.Player.set("username",cure_user_name);
+		        Cure.Player.set("id",cure_user_id);
+		        Cure.LoginView = new LoginView({model: Cure.Player});
 		        Cure.PlayerNodeCollectionView = new NodeCollectionView({
 			        collection : Cure.PlayerNodeCollection
 		        });
@@ -217,6 +221,7 @@ define(
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
 		        Cure.ZoomControlsRegion.show(Cure.ZoomView);
+		        Cure.LoginRegion.show(Cure.LoginView);
 		        Cure.relCoord = $('#PlayerTreeRegionSVG').offset();
 		        if(cure_tree_id!=undefined){
 		        	var args = {

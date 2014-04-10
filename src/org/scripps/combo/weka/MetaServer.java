@@ -229,8 +229,7 @@ public class MetaServer extends HttpServlet {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to add bagde: "+json);
-							}
-							
+							}	
 						}
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
@@ -369,69 +368,76 @@ public class MetaServer extends HttpServlet {
 		//To avoid penalizing user for genes added to his/her own tree.
 		HttpSession session = request_.getSession();
 		Player player = (Player) session.getAttribute("player");
-		int PlayerId = player.getId();
-		Weka weka = name_dataset.get(dataset);	
-		if(weka==null){
-			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
-			return;
-		}		
-		//create the weka tree structure
-		JsonTree t = new JsonTree();
-		ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
-		List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
-		int numnodes = readtree.numNodes();
-		//evaluate it on the data
-		Evaluation eval = new Evaluation(weka.getTrain());
-		eval.evaluateModel(readtree, weka.getTrain());
-		
-		ObjectNode result = mapper.createObjectNode();
-		result.put("pct_correct", eval.pctCorrect());
-		result.put("size", numnodes);
-		double nov = Tree.getUniqueIdNovelty(entrez_ids, PlayerId);
-		result.put("novelty", nov);//
-		result.put("text_tree", readtree.toString());
-		//serialize and return the result		
-		JsonNode treenode = readtree.getJsontree();
-		result.put("treestruct", treenode);
-		response.setContentType("text/json");
-		PrintWriter out = response.getWriter();
-		String result_json = mapper.writeValueAsString(result);
+		if(player!=null || command.equals("scoretree")){
+			int PlayerId = -1;
+			if(player!=null){
+				PlayerId = player.getId();
+			}
+			Weka weka = name_dataset.get(dataset);	
+			if(weka==null){
+				handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
+				return;
+			}		
+			//create the weka tree structure
+			JsonTree t = new JsonTree();
+			ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
+			List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
+			int numnodes = readtree.numNodes();
+			//evaluate it on the data
+			Evaluation eval = new Evaluation(weka.getTrain());
+			eval.evaluateModel(readtree, weka.getTrain());
+			
+			ObjectNode result = mapper.createObjectNode();
+			result.put("pct_correct", eval.pctCorrect());
+			result.put("size", numnodes);
+			double nov = Tree.getUniqueIdNovelty(entrez_ids, PlayerId);
+			result.put("novelty", nov);//
+			result.put("text_tree", readtree.toString());
+			//serialize and return the result		
+			JsonNode treenode = readtree.getJsontree();
+			result.put("treestruct", treenode);
+			response.setContentType("text/json");
+			PrintWriter out = response.getWriter();
+			String result_json = mapper.writeValueAsString(result);
 
-		//now store it in the database
-		//TODO only store trees where they have pressed "save"
-		//TODO actually capture the player id and comment
-		String comment = "";
-		int player_id = 0;
-		int user_saved = 0;
-		int privateflag = 0;
-		player_id = data.get("player_id").asInt();
-		comment = data.get("comment").asText();
-		String ip = request_.getRemoteAddr();
-		List<Feature> features = new ArrayList<Feature>();
-		for(String entrez_id : entrez_ids){
-			Feature f = weka.features.get(entrez_id);
-			features.add(f);
+			//now store it in the database
+			String comment = "";
+			int user_saved = 0;
+			int privateflag = 0;
+			comment = data.get("comment").asText();
+			String ip = request_.getRemoteAddr();
+			List<Feature> features = new ArrayList<Feature>();
+			for(String entrez_id : entrez_ids){
+				Feature f = weka.features.get(entrez_id);
+				features.add(f);
+			}
+			if(command.equals("savetree")){
+				user_saved = 1;
+				prev_tree_id = data.get("previous_tree_id").asInt();
+				privateflag = data.get("privateflag").asInt();
+			}
+			Tree tree = new Tree(0, PlayerId, ip, features, result_json,comment, user_saved, privateflag);
+			int tid = tree.insert(prev_tree_id, privateflag);
+			float score = 0; 
+			score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
+			tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
+			ArrayList json_badges = new ArrayList();
+			if(command.equals("savetree")){
+				Badge _badge = new Badge();
+				json_badges = _badge.getEarnedBadges(tid, PlayerId);
+			}
+			result.put("badges", mapper.valueToTree(json_badges));	
+			result.put("tree_id", tid);
+			result_json = mapper.writeValueAsString(result);
+			out.write(result_json);
+			out.close();
+		} else {
+			PrintWriter out = response.getWriter();
+			String result_json = "{message: 'Please login to save a tree.'}";
+			out.write(result_json);
+			out.close();
 		}
-		if(command.equals("savetree")){
-			user_saved = 1;
-			prev_tree_id = data.get("previous_tree_id").asInt();
-			privateflag = data.get("privateflag").asInt();
-		}
-		Tree tree = new Tree(0, player_id, ip, features, result_json,comment, user_saved, privateflag);
-		int tid = tree.insert(prev_tree_id, privateflag);
-		float score = 0; 
-		score = (float) ((750 * (1 / numnodes)) + (500 * nov) + (1000 * eval.pctCorrect()));
-		tree.insertScore(tid, dataset, (float)eval.pctCorrect(), (float)numnodes, (float)nov, score);
-		ArrayList json_badges = new ArrayList();
-		if(command.equals("savetree")){
-			Badge _badge = new Badge();
-			json_badges = _badge.getEarnedBadges(tid, player_id);
-		}
-		result.put("badges", mapper.valueToTree(json_badges));	
-		result.put("tree_id", tid);
-		result_json = mapper.writeValueAsString(result);
-		out.write(result_json);
-		out.close();
+		
 	}
 
 //	

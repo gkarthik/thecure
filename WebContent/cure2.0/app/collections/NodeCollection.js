@@ -30,7 +30,7 @@ NodeCollection = Backbone.Collection.extend({
 			dataset : "metabric_with_clinical",
 			treestruct : tree,
 			comment: Cure.Comment.get("content"),
-			player_id : cure_user_id
+			player_id : Cure.Player.get('id')
 		};
 		
 		//POST request to server.		
@@ -172,13 +172,13 @@ NodeCollection = Backbone.Collection.extend({
 	saveTree: function(){
 		Cure.Comment.set("saving",1);
 		var tree;
-    if (Cure.PlayerNodeCollection.models[0]) {
+    if (Cure.PlayerNodeCollection.models[0] && Cure.Player.get('id') != -1) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
         command : "savetree",
         dataset : "metabric_with_clinical",
         treestruct : tree,
-        player_id : cure_user_id,
+        player_id : Cure.Player.get('id'),
         comment : Cure.Comment.get("content"),
         previous_tree_id: Cure.PlayerNodeCollection.prevTreeId,
         privateflag : Cure.Comment.get('flagPrivate')
@@ -235,7 +235,11 @@ NodeCollection = Backbone.Collection.extend({
       tree = [];
       Cure.utils
           .showAlert("<strong>Empty Tree!</strong><br>Please build a tree by using the auto complete box.", 0);
-    } 
+    } else if(Cure.Player.get('id') == -1) {
+    	tree = [];
+      Cure.utils
+      .showAlert("<strong>Login to save tree!</strong><br>Please login to save the tree.", 0);
+    }
 	},
 	error : function(data) {
 		Cure.utils

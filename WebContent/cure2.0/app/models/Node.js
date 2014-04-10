@@ -32,14 +32,14 @@ define([
 	initialize : function() {
 		Cure.PlayerNodeCollection.add(this);
 		if(this.get('collaborator')==null){
-			var index = Cure.CollaboratorCollection.pluck("id").indexOf(cure_user_id);
+			var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
 			var newCollaborator;
 			if(index!=-1){
 				newCollaborator = Cure.CollaboratorCollection.at(index);
 			} else {
 				newCollaborator = new Collaborator({
-					"name": cure_user_name,
-					"id": cure_user_id,
+					"name": Cure.Player.get('username'),
+					"id": Cure.Player.get('id'),
 					"created" : new Date()
 				});
 				Cure.CollaboratorCollection.add(newCollaborator);

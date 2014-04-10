@@ -315,6 +315,49 @@ display: block;
 	  color: #333;
 }
 
+#LoginRegion{
+	float: right;
+}
+
+#LoginRegion ul{
+	list-style: none;
+	color: #FFF;
+	margin: 0px;
+}
+
+#LoginRegion ul li{
+	padding: 10px;
+	cursor: pointer;
+	text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
+	float: left;
+}
+
+#LoginRegion ul li a{
+	color: #FFF;
+}
+
+#LoginRegion ul li a:hover{
+	text-decoration: none;
+}
+
+#LoginRegion ul li:hover{
+	background: #B2365F;
+}
+
+#LoginRegion form{
+	margin: 0 auto;
+position: absolute;
+z-index: 9999;
+width: 25%;
+padding: 3%;
+left: 36%;
+top: 100px;
+border: 1px solid #F69;
+background: #FFF;
+border-radius: 10px;
+text-align: center;
+}
+
 .showjson
 {
   float:none;

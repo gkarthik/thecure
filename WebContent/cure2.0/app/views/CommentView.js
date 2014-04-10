@@ -27,7 +27,7 @@ CommentView = Backbone.Marionette.ItemView.extend({
 		this.model.bind('change', this.render);
 	},
 	initSave: function(){
-		if(Cure.PlayerNodeCollection.length>0 && Cure.CollaboratorCollection.pluck("id").indexOf(cure_user_id)!=-1){
+		if(Cure.PlayerNodeCollection.length>0 && Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'))!=-1){
 			this.model.set("editView",1);
 		} else if(Cure.PlayerNodeCollection.length==0) {
 			Cure.utils

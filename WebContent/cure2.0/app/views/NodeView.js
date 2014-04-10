@@ -81,10 +81,12 @@ NodeView = Marionette.ItemView.extend({
 		this.model.set("cid",this.cid);
 	},
 	renderPlaceholder: function(){
-		this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
-			color: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator'))),
-			border: "2px solid "+Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
-		});	
+		if(this.model.get('collaborator')!=null){
+			this.$el.find(".collaborator-icon").css({//Change .find to .ui.el
+				color: Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator'))),
+				border: "2px solid "+Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
+			});
+		}	
 	},
 	highlight: function(){
 		if(this.model.get('highlight')!=0){

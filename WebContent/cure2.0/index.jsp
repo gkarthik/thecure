@@ -19,7 +19,9 @@ if(request.getParameter("badgeid")!=null){
 }
 Player player = (Player) session.getAttribute("player");
   if (player == null) {
-    	response.sendRedirect("/cure/login.jsp"); 
+    	player_id = -1;
+    	player_experience = 0;
+    	player_name = "Guest";
   } else {
     player_id = player.getId();
     player_experience = 0;
@@ -62,7 +64,6 @@ Player player = (Player) session.getAttribute("player");
 
 <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
-          <div class="container">
             <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
@@ -70,13 +71,12 @@ Player player = (Player) session.getAttribute("player");
             </a>
              <ul class="nav navbar-nav">
                <li><a class="brand" href="/cure/">The Cure</a></li>
-               <li><a href="/cure/profile/">My Profile</a></li>
                <li><a href="#" id="showDataInf">Data</a></li>
                <li><a href="/cure/boardroom.jsp">View Cure 1.0 Boardgame</a></li>
                 <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
-            	<li><a style="color:#FFF;" href="/cure/logout.jsp">logout</a></li>
              </ul>
-          </div>
+             	<div id="LoginRegion">
+             	</div>
         </div>
       </div>
 	<div class="container-fluid CureContainer">
@@ -150,5 +150,22 @@ Player player = (Player) session.getAttribute("player");
     <% } %>
   </script>
 	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
+	<script>var _csb=[['token','MY_TOKEN']];</script>
+	<script>
+		require.config({
+		 paths: {
+		  "csb": "http://132.206.3.203/jsapi/csb"
+		 },
+		 waitSeconds: 40
+		});
+	</script>
+	<script>
+		require( ["csb"],
+		 function () {
+		  console.log(csb.inSession());
+		 }
+		);
+	</script>
+	
 </body>
 </html>
