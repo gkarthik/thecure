@@ -47,20 +47,26 @@ LoginView = Marionette.ItemView.extend({
       });
 	},
 	parseSignupResponse: function(data){
-		Cure.Player.set('name',data.player_name);
-		Cure.Player.set('id',data.player_id);
-		if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
-			var guest = Cure.CollaboratorCollection.findWhere({ id: '-1' });
-			if(guest){
-				guest.set({
-					'name': data.player_name,
-					'id': data.player_id
-				});
+		if(data.success==true){
+			Cure.utils.showAlert("<strong>Success!</strong><br>You are logged in as "+data.player_name, 1);
+			Cure.Player.set('name',data.player_name);
+			Cure.Player.set('id',data.player_id);
+			if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
+				var guest = Cure.CollaboratorCollection.findWhere({ id: '-1' });
+				if(guest){
+					guest.set({
+						'name': data.player_name,
+						'id': data.player_id
+					});
+				}
+			} else {
+				//TODO Remove backbone relational model from store.
 			}
+			this.closeSignUp();
 		} else {
-			//TODO Remove backbone relational model from store.
+			Cure.utils
+	    .showAlert("<strong>Error!</strong><br>"+data.message, 0);
 		}
-		this.closeSignUp();
 	},
 	closeSignUp: function(){
 		this.model.set("signUp",0);
@@ -99,29 +105,30 @@ LoginView = Marionette.ItemView.extend({
 	      });
 	},
 	parseResponse: function(data){
-		Cure.Player.set('name',data.player_name);
-		Cure.Player.set('id',data.player_id);
-		if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
-			var guest = Cure.CollaboratorCollection.findWhere({ id: '-1' });
-			if(guest){
-				guest.set({
-					'name': data.player_name,
-					'id': data.player_id
-				});
+		if(data.success==true){
+			Cure.utils.showAlert("<strong>Success!</strong><br>You are logged in as "+data.player_name, 1);
+			Cure.Player.set('name',data.player_name);
+			Cure.Player.set('id',data.player_id);
+			if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
+				var guest = Cure.CollaboratorCollection.findWhere({ id: '-1' });
+				if(guest){
+					guest.set({
+						'name': data.player_name,
+						'id': data.player_id
+					});
+				}
+			} else {
+				//TODO Remove backbone relational model from store.
 			}
+			this.closeLogin();
 		} else {
-			//TODO Remove backbone relational model from store.
-		}
-		this.closeLogin();
-	},
-	error: function(data){
-		if(data.message){
 			Cure.utils
 	    .showAlert("<strong>Error!</strong><br>"+data.message, 0);
-		} else {
+		}
+	},
+	error: function(data){
 			Cure.utils
 	    .showAlert("<strong>Server Error!</strong><br>Please try again in a while.", 0);
-		}
 	}
 });
 
