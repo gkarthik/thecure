@@ -4,6 +4,12 @@ define([
       ], function($) {
 var TreeTour = new Tour({
 	name: 'treetour',
+	onStart: function(){
+		$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
+	},
+	onEnd: function(){
+		$(".tourOverlay").remove();
+	},
 	  steps: [
 	  {
 			element: ".split_node",
@@ -83,10 +89,13 @@ var TreeTour = new Tour({
 		{
 		element: "#zoom-controls",
 		title: "Zoom Controls",
-		content: "Click on + and - to zoom in and out. You can uncheck the 'fit to screen' option if you don't want the tree to scale to the screen. You might have to use the scroll to view your entire tree if you uncheck this option.",
-		onNext: function(){
-		$("#tree-explanation-button").trigger('click');
-		}
+		content: "Click on + and - to zoom in and out. You can uncheck the 'fit to screen' option if you don't want the tree to scale to the screen. You might have to use the scroll to view your entire tree if you uncheck this option."
+		},
+		{
+			element: "#init_save_tree",
+			title: "Save Tree",
+			content: "You can save the tree by clicking here, optionally along with a comment. Once you save the tree, you can see your rank on the high score list and the new badges you have earned!",
+			placement: 'left'
 		}
 	  ],
 	  storage: window.localStorage
