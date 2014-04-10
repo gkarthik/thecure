@@ -7,6 +7,11 @@ var TreeTour = new Tour({
 	onStart: function(){
 		$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
 	},
+	onShow: function(){
+		if($(".tourOverlay").length==0){
+			$("body").append("<div class='tourOverlay'><h2>TOUR</h2></div>");
+		}
+	},
 	onEnd: function(){
 		$(".tourOverlay").remove();
 	},

@@ -1,3 +1,9 @@
+@font-face {
+      font-family: "Modern Pictograms";
+      src: url(/cure/cure2.0/css/fonts/ModernPictograms/modernpics.otf);
+		font-style: normal;
+}
+
 #profile-container{
 	padding-top: 60px;
 }
@@ -38,6 +44,14 @@ stroke-width: 1.5px;
 .player-badge{
 background: none repeat scroll 0% 0% #3276B1;
 padding: 5px;	
+}
+
+.player-badge .pictogram{
+	font-family: "Modern Pictograms";
+    font-size: 40px;
+    display: block;
+    font-weight: 300;
+    color: yellow;
 }
 
 /*
