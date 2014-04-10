@@ -126,11 +126,11 @@ if(request.getParameter("playerid")==null){
 		</div>
 	</script>
 	<script type="text/template" id="badge-entry-template">
-		<td><span class="badge player-badge">BADGE <@= id @></span></td>
+		<td><span class="badge player-badge">BADGE <@= id @><span class="pictogram">)</span></span></td>
 		<td><@= description @></td>
 	</script>
 	<script type="text/template" id="rec-badge-entry-template">
-		<td><span class="badge player-badge">BADGE <@= id @></span></td>
+		<td><span class="badge player-badge">BADGE <@= id @><span class="pictogram">)</span></span></td>
 		<td><@= description @></td>
 		<td><a class="btn btn-link" href="/cure/cure2.0/index.jsp?badgeid=<@= id @>">Get Badge!</a></td>
 	</script>
