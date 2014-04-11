@@ -150,6 +150,8 @@ Player player = (Player) session.getAttribute("player");
     <% } %>
   </script>
 	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
+	<% if(request.getParameter("ref")!=null){
+		if(request.getParameter("ref").equals("yako")){ %>
 	<script>var _csb=[['token','MY_TOKEN']];</script>
 	<script>
 		require.config({
@@ -162,10 +164,18 @@ Player player = (Player) session.getAttribute("player");
 	<script>
 		require( ["csb"],
 		 function () {
-		  console.log(csb.inSession());
+			console.log(csb.inSession());
+		  if(csb.inSession()){
+		  	csb.getUserInfo(function(err, res) {
+		  		 if(!err) {
+		  		  console.log("@collection info test", res);
+		  		 }
+		  	});
+		  }
 		 }
 		);
 	</script>
-	
+	<% }
+		}%>
 </body>
 </html>
