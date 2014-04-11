@@ -5,7 +5,7 @@ define([
     ], function($, Backbone, ClinicalFeature) {
 ClinicalFeatureCollection = Backbone.Collection.extend({
 	model: ClinicalFeature,
-	url: '/cure/MetaServer',
+	url: base_url+'MetaServer',
 	initialize: function(){
 		_.bindAll(this, 'parseResponse');
 	},
