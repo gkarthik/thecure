@@ -5,7 +5,7 @@ define([
     ], function($, Backbone, ClinicalFeature) {
 TreeBranchCollection = Backbone.Collection.extend({
 	model: TreeBranch,
-	url: '/cure/MetaServer',
+	url: base_url+'MetaServer',
 	initialize: function(){
 		_.bindAll(this, 'getTreeinText', 'updateCollection');
 	},

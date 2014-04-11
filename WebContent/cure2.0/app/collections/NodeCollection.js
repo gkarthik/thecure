@@ -15,7 +15,7 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	tree_id: 0,
 	prevTreeId : -1,
-	url : "/cure/MetaServer",
+	url : base_url+"MetaServer",
 	sync : function() {
 		//Function to send request to Server with current tree information.
 		var tree = [];
@@ -36,7 +36,7 @@ NodeCollection = Backbone.Collection.extend({
 		//POST request to server.		
 		$.ajax({
 			type : 'POST',
-			url : '/cure/MetaServer',
+			url : this.url,
 			data : JSON.stringify(args),
 			dataType : 'json',
 			contentType : "application/json; charset=utf-8",
@@ -172,6 +172,7 @@ NodeCollection = Backbone.Collection.extend({
 	saveTree: function(){
 		Cure.Comment.set("saving",1);
 		var tree;
+		var thisURL = this.url;
     if (Cure.PlayerNodeCollection.models[0]) {
       tree = Cure.PlayerNodeCollection.models[0].toJSON();
       var args = {
@@ -185,7 +186,7 @@ NodeCollection = Backbone.Collection.extend({
       };
       $.ajax({
             type : 'POST',
-            url : '/cure/MetaServer',
+            url : thisURL,
             data : JSON.stringify(args),
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
@@ -201,7 +202,7 @@ NodeCollection = Backbone.Collection.extend({
           	      };
           	      $.ajax({
           	            type : 'POST',
-          	            url : '/cure/MetaServer',
+          	            url : thisURL,
           	            data : JSON.stringify(args),
           	            dataType : 'json',
           	            contentType : "application/json; charset=utf-8",

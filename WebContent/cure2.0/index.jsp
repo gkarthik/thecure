@@ -144,7 +144,8 @@ Player player = (Player) session.getAttribute("player");
         cure_user_id = "<%=player_id%>",
         cure_user_name = "<%= player_name %>",
         cure_tree_id = null,
-        badge_desc = <%= badge_desc %>;
+        badge_desc = <%= badge_desc %>,
+        base_url=document.location.href;
     <% if(request.getParameter("treeid")!=null){ %> 
      	cure_tree_id = <%= request.getParameter("treeid") %>;
     <% } %>

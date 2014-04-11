@@ -69,7 +69,7 @@ ScoreBoard = Backbone.Collection.extend({
 			});
 	},
 	comparator: 'rank',
-	url : '/cure/MetaServer',
+	url : base_url+'MetaServer',
 	fetch: function(direction){
 		if(this.allowRequest){
 			this.lowerLimit = Cure.ScoreBoard.at(Cure.ScoreBoard.length-1).get('rank');

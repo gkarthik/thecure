@@ -25,6 +25,7 @@ LoginView = Marionette.ItemView.extend({
 		'newpassword': '#new-password',
 		'newemail': '#new-email'
 	},
+	url: base_url+"SocialServer",
 	initialize : function() {
 		this.listenTo(this.model,'change', this.render);
 		_.bindAll(this,'parseResponse', 'parseSignupResponse');
@@ -38,7 +39,7 @@ LoginView = Marionette.ItemView.extend({
       };
       $.ajax({
             type : 'POST',
-            url : '/cure/SocialServer',
+            url : this.url,
             data : JSON.stringify(args),
             dataType : 'json',
             contentType : "application/json; charset=utf-8",
@@ -96,7 +97,7 @@ LoginView = Marionette.ItemView.extend({
 	      };
 	      $.ajax({
 	            type : 'POST',
-	            url : '/cure/SocialServer',
+	            url : this.url,
 	            data : JSON.stringify(args),
 	            dataType : 'json',
 	            contentType : "application/json; charset=utf-8",

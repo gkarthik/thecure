@@ -233,7 +233,7 @@ define(
 		        		//POST request to server.		
 		        		$.ajax({
 		        			type : 'POST',
-		        			url : '/cure/MetaServer',
+		        			url : base_url+'MetaServer',
 		        			data : JSON.stringify(args),
 		        			dataType : 'json',
 		        			contentType : "application/json; charset=utf-8",
