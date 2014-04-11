@@ -1,5 +1,5 @@
 require.config({
-      baseUrl : "/cure/cure2%2E0/",
+      baseUrl : base_url+"cure2%2E0/",
       paths : {
         underscore : 'lib/underscore',
         backbone : 'lib/backbone',
