@@ -222,6 +222,40 @@ public class SocialServer extends HttpServlet {
 							out.close();  
 						}
 					}
+				} else if(command.equals("user_ref_login")){
+					String username = data.get("username").asText();
+					String token = data.get("token").asText();
+					Player player = new Player();
+					player.setName(username);
+					player.setToken(token);
+					if (username == null || token == null) {
+						response.setContentType("application/json");
+						PrintWriter out = response.getWriter();
+						result.put("success", false);
+						result.put("message", "All parameters not sent.");
+						String json = mapper.writeValueAsString(result);
+						out.write(json);
+						out.close();  
+					} else {
+						boolean success = true;
+							player = player.findOrCreateWithToken(token, username);
+							if(player==null){
+								success = false;
+							}
+						if(success){
+							response.setStatus(200);
+							response.setContentType("application/json");
+							PrintWriter out = response.getWriter();
+							result.put("success", true);
+							result.put("player_name", player.getName());
+							result.put("player_id", player.getId());
+							String json = mapper.writeValueAsString(result);
+							out.write(json);
+							out.close();
+							session.setAttribute("username", username);
+						    session.setAttribute("player", player);
+						}
+					}
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
