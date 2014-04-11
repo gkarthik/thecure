@@ -145,7 +145,7 @@ Player player = (Player) session.getAttribute("player");
         cure_user_name = "<%= player_name %>",
         cure_tree_id = null,
         badge_desc = <%= badge_desc %>,
-        base_url=document.location.href;
+        base_url= document.location.href.split("cure2.0")[0];
     <% if(request.getParameter("treeid")!=null){ %> 
      	cure_tree_id = <%= request.getParameter("treeid") %>;
     <% } %>
@@ -157,7 +157,7 @@ Player player = (Player) session.getAttribute("player");
 	<script>
 		require.config({
 		 paths: {
-		  "csb": "http://132.206.3.203/jsapi/csb"
+		  "csb": "http://yako.io/jsapi/csb"
 		 },
 		 waitSeconds: 40
 		});
@@ -172,7 +172,7 @@ Player player = (Player) session.getAttribute("player");
 		  			 var args = {
 			  					command : "user_ref_login",
 			  					username: res.displayName,
-			  					token: "5"
+			  					token: res.identifier
 			  				};
 			  				
 			  				//POST request to server.		
@@ -196,6 +196,7 @@ Player player = (Player) session.getAttribute("player");
 			  					}
 			  				});
 		  		 }
+		  		 
 		  	});
 		  }
 		 }

@@ -107,7 +107,7 @@ LoginView = Marionette.ItemView.extend({
 	},
 	parseResponse: function(data){
 		if(data.success==true){
-			Cure.utils.showAlert("<strong>Success!</strong><br>You are logged in as "+data.player_name, 1);
+			Cure.utils.showAlert("<strong>Success!</strong><br>You are logged in as "+dMetaServerata.player_name, 1);
 			Cure.Player.set('name',data.player_name);
 			Cure.Player.set('id',data.player_id);
 			if(Cure.CollaboratorCollection.pluck('id').indexOf(data.player_id)==-1){
