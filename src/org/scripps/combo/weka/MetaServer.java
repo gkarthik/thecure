@@ -142,6 +142,21 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
+		//Griffith Dataset
+		try {
+			Weka wekaGriffith = new Weka();
+			InputStream live_loc = context.getResourceAsStream("/WEB-INF/pubdata/griffith/griffith_breast_cancer_1.arff");
+			String dataset_name = "griffith_breast_cancer_1";
+			wekaGriffith.buildWeka(live_loc, null, dataset_name);
+			name_dataset.put(dataset_name, wekaGriffith);
+			live_loc.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 
 	/**
