@@ -45,6 +45,7 @@ public class Player {
 	String biologist;
 	float avg_cards_per_hand;
 	Calendar created;
+	String token;
 	//The string key corresponds to a game/phenotype like 'dream_breast_cancer'
 	//the Map links board_ids to the player's score on that board
 	Map<String, Map<Integer,Integer>> dataset_board_scores; 
@@ -505,6 +506,41 @@ public class Player {
 		}
 		return player;
 	}
+	public Player findOrCreateWithToken(String token, String name){
+		Player player = lookupByToken(token,name);
+		if(player==null){
+				player = createWithToken(token, name);
+		}
+		return player;
+	}
+	
+	public static Player lookupByToken(String token, String name){
+		Player player = null;
+		JdbcConnection conn = new JdbcConnection();
+		String insert = "select * from player where token = ?";
+		try {
+			PreparedStatement p = conn.connection.prepareStatement(insert);
+			p.setString(1, token);
+			ResultSet r = p.executeQuery();
+			if(r.next()){
+				player = new Player();
+				player.setName(r.getString("name"));
+				player.setPassword(r.getString("password"));
+				player.setGames_played(r.getInt("games_played"));
+				player.setId(r.getInt("id"));
+				player.setTop_score(r.getInt("top_score"));
+
+				player.setBoardScoresWithDb();
+			}
+			r.close();
+			conn.connection.close();
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return player;
+	}
 
 	public static Player create(String name, String ip, String password, String email, String degree, String cancer, String biologist){
 		//first check if username taken
@@ -576,6 +612,50 @@ public class Player {
 			p.setString(2,password);
 			p.setString(3,email);
 			p.setDate(4, new Date(System.currentTimeMillis()));
+
+			int affectedRows = p.executeUpdate();
+			if (affectedRows == 0) {
+				throw new SQLException("Creating player failed, no rows affected.");
+			}
+			generatedKeys = p.getGeneratedKeys();
+			if (generatedKeys.next()) {
+				newid = generatedKeys.getInt(1);
+				player = new Player();
+				player.setEmail(email);
+				player.setId(newid);
+				player.setName(name);
+			} else {
+				throw new SQLException("Creating player failed, no generated key obtained.");
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException logOrIgnore) {}
+			if (p != null) try { p.close(); } catch (SQLException logOrIgnore) {}
+			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
+		}		
+		return player;
+	}
+	
+	public Player createWithToken(String token, String name){
+		//first check if username taken
+		Player player =  lookupByToken(token, name);
+		if(player!=null){
+			return null;
+		}
+		//if no player exists make a new one
+		int newid = 0;
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet generatedKeys = null; PreparedStatement p = null;		
+		String insert = "insert into player (name, token, created) " +
+		"values(?,?,?)";
+		try {
+			p = conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);					
+			p.setString(1, name);
+			p.setString(2, token);
+			p.setDate(3, new Date(System.currentTimeMillis()));
 
 			int affectedRows = p.executeUpdate();
 			if (affectedRows == 0) {
@@ -752,6 +832,10 @@ public class Player {
 
 	public void setBiologist(String biologist) {
 		this.biologist = biologist;
+	}
+	
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 

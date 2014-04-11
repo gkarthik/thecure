@@ -162,13 +162,38 @@ Player player = (Player) session.getAttribute("player");
 		});
 	</script>
 	<script>
-		require( ["csb"],
+		require( ["csb", "app/core"],
 		 function () {
 			console.log(csb.inSession());
 		  if(csb.inSession()){
 		  	csb.getUserInfo(function(err, res) {
-		  		 if(!err) {
-		  		  console.log("@collection info test", res);
+		  		 if(!err && res.identifier!=null) {
+		  			 var args = {
+			  					command : "user_ref_login",
+			  					username: res.displayName,
+			  					token: "5"
+			  				};
+			  				
+			  				//POST request to server.		
+			  				$.ajax({
+			  					type : 'POST',
+			  					url : '/cure/SocialServer',
+			  					data : JSON.stringify(args),
+			  					dataType : 'json',
+			  					contentType : "application/json; charset=utf-8",
+			  					success : function(data){
+			  						if(data.success==true){
+			  							Cure.Player.set("username",data.player_name);
+				  						Cure.Player.set("id",data.player_id);	
+			  						} else {
+			  							Cure.utils
+			  					    .showAlert("<strong>Error!</strong><br>"+data.message, 0);
+			  						}
+			  					},
+			  					error : function(error){
+			  						console.log(error);
+			  					}
+			  				});
 		  		 }
 		  	});
 		  }
