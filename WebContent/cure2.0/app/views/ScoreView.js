@@ -10,7 +10,7 @@ define([
 ScoreView = Backbone.Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this, 'updateScore', 'updateAxis', 'drawAxis', 'zoom');
-		this.model.bind("change:size", this.updateScore);
+		this.listenTo(this.model,"change:score", this.updateScore);
 	},
 	ui : {
 		'svg' : "#ScoreSVG",
@@ -309,6 +309,7 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	  }
 	 },
 	updateScore : function() {
+		console.log("trigger!");
 		this.updateAxis();
 		$(this.ui.scoreEL).html(this.model.get("score"));
 	},
