@@ -12,12 +12,17 @@ define([
 		sizeDiff : 0,
 		pct_correctDiff : 0,
 		noveltyDiff : 0,
-		previousAttributes: {}
+		previousAttributes: {},
+		changeFlag: 0
 	},
 	initialize: function(){
-		this.bind('change:size', this.updateScore);
+		this.listenTo(this, 'change:score', this.updateScore);
+		this.listenTo(this, 'change:pct_correct', this.updateScore);
+		this.listenTo(this, 'change:size', this.updateScore);
+		this.listenTo(this, 'change:novelty', this.updateScore);
 	},
 	updateScore: function(){
+		this.set("changeFlag",(this.get('changeFlag')+1));
 		if (this.get("size") > 1) {
 			var oldScore = this.get('score');
 			var score = Cure.scoreWeights.size * (1 / this.get("size")) + Cure.scoreWeights.novelty
