@@ -145,64 +145,18 @@ Player player = (Player) session.getAttribute("player");
         cure_user_name = "<%= player_name %>",
         cure_tree_id = null,
         badge_desc = <%= badge_desc %>,
-        base_url= document.location.href.split("cure2.0")[0];
+        badge_id = <%= request.getParameter("badgeid") %>,
+        base_url= document.location.href.split("cure2.0")[0],
+        _csb = [[null, null]];
     <% if(request.getParameter("treeid")!=null){ %> 
      	cure_tree_id = <%= request.getParameter("treeid") %>;
     <% } %>
   </script>
-	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
-	<% if(request.getParameter("ref")!=null){
+  <% if(request.getParameter("ref")!=null){
 		if(request.getParameter("ref").equals("yako")){ %>
-	<script>var _csb=[['token','MY_TOKEN']];</script>
-	<script>
-		require.config({
-		 paths: {
-		  "csb": "http://yako.io/jsapi/csb"
-		 },
-		 waitSeconds: 40
-		});
-	</script>
-	<script>
-		require( ["csb", "app/core"],
-		 function () {
-			console.log(csb.inSession());
-		  if(csb.inSession()){
-		  	csb.getUserInfo(function(err, res) {
-		  		 if(!err && res.identifier!=null) {
-		  			 var args = {
-			  					command : "user_ref_login",
-			  					username: res.displayName,
-			  					token: res.identifier
-			  				};
-			  				
-			  				//POST request to server.		
-			  				$.ajax({
-			  					type : 'POST',
-			  					url : '/cure/SocialServer',
-			  					data : JSON.stringify(args),
-			  					dataType : 'json',
-			  					contentType : "application/json; charset=utf-8",
-			  					success : function(data){
-			  						if(data.success==true){
-			  							Cure.Player.set("username",data.player_name);
-				  						Cure.Player.set("id",data.player_id);	
-			  						} else {
-			  							Cure.utils
-			  					    .showAlert("<strong>Error!</strong><br>"+data.message, 0);
-			  						}
-			  					},
-			  					error : function(error){
-			  						console.log(error);
-			  					}
-			  				});
-		  		 }
-		  		 
-		  	});
-		  }
-		 }
-		);
-	</script>
+	<script>_csb=[['token','R6TzQ7']];</script>
 	<% }
 		}%>
+	<script type="text/javascript" data-main="config" src="lib/require.js" charset="utf-8"></script>
 </body>
 </html>
