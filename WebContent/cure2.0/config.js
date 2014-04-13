@@ -1,10 +1,12 @@
 require.config({
       baseUrl : base_url+"cure2%2E0/",
+      waitSeconds: 40,
       paths : {
         underscore : 'lib/underscore',
         backbone : 'lib/backbone',
         backboneRelational : 'lib/backbone-relational',
         marionette : 'lib/marionette.backbone.min',
+        csb: "http://yako.io/jsapi/csb",
 
         // jQuery
         jquery : 'http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min',
@@ -47,6 +49,9 @@ require.config({
         d3 : {
 	        exports : 'd3'
         },
+        csb : {
+	        exports : 'csb'
+        },
         myGeneAutocomplete : {
           deps : [ 'jquery', 'jqueryui' ],
           exports : 'myGeneAutocomplete'
@@ -67,7 +72,7 @@ require.config({
     });
 
 // Starting the app
-require([ "app/core" ], function() {
+require([ "csb", "app/core" ], function(csb, Cure) {
 	Cure.start({
 	  "height" : 300,
 	  "width" : window.innerWidth - 365,
@@ -88,4 +93,40 @@ require([ "app/core" ], function() {
 	  	size: 750
 	  }
 	});
+	if(_csb){
+		console.log(csb.inSession());
+	  if(csb.inSession()){
+	  	csb.getUserInfo(function(err, res) {
+	  		 if(!err && res.identifier!=null) {
+	  			 var args = {
+		  					command : "user_ref_login",
+		  					username: res.displayName,
+		  					token: res.identifier
+		  				};
+		  				
+		  				//POST request to server.		
+		  				$.ajax({
+		  					type : 'POST',
+		  					url : '/cure/SocialServer',
+		  					data : JSON.stringify(args),
+		  					dataType : 'json',
+		  					contentType : "application/json; charset=utf-8",
+		  					success : function(data){
+		  						if(data.success==true){
+		  							Cure.Player.set("username",data.player_name);
+			  						Cure.Player.set("id",data.player_id);	
+		  						} else {
+		  							Cure.utils
+		  					    .showAlert("<strong>Error!</strong><br>"+data.message, 0);
+		  						}
+		  					},
+		  					error : function(error){
+		  						console.log(error);
+		  					}
+		  				});
+	  		 }
+	  		 
+	  	});
+	  }
+	}
 });

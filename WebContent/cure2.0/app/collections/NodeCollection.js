@@ -2,10 +2,11 @@ define([
   //Libraries
 	'jquery',
    'backbone',
+   'csb',
    //Models
 	'app/models/Node',
 	'text!app/templates/currentRank.html'
-    ], function($, Backbone, Node, CurrentRankTemplate) {
+    ], function($, Backbone, csb, Node, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
@@ -213,6 +214,11 @@ NodeCollection = Backbone.Collection.extend({
           	            	Cure.ScoreBoard.updateCurrent();
           	            	Cure.BadgeCollection.reset(badges);
           	            	if(Cure.BadgeCollection.length>0){
+          	            		if(Cure.BadgeCollection.pluck("id").indexOf(badge_id)!=-1){
+          	            			if(csb.inSession()){
+          	            				csb.complete();
+          	            			}
+          	            		}
           	            		$("#BadgesPlaceholder").html("New Badges Earned!<br><small style='font-size:12px;' class='btn btn-link'>Click to view badges earned.</small>");
           	            	} else {
           	            		$("#BadgesPlaceholder").html("");
