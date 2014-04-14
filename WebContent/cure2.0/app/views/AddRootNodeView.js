@@ -11,18 +11,33 @@ define([
 	'text!app/templates/AddNode.html',
 	//Plugins
 	'myGeneAutocomplete',
-	'jqueryui'
+	'jqueryui',
+	 'bootstrapSwitch'
     ], function($, Marionette, Node, Collaborator, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
+		_.bindAll(this,'toggleCf');
 	},
 	ui : {
 		'input' : '.mygene_query_target',
-		'cfWrapper': '#mygenecf_wrapper'
+		'cfWrapper': '#mygenecf_wrapper',
+		'toggleCf': '.bootstrap-switch-id-toggleCf',
+		"gene_query": '#gene_query',
+		'cf_query': '#cf_query',
+		"checkbox": ".switch-wrapper input[type='checkbox']"
 	},
 	events:{
-		'click #showCf': 'showCf',
-		'click #hideCf': 'hideCf'
+		'switchChange .bootstrap-switch-id-toggleCf': 'toggleCf',
+	},
+	toggleCf: function(event,state){
+		console.log(state);
+		if(state.value){
+			this.hideCf();
+			$(this.ui.checkbox).bootstrapSwitch('labelText','<img title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png" class="switch-image" >');
+		} else {
+			this.showCf();
+			$(this.ui.checkbox).bootstrapSwitch('labelText','<img title="Switch to Genes" src="'+base_url+'cure2.0/img/dna.png" class="switch-image" >');
+		}
 	},
 	showCf: function(){
 		$("#mygeneinfo_wrapper").hide();
@@ -33,7 +48,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 		//Clinical Features Autocomplete
 		var availableTags = Cure.ClinicalFeatureCollection.toJSON();
 		
-		this.$el.find('#cf_query').autocomplete({
+		$(this.ui.cf_query).autocomplete({
 			source : availableTags,
 			minLength: 0,
 			open: function(event){
@@ -166,14 +181,23 @@ AddRootNodeView = Marionette.ItemView.extend({
 		$("#mygeneinfo_wrapper").show();
 	},
 	template : AddNodeTemplate,
-	render : function() {
+	onShow : function() {
 		if (this.model) {
 			var model = this.model;
 		}
-		var html_template = AddNodeTemplate;
-		this.$el.html(AddNodeTemplate);
 		
-		this.$el.find('#gene_query').genequery_autocomplete({
+		//Create Switch
+		$(this.ui.checkbox).bootstrapSwitch({
+			size: 'normal',
+			state: 'true',
+			onText: '<img title="Genes" src="'+base_url+'cure2.0/img/dna.png" class="switch-image" >',
+			offText: "<img title='Clinical Features' src='"+base_url+"cure2.0/img/doctor.png' class='switch-image' >",
+			labelText: '<img class="switch-image" title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png">',
+			offColor: 'primary',
+			size: 'small'
+		});
+		
+		$(this.ui.gene_query).genequery_autocomplete({
 			open: function(event){
 				var scrollTop = $(event.target).offset().top-400;
 				$("html, body").animate({scrollTop:scrollTop}, '500');
