@@ -13,8 +13,8 @@ int private_flag = 1;
 String player_name = "";
 if(request.getParameter("playerid")==null){
   Player player = (Player) session.getAttribute("player");
-  if (player == null) {
-    	//response.sendRedirect("/cure/login.jsp"); 
+  if (player == null || !player.getName().equals("admin")) {
+    	response.sendRedirect("/cure/login.jsp"); 
   } else {
     player_id = player.getId();
     player_experience = 0;
