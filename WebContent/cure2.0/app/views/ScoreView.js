@@ -309,7 +309,6 @@ ScoreView = Backbone.Marionette.ItemView.extend({
 	  }
 	 },
 	updateScore : function() {
-		console.log("trigger!");
 		this.updateAxis();
 		$(this.ui.scoreEL).html(this.model.get("score"));
 	},

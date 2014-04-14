@@ -97,6 +97,40 @@ html, body{
 	display: block;
 }
 
+#AddRootNodeWrapper{
+	text-align: center;
+max-width: 250px;
+margin: 0 auto;
+}
+
+.addgeneinfo{
+	position: absolute;
+	margin: 10px 1px 1px -80px;
+	width: 250px;
+}
+
+.addgeneinfo strong{
+	font-size: 14px;
+}
+
+.addgeneinfo .switch-wrapper{
+	margin-top: 26px;
+}
+
+.switch-image{
+	height:20px;
+}
+
+.query_target{
+	width:160px;
+	padding: 3px 0px;
+}
+
+.switch-wrapper{
+	float:left;
+	margin-top: 20px;
+}
+
 #mygenecf_wrapper{
 	display: none;
 }
@@ -442,12 +476,6 @@ padding: 1%;
 	display: block;
 	width: 100%;
 	text-align: center;
-}
-
-.addgeneinfo{
-position: absolute;
-margin: 10px 1px 1px -120px;
-width: 310px;
 }
 
 #ScoreSVG{
@@ -804,10 +832,6 @@ text-align:left;
 
 .accuracyNodeDetail{
 	margin:2px;
-}
-
-#AddRootNodeWrapper{
-	text-align:center;
 }
 
 #HelpText{

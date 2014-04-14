@@ -21,7 +21,10 @@ require.config({
         odometer: 'lib/odometer',
         
         //Bootstrap Tour
-        bootstrapTour: 'lib/bootstrap-tour-standalone.min'
+        bootstrapTour: 'lib/bootstrap-tour-standalone.min',
+        
+        //Bootstrap Switch
+        bootstrapSwitch : 'lib/bootstrap-switch'
       },
       shim : {
         jquery : {
@@ -67,6 +70,10 @@ require.config({
         bootstrapTour: {
         	deps: ['jquery'],
         	exports: 'bootstrapTour'
+        },
+        bootstrapSwitch: {
+        	deps: ['jquery'],
+        	exports: 'bootstrapSwitch'
         }
       }
     });
@@ -94,7 +101,6 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	  }
 	});
 	if(_csb){
-		console.log(csb.inSession());
 	  if(csb.inSession()){
 	  	csb.getUserInfo(function(err, res) {
 	  		 if(!err && res.identifier!=null) {
