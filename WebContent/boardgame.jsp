@@ -54,7 +54,7 @@
           <ul class="nav">
             <li><a href="help.jsp" target="blank">Help!</a>
             <li><a href="contact.jsp">Contact</a></li>
-            <li><a href="cured3/index.jsp">Advanced Cure</a></li>
+            <li><a href="cure2.0/index.jsp">Advanced Cure</a></li>
             <li><a href="logout.jsp">logout</a></li>
           </ul>
         </div>
