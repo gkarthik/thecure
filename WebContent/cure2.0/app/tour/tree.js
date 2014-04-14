@@ -63,27 +63,7 @@ var TreeTour = new Tour({
 		element: "#tree-explanation-button",
 		title: "Explain the Tree",
 		content: "You can click on Show Tree Explanation to view a textual description of the tree that you have built.",
-		placement: "left",
-		onNext: function(){
-		$(".showTreeExp").trigger('click');
-		}
-		},
-		{
-		element: ".highlightBranch",
-		title: "Highlight Relevant Nodes",
-		content: "Click here to highlight the split attributes that contributed to each prediction.",
-		placement: "left",
-		onNext: function(){
-		$($(".highlightBranch")[0]).trigger('click');
-		}
-		},
-		{
-		element: ".highlightNode",
-		title: "Highlighted Nodes",
-		content: "These are the split nodes that contributed to the first prediction.",
-		onNext: function(){
-		$(".closeTreeExp").trigger('click');
-		}
+		placement: "left"
 		},
 		{
 		element: "#my-tree-collection-link",

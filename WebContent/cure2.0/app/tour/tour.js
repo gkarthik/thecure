@@ -32,12 +32,12 @@ var AddRootNodeTour = new Tour({
 	    content: "You can pick a gene by typing the gene name or function in the text box and selecting one from the dropdown that appears."
 	  },
 	  {
-	    element: "#showCf",
+	    element: ".switch-wrapper",
 	    title: "#2 Switching  To Clinical Features",
-	    content: "Click on the icon to switch between choosing clinical features and gene names.",
+	    content: "Click on the toggle to switch between choosing clinical features and gene names.",
 	    placement: "left",
 	    onNext: function(){
-	    	$("#showCf").trigger('click');
+	    	$(".switch-wrapper input[type='checkbox']").bootstrapSwitch('toggleState');
 	    }
 	  },
 	  {
@@ -45,7 +45,7 @@ var AddRootNodeTour = new Tour({
 	    title: "#3 Selecting a Clinical Feature",
 	    content: "You can select Clinical Feature by clicking on the textbox and choosing from the list that appears. You can also search by typing into the textbox.",
 	    onNext: function(){
-	    	$("#hideCf").trigger('click');
+	    	$(".switch-wrapper input[type='checkbox']").bootstrapSwitch('toggleState');
 	    }
 	  },
 	  {
