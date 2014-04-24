@@ -89,7 +89,14 @@ CommunityTreeCollection = Backbone.Collection.extend({
 	},
 	lowerLimit: 0,
 	upperLimit: 200,
-	comparator: 'rank',
+	sort_key: 'rank',
+	comparator: function(a, b) {
+    a = a.get(this.sort_key);
+    b = b.get(this.sort_key);
+    return a > b ?  1
+         : a < b ? -1
+         :          0;
+	},   
 	url : '/cure/MetaServer',
 	fetch: function(direction){
 		if(this.allowRequest){

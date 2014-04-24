@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -20,10 +22,15 @@ import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.weka.Weka.execution;
+import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.Gene;
+import org.scripps.util.GenerateCSV;
+import org.scripps.util.JdbcConnection;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.AttributeEvaluator;
@@ -35,6 +42,7 @@ import weka.classifiers.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.ManualTree;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -441,13 +449,75 @@ public class Weka {
 			}else {
 				eval.evaluateModel(voter, getTrain());
 			}
-			//	System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return new metaExecution(voter,eval,avg_pct_correct);
 
+	}
+	
+	/*
+	 * build a meta classifier using trees built by users.
+	 * input, set of classifiers to combine
+	 * output an execution result for the whole thing 
+	 */
+	public metaExecution executeRandomForest(Classifier[] classifiers){
+		GenerateCSV csv = new GenerateCSV();
+		String data = "";
+		Vote voter = new Vote();
+		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+		String[] options = new String[2];
+		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+		try {
+			voter.setOptions(options);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		voter.setClassifiers(classifiers);
+		//voter.setDebug(true);
+		// train and evaluate 
+		Evaluation eval = null;
+		double avg_pct_correct = 0;
+		try {
+			voter.buildClassifier(getTrain());
+			// evaluate classifier and print some statistics
+			eval = new Evaluation(getTrain());
+			for(Classifier classifier : classifiers){
+				eval.evaluateModel(classifier, getTrain());
+				data+=eval.toSummaryString("", false).replaceAll("[ \t]{2,}", "\t").trim()+"\n";
+			}
+			if(eval_method.equals("cross_validation")){
+				for(int r=0; r<10; r++){
+					Random keep_same = new Random();
+					keep_same.setSeed(r);
+					eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/10;
+			}
+			else if(eval_method.equals("test_set")){
+				eval.evaluateModel(voter, test);
+			}else {
+				eval.evaluateModel(voter, getTrain());
+				data+=eval.toSummaryString("", false).replaceAll("[ \t]{2,}", "\t").trim()+"\n";
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		csv.generateCsvFile("/home/karthik/Documents/data.csv",data);
+		csv.generateCsvFile("/home/karthik/Documents/data.csv","\nEOF\n\n");
+		
+		return new metaExecution(voter,eval,avg_pct_correct);
+	}
+	
+	public String getSummaryArray(Evaluation eval){
+		String data = ""; 
+		
+		return data;
 	}
 
 	/***
@@ -546,7 +616,7 @@ public class Weka {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		voter.setClassifiers(selected.toArray(new Classifier[selected.size()]));	
+		voter.setClassifiers(selected.toArray(new Classifier[selected.size()]));
 		return voter;
 	}
 	/**
@@ -597,7 +667,7 @@ public class Weka {
 		Vote voter = new Vote();
 		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
 		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..  
 		try {
 			voter.setOptions(options);
 		} catch (Exception e1) {
@@ -612,7 +682,7 @@ public class Weka {
 		}
 		voter.setClassifiers(keepers.toArray(new Classifier[keepers.size()]));	
 		return voter;
-	}
+	} 
 
 
 

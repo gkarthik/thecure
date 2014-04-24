@@ -79,6 +79,7 @@ public class Badge {
 				counter++;
 			}
 		}
+		conn.connection.close();
 		return attributes;
 	}
 	
@@ -139,6 +140,7 @@ public class Badge {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(out, list);
 		final byte[] data = ((ByteArrayOutputStream) out).toByteArray();
+		conn.connection.close();
 		return new String(data);
 	}
 	
@@ -156,6 +158,7 @@ public class Badge {
 		    	}
 		    }
 		}
+		conn.connection.close();
 		return mp;
 	}
 	
@@ -411,6 +414,7 @@ public class Badge {
 
 			}
 		}
+		conn.connection.close();
 		return listOfBadges;
 	}
 }

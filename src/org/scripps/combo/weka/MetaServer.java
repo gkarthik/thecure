@@ -43,7 +43,9 @@ import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Tree;
 import org.scripps.combo.model.Badge;
 import org.scripps.combo.weka.Weka.execution;
+import org.scripps.combo.weka.Weka.metaExecution;
 import org.scripps.combo.weka.viz.JsonTree;
+import org.scripps.util.GenerateCSV;
 import org.scripps.util.JdbcConnection;
 import org.scripps.util.Mail;
 import org.scripps.util.MapFun;
@@ -244,6 +246,15 @@ public class MetaServer extends HttpServlet {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to add bagde: "+json);
+							}	
+						} else if(command.contains("evaluaterandomforest")){ 
+							JsonNode data = mapper.readTree(json);	
+							try{
+								evaluateForest(data, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to evaluate: "+json);
 							}	
 						}
 					}else{
@@ -453,6 +464,46 @@ public class MetaServer extends HttpServlet {
 			out.close();
 		}
 		
+	}
+	
+	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		String dataset = data.get("dataset").asText();
+		Weka weka = name_dataset.get(dataset);
+		if(weka==null){
+			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
+			return;
+		}
+		JdbcConnection conn = new JdbcConnection();
+		String outerQuery = "select json_tree from tree where user_saved=1";
+		ResultSet outerRslt = conn.executeQuery(outerQuery);
+		int size = 0;
+		try{
+			outerRslt.last();
+			size = outerRslt.getRow();
+			outerRslt.beforeFirst();
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+		Classifier[] classifiers = new Classifier[size];
+		int i = 0;
+		try {
+			while(outerRslt.next()){
+				JsonTree t = new JsonTree();
+				ManualTree classifier = t.parseJsonTree(weka, outerRslt.getString("json_tree"), dataset);
+				classifiers[i] = classifier;
+				i++;
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		metaExecution meta = weka.executeRandomForest(classifiers);
+		String summary = "{\"Summary\":"+meta.toString()+"}";
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(summary);
+		out.close();
 	}
 
 //	
