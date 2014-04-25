@@ -17,11 +17,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -75,6 +77,7 @@ public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
 	ObjectMapper mapper;
+
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -93,21 +96,23 @@ public class MetaServer extends HttpServlet {
 	public void init(ServletConfig config){		
 		//load all active datasets
 		ServletContext context = config.getServletContext();
-
 		//configure this deployment
 		String training_level_1_data = "";
 		String training_level_1_name = "";
 		String active_data = "";
 		String active_data_name = "";
-		
+		String testing_data = "";
+		String testing_data_name = "";
 		try{
-	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties") ;
+	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties") ;	        
 	        Properties props = new Properties();
 	        props.load(in);
 	        training_level_1_data = props.getProperty("training_level_1_data");
 	        training_level_1_name = props.getProperty("training_level_1_name");
 	        active_data = props.getProperty("active_data");
 	        active_data_name = props.getProperty("active_data_name");
+	        testing_data = props.getProperty("testing_data");
+	        testing_data_name = props.getProperty("testing_data_name");
 	       } 
 	    catch(Exception e){
 	        System.out.println("error" + e);
@@ -133,8 +138,10 @@ public class MetaServer extends HttpServlet {
 		try {
 			String dataset = active_data_name;
 			InputStream train_loc = context.getResourceAsStream(active_data);
+			InputStream test_loc = context.getResourceAsStream(testing_data);
 			Weka weka = new Weka();
-			weka.buildWeka(train_loc, null, dataset);			
+			weka.buildWeka(train_loc, test_loc, dataset);	
+			weka.setEval_method("test_set");
 			name_dataset.put(dataset, weka);	
 			train_loc.close();
 		} catch (IOException e) {
@@ -247,15 +254,26 @@ public class MetaServer extends HttpServlet {
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to add bagde: "+json);
 							}	
-						} else if(command.contains("evaluaterandomforest")){ 
-							JsonNode data = mapper.readTree(json);	
-							try{
-								evaluateForest(data, request, response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to evaluate: "+json);
-							}	
+						} else if(command.contains("evaluate")){
+							if(command.contains("evaluate_randomforest")){ 
+								JsonNode data = mapper.readTree(json);	
+								try{
+									evaluateForest(data, request, response);
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+									handleBadRequest(request, response, "Failed to evaluate: "+json);
+								}	
+							} else if(command.contains("evaluate_TreeorSMO")){ 
+								JsonNode data = mapper.readTree(json);	
+								try{
+									evaluateTreeorSMO(data, request, response);
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+									handleBadRequest(request, response, "Failed to evaluate: "+json);
+								}	
+							}
 						}
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
@@ -466,7 +484,7 @@ public class MetaServer extends HttpServlet {
 		
 	}
 	
-	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			
 		String dataset = data.get("dataset").asText();
 		Weka weka = name_dataset.get(dataset);
 		if(weka==null){
@@ -500,6 +518,35 @@ public class MetaServer extends HttpServlet {
 		}
 		metaExecution meta = weka.executeRandomForest(classifiers);
 		String summary = "{\"Summary\":"+meta.toString()+"}";
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(summary);
+		out.close();
+	}
+	
+	private void evaluateTreeorSMO(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			
+		String dataset = data.get("dataset").asText();
+		String type = data.get("classifier").asText();
+		Weka weka = name_dataset.get(dataset);
+		if(weka==null){
+			handleBadRequest(request_, response, "no dataset loaded for dataset: "+dataset);
+			return;
+		}
+		JdbcConnection conn = new JdbcConnection();
+		String outerQuery = "select DISTINCT feature.unique_id from tree_feature,tree,feature where tree.id = tree_feature.tree_id and tree_feature.feature_id = feature.id";
+		ResultSet outerRslt = conn.executeQuery(outerQuery);
+		Set<String> geneIds = new HashSet();
+		try {
+			while(outerRslt.next()){
+				geneIds.add(outerRslt.getString("unique_id"));
+			}
+			conn.connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String rslt = weka.executeSMOorTree(geneIds, type); 
+		String summary = "{\"Summary\":"+rslt+"}";
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		out.write(summary);

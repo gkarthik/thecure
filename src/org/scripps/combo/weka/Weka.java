@@ -39,6 +39,7 @@ import weka.attributeSelection.Ranker;
 import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.functions.SMO;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
@@ -464,60 +465,110 @@ public class Weka {
 	 * output an execution result for the whole thing 
 	 */
 	public metaExecution executeRandomForest(Classifier[] classifiers){
-		GenerateCSV csv = new GenerateCSV();
-		String data = "";
-		Vote voter = new Vote();
-		//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
-		String[] options = new String[2];
-		options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
-		try {
-			voter.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		voter.setClassifiers(classifiers);
-		//voter.setDebug(true);
-		// train and evaluate 
-		Evaluation eval = null;
-		double avg_pct_correct = 0;
-		try {
-			voter.buildClassifier(getTrain());
-			// evaluate classifier and print some statistics
-			eval = new Evaluation(getTrain());
-			for(Classifier classifier : classifiers){
-				eval.evaluateModel(classifier, getTrain());
-				data+=eval.toSummaryString("", false).replaceAll("[ \t]{2,}", "\t").trim()+"\n";
+			GenerateCSV csv = new GenerateCSV();
+			String data = "";
+			Vote voter = new Vote();
+			//		//-R <AVG|PROD|MAJ|MIN|MAX|MED>
+			String[] options = new String[2];
+			options[0] = "-R"; options[1] = "MAJ"; //avg and maj seem to work better..
+			try {
+				voter.setOptions(options);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-			if(eval_method.equals("cross_validation")){
-				for(int r=0; r<10; r++){
-					Random keep_same = new Random();
-					keep_same.setSeed(r);
-					eval.crossValidateModel(voter, getTrain(), 10, keep_same);
-					avg_pct_correct += eval.pctCorrect();
+			voter.setClassifiers(classifiers);
+			//voter.setDebug(true);
+			// train and evaluate 
+			Evaluation eval = null;
+			double avg_pct_correct = 0;
+			try {
+				voter.buildClassifier(getTrain());
+				// evaluate classifier and print some statistics
+				eval = new Evaluation(getTrain());
+				for(Classifier classifier : classifiers){
+					eval.evaluateModel(classifier, test);
+					data+=eval.pctCorrect()+",";
+					data+=eval.recall(1)+",";
+					data+=eval.precision(1)+",";
+					data+=eval.fMeasure(1)+"\n";
 				}
-				avg_pct_correct = avg_pct_correct/10;
+				if(eval_method.equals("cross_validation")){
+					for(int r=0; r<10; r++){
+						Random keep_same = new Random();
+						keep_same.setSeed(r);
+						eval.crossValidateModel(voter, getTrain(), 10, keep_same);
+						avg_pct_correct += eval.pctCorrect();
+					}
+					avg_pct_correct = avg_pct_correct/10;
+				}
+				else if(eval_method.equals("test_set")){
+					eval.evaluateModel(voter, test);
+				}else {
+					eval.evaluateModel(voter, getTrain());
+				}
+				data+=eval.pctCorrect()+",";
+				data+=eval.recall(1)+",";
+				data+=eval.precision(1)+",";
+				data+=eval.fMeasure(1)+"\n\n\n\n";
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			else if(eval_method.equals("test_set")){
-				eval.evaluateModel(voter, test);
-			}else {
-				eval.evaluateModel(voter, getTrain());
-				data+=eval.toSummaryString("", false).replaceAll("[ \t]{2,}", "\t").trim()+"\n";
+			csv.generateCsvFile("/home/karthik/Documents/testingdata.csv",data);
+			return new metaExecution(voter,eval,avg_pct_correct);
+	}
+		
+	public String executeSMOorTree(Set<String> id_set, String type){
+		GenerateCSV csv = new GenerateCSV();
+			// set a specific set of attributes to use to train the model
+			Remove rm = new Remove();
+			//don't remove the class attribute
+			String indices = "";
+			for(String fid : id_set){
+				Feature f = features.get(fid);
+				if(f!=null&&f.getDataset_attributes()!=null){
+					for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
+						if(a.getDataset().equals(dataset)){
+							//note the correction is being made here for the index problem
+							indices+=a.getCol_index()+1+",";
+							Attribute test = train.attribute(a.getCol_index());
+							Attribute test2 = train.attribute(a.getName());
+							if(test!=test2){
+								System.out.println("indexing problem");
+							}
+						}
+					}
+				}else{
+					System.out.println("No attribute found for gene id "+fid+" in "+dataset);
+				}
 			}
+			rm.setAttributeIndices(indices+"last");
+			rm.setInvertSelection(true);
+			// build a classifier using only these attributes
+			FilteredClassifier fc = new FilteredClassifier();
+			fc.setFilter(rm);
+			if(type=="SMO"){
+				fc.setClassifier(new SMO());
+			} else {
+				fc.setClassifier(new J48());
+			}
+		String summary = "";
+		try{
+			fc.buildClassifier(getTrain());
+			Evaluation eval = new Evaluation(getTest());
+			eval.evaluateModel(fc, test);
+			summary = eval.toSummaryString();
+			String data =type+",";
+			data+=eval.pctCorrect()+",";
+			data+=eval.recall(0)+",";
+			data+=eval.precision(0)+",";
+			data+=eval.fMeasure(0)+"\n\n\n\n";
+			csv.generateCsvFile("/home/karthik/Documents/testingsmo.csv",data);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		csv.generateCsvFile("/home/karthik/Documents/data.csv",data);
-		csv.generateCsvFile("/home/karthik/Documents/data.csv","\nEOF\n\n");
-		
-		return new metaExecution(voter,eval,avg_pct_correct);
-	}
-	
-	public String getSummaryArray(Evaluation eval){
-		String data = ""; 
-		
-		return data;
+		return summary;
 	}
 
 	/***
