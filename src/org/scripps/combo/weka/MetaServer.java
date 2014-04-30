@@ -104,7 +104,7 @@ public class MetaServer extends HttpServlet {
 		String testing_data = "";
 		String testing_data_name = "";
 		try{
-	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties") ;	        
+	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties");	        
 	        Properties props = new Properties();
 	        props.load(in);
 	        training_level_1_data = props.getProperty("training_level_1_data");
@@ -535,7 +535,7 @@ public class MetaServer extends HttpServlet {
 		JdbcConnection conn = new JdbcConnection();
 		String outerQuery = "select DISTINCT feature.unique_id from tree_feature,tree,feature where tree.id = tree_feature.tree_id and tree_feature.feature_id = feature.id";
 		ResultSet outerRslt = conn.executeQuery(outerQuery);
-		Set<String> geneIds = new HashSet();
+		Set<String> geneIds = new HashSet<String>();
 		try {
 			while(outerRslt.next()){
 				geneIds.add(outerRslt.getString("unique_id"));
@@ -545,8 +545,9 @@ public class MetaServer extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String rslt = weka.executeSMOorTree(geneIds, type); 
-		String summary = "{\"Summary\":"+rslt+"}";
+		weka.setEval_method("test_set");
+		execution exec = weka.executeSMOorTree(geneIds, type, 10); 
+		String summary = "{\"Summary\":"+exec.toString()+"}";
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		out.write(summary);

@@ -259,16 +259,16 @@ public class Weka {
 		try {
 			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
-			eval = new Evaluation(getTrain());
+			eval = new Evaluation(getTest());
 			if(eval_method.equals("cross_validation")){
 				//this makes the game more stable in terms of scores
 				for(int r=0; r<n_runs_of_cv; r++){
-					eval.crossValidateModel(fc, getTrain(), 10, rand);
+					eval.crossValidateModel(fc, getTest(), 10, rand);
 					avg_pct_correct += eval.pctCorrect();
 				}
 				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
 			}else if(eval_method.equals("test_set")){
-				eval.evaluateModel(fc, test);
+				eval.evaluateModel(fc, getTest());
 			}else {
 				eval.evaluateModel(fc, getTrain());
 			}
@@ -519,14 +519,13 @@ public class Weka {
 			return new metaExecution(voter,eval,avg_pct_correct);
 	}
 		
-	public String executeSMOorTree(Set<String> id_set, String type){
-		GenerateCSV csv = new GenerateCSV();
+	public execution executeSMOorTree(Set<String> id_set, String type, int n_runs_of_cv){
 			// set a specific set of attributes to use to train the model
 			Remove rm = new Remove();
 			//don't remove the class attribute
 			String indices = "";
 			for(String fid : id_set){
-				Feature f = features.get(fid);
+				Feature f = this.features.get(fid);
 				if(f!=null&&f.getDataset_attributes()!=null){
 					for(org.scripps.combo.model.Attribute a : f.getDataset_attributes()){
 						if(a.getDataset().equals(dataset)){
@@ -541,6 +540,10 @@ public class Weka {
 					}
 				}else{
 					System.out.println("No attribute found for gene id "+fid+" in "+dataset);
+					/*
+					 * There may exist some trees with features that do not exist in metabric_with_clinical.
+					 * Possible from development runs with a faulty game.properties file.
+					 */
 				}
 			}
 			rm.setAttributeIndices(indices+"last");
@@ -548,27 +551,34 @@ public class Weka {
 			// build a classifier using only these attributes
 			FilteredClassifier fc = new FilteredClassifier();
 			fc.setFilter(rm);
-			if(type=="SMO"){
+			if(type.equals("SMO")){
 				fc.setClassifier(new SMO());
 			} else {
 				fc.setClassifier(new J48());
 			}
-		String summary = "";
-		try{
+		double avg_pct_correct = 0;
+		Evaluation eval = null;
+		try {
 			fc.buildClassifier(getTrain());
-			Evaluation eval = new Evaluation(getTest());
-			eval.evaluateModel(fc, test);
-			summary = eval.toSummaryString();
-			String data =type+",";
-			data+=eval.pctCorrect()+",";
-			data+=eval.recall(0)+",";
-			data+=eval.precision(0)+",";
-			data+=eval.fMeasure(0)+"\n\n\n\n";
-			csv.generateCsvFile("/home/karthik/Documents/testingsmo.csv",data);
+			eval = new Evaluation(getTest());
+			if(eval_method.equals("cross_validation")){
+				for(int r=0; r<n_runs_of_cv; r++){
+					eval.crossValidateModel(fc, getTest(), 10, rand);
+					avg_pct_correct += eval.pctCorrect();
+				}
+				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
+			}else if(eval_method.equals("test_set")){
+				eval.evaluateModel(fc, getTest());
+				avg_pct_correct = eval.pctCorrect();
+			}else {
+				eval.evaluateModel(fc, getTrain());
+				avg_pct_correct = eval.pctCorrect();
+			}
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return summary;
+		return new execution(fc,eval,avg_pct_correct);
 	}
 
 	/***
