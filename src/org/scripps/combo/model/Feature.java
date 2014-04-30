@@ -204,7 +204,7 @@ public class Feature {
 		try {
 			while(rslt.next()){
 				String fid = rslt.getString("feature.unique_id");
-				Feature f = features.get(fid);						
+				Feature f = features.get(fid);//.get()						
 				if(f==null){
 					f = new Feature();
 					f.setCreated(rslt.getDate("feature.created"));
