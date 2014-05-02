@@ -1097,12 +1097,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			for (int i = 0; i < distribution.length; i++) {
 				quantity+= subsets[i].numInstances();
 			}
-			ArrayList mp = getDistributionData(m_SplitPoint, m_ClassDistribution, data, m_Attribute);
-			final OutputStream out = new ByteArrayOutputStream();
-			final ObjectMapper mapper = new ObjectMapper();
-			mapper.writeValue(out, mp);
-			final byte[] byteStream = ((ByteArrayOutputStream) out).toByteArray();
-			evalresults.put("distribution_data", new String(byteStream));
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
@@ -1212,21 +1206,28 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	
 	/**
 	 * Trying to get generate distribution of classes
+	 * 
+	 * @param Split Point
+	 * @param Instances
+	 * @Param Attribute name to get distribution of
+	 * 
+	 * @return HashMap of class distribution data
 	 */
-	protected ArrayList<Map> getDistributionData(double splitPoint, double[] classProbs, Instances instances, int att ){
+	public ArrayList<Map> getDistributionData(double splitPoint, Instances instances, String att_name ){
+		int attIndex = instances.attribute(att_name).index();
 		ArrayList<Map> mp = new ArrayList<Map>();
 		Map temp = new HashMap();
 		//GenerateCSV csv = new GenerateCSV();
 		String data = "";
-		instances.sort(att);
+		instances.sort(attIndex);
 		for (int i = 0; i < instances.numInstances(); i++) {
 			Instance inst = instances.instance(i);
 			temp = new HashMap();
-			if(inst.attribute(m_Attribute).isNominal()){
-				temp.put("value", inst.attribute(m_Attribute).value((int)inst.value(m_Attribute)));
+			if(inst.attribute(attIndex).isNominal()){
+				temp.put("value", inst.attribute(attIndex).value((int)inst.value(attIndex)));
 				//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
 			} else {
-				temp.put("value", inst.value(att));
+				temp.put("value", inst.value(attIndex));
 				//data+=inst.value(att)+",";
 			}
 			temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
