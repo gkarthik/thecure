@@ -68,6 +68,7 @@ import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
+import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 /**
