@@ -16,8 +16,10 @@ NodeView = Marionette.ItemView.extend({
 		addgeneinfo : ".addgeneinfo",
 		name : ".name",
 		chart : ".chart",
-		collaboratorIcon: ".collaborator-icon"
+		collaboratorIcon: ".collaborator-icon",
+		distributionChart: ".distribution-chart"
 	},
+	url: base_url+"MetaServer",
 	template : function(serialized_model) {
 		if (serialized_model.options.kind == "split_value") {
 			return splitValueTemplate({
@@ -52,7 +54,8 @@ NodeView = Marionette.ItemView.extend({
 		'click button.delete' : 'removeChildren',
 		'click .name' : 'showSummary',
 		'blur .name': 'setHighlight',
-		'click .chart': 'showNodeDetails'
+		'click .chart': 'showNodeDetails',
+		'click .showDistribution': 'getDistributionData'
 	},
 	initialize : function() {
 		if(Cure.PlayerNodeCollection.models.length > 0) {
@@ -60,7 +63,7 @@ NodeView = Marionette.ItemView.extend({
 		} else {
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition', 'renderPlaceholder');
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition', 'renderPlaceholder', 'parseDistributionData');
 		this.listenTo(this.model, 'change:x', this.render);
 		this.listenTo(this.model, 'change:y', this.render);
 		this.listenTo(this.model, 'change:accLimit', this.render);
@@ -79,6 +82,35 @@ NodeView = Marionette.ItemView.extend({
 			this.model.set('accLimit',accLimit,{silent: true});
 		}
 		this.model.set("cid",this.cid);
+	},
+	getDistributionData: function(){
+		if(this.model.get("options").kind=="split_node"){
+			var args = {
+	        "command": "get_class_distribution",
+	        "dataset": "metabric_with_clinical",
+	        "split_point": this.model.get('options').split_point,
+	        "attribute_name": this.model.get('options').attribute_name
+	      };
+	      $.ajax({
+	            type : 'POST',
+	            url : this.url,
+	            data : JSON.stringify(args),
+	            dataType : 'json',
+	            contentType : "application/json; charset=utf-8",
+	            success : this.parseDistributionData,
+	            error: this.error
+	      });
+		}
+	},
+	parseDistributionData: function(data){
+		$(this.ui.distributionChart).show();
+		var id = $(this.ui.distributionChart).attr("id");
+		d3.select("#"+id).attr({"height":200,"width":400});
+		
+	},
+	error: function(){
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try again in a while.", 0);
 	},
 	renderPlaceholder: function(){
 		if(this.model.get('collaborator')!=null){

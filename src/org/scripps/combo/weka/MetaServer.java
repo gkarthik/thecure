@@ -268,7 +268,7 @@ public class MetaServer extends HttpServlet {
 							}	
 						}
 						/*
-						 * API end points to get evualtion of random forest.
+						 * API end points to get evaluation of random forest.
 						 * 
 						 	else if(command.contains("evaluate")){
 							if(command.contains("evaluate_randomforest")){ 

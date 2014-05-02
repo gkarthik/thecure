@@ -119,7 +119,7 @@ define(
 				        $(this).parent().hide();
 			        } else if($(this).parent().attr('id')=="HelpText"){
 			        	Cure.utils.ToggleHelp(true);
-			        }	else {
+			        } else {
 				        $(this).parent().parent().parent().hide();
 			        }
 		        });
@@ -151,6 +151,12 @@ define(
 			            }
 
 			            var classToclose = $('.blurCloseElement');
+			            if (!classToclose.is(e.target)
+			                && classToclose.has(e.target).length == 0) {
+				            classToclose.hide();
+			            }
+			            
+			            classToclose = $('.distribution-chart');
 			            if (!classToclose.is(e.target)
 			                && classToclose.has(e.target).length == 0) {
 				            classToclose.hide();

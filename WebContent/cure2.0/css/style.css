@@ -151,7 +151,7 @@ margin: 0 auto;
 	-webkit-transform-origin:0% 0%; /* Safari and Chrome */
 }
 
-#PlayerTreeRegion svg{
+#PlayerTreeRegion .chart{
   position: relative;
 }
 
@@ -258,6 +258,23 @@ display: block;
 	font-size:14px;
 	border:2px solid #000;
 	text-align:center;
+}
+
+.distribution-chart{
+	display:none;
+	position:absolute;
+	top:0px;
+	left:120px;
+	background: #FFF;
+	border: 1px solid #000;
+	z-index: 10;
+}
+
+.showDistribution{
+	position: absolute;
+	left: -10px;
+	bottom: -40px;
+	opacity: 0.95;
 }
 
 .split_node .chart{
