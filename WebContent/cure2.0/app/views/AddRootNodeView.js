@@ -30,7 +30,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 		'switchChange .bootstrap-switch-id-toggleCf': 'toggleCf',
 	},
 	toggleCf: function(event,state){
-		console.log(state);
 		if(state.value){
 			this.hideCf();
 			$(this.ui.checkbox).bootstrapSwitch('labelText','<img title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png" class="switch-image" >');
