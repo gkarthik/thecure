@@ -1,9 +1,11 @@
 package org.scripps.combo.weka;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -255,7 +257,20 @@ public class MetaServer extends HttpServlet {
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to add bagde: "+json);
 							}	
-						} else if(command.contains("evaluate")){
+						} else if(command.equals("get_class_distribution")) {
+							JsonNode data = mapper.readTree(json);	
+							try{
+								getClassDistribution(data, request, response);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to evaluate: "+json);
+							}	
+						}
+						/*
+						 * API end points to get evualtion of random forest.
+						 * 
+						 	else if(command.contains("evaluate")){
 							if(command.contains("evaluate_randomforest")){ 
 								JsonNode data = mapper.readTree(json);	
 								try{
@@ -276,6 +291,7 @@ public class MetaServer extends HttpServlet {
 								}	
 							}
 						}
+						*/
 					}else{
 						handleBadRequest(request, response, "No command found in json request");
 					}
@@ -485,6 +501,24 @@ public class MetaServer extends HttpServlet {
 		
 	}
 	
+	private void getClassDistribution(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		ManualTree _tree = new ManualTree();
+		String dataset = data.get("dataset").asText();
+		Weka weka = name_dataset.get(dataset);
+		double splitPoint = data.get("split_point").asDouble();
+		String attName = data.get("attribute_name").asText();
+		ArrayList mp = _tree.getDistributionData(splitPoint, weka.getTrain(), attName);
+		final OutputStream out = new ByteArrayOutputStream();
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(out, mp);		
+		final byte[] byteStream = ((ByteArrayOutputStream) out).toByteArray();
+		response.setContentType("text/json");
+		PrintWriter jsonOutput = response.getWriter();
+		jsonOutput.write(new String(byteStream));
+		jsonOutput.close();
+		out.close();
+	}
+
 	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			
 		String dataset = data.get("dataset").asText();
 		Weka weka = name_dataset.get(dataset);
