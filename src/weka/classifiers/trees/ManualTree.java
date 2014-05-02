@@ -37,12 +37,17 @@ import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
 
+import java.awt.List;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
+
+import org.scripps.util.GenerateCSV;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1092,6 +1097,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			for (int i = 0; i < distribution.length; i++) {
 				quantity+= subsets[i].numInstances();
 			}
+			ArrayList mp = getDistributionData(m_SplitPoint, m_ClassDistribution, data, m_Attribute);
+			final OutputStream out = new ByteArrayOutputStream();
+			final ObjectMapper mapper = new ObjectMapper();
+			mapper.writeValue(out, mp);
+			final byte[] byteStream = ((ByteArrayOutputStream) out).toByteArray();
+			evalresults.put("distribution_data", new String(byteStream));
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
@@ -1198,7 +1209,35 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 
 	}
-
+	
+	/**
+	 * Trying to get generate distribution of classes
+	 */
+	protected ArrayList<Map> getDistributionData(double splitPoint, double[] classProbs, Instances instances, int att ){
+		ArrayList<Map> mp = new ArrayList<Map>();
+		Map temp = new HashMap();
+		//GenerateCSV csv = new GenerateCSV();
+		String data = "";
+		instances.sort(att);
+		for (int i = 0; i < instances.numInstances(); i++) {
+			Instance inst = instances.instance(i);
+			temp = new HashMap();
+			if(inst.attribute(m_Attribute).isNominal()){
+				temp.put("value", inst.attribute(m_Attribute).value((int)inst.value(m_Attribute)));
+				//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
+			} else {
+				temp.put("value", inst.value(att));
+				//data+=inst.value(att)+",";
+			}
+			temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
+			//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
+			mp.add(temp);
+		}
+		//To check if data is being generated right. 
+		//csv.generateCsvFile("/home/karthik/Documents/distribution.csv", data);
+		return mp;
+	}
+	
 	/**
 	 * Computes size of the tree.
 	 * 

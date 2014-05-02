@@ -126,7 +126,7 @@ public class Badge {
 		ResultSet rslt = conn.executeQuery(getbadge);
 		ResultSetMetaData md = rslt.getMetaData();
 		int columns = md.getColumnCount();
-		ArrayList list = new ArrayList(50);
+		ArrayList list = new ArrayList();
 		while (rslt.next()){
 			HashMap row = new HashMap(columns);
 		    for(int i=columns; i>=1; --i){           
