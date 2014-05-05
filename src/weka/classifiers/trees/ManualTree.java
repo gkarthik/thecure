@@ -118,9 +118,13 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	/** A tree captured from json **/
 	protected JsonNode jsontree;
+	
+	/** distribution array **/
+	protected ArrayList m_distributionData = new ArrayList();
 
 	/** for building up the json tree **/
 	ObjectMapper mapper;
+	
 
 	/**
 	 * Returns a string describing classifier
@@ -151,6 +155,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	public double getMinNum() {
 
 		return m_MinNum;
+	}
+	
+	public ArrayList getDistributionData(){
+		return this.m_distributionData;
 	}
 
 	/**
@@ -1048,6 +1056,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
+		Boolean getSplitData = false;
 
 		//this allows me to modify the json tree structure to add data about the evaluation
 		ObjectNode evalresults = (ObjectNode) options;
@@ -1058,6 +1067,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
 			//attIndex = data.attribute(node_id.asText()).index();
 			attIndex = data.attribute(att_name.asText()).index();
+			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
 			int c = 0;
 			if(split_values!=null&&split_values.size()>0){
@@ -1082,7 +1092,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		m_Attribute = attIndex;
 		double[][] distribution = dists[m_Attribute];
-
+		
 		//stop if input json tree does not contain any more children
 		//replacing Utils.gr(vals[m_Attribute], 0)&&
 		if (kind!=null&&kind.equals("split_node")&&att_name!=null) {
@@ -1100,6 +1110,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
+			
+			if(getSplitData){
+				this.addDistributionData(m_SplitPoint, data, m_Attribute);
+			}
 
 			for (int i = 0; i < distribution.length; i++) {
 				m_Successors[i] = new ManualTree();
@@ -1213,9 +1227,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 
 	 * @return HashMap of class distribution data
 	 */
-	public ArrayList<Map> getDistributionData(double splitPoint, Instances instances, String att_name ){
-		int attIndex = instances.attribute(att_name).index();
-		ArrayList<Map> mp = new ArrayList<Map>();
+	protected void addDistributionData(double splitPoint, Instances instances, int attIndex ) throws Exception{
 		Map temp = new HashMap();
 		//GenerateCSV csv = new GenerateCSV();
 		String data = "";
@@ -1232,11 +1244,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			}
 			temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
 			//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
-			mp.add(temp);
+			m_distributionData.add(temp);
 		}
 		//To check if data is being generated right. 
 		//csv.generateCsvFile("/home/karthik/Documents/distribution.csv", data);
-		return mp;
 	}
 	
 	/**

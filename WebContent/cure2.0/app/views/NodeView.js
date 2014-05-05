@@ -71,6 +71,7 @@ NodeView = Marionette.ItemView.extend({
 		this.listenTo(this.model, 'add:children', this.checkNodeAddition);
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
+		this.listenTo(this.model, 'change:getSplitData', this.parseDistributionData);
 		
 		if(parseFloat(this.model.get('accLimit'))!=0){
 			this.model.set('modifyAccLimit',0);
@@ -85,135 +86,132 @@ NodeView = Marionette.ItemView.extend({
 	},
 	getDistributionData: function(){
 		if(this.model.get("options").kind=="split_node"){
-			var args = {
-	        "command": "get_class_distribution",
-	        "dataset": "metabric_with_clinical",
-	        "split_point": this.model.get('options').split_point,
-	        "attribute_name": this.model.get('options').attribute_name
-	      };
-	      $.ajax({
-	            type : 'POST',
-	            url : this.url,
-	            data : JSON.stringify(args),
-	            dataType : 'json',
-	            contentType : "application/json; charset=utf-8",
-	            success : this.parseDistributionData,
-	            error: this.error
-	      });
+			this.model.set("getSplitData",true);
+			Cure.PlayerNodeCollection.sync();
 		}
 	},
-	parseDistributionData: function(data){
-		$(this.ui.distributionChart).show();
-		var id = $(this.ui.distributionChart).attr("id");
-		var globalHeight = 200;
-		var globalWidth = 400;
-		d3.select("#"+id).select(".chartGroup").remove();
-		var SVG = d3.select("#"+id).attr({"height":globalHeight,"width":globalWidth}).append("svg:g").attr("class","chartGroup");
-		//Create JSON for value and frequency of value
-		var xLength = globalWidth-40;
-		var yLength = globalHeight-40;
-		var plotValues = [];
-		var frequencies = [];
-		//Check if numeric or nominal attribute
-		if(!isNaN(data[0].value)){
-			var range = data[0].value;
-			for(var i = 0; i < 10; i++){
-				plotValues.push({
-					"value": range,
-					"frequency": [0,0]//y,n
-				});
-				range += parseFloat((data[data.length-1].value - data[0].value)/10);
+	parseDistributionData: function(){
+		if(this.model.get('getSplitData')==false){
+			var data;
+			try{
+				data = this.model.get('distribution_data').get("dataArray");
+			} catch (e) {
+				data = [];
 			}
-			
-			for(var temp in data){
-				for(var i = 1; i<10; i ++){
-					if(data[temp].value < plotValues[i].value){
-						if(data[temp].classprob==Cure.posNodeName){
-							plotValues[i].frequency[0]++;
-						} else if(data[temp].classprob==Cure.negNodeName) {
-							plotValues[i].frequency[1]++;
+			$(this.ui.distributionChart).show();
+			var id = $(this.ui.distributionChart).attr("id");
+			var globalHeight = 200;
+			var globalWidth = 400;
+			d3.select("#"+id).select(".chartGroup").remove();
+			var SVG = d3.select("#"+id).attr({"height":globalHeight,"width":globalWidth}).append("svg:g").attr("class","chartGroup");
+			//Create JSON for value and frequency of value
+			var xLength = globalWidth-40;
+			var yLength = globalHeight-40;
+			var plotValues = [];
+			var frequencies = [];
+			//Check if numeric or nominal attribute
+			if(data.length>0){
+				if(!isNaN(data[0].value)){
+					var range = data[0].value;
+					for(var i = 0; i < 10; i++){
+						plotValues.push({
+							"value": range,
+							"frequency": [0,0]//y,n
+						});
+						range += parseFloat((data[data.length-1].value - data[0].value)/10);
+					}
+					
+					for(var temp in data){
+						for(var i = 1; i<10; i ++){
+							if(data[temp].value < plotValues[i].value){
+								if(data[temp].classprob==Cure.posNodeName){
+									plotValues[i].frequency[0]++;
+								} else if(data[temp].classprob==Cure.negNodeName) {
+									plotValues[i].frequency[1]++;
+								}
+								break;
+							}
 						}
-						break;
 					}
-				}
-			}
-		} else {
-			var putInArray = 1;
-			var arrayIndex = 0;
-			for(var temp in data){
-				putInArray = 1;
-				arrayIndex = 0;
-				for(var i in plotValues){
-					if(plotValues[i].value == data[temp].value){
-						putInArray = 0;
-						arrayIndex = i;
-						break;
-					}
-				}
-				if(putInArray){
-					plotValues.push({
-						"value": data[temp].value,
-						"frequency": [0,0]//y,n
-					});
 				} else {
-					if(data[temp].classprob==Cure.posNodeName){
-						plotValues[arrayIndex].frequency[0]++;
-					} else if(data[temp].classprob==Cure.negNodeName) {
-						plotValues[arrayIndex].frequency[1]++;
+					var putInArray = 1;
+					var arrayIndex = 0;
+					for(var temp in data){
+						putInArray = 1;
+						arrayIndex = 0;
+						for(var i in plotValues){
+							if(plotValues[i].value == data[temp].value){
+								putInArray = 0;
+								arrayIndex = i;
+								break;
+							}
+						}
+						if(putInArray){
+							plotValues.push({
+								"value": data[temp].value,
+								"frequency": [0,0]//y,n
+							});
+						} else {
+							if(data[temp].classprob==Cure.posNodeName){
+								plotValues[arrayIndex].frequency[0]++;
+							} else if(data[temp].classprob==Cure.negNodeName) {
+								plotValues[arrayIndex].frequency[1]++;
+							}
+						}
 					}
 				}
 			}
-		}
-		var total = 0;
-		for(var temp in plotValues){
-			total = 0;
-			for(var i in plotValues[temp].frequency){
-				total += plotValues[temp].frequency[i];
-			}
-			frequencies.push(total);
-		}
-		frequencies.sort(function(a,b){return a-b;});
-		var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNaN(d.value) ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength],0.1);
-		var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
-		var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
-		var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
-		SVG.append("g").attr("class","axis xaxis").attr("transform", "translate(30,"+(globalHeight-30)+")").call(xAxis);
-		SVG.append("g").attr("class","axis yaxis").attr("transform", "translate(30,10)").call(yAxis);
-		
-		SVG.append("svg:g").attr("class","distLayerGroup");
-		var layer = SVG.selectAll(".distLayerGroup").selectAll(".distLayer").data(plotValues);
-		
-		var layerEnter = layer.enter().append("g").attr("class","distLayer")
-		.attr("transform",function(d){
-			var translateX = 30 + parseFloat(valueScale(d.value));
 			var total = 0;
-			for(var i in plotValues[temp].frequency){
-				total += plotValues[temp].frequency[i];
+			for(var temp in plotValues){
+				total = 0;
+				for(var i in plotValues[temp].frequency){
+					total += plotValues[temp].frequency[i];
+				}
+				frequencies.push(total);
 			}
-			return "translate("+translateX+",10)";
-		});
-		
-		//Insert rect on layerEnter
-		var totalVal = 0;
-		var layerRect = layerEnter.selectAll(".distRect").data(function(d){return d.frequency; });
-		console.log(plotValues);
-		layerRect.enter().append("rect").attr("class","distRect")
-		.attr("width", 20)
-    .style("fill", function(d,i) { return (i==0) ? "blue" : "red"; })
-    .attr("y",function(d,i){
-    	if(i==0){
-    		totalVal = 0;
-    	}
-    	totalVal += frequencyScale(frequencies[frequencies.length-1] - d);
-    	return parseFloat((globalHeight-40)-totalVal);
-    })
-    .attr("height", 0);
-		
-		layer.selectAll(".distRect").data(function(d){return d.frequency; }).transition().duration(function(d,i){
-			return Cure.duration*(i);
-		}).attr("height",function(d){
-    	return frequencyScale(frequencies[frequencies.length-1] - d);
-		});
+			frequencies.sort(function(a,b){return a-b;});
+			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNaN(d.value) ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength],0.1);
+			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
+			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
+			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
+			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate(30,"+(globalHeight-30)+")").call(xAxis);
+			SVG.append("g").attr("class","axis yaxis").attr("transform", "translate(30,10)").call(yAxis);
+			
+			SVG.append("svg:g").attr("class","distLayerGroup");
+			var layer = SVG.selectAll(".distLayerGroup").selectAll(".distLayer").data(plotValues);
+			
+			var layerEnter = layer.enter().append("g").attr("class","distLayer")
+			.attr("transform",function(d){
+				var translateX = 30 + parseFloat(valueScale(d.value));
+				var total = 0;
+				for(var i in plotValues[temp].frequency){
+					total += plotValues[temp].frequency[i];
+				}
+				return "translate("+translateX+",10)";
+			});
+			
+			//Insert rect on layerEnter
+			var totalVal = 0;
+			var layerRect = layerEnter.selectAll(".distRect").data(function(d){return d.frequency; });
+			console.log(plotValues);
+			layerRect.enter().append("rect").attr("class","distRect")
+			.attr("width", 20)
+	    .style("fill", function(d,i) { return (i==0) ? "blue" : "red"; })
+	    .attr("y",function(d,i){
+	    	if(i==0){
+	    		totalVal = 0;
+	    	}
+	    	totalVal += frequencyScale(frequencies[frequencies.length-1] - d);
+	    	return parseFloat((globalHeight-40)-totalVal);
+	    })
+	    .attr("height", 0);
+			
+			layer.selectAll(".distRect").data(function(d){return d.frequency; }).transition().duration(function(d,i){
+				return Cure.duration*(i);
+			}).attr("height",function(d){
+	    	return frequencyScale(frequencies[frequencies.length-1] - d);
+			});
+		}
 	},
 	error: function(){
 		Cure.utils
