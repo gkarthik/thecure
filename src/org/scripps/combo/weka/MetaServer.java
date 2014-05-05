@@ -257,15 +257,6 @@ public class MetaServer extends HttpServlet {
 								e.printStackTrace();
 								handleBadRequest(request, response, "Failed to add bagde: "+json);
 							}	
-						} else if(command.equals("get_class_distribution")) {
-							JsonNode data = mapper.readTree(json);	
-							try{
-								getClassDistribution(data, request, response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to evaluate: "+json);
-							}	
 						}
 						/*
 						 * API end points to get evaluation of random forest.
@@ -441,13 +432,13 @@ public class MetaServer extends HttpServlet {
 			}		
 			//create the weka tree structure
 			JsonTree t = new JsonTree();
-			ManualTree readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
+			ManualTree readtree = new ManualTree();
+			readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
 			List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
 			int numnodes = readtree.numNodes();
 			//evaluate it on the data
 			Evaluation eval = new Evaluation(weka.getTrain());
 			eval.evaluateModel(readtree, weka.getTrain());
-			
 			ObjectNode result = mapper.createObjectNode();
 			result.put("pct_correct", eval.pctCorrect());
 			result.put("size", numnodes);
@@ -489,6 +480,9 @@ public class MetaServer extends HttpServlet {
 			}
 			result.put("badges", mapper.valueToTree(json_badges));	
 			result.put("tree_id", tid);
+			ArrayList distributionData = readtree.getDistributionData();
+			System.out.println(distributionData);
+			result.put("distribution_data", mapper.valueToTree(distributionData));
 			result_json = mapper.writeValueAsString(result);
 			out.write(result_json);
 			out.close();
@@ -499,24 +493,6 @@ public class MetaServer extends HttpServlet {
 			out.close();
 		}
 		
-	}
-	
-	private void getClassDistribution(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
-		ManualTree _tree = new ManualTree();
-		String dataset = data.get("dataset").asText();
-		Weka weka = name_dataset.get(dataset);
-		double splitPoint = data.get("split_point").asDouble();
-		String attName = data.get("attribute_name").asText();
-		ArrayList mp = _tree.getDistributionData(splitPoint, weka.getTrain(), attName);
-		final OutputStream out = new ByteArrayOutputStream();
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.writeValue(out, mp);		
-		final byte[] byteStream = ((ByteArrayOutputStream) out).toByteArray();
-		response.setContentType("text/json");
-		PrintWriter jsonOutput = response.getWriter();
-		jsonOutput.write(new String(byteStream));
-		jsonOutput.close();
-		out.close();
 	}
 
 	private void evaluateForest(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {			

@@ -5,11 +5,13 @@ define([
    'csb',
    //Models
 	'app/models/Node',
+	'app/models/DistributionData',
 	'text!app/templates/currentRank.html'
-    ], function($, Backbone, csb, Node, CurrentRankTemplate) {
+    ], function($, Backbone, csb, Node, DistributionData, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
+		_.bindAll(this, 'setDistributionData');
 	},
 	text_branches:{
 		branches: [],
@@ -137,6 +139,9 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		var renderT = window.setInterval(function(){
 			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
+				if(data["distribution_data"].length>0){
+					Cure.PlayerNodeCollection.setDistributionData(data["distribution_data"]);
+				}
 				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 				Cure.utils.hideLoading();
 				//Storing Score in a Score Model.
@@ -168,6 +173,18 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		if($("#current-tree-rank").html("")!=""){
 			$("#current-tree-rank").html("");
+		}
+	},
+	setDistributionData: function(data){
+		var requiredModel = this.findWhere({getSplitData: true});
+		if(requiredModel){
+			if(requiredModel.get('distribution_data')==null){
+				var newDistData = new DistributionData({dataArray: data});//Assuming only data of 1 model is sent with any request
+				requiredModel.set('distribution_data', newDistData);
+			} else {
+				requiredModel.get('distribution_data').set("dataArray", data);
+			}
+			requiredModel.set('getSplitData',false);
 		}
 	},
 	saveTree: function(){
