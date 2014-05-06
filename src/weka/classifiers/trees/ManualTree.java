@@ -120,7 +120,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	protected JsonNode jsontree;
 	
 	/** distribution array **/
-	protected ArrayList m_distributionData = new ArrayList();
+	protected ArrayList<Object> m_distributionData = new ArrayList<Object>();
 
 	/** for building up the json tree **/
 	ObjectMapper mapper;
@@ -157,8 +157,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		return m_MinNum;
 	}
 	
-	public ArrayList getDistributionData(){
-		return this.m_distributionData;
+	public ArrayList<Object> getDistributionData(){
+		return m_distributionData;
+	}
+	
+	public void setDistributionData(ArrayList<Object> newdistributionData){
+		if(!newdistributionData.isEmpty()){
+			m_distributionData = new ArrayList<Object>(newdistributionData);
+		}
 	}
 
 	/**
@@ -327,9 +333,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 
 	 * @return an enumeration over all possible options
 	 */
-	public Enumeration listOptions() {
+	public Enumeration<Option> listOptions() {
 
-		Vector newVector = new Vector();
+		Vector<Option> newVector = new Vector<Option>();
 
 		newVector.addElement(new Option(
 				"\tNumber of attributes to randomly investigate\n"
@@ -369,11 +375,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @return the options for the current setup
 	 */
 	public String[] getOptions() {
-		Vector result;
+		Vector<String> result;
 		String[] options;
 		int i;
 
-		result = new Vector();
+		result = new Vector<String>();
 
 		result.add("-K");
 		result.add("" + getKValue());
@@ -402,7 +408,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		for (i = 0; i < options.length; i++)
 			result.add(options[i]);
 
-		return (String[]) result.toArray(new String[result.size()]);
+		return result.toArray(new String[result.size()]);
 	}
 
 	/**
@@ -575,7 +581,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Build tree 
 		if(jsontree!=null){
-			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0);
+			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData);
 		}else{
 			System.out.println("No json tree specified, failing to process tree");
 		}
@@ -999,7 +1005,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, ArrayList<Object> m_distributionData) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1110,9 +1116,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
-			
+
 			if(getSplitData){
-				this.addDistributionData(m_SplitPoint, data, m_Attribute);
+				addDistributionData(m_SplitPoint, data, m_Attribute, m_distributionData);
 			}
 
 			for (int i = 0; i < distribution.length; i++) {
@@ -1142,7 +1148,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 				JsonNode son = sons.get(child_name);
 				if(son!=null){
-					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex);
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData);
 				}else{
 					//if we are a split node with no input children, we need to add them into the tree
 					//JsonNode split_values = node.get("children");
@@ -1159,11 +1165,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						child.put("options", c_options);
 						children.add(child);
 						_node.put("children",children);
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData);
 
 					}else{
 						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData);
 					}
 				}
 			}
@@ -1227,14 +1233,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 
 	 * @return HashMap of class distribution data
 	 */
-	protected void addDistributionData(double splitPoint, Instances instances, int attIndex ) throws Exception{
-		Map temp = new HashMap();
+	protected ArrayList<Object> addDistributionData(double splitPoint, Instances instances, int attIndex, ArrayList<Object> distData) throws Exception{
+		Map<String, Comparable> temp = new HashMap<String, Comparable>();
 		//GenerateCSV csv = new GenerateCSV();
 		String data = "";
 		instances.sort(attIndex);
 		for (int i = 0; i < instances.numInstances(); i++) {
 			Instance inst = instances.instance(i);
-			temp = new HashMap();
+			temp = new HashMap<String, Comparable>();
 			if(inst.attribute(attIndex).isNominal()){
 				temp.put("value", inst.attribute(attIndex).value((int)inst.value(attIndex)));
 				//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
@@ -1244,8 +1250,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			}
 			temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
 			//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
-			m_distributionData.add(temp);
+			distData.add(temp);
 		}
+		setDistributionData(distData);
+		return getDistributionData();
 		//To check if data is being generated right. 
 		//csv.generateCsvFile("/home/karthik/Documents/distribution.csv", data);
 	}

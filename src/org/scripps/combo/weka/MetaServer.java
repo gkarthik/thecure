@@ -439,6 +439,7 @@ public class MetaServer extends HttpServlet {
 			//evaluate it on the data
 			Evaluation eval = new Evaluation(weka.getTrain());
 			eval.evaluateModel(readtree, weka.getTrain());
+			ArrayList<Object> distributionData = readtree.getDistributionData();
 			ObjectNode result = mapper.createObjectNode();
 			result.put("pct_correct", eval.pctCorrect());
 			result.put("size", numnodes);
@@ -480,8 +481,7 @@ public class MetaServer extends HttpServlet {
 			}
 			result.put("badges", mapper.valueToTree(json_badges));	
 			result.put("tree_id", tid);
-			ArrayList distributionData = readtree.getDistributionData();
-			System.out.println(distributionData);
+			//System.out.println(distributionData);
 			result.put("distribution_data", mapper.valueToTree(distributionData));
 			result_json = mapper.writeValueAsString(result);
 			out.write(result_json);
