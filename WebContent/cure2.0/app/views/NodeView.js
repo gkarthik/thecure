@@ -115,7 +115,7 @@ NodeView = Marionette.ItemView.extend({
 			if(data.length>0){
 				if(!isNominal){
 					var range = data[0].value;
-					for(var i = 0; i < 10; i++){
+					for(var i = 0; i < 11; i++){
 						plotValues.push({
 							"value": range,
 							"frequency": [0,0]//y,n
@@ -124,8 +124,8 @@ NodeView = Marionette.ItemView.extend({
 					}
 					
 					for(var temp in data){
-						for(var i = 1; i<10; i ++){
-							if(data[temp].value < plotValues[i].value){
+						for(var i = 1; i<11; i ++){
+							if(data[temp].value <= plotValues[i].value){
 								if(data[temp].classprob==Cure.posNodeName){
 									plotValues[i].frequency[0]++;
 								} else if(data[temp].classprob==Cure.negNodeName) {
@@ -172,6 +172,10 @@ NodeView = Marionette.ItemView.extend({
 				frequencies.push(total);
 			}
 			frequencies.sort(function(a,b){return a-b;});
+			var rectWidth = (globalWidth-40)/plotValues.length;
+			if(isNominal){
+				rectWidth = rectWidth/2;
+			}
 			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
@@ -184,9 +188,9 @@ NodeView = Marionette.ItemView.extend({
 			
 			var layerEnter = layer.enter().append("g").attr("class","distLayer")
 			.attr("transform",function(d){
-				var translateX = (30 - 10) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
+				var translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
 				if(!isNominal){
-					translateX = (30 - 10) + parseFloat(valueScale(d.value));
+					translateX = (30 - (rectWidth/2)) + parseFloat(valueScale(d.value));
 				}
 				var total = 0;
 				for(var i in plotValues[temp].frequency){
@@ -200,7 +204,7 @@ NodeView = Marionette.ItemView.extend({
 			var layerRect = layerEnter.selectAll(".distRect").data(function(d){return d.frequency; });
 			console.log(plotValues);
 			layerRect.enter().append("rect").attr("class","distRect")
-			.attr("width", 20)
+			.attr("width", rectWidth)
 	    .style("fill", function(d,i) { return (i==0) ? "blue" : "red"; })
 	    .attr("y",function(d,i){
 	    	if(i==0){

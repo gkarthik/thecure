@@ -999,6 +999,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *            the current depth
 	 * @param determineStructure
 	 *            whether to determine structure
+	 * @param m_distributionData
+	 *            HashMap to put distribution data if getSplitData is true in any node
 	 * @throws Exception
 	 *             if generation fails
 	 */
@@ -1227,7 +1229,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 
 	 * @param Split Point
 	 * @param Instances
-	 * @Param Attribute name to get distribution of
+	 * @Param Attribute index to get distribution of
+	 * @Param HashMap to put data into
 	 * 
 	 * @return HashMap of class distribution data
 	 */
@@ -1240,18 +1243,20 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		instances.sort(attIndex);
 		for (int i = 0; i < instances.numInstances(); i++) {
 			Instance inst = instances.instance(i);
-			temp = new HashMap<String, Comparable>();
-			if(inst.attribute(attIndex).isNominal()){
-				temp.put("value", inst.attribute(attIndex).value((int)inst.value(attIndex)));
-				isNominal = true;
-				//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
-			} else {
-				temp.put("value", inst.value(attIndex));
-				//data+=inst.value(att)+",";
+			if(!Double.isNaN(inst.value(attIndex))){
+				temp = new HashMap<String, Comparable>();
+				if(inst.attribute(attIndex).isNominal()){
+					temp.put("value", inst.attribute(attIndex).value((int)inst.value(attIndex)));
+					isNominal = true;
+					//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
+				} else {
+					temp.put("value", inst.value(attIndex));
+					//data+=inst.value(att)+",";
+				}
+				temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
+				//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
+				distData.add(temp);
 			}
-			temp.put("classprob", inst.classAttribute().value((int) inst.classValue()));
-			//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
-			distData.add(temp);
 		}
 		if(!distData.isEmpty()){
 			distMap.put("dataArray",distData);
