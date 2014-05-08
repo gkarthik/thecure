@@ -120,7 +120,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	protected JsonNode jsontree;
 	
 	/** distribution array **/
-	protected ArrayList<Object> m_distributionData = new ArrayList<Object>();
+	protected HashMap m_distributionData = new HashMap();
 
 	/** for building up the json tree **/
 	ObjectMapper mapper;
@@ -157,14 +157,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		return m_MinNum;
 	}
 	
-	public ArrayList<Object> getDistributionData(){
+	public HashMap getDistributionData(){
 		return m_distributionData;
 	}
 	
-	public void setDistributionData(ArrayList<Object> newdistributionData){
-		if(!newdistributionData.isEmpty()){
-			m_distributionData = new ArrayList<Object>(newdistributionData);
-		}
+	public void setDistributionData(HashMap newDistMap){
+		m_distributionData = new HashMap(newDistMap);
 	}
 
 	/**
@@ -1005,7 +1003,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index, ArrayList<Object> m_distributionData) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1233,16 +1231,19 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 
 	 * @return HashMap of class distribution data
 	 */
-	protected ArrayList<Object> addDistributionData(double splitPoint, Instances instances, int attIndex, ArrayList<Object> distData) throws Exception{
+	protected HashMap addDistributionData(double splitPoint, Instances instances, int attIndex, HashMap distMap) throws Exception{
 		Map<String, Comparable> temp = new HashMap<String, Comparable>();
+		ArrayList<Object> distData = new ArrayList();
 		//GenerateCSV csv = new GenerateCSV();
-		String data = "";
+		//String data = "";
+		boolean isNominal = false; 
 		instances.sort(attIndex);
 		for (int i = 0; i < instances.numInstances(); i++) {
 			Instance inst = instances.instance(i);
 			temp = new HashMap<String, Comparable>();
 			if(inst.attribute(attIndex).isNominal()){
 				temp.put("value", inst.attribute(attIndex).value((int)inst.value(attIndex)));
+				isNominal = true;
 				//data+=inst.attribute(m_Attribute).value((int)inst.value(m_Attribute))+",";
 			} else {
 				temp.put("value", inst.value(attIndex));
@@ -1252,8 +1253,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			//data+=inst.classAttribute().value((int) inst.classValue())+"\n";
 			distData.add(temp);
 		}
-		setDistributionData(distData);
-		return getDistributionData();
+		if(!distData.isEmpty()){
+			distMap.put("dataArray",distData);
+			distMap.put("isNominal",isNominal);
+			setDistributionData(distMap);
+		}
+		return distMap;
 		//To check if data is being generated right. 
 		//csv.generateCsvFile("/home/karthik/Documents/distribution.csv", data);
 	}
