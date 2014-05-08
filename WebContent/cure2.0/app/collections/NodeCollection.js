@@ -137,18 +137,26 @@ NodeCollection = Backbone.Collection.extend({
 		//If server returns json with tree render and update positions of nodes.
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}
+		var updateScore = true;
 		var renderT = window.setInterval(function(){
 			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
-				if(data.distribution_data.dataArray){
-					Cure.PlayerNodeCollection.setDistributionData(data.distribution_data);
-				}
 				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 				Cure.utils.hideLoading();
-				//Storing Score in a Score Model.
-				var scoreArray = data;
-				scoreArray.treestruct = null;
-				if(scoreArray.novelty == "Infinity"){
-					scoreArray.novelty = 0;
+				if(data.distribution_data){
+					if(data.distribution_data.dataArray){
+						Cure.PlayerNodeCollection.setDistributionData(data.distribution_data);
+						updateScore = false;
+					}
+				}
+				if(updateScore){
+					//Storing Score in a Score Model.
+					var scoreArray = data;
+					scoreArray.treestruct = null;
+					if(scoreArray.novelty == "Infinity"){
+						scoreArray.novelty = 0;
+					}
+					Cure.Score.set("previousAttributes",Cure.Score.toJSON());
+					Cure.Score.set(scoreArray);
 				}
 				if(Cure.PlayerNodeCollection.models.length==5){
 					if(!Cure.treeTour.ended()){
@@ -158,8 +166,6 @@ NodeCollection = Backbone.Collection.extend({
 				} else if(Cure.PlayerNodeCollection.models.length == 0){
 					Cure.Zoom.set('scaleLevel',1);
 				}
-				Cure.Score.set("previousAttributes",Cure.Score.toJSON());
-				Cure.Score.set(scoreArray);
 				Cure.TreeBranchCollection.updateCollection();
 				window.clearInterval(renderT);
 			}
