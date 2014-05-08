@@ -439,7 +439,7 @@ public class MetaServer extends HttpServlet {
 			//evaluate it on the data
 			Evaluation eval = new Evaluation(weka.getTrain());
 			eval.evaluateModel(readtree, weka.getTrain());
-			ArrayList<Object> distributionData = readtree.getDistributionData();
+			HashMap distributionData = readtree.getDistributionData();
 			ObjectNode result = mapper.createObjectNode();
 			result.put("pct_correct", eval.pctCorrect());
 			result.put("size", numnodes);

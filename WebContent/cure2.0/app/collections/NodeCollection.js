@@ -139,8 +139,8 @@ NodeCollection = Backbone.Collection.extend({
 		}
 		var renderT = window.setInterval(function(){
 			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
-				if(data["distribution_data"].length>0){
-					Cure.PlayerNodeCollection.setDistributionData(data["distribution_data"]);
+				if(data.distribution_data.dataArray){
+					Cure.PlayerNodeCollection.setDistributionData(data.distribution_data);
 				}
 				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
 				Cure.utils.hideLoading();
@@ -179,10 +179,10 @@ NodeCollection = Backbone.Collection.extend({
 		var requiredModel = this.findWhere({getSplitData: true});
 		if(requiredModel){
 			if(requiredModel.get('distribution_data')==null){
-				var newDistData = new DistributionData({dataArray: data});//Assuming only data of 1 model is sent with any request
+				var newDistData = new DistributionData(data);//Assuming only data of 1 model is sent with any request
 				requiredModel.set('distribution_data', newDistData);
 			} else {
-				requiredModel.get('distribution_data').set("dataArray", data);
+				requiredModel.get('distribution_data').set(data);
 			}
 			requiredModel.set('getSplitData',false);
 		}

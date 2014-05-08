@@ -109,9 +109,11 @@ NodeView = Marionette.ItemView.extend({
 			var yLength = globalHeight-40;
 			var plotValues = [];
 			var frequencies = [];
+			var isNominal = this.model.get('distribution_data').get("isNominal");
+			var splitPoint = this.model.get('options').split_point;
 			//Check if numeric or nominal attribute
 			if(data.length>0){
-				if(!isNaN(data[0].value)){
+				if(!isNominal){
 					var range = data[0].value;
 					for(var i = 0; i < 10; i++){
 						plotValues.push({
@@ -170,7 +172,7 @@ NodeView = Marionette.ItemView.extend({
 				frequencies.push(total);
 			}
 			frequencies.sort(function(a,b){return a-b;});
-			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNaN(d.value) ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength],0.1);
+			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
 			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
@@ -182,7 +184,10 @@ NodeView = Marionette.ItemView.extend({
 			
 			var layerEnter = layer.enter().append("g").attr("class","distLayer")
 			.attr("transform",function(d){
-				var translateX = 30 + parseFloat(valueScale(d.value));
+				var translateX = (30 - 10) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
+				if(!isNominal){
+					translateX = (30 - 10) + parseFloat(valueScale(d.value));
+				}
 				var total = 0;
 				for(var i in plotValues[temp].frequency){
 					total += plotValues[temp].frequency[i];
@@ -211,6 +216,23 @@ NodeView = Marionette.ItemView.extend({
 			}).attr("height",function(d){
 	    	return frequencyScale(frequencies[frequencies.length-1] - d);
 			});
+			
+			if(!isNominal){
+				xLength = xLength - ((globalWidth-40)/(plotValues.length));
+				var splitScale = d3.scale.linear().domain([plotValues[0].value, plotValues[plotValues.length-1].value]).range([0,xLength]);
+				var splitPointGroup = SVG.append("g").attr("class","split_point")
+				.attr("transform",function(){
+					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(splitPoint));
+					var total = 0;
+					for(var i in plotValues[temp].frequency){
+						total += plotValues[temp].frequency[i];
+					}
+					return "translate("+translateX+",10)";
+				});
+				
+				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
+				splitPointGroup.append("svg:text").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
+			}
 		}
 	},
 	error: function(){
