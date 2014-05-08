@@ -1192,7 +1192,21 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		} else {
 			m_Attribute = -1;
 			if(kind!=null&&kind.equals("leaf_node")){
-				//already made this one..
+				//update bin_size, pct_correct and other values in options
+				double bin_size = 0, maxCount = 0;
+				int maxIndex = 0; double errors = 0; double pct_correct = 0;
+				if (m_ClassDistribution != null) {
+					bin_size = Utils.sum(m_ClassDistribution);
+					maxIndex = Utils.maxIndex(m_ClassDistribution); //this is where it decides what class the leaf is.. takes the majority.
+					maxCount = m_ClassDistribution[maxIndex];
+					errors = bin_size - maxCount;
+					pct_correct = (bin_size-errors)/bin_size;
+				} 
+				String class_name = m_Info.classAttribute().value(maxIndex);
+				((ObjectNode) node).put("name", class_name);
+				((ObjectNode) options).put("bin_size", Utils.doubleToString(bin_size, 2));
+				((ObjectNode) options).put("errors", Utils.doubleToString(errors, 2));
+				((ObjectNode) options).put("pct_correct", Utils.doubleToString(pct_correct, 2));
 			}else{
 				// Make leaf
 
