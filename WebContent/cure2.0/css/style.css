@@ -270,6 +270,10 @@ display: block;
 	z-index: 10;
 }
 
+.dragSplitPoint{
+	cursor: move;
+}
+
 .showDistribution{
 	position: absolute;
 	left: -10px;
