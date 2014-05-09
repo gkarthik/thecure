@@ -1192,7 +1192,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		} else {
 			m_Attribute = -1;
 			if(kind!=null&&kind.equals("leaf_node")){
-				////update bin_size, pct_correct and other values in options
 				double bin_size = 0, maxCount = 0;
 				int maxIndex = 0; double errors = 0; double pct_correct = 0;
 				if (m_ClassDistribution != null) {
@@ -1203,10 +1202,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					pct_correct = (bin_size-errors)/bin_size;
 				} 
 				String class_name = m_Info.classAttribute().value(maxIndex);
-				((ObjectNode) node).put("name", class_name);
-				((ObjectNode) options).put("bin_size", Utils.doubleToString(bin_size, 2));
-				((ObjectNode) options).put("errors", Utils.doubleToString(errors, 2));
-				((ObjectNode) options).put("pct_correct", Utils.doubleToString(pct_correct, 2));
+				_node.put("name", class_name);
+				evalresults.put("attribute_name", class_name);
+				evalresults.put("kind", "leaf_node");
+				evalresults.put("bin_size", Utils.doubleToString(bin_size, 2));
+				evalresults.put("errors", Utils.doubleToString(errors, 2));
+				evalresults.put("pct_correct", Utils.doubleToString(pct_correct, 2));
 			}else{
 				// Make leaf
 
@@ -1477,19 +1478,21 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			} else {
 				// Split data set using given split point.
+				double currSplit = data.instance(0).value(att);
 				for (int i = 0; i < data.numInstances(); i++) {
 					Instance inst = data.instance(i);
 					if (inst.isMissing(att)) {
+
 						// Can stop as soon as we hit a missing value
 						break;
 					}
-					if (inst.value(att) > splitPoint) {
+
+					if (inst.value(att) <= splitPoint) {
 							// Save distribution
 							for (int j = 0; j < currDist.length; j++) {
 								System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
 							}
 					}
-
 					// Shift over the weight
 					currDist[0][(int) inst.classValue()] += inst.weight();
 					currDist[1][(int) inst.classValue()] -= inst.weight();
