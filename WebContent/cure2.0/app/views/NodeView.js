@@ -224,6 +224,7 @@ NodeView = Marionette.ItemView.extend({
 			if(!isNominal){
 				xLength = xLength - ((globalWidth-40)/(plotValues.length));
 				var splitScale = d3.scale.linear().domain([plotValues[0].value, plotValues[plotValues.length-1].value]).range([0,xLength]);
+				var reverseSplitScale = d3.scale.linear().domain([0,xLength]).range([plotValues[0].value, plotValues[plotValues.length-1].value]);
 				var splitPointGroup = SVG.append("g").attr("class","split_point")
 				.attr("transform",function(){
 					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(splitPoint));
@@ -234,8 +235,33 @@ NodeView = Marionette.ItemView.extend({
 					return "translate("+translateX+",10)";
 				});
 				
+				var origin = [0,0];
+				var drag = d3.behavior.drag().origin(function() { 
+					var t = d3.select(this).attr("transform");
+					var origin = String(t).match(/-?[0-9\.]+/g);
+					return { x: parseFloat(origin[0]), y: parseFloat(origin[1]) }; 
+				}).on("dragstart", function(d) {
+					var t = d3.select(this).attr("transform");
+	        var origin = String(t).match(/-?[0-9\.]+/g);
+	        this.__customorigin__ = { x: parseFloat(origin[0]), y: parseFloat(origin[1]) };
+	      }).on("drag", function(){
+	      	var o = this.__customorigin__;
+	        var dist = parseFloat(d3.event.x);
+					var splitValue = reverseSplitScale(dist-30-((globalWidth-40)/(plotValues.length*2)));
+	        d3.selectAll(".splitValueLabel").text(Math.round(splitValue*100)/100);
+	        d3.select(this).attr("transform","translate("+d3.event.x+","+o.y+")");
+		    }).on("dragend",function(){
+		    	Cure.PlayerNodeCollection.sync();
+		    	delete this.__customorigin__;
+		    });
+		    
+				d3.selectAll(".split_point").call(drag);
+				
 				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
-				splitPointGroup.append("svg:text").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
+				splitPointGroup.append("svg:text").attr("class","splitValueLabel").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
+				var dragHolder = splitPointGroup.append("svg:g").attr("transform","translate(-18,"+((globalHeight-40)/2)+")").attr("class","dragSplitPoint");
+				dragHolder.append("svg:rect").attr("height",15).attr("width",40).attr("fill","steelblue").attr("transform","translate(0,-10)");
+				dragHolder.append("svg:text").attr("fill","white").text("DRAG").style("font-size","10px").attr("transform","translate(2,2)");
 			}
 		}
 	},
