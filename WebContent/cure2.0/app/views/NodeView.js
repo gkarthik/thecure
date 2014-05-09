@@ -93,6 +93,7 @@ NodeView = Marionette.ItemView.extend({
 	parseDistributionData: function(){
 		if(this.model.get('getSplitData')==false){
 			var data;
+			var thisModel = this.model;
 			try{
 				data = this.model.get('distribution_data').get("dataArray");
 			} catch (e) {
@@ -247,10 +248,13 @@ NodeView = Marionette.ItemView.extend({
 	      }).on("drag", function(){
 	      	var o = this.__customorigin__;
 	        var dist = parseFloat(d3.event.x);
-					var splitValue = reverseSplitScale(dist-30-((globalWidth-40)/(plotValues.length*2)));
-	        d3.selectAll(".splitValueLabel").text(Math.round(splitValue*100)/100);
+	        splitPoint = reverseSplitScale(dist-30-((globalWidth-40)/(plotValues.length*2)));
+	        d3.selectAll(".splitValueLabel").text(Math.round(splitPoint*100)/100);
 	        d3.select(this).attr("transform","translate("+d3.event.x+","+o.y+")");
 		    }).on("dragend",function(){
+		    	var options = thisModel.get('options');
+		    	options.split_point = splitPoint;
+		    	thisModel.set("options",options);
 		    	Cure.PlayerNodeCollection.sync();
 		    	delete this.__customorigin__;
 		    });
