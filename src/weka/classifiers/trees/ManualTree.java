@@ -1192,7 +1192,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		} else {
 			m_Attribute = -1;
 			if(kind!=null&&kind.equals("leaf_node")){
-				//update bin_size, pct_correct and other values in options
+				////update bin_size, pct_correct and other values in options
 				double bin_size = 0, maxCount = 0;
 				int maxIndex = 0; double errors = 0; double pct_correct = 0;
 				if (m_ClassDistribution != null) {
