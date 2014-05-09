@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -14,6 +15,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.catalina.connector.ClientAbortException;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Player;
 import org.scripps.util.Mail;
@@ -223,38 +235,66 @@ public class SocialServer extends HttpServlet {
 						}
 					}
 				} else if(command.equals("user_ref_login")){
-					String username = data.get("username").asText();
-					String token = data.get("token").asText();
-					Player player = new Player();
-					player.setName(username);
-					player.setToken(token);
-					if (username == null || token == null) {
-						response.setContentType("application/json");
-						PrintWriter out = response.getWriter();
-						result.put("success", false);
-						result.put("message", "All parameters not sent.");
-						String json = mapper.writeValueAsString(result);
-						out.write(json);
-						out.close();  
-					} else {
-						boolean success = true;
-							player = player.findOrCreateWithToken(token, username);
-							if(player==null){
-								success = false;
+					String userToken = data.get("token").asText();
+					HttpClient httpClient = new DefaultHttpClient();
+					HttpPost httpPost = new HttpPost("http://yako.io/api/service/app/user");
+					// Request parameters and other properties.
+					List<NameValuePair> params = new ArrayList<NameValuePair>();
+					params.add(new BasicNameValuePair("token", userToken));
+					try {
+					    httpPost.setEntity(new UrlEncodedFormEntity((List<? extends org.apache.http.NameValuePair>) params, "UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+					    // writing error to Log
+					    e.printStackTrace();
+					}
+					try {
+					    HttpResponse userResponse = httpClient.execute(httpPost);
+					    HttpEntity respEntity = userResponse.getEntity();
+
+					    if (respEntity != null) {
+					        // EntityUtils to get the response content
+					        String content =  EntityUtils.toString(respEntity);
+					        LinkedHashMap userData = mapper.readValue(content, LinkedHashMap.class);
+					        String username = userData.get("displayName").toString();
+					        String token = userData.get("identifier").toString();
+					        Player player = new Player();
+							player.setName(username);
+							player.setToken(token);
+							if (username == null || token == null) {
+								response.setContentType("application/json");
+								PrintWriter out = response.getWriter();
+								result.put("success", false);
+								result.put("message", "All parameters not sent.");
+								String json = mapper.writeValueAsString(result);
+								out.write(json);
+								out.close();  
+							} else {
+								boolean success = true;
+									player = player.findOrCreateWithToken(token, username);
+									if(player==null){
+										success = false;
+									}
+								if(success){
+									response.setStatus(200);
+									response.setContentType("application/json");
+									PrintWriter out = response.getWriter();
+									result.put("success", true);
+									result.put("player_name", player.getName());
+									result.put("player_id", player.getId());
+									String json = mapper.writeValueAsString(result);
+									out.write(json);
+									out.close();
+									session.setAttribute("username", username);
+								    session.setAttribute("player", player);
+								}
 							}
-						if(success){
-							response.setStatus(200);
-							response.setContentType("application/json");
-							PrintWriter out = response.getWriter();
-							result.put("success", true);
-							result.put("player_name", player.getName());
-							result.put("player_id", player.getId());
-							String json = mapper.writeValueAsString(result);
-							out.write(json);
-							out.close();
-							session.setAttribute("username", username);
-						    session.setAttribute("player", player);
-						}
+					    }
+					} catch (ClientAbortException e) {
+					    // writing exception to log
+					    e.printStackTrace();
+					} catch (IOException e) {
+					    // writing exception to log
+					    e.printStackTrace();
 					}
 				}
 			} catch (Exception e) {
