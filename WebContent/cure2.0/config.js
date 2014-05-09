@@ -105,9 +105,8 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	  	csb.getUserInfo(function(err, res) {
 	  		 if(!err && res.identifier!=null) {
 	  			 var args = {
-		  					command : "user_ref_login",
-		  					username: res.displayName,
-		  					token: res.identifier
+		  					command : "user_ref_login",		  					
+		  					token: res.user_token
 		  				};
 		  				
 		  				//POST request to server.		
