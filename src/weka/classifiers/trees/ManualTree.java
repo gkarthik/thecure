@@ -1478,7 +1478,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			} else {
 				// Split data set using given split point.
-				double currSplit = data.instance(0).value(att);
 				for (int i = 0; i < data.numInstances(); i++) {
 					Instance inst = data.instance(i);
 					if (inst.isMissing(att)) {
