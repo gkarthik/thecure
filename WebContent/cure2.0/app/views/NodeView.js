@@ -72,7 +72,12 @@ NodeView = Marionette.ItemView.extend({
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
 		this.listenTo(this.model, 'change:getSplitData', this.parseDistributionData);
+		this.listenTo(this.model, 'change:options', this.render);
 		
+		this.updateAccLimit();
+		this.model.set("cid",this.cid);
+	},
+	updateAccLimit: function(){
 		if(parseFloat(this.model.get('accLimit'))!=0){
 			this.model.set('modifyAccLimit',0);
 		}
@@ -82,7 +87,6 @@ NodeView = Marionette.ItemView.extend({
 			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
 			this.model.set('accLimit',accLimit,{silent: true});
 		}
-		this.model.set("cid",this.cid);
 	},
 	getDistributionData: function(){
 		if(this.model.get("options").kind=="split_node"){
