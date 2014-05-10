@@ -240,7 +240,8 @@ public class SocialServer extends HttpServlet {
 					HttpPost httpPost = new HttpPost("http://yako.io/api/service/app/user");
 					// Request parameters and other properties.
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
-					params.add(new BasicNameValuePair("token", userToken));
+					params.add(new BasicNameValuePair("userToken", userToken));
+					params.add(new BasicNameValuePair("appToken", "C5SbT6"));
 					try {
 					    httpPost.setEntity(new UrlEncodedFormEntity((List<? extends org.apache.http.NameValuePair>) params, "UTF-8"));
 					} catch (UnsupportedEncodingException e) {
@@ -249,11 +250,13 @@ public class SocialServer extends HttpServlet {
 					}
 					try {
 					    HttpResponse userResponse = httpClient.execute(httpPost);
+					    System.out.println(userResponse);
 					    HttpEntity respEntity = userResponse.getEntity();
 
 					    if (respEntity != null) {
 					        // EntityUtils to get the response content
 					        String content =  EntityUtils.toString(respEntity);
+					        System.out.println(content);
 					        LinkedHashMap userData = mapper.readValue(content, LinkedHashMap.class);
 					        String username = userData.get("displayName").toString();
 					        String token = userData.get("identifier").toString();
