@@ -237,18 +237,9 @@ public class SocialServer extends HttpServlet {
 				} else if(command.equals("user_ref_login")){
 					String userToken = data.get("token").asText();
 					HttpClient httpClient = new DefaultHttpClient();
-					HttpPost httpPost = new HttpPost("http://yako.io/api/service/app/user");
-					// Request parameters and other properties.
-					List<NameValuePair> params = new ArrayList<NameValuePair>();
-					params.add(new BasicNameValuePair("userToken", userToken));
-					params.add(new BasicNameValuePair("appToken", "C5SbT6"));
+					HttpPost httpPost = new HttpPost("http://yako.io/api/service/app/user?userToken="+userToken+"&appToken=C5SbT6");
 					try {
-					    httpPost.setEntity(new UrlEncodedFormEntity((List<? extends org.apache.http.NameValuePair>) params, "UTF-8"));
-					} catch (UnsupportedEncodingException e) {
-					    // writing error to Log
-					    e.printStackTrace();
-					}
-					try {
+						System.out.println(httpPost.getEntity());
 					    HttpResponse userResponse = httpClient.execute(httpPost);
 					    System.out.println(userResponse);
 					    HttpEntity respEntity = userResponse.getEntity();
