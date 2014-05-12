@@ -100,15 +100,20 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	  	size: 750
 	  }
 	});
-	if(/*_csb*/1){
-	  if(1/*csb.inSession()*/){
-	  	//csb.getUserInfo(function(err, res) {
-	  		 if(/*!err && res.user_token!=null*/1) {
+	if(_csb){
+	  if(csb.inSession()){
+	  	console.log("In Session!");
+	  	csb.getUserInfo(function(err, res) {
+	  		 if(!err) {
+	  		  console.log("@collection info test", res);
+	  		 }
+	  	});
+	  	csb.getUserInfo(function(err, res) {
+	  		 if(!err && res.user_token!="Guest") {
 	  			 var args = {
 		  					command : "user_ref_login",		  					
-		  					token: 	'Guest'
+		  					token: 	res.userToken
 		  				};
-		  				
 		  				//POST request to server.		
 		  				$.ajax({
 		  					type : 'POST',
@@ -130,8 +135,7 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 		  					}
 		  				});
 	  		 }
-	  		 
-	  	//});
+	  	});
 	  }
 	}
 });

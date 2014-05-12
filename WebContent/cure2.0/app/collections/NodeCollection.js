@@ -191,6 +191,7 @@ NodeCollection = Backbone.Collection.extend({
 				requiredModel.get('distribution_data').set(data);
 			}
 			requiredModel.set('getSplitData',false);
+			requiredModel.set('displayDistChart',true);
 		}
 	},
 	saveTree: function(){

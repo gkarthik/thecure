@@ -71,7 +71,7 @@ NodeView = Marionette.ItemView.extend({
 		this.listenTo(this.model, 'add:children', this.checkNodeAddition);
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
-		this.listenTo(this.model, 'change:getSplitData', this.parseDistributionData);
+		this.listenTo(this.model, 'change:displayDistChart', this.parseDistributionData);
 		this.listenTo(this.model, 'change:options', this.render);
 		
 		this.updateAccLimit();
@@ -95,7 +95,8 @@ NodeView = Marionette.ItemView.extend({
 		}
 	},
 	parseDistributionData: function(){
-		if(this.model.get('getSplitData')==false){
+		if(this.model.get('displayDistChart')==true){
+			this.model.set('displayDistChart',false);
 			var data;
 			var thisModel = this.model;
 			try{
