@@ -54,7 +54,7 @@ NodeCollection = Backbone.Collection.extend({
 			if(kindArray[temp].options.kind=="split_node"){
 				splitNodeArray.push({
 					'name': kindArray[temp].name,
-					'cid': kindArray[temp].cid,
+					'cid': kindArray[temp].options.cid,
 					'nodeGroup':[]//Holds the nodes that are pushed by syncSplitNodeArray in Score View.
 				});
 			}
