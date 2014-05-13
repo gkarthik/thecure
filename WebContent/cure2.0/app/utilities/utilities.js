@@ -348,6 +348,7 @@ CureUtils.getDepth = function(node){
 }
 
 CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
+	parentElement.selectAll(".chartWrapper").remove();
 	var chartWrapper = parentElement.attr("width",function(){
 		return (radius*20)+8;
 	}).attr("height",function(){

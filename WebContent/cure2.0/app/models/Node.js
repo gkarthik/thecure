@@ -2,16 +2,13 @@ define([
       	'backbone',
       	'app/models/Collaborator',
       	'app/models/DistributionData',
+      	'app/models/NodeOptions',
       	'backboneRelational'
-    ], function(Backbone, Collaborator, DistributionData) {
+    ], function(Backbone, Collaborator, DistributionData, NodeOptions) {
 	Node = Backbone.RelationalModel.extend({
 	defaults : {
 		'name' : '',
 		'cid' : 0,
-		'options' : {
-			"id" : "",
-			"kind" : "split_node",
-		},
 		getSplitData: false,
 		edit : 0,
 		highlight : 0,
@@ -83,6 +80,16 @@ define([
 		reverseRelation : {
 			type : Backbone.HasOne,	
 			key : 'splitNode',
+			includeInJSON: false
+		}
+	},
+	{
+		type : Backbone.HasOne,
+		key : 'options',
+		relatedModel : 'NodeOptions',
+		reverseRelation : {
+			type : Backbone.HasOne,	
+			key : 'AttributeNode',
 			includeInJSON: false
 		}
 	}]

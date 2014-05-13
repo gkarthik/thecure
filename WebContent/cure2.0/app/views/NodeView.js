@@ -72,20 +72,18 @@ NodeView = Marionette.ItemView.extend({
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
 		this.listenTo(this.model, 'change:displayDistChart', this.parseDistributionData);
-		this.listenTo(this.model, 'change:options', this.render);
+		this.listenTo(this.model, 'change:options', this.updateAccLimit);
 		
 		this.updateAccLimit();
 		this.model.set("cid",this.cid);
 	},
 	updateAccLimit: function(){
-		if(parseFloat(this.model.get('accLimit'))!=0){
-			this.model.set('modifyAccLimit',0);
-		}
 		var accLimit = 0;
 		//Setting up accLimit for leaf_node
-		if(this.model.get('options').kind=="leaf_node" && this.model.get('modifyAccLimit')==1) {
+		if(this.model.get('options').kind=="leaf_node") {
 			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
-			this.model.set('accLimit',accLimit,{silent: true});
+			this.model.set('accLimit',accLimit);
+			console.log(accLimit);
 		}
 	},
 	getDistributionData: function(){
@@ -96,6 +94,7 @@ NodeView = Marionette.ItemView.extend({
 	},
 	parseDistributionData: function(){
 		if(this.model.get('displayDistChart')==true){
+			console.log(this.model.get('getSplitData'));
 			this.model.set('displayDistChart',false);
 			var data;
 			var thisModel = this.model;
