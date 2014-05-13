@@ -111,9 +111,9 @@ CureUtils.render_network = function(dataset) {
 			.range([ 0, 100 ]);
 		dataset = [ {
 			'name' : '',
-			'cid' : 0,
 			'options' : {
 				"id" : "",
+				'cid' : 0,
 				"kind" : "split_node"
 			},
 			edit : 0,
@@ -427,7 +427,7 @@ CureUtils.drawEdges = function(node,binY,count){
 			target = tempNode.toJSON();
 			source.y = parseFloat(105 + source.y);
 			target.y = parseFloat(105 + target.y);
-			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
+			links.push({"source":source,"target":target,"bin_size":node.get('options').get('bin_size'),"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
 		allLinks.push.apply(allLinks, links);
