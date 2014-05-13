@@ -74,8 +74,7 @@ CureUtils.updatepositions = function(NodeCollection) {
 	});
 	for ( var temp in NodeCollection["models"]) {
 		for ( var innerTemp in d3nodes) {
-			if (String(d3nodes[innerTemp].cid) == String(NodeCollection["models"][temp]
-					.get('cid'))) {
+			if (String(d3nodes[innerTemp].options.cid) == String(NodeCollection["models"][temp].get('options').get('cid'))) {
 				NodeCollection["models"][temp].set({"x": d3nodes[innerTemp].x, "y": d3nodes[innerTemp].y});
 			}
 		}
@@ -354,7 +353,7 @@ CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, 
 	}).attr("height",function(){
 		return (radius*20)+8;
 	}).append("svg:g").attr("class","chartWrapper").attr("transform","translate(3,3)");
-	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
+	chartWrapper.append("rect").attr("class","chartContainer").attr("height",function(){
 		if(nodeKind!="split_value"){
 			return (radius*20)+2;
 		}
