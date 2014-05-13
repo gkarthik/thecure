@@ -103,14 +103,13 @@ AddRootNodeView = Marionette.ItemView.extend({
 					$("#SpeechBubble").remove();
 					var kind_value = "";
 					try {
-						kind_value = model.get("options").kind;
+						kind_value = model.get("options").get('kind');
 					} catch (exception) {
 					}
 					if (kind_value == "leaf_node") {
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
-						model.set('modifyAccLimit', 1, {silent:true});
 						
 						var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
 						var newCollaborator;
@@ -125,25 +124,13 @@ AddRootNodeView = Marionette.ItemView.extend({
 							Cure.CollaboratorCollection.add(newCollaborator);
 							index = Cure.CollaboratorCollection.indexOf(newCollaborator);
 						}
-						//model.attributes.collaborator = Cure.CollaboratorCollection.at(index);
-						
-						if(Cure.utils.isJSON(ui.item.description)){
-							model.set("options", {
-								id : ui.item.unique_id,
-								"unique_id" : ui.item.unique_id,
-								"kind" : "split_node",
-								"full_name" : ui.item.long_name,
-								"description" : ui.item.description
-							});
-						} else {
-							model.set("options", {
-								id : ui.item.unique_id,
-								"unique_id" : ui.item.unique_id,
-								"kind" : "split_node",
-								"full_name" : ui.item.long_name,
-								"description" : ui.item.description
-							});
-						}
+						model.get("options").set({
+							id : ui.item.unique_id,
+							"unique_id" : ui.item.unique_id,
+							"kind" : "split_node",
+							"full_name" : ui.item.long_name,
+							"description" : ui.item.description
+						});
 					} else {
 						var newNode = new Node({
 							'name' : ui.item.short_name.replace(/_/g," "),
@@ -155,7 +142,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 								"description" : ui.item.description
 							}
 						});
-						newNode.set("cid", newNode.cid);
 					}
 					if (Cure.MyGeneInfoRegion) {
 						Cure.MyGeneInfoRegion.close();
@@ -257,16 +243,14 @@ AddRootNodeView = Marionette.ItemView.extend({
 					$("#SpeechBubble").remove();
 					var kind_value = "";
 					try {
-						kind_value = model.get("options").kind;
+						kind_value = model.get("options").get('kind');
 					} catch (exception) {
 					}
 
 					if (kind_value == "leaf_node") {
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.symbol);
-						model.set('accLimit', 0, {silent:true});
-						model.set('modifyAccLimit', 1, {silent:true});
-						model.set("options", {
+						model.get("options").set({
 							id : ui.item.id,
 							"kind" : "split_node",
 							"full_name" : ui.item.name
@@ -280,7 +264,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 								"full_name" : ui.item.name
 							}
 						});
-						newNode.set("cid", newNode.cid);
 					}
 					if (Cure.MyGeneInfoRegion) {
 						Cure.MyGeneInfoRegion.close();

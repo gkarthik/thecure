@@ -33,7 +33,8 @@ NodeView = Marionette.Layout.extend({
 	},
 	regions: {
 		chartRegion: ".chartRegion",
-		distributionChartRegion: ".distributionChartRegion"
+		distributionChartRegion: ".distributionChartRegion",
+		addGeneRegion : ".addgeneinfo"
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
@@ -45,7 +46,7 @@ NodeView = Marionette.Layout.extend({
 	},
 	initialize : function() {
 		if(Cure.PlayerNodeCollection.models.length > 0) {
-			Cure.binScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').bin_size ]).range([ 0, 100 ]);
+			Cure.binScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').get('bin_size') ]).range([ 0, 100 ]);
 		} else {
 			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
 		}
@@ -58,7 +59,6 @@ NodeView = Marionette.Layout.extend({
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
 		this.listenTo(this.model, 'change:displayDistChart', this.parseDistributionData);
-		this.listenTo(this.model, 'change:options', this.updateAccLimit);
 		
 		//this.updateAccLimit();
 		var options = this.model.get('options');
@@ -69,9 +69,8 @@ NodeView = Marionette.Layout.extend({
 		var accLimit = 0;
 		//Setting up accLimit for leaf_node
 		if(this.model.get('options').get('kind')=="leaf_node") {
-			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
+			accLimit = Cure.binScale(this.model.get('options').get('bin_size'))*(this.model.get('options').get('pct_correct'));
 			this.model.set('accLimit',accLimit);
-			console.log(accLimit);
 		}
 	},
 	getDistributionData: function(){
@@ -289,9 +288,9 @@ NodeView = Marionette.Layout.extend({
 			if(this.model.get('parentNode').get('modifyAccLimit')){
 				var accLimit = 0;
 				if(children.get('name')==Cure.negNodeName) {
-					accLimit += Cure.binScale(children.get('options').bin_size)*(1-children.get('options').pct_correct);
+					accLimit += Cure.binScale(children.get('options').get('bin_size'))*(1-children.get('options').get('pct_correct'));
 				} else if(children.get('name') == Cure.posNodeName) {
-					accLimit += Cure.binScale(children.get('options').bin_size)*(children.get('options').pct_correct);
+					accLimit += Cure.binScale(children.get('options').get('bin_size'))*(children.get('options').get('pct_correct'));
 				}
 				accLimit += this.model.get('parentNode').get('accLimit');
 				this.model.get('parentNode').set('accLimit',accLimit);
@@ -299,17 +298,17 @@ NodeView = Marionette.Layout.extend({
 		}
 	},
 	showNodeDetails: function(){
-		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').bin_size;
+		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').get('bin_size');
 		var content = "";
 		//% cases
-		if(this.model.get('options').bin_size && this.model.get('options').get('kind') =="leaf_node"){
-			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
-		} else if(this.model.get('options').bin_size && this.model.get('options').get('kind') =="split_node") {
-			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
+		if(this.model.get('options').get('bin_size') && this.model.get('options').get('kind') =="leaf_node"){
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').get('bin_size')/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
+		} else if(this.model.get('options').get('bin_size') && this.model.get('options').get('kind') =="split_node") {
+			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').get('bin_size')/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
 		}		
 		//Accuracy
-		if(this.model.get('options').pct_correct){
-			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').pct_correct*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
+		if(this.model.get('options').get('pct_correct')){
+			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').get('pct_correct')*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 		}
 		Cure.utils.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
 	},
@@ -398,7 +397,7 @@ NodeView = Marionette.Layout.extend({
 			Cure.utils.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
 				for ( var key in prevAttr) {
-					this.model.set(key, prevAttr[key]);
+						this.model.set(key, prevAttr[key]);
 				}
 				this.model.set("previousAttributes", []);
 		} else {
@@ -409,16 +408,10 @@ NodeView = Marionette.Layout.extend({
 	},
 	addChildren : function() {
 		//Adding new children to the node. This function shows the AddRootNodeView to show mygeneinfo autocomplete.
-		var GeneInfoRegion = new Backbone.Marionette.Region({
-			el : "#" + $(this.ui.addgeneinfo).attr("id")
-		});
-		Cure.addRegions({
-			MyGeneInfoRegion : GeneInfoRegion
-		});
 		var ShowGeneInfoWidget = new AddRootNodeView({
 			'model' : this.model
 		});
-		Cure.MyGeneInfoRegion.show(ShowGeneInfoWidget);
+		this.addGeneRegion.show(ShowGeneInfoWidget);
 	}
 });
 return NodeView;
