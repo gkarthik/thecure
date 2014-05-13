@@ -3,12 +3,14 @@ define([
 	'jquery',
 	'marionette',
 	'd3',
+	//View
+	'app/views/optionsView',
 	//Templates
 	'text!app/templates/LeafNode.html',
 	'text!app/templates/SplitValue.html',
 	'text!app/templates/SplitNode.html'
-    ], function($, Marionette, d3, LeafNodeTemplate, splitValueTemplate, splitNodeTemplate) {
-NodeView = Marionette.ItemView.extend({
+    ], function($, Marionette, d3, optionsView, LeafNodeTemplate, splitValueTemplate, splitNodeTemplate) {
+NodeView = Marionette.Layout.extend({
 	tagName : 'div',
 	className : 'node dragHtmlGroup',
 	ui : {
@@ -22,32 +24,16 @@ NodeView = Marionette.ItemView.extend({
 	url: base_url+"MetaServer",
 	template : function(serialized_model) {
 		if (serialized_model.options.kind == "split_value") {
-			return splitValueTemplate({
-				name : serialized_model.name,
-				highlight : serialized_model.highlight,
-				options : serialized_model.options,
-				cid : serialized_model.cid,
-				collaborator: serialized_model.collaborator
-			});
+			return splitValueTemplate(serialized_model);
 		} else if (serialized_model.options.kind == "split_node") {
-			return splitNodeTemplate({
-				name : serialized_model.name,
-				highlight : serialized_model.highlight,
-				options : serialized_model.options,
-				cid : serialized_model.cid,
-				collaborator: serialized_model.collaborator
-			});
+			return splitNodeTemplate(serialized_model);
 		} else if(serialized_model.options.kind=="leaf_node"){
-			return LeafNodeTemplate({
-				name : serialized_model.name,
-				highlight : serialized_model.highlight,
-				options : serialized_model.options,
-				cid : serialized_model.cid,
-				posNodeName : Cure.posNodeName,
-				negNodeName : Cure.negNodeName,
-				collaborator: serialized_model.collaborator
-			});
+			return LeafNodeTemplate(serialized_model);
 		}
+	},
+	regions: {
+		chartRegion: ".chartRegion",
+		distributionChartRegion: ".distributionChartRegion"
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
@@ -74,13 +60,15 @@ NodeView = Marionette.ItemView.extend({
 		this.listenTo(this.model, 'change:displayDistChart', this.parseDistributionData);
 		this.listenTo(this.model, 'change:options', this.updateAccLimit);
 		
-		this.updateAccLimit();
-		this.model.set("cid",this.cid);
+		//this.updateAccLimit();
+		var options = this.model.get('options');
+		options.set('cid',this.cid);
+		console.log(this.cid);
 	},
 	updateAccLimit: function(){
 		var accLimit = 0;
 		//Setting up accLimit for leaf_node
-		if(this.model.get('options').kind=="leaf_node") {
+		if(this.model.get('options').get('kind')=="leaf_node") {
 			accLimit = Cure.binScale(this.model.get('options').bin_size)*(this.model.get('options').pct_correct);
 			this.model.set('accLimit',accLimit);
 			console.log(accLimit);
@@ -257,8 +245,7 @@ NodeView = Marionette.ItemView.extend({
 	        d3.select(this).attr("transform","translate("+d3.event.x+","+o.y+")");
 		    }).on("dragend",function(){
 		    	var options = thisModel.get('options');
-		    	options.split_point = splitPoint;
-		    	thisModel.set("options",options);
+		    	options.set('split_point', splitPoint);
 		    	Cure.PlayerNodeCollection.sync();
 		    	delete this.__customorigin__;
 		    });
@@ -298,7 +285,7 @@ NodeView = Marionette.ItemView.extend({
 		}
 	},
 	setaccLimit : function(children){
-		if(children.get('options').kind=="leaf_node") {
+		if(children.get('options').get('kind')=="leaf_node") {
 			if(this.model.get('parentNode').get('modifyAccLimit')){
 				var accLimit = 0;
 				if(children.get('name')==Cure.negNodeName) {
@@ -315,9 +302,9 @@ NodeView = Marionette.ItemView.extend({
 		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').bin_size;
 		var content = "";
 		//% cases
-		if(this.model.get('options').bin_size && this.model.get('options').kind =="leaf_node"){
+		if(this.model.get('options').bin_size && this.model.get('options').get('kind') =="leaf_node"){
 			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset fall here.</span></p>";
-		} else if(this.model.get('options').bin_size && this.model.get('options').kind =="split_node") {
+		} else if(this.model.get('options').bin_size && this.model.get('options').get('kind') =="split_node") {
 			content+="<p class='binsizeNodeDetail'><span class='percentDetails'>"+Math.round((this.model.get('options').bin_size/datasetBinSize)*10000)/100+"%</span><span class='textDetail'>of cases from the dataset pass through this node.</span></p>";
 		}		
 		//Accuracy
@@ -337,7 +324,7 @@ NodeView = Marionette.ItemView.extend({
 		var numNodes = Cure.utils.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.utils.getDepth(this.model));
 		
 		if(numNodes * 100 >= Cure.width-100){//TODO: find way to get width of node dynamically.
-			this.$el.addClass('shrink_'+this.model.get('options').kind);
+			this.$el.addClass('shrink_'+this.model.get('options').get('kind'));
 			this.$el.css({
 				width: (Cure.width - 10*numNodes) /numNodes,//TODO: account for border-width and padding programmatically.	
 				height: 'auto',
@@ -345,13 +332,13 @@ NodeView = Marionette.ItemView.extend({
 				'min-width': '0'
 			});
 		} else {
-			if(this.$el.hasClass('shrink_'+this.model.get('options').kind)){
-				this.$el.removeClass('shrink_'+this.model.get('options').kind);
+			if(this.$el.hasClass('shrink_'+this.model.get('options').get('kind'))){
+				this.$el.removeClass('shrink_'+this.model.get('options').get('kind'));
 			}
-			if(this.model.get('options').kind=='leaf_node'||this.model.get('options').kind=='split_node'){
+			if(this.model.get('options').get('kind')=='leaf_node'||this.model.get('options').get('kind')=='split_node'){
 				try{
 					this.$el.css({
-						'width': parseFloat(this.model.get('parentNode').get('parentNode').get('viewCSS').width)+"px",
+						'width': parseFloat(this.model.get('parentNode').get('parentNode').get('options').get('viewCSS').width)+"px",
 						'min-width': '0'
 					});
 				} catch(e){
@@ -362,7 +349,7 @@ NodeView = Marionette.ItemView.extend({
 				} else {
 					if(this.model.get('parentNode')!=null){
 						this.$el.css({
-							'width': parseFloat(this.model.get('parentNode').get('viewCSS').width)+"px",
+							'width': parseFloat(this.model.get('parentNode').get('options').get('viewCSS').width)+"px",
 							'min-width': '0'
 						});
 					}
@@ -385,45 +372,16 @@ NodeView = Marionette.ItemView.extend({
 		}
 		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
 		this.$el.css(styleObject);
-		this.$el.addClass(this.model.get("options").kind);
-		this.model.set("viewCSS",{'width':width});
+		var options = this.model.get('options');
+		this.$el.addClass(options.get('kind'));
+		options.set("viewCSS", {'width':width});
 	}, 
 	onRender: function(){
+		if(this.model.get('options').get('kind')=="split_node" || this.model.get('options').get('kind')=="leaf_node"){
+			var newOptionsView = new optionsView({model: this.model.get('options')});
+			this.chartRegion.show(newOptionsView);
+		}
 		this.renderPlaceholder();	
-		if(this.model.get('options').kind=="leaf_node" || this.model.get('options').kind=="split_node"){
-			var id = "#chart"+this.model.get('cid');
-			var radius = 4;
-			var width = this.model.get('viewCSS').width-20;
-			radius = parseFloat((width - 4)/20);
-			var limit = Cure.binScale(this.model.get('options').bin_size);
-			Cure.utils.drawChart(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('options').kind, this.model.get('name'));
-			var classToChoose = {"className":"","color":""};
-			if(this.model.get('name') == Cure.negNodeName){
-				classToChoose["className"]= " .posCircle";
-				classToChoose["color"]= "red";
-			} else{
-				classToChoose["className"]= " .posCircle";
-				classToChoose["color"]= "blue";
-			}
-			d3.selectAll(id+classToChoose["className"]).style("fill",classToChoose["color"]);
-	}
-		/*
-		else if(this.$el.hasClass("shrink_leaf_node") && id!= undefined){
-			var bin_size = this.model.get('options').bin_size;
-			var accLimit = this.model.get('accLimit'); 
-			console.log(accLimit/100)
-			var hue = 0;
-			if(this.model.get('name')==Cure.posNodeName){//Deviate starting from blue. H = 240 degrees
-				hue = 1.2/360 - ((100-accLimit) * 1.2/360);
-			} else if(this.model.get('name')==Cure.negNodeName) {//Deviate starting from red. H = 360 degrees
-				hue = 1.2/360 - ((accLimit) * 1.2/360);	
-			}
-			var rgb = Cure.hslToRgb(hue,1,0.5);
-			id = "#"+id;
-			d3.select(id).style('background',function(){
-				return 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')';
-			});
-		}*/
 	},
 	onShow: function(){
 		this.render();//To draw chart for final element.

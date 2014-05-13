@@ -1,10 +1,11 @@
 <a target="_blank" href="/cure/profile?playerid=<%= collaborator.id %>" class="collaborator-icon"><i class="glyphicon glyphicon-user"></i></a>
-<svg class="leafNodeChart chart" id="chart<%= cid %>"></svg>
-		<% if(name == negNodeName)
+<div class="chartRegion"></div>
+<!--  <svg class="leafNodeChart chart" id="chart<%= cid %>"></svg>-->
+		<% if(name == Cure.negNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:red;">'+name.toUpperCase()+'</span>');
 		}
-		else if(name == posNodeName)
+		else if(name == Cure.posNodeName)
 		{
 			print ('<span class="name attrvalue" style="background:blue;">'+name.toUpperCase()+'</span>');
 		} 
@@ -14,4 +15,4 @@
       <i class="glyphicon glyphicon-plus-sign"></i>
 		<span style="float: none;">Add</span>
     </button>
-	<div class="addgeneinfo addnode_wrapper" id="addgeneinfo<%= cid %>"></div>
+	<div class="addgeneinfo addnode_wrapper" id="addgeneinfo<%= options.cid %>"></div>
