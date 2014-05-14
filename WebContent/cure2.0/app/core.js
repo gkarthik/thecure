@@ -155,12 +155,6 @@ define(
 			                && classToclose.has(e.target).length == 0) {
 				            classToclose.hide();
 			            }
-			            
-			            classToclose = $('.distribution-chart');
-			            if (!classToclose.is(e.target)
-			                && classToclose.has(e.target).length == 0) {
-				            classToclose.hide();
-			            }
 		          });
 		        
 		        //TODO: MOVE TO ScoreBoardView

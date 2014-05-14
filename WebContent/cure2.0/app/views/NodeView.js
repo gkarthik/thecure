@@ -5,11 +5,12 @@ define([
 	'd3',
 	//View
 	'app/views/optionsView',
+	'app/views/distributionChartView',
 	//Templates
 	'text!app/templates/LeafNode.html',
 	'text!app/templates/SplitValue.html',
 	'text!app/templates/SplitNode.html'
-    ], function($, Marionette, d3, optionsView, LeafNodeTemplate, splitValueTemplate, splitNodeTemplate) {
+    ], function($, Marionette, d3, optionsView, distributionChartView, LeafNodeTemplate, splitValueTemplate, splitNodeTemplate) {
 NodeView = Marionette.Layout.extend({
 	tagName : 'div',
 	className : 'node dragHtmlGroup',
@@ -45,218 +46,36 @@ NodeView = Marionette.Layout.extend({
 		'click .showDistribution': 'getDistributionData'
 	},
 	initialize : function() {
-		if(Cure.PlayerNodeCollection.models.length > 0) {
-			Cure.binScale = d3.scale.linear().domain([ 0, Cure.PlayerNodeCollection.models[0].get('options').get('bin_size') ]).range([ 0, 100 ]);
-		} else {
-			Cure.binScale = d3.scale.linear().domain([ 0, 239 ]).range([ 0, 100 ]);
-		}
-		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'setaccLimit', 'highlight', 'checkNodeAddition', 'renderPlaceholder', 'parseDistributionData');
+		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'renderPlaceholder');
 		this.listenTo(this.model, 'change:x', this.render);
 		this.listenTo(this.model, 'change:y', this.render);
-		this.listenTo(this.model, 'change:accLimit', this.render);
-		this.listenTo(this.model, 'change:highlight', this.highlight);
-		this.listenTo(this.model, 'add:children', this.checkNodeAddition);
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
-		this.listenTo(this.model, 'change:displayDistChart', this.parseDistributionData);
+		this.listenTo(this.model, 'change:getSplitData',this.showDistView);
 		
-		//this.updateAccLimit();
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
-		console.log(this.cid);
-	},
-	updateAccLimit: function(){
-		var accLimit = 0;
-		//Setting up accLimit for leaf_node
-		if(this.model.get('options').get('kind')=="leaf_node") {
-			accLimit = Cure.binScale(this.model.get('options').get('bin_size'))*(this.model.get('options').get('pct_correct'));
-			this.model.set('accLimit',accLimit);
-		}
+		
+		var thisModel = this.model;
+		 $(document).mouseup(
+        function(e) {
+          classToclose = $('.distribution-chart');
+          if (!classToclose.is(e.target)
+              && classToclose.has(e.target).length == 0) {
+	           thisModel.distributionChartRegion.close();
+          }
+      });
 	},
 	getDistributionData: function(){
-		if(this.model.get("options").kind=="split_node"){
+		if(this.model.get("options").get('kind')=="split_node"){
 			this.model.set("getSplitData",true);
 			Cure.PlayerNodeCollection.sync();
 		}
 	},
-	parseDistributionData: function(){
-		if(this.model.get('displayDistChart')==true){
-			console.log(this.model.get('getSplitData'));
-			this.model.set('displayDistChart',false);
-			var data;
-			var thisModel = this.model;
-			try{
-				data = this.model.get('distribution_data').get("dataArray");
-			} catch (e) {
-				data = [];
-			}
-			$(this.ui.distributionChart).show();
-			var id = $(this.ui.distributionChart).attr("id");
-			var globalHeight = 200;
-			var globalWidth = 400;
-			d3.select("#"+id).select(".chartGroup").remove();
-			var SVG = d3.select("#"+id).attr({"height":globalHeight,"width":globalWidth}).append("svg:g").attr("class","chartGroup");
-			//Create JSON for value and frequency of value
-			var xLength = globalWidth-40;
-			var yLength = globalHeight-40;
-			var plotValues = [];
-			var frequencies = [];
-			var isNominal = this.model.get('distribution_data').get("isNominal");
-			var splitPoint = this.model.get('options').split_point;
-			//Check if numeric or nominal attribute
-			if(data.length>0){
-				if(!isNominal){
-					var range = data[0].value;
-					for(var i = 0; i < 11; i++){
-						plotValues.push({
-							"value": range,
-							"frequency": [0,0]//y,n
-						});
-						range += parseFloat((data[data.length-1].value - data[0].value)/10);
-					}
-					
-					for(var temp in data){
-						for(var i = 1; i<11; i ++){
-							if(data[temp].value <= plotValues[i].value){
-								if(data[temp].classprob==Cure.posNodeName){
-									plotValues[i].frequency[0]++;
-								} else if(data[temp].classprob==Cure.negNodeName) {
-									plotValues[i].frequency[1]++;
-								}
-								break;
-							}
-						}
-					}
-				} else {
-					var putInArray = 1;
-					var arrayIndex = 0;
-					for(var temp in data){
-						putInArray = 1;
-						arrayIndex = 0;
-						for(var i in plotValues){
-							if(plotValues[i].value == data[temp].value){
-								putInArray = 0;
-								arrayIndex = i;
-								break;
-							}
-						}
-						if(putInArray){
-							plotValues.push({
-								"value": data[temp].value,
-								"frequency": [0,0]//y,n
-							});
-						} else {
-							if(data[temp].classprob==Cure.posNodeName){
-								plotValues[arrayIndex].frequency[0]++;
-							} else if(data[temp].classprob==Cure.negNodeName) {
-								plotValues[arrayIndex].frequency[1]++;
-							}
-						}
-					}
-				}
-			}
-			var total = 0;
-			for(var temp in plotValues){
-				total = 0;
-				for(var i in plotValues[temp].frequency){
-					total += plotValues[temp].frequency[i];
-				}
-				frequencies.push(total);
-			}
-			frequencies.sort(function(a,b){return a-b;});
-			var rectWidth = (globalWidth-40)/plotValues.length;
-			if(isNominal){
-				rectWidth = rectWidth/2;
-			}
-			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
-			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
-			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
-			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
-			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate(30,"+(globalHeight-30)+")").call(xAxis);
-			SVG.append("g").attr("class","axis yaxis").attr("transform", "translate(30,10)").call(yAxis);
-			
-			SVG.append("svg:g").attr("class","distLayerGroup");
-			var layer = SVG.selectAll(".distLayerGroup").selectAll(".distLayer").data(plotValues);
-			
-			var layerEnter = layer.enter().append("g").attr("class","distLayer")
-			.attr("transform",function(d){
-				var translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
-				if(!isNominal){
-					translateX = (30 - (rectWidth/2)) + parseFloat(valueScale(d.value));
-				}
-				var total = 0;
-				for(var i in plotValues[temp].frequency){
-					total += plotValues[temp].frequency[i];
-				}
-				return "translate("+translateX+",10)";
-			});
-			
-			//Insert rect on layerEnter
-			var totalVal = 0;
-			var layerRect = layerEnter.selectAll(".distRect").data(function(d){return d.frequency; });
-			console.log(plotValues);
-			layerRect.enter().append("rect").attr("class","distRect")
-			.attr("width", rectWidth)
-	    .style("fill", function(d,i) { return (i==0) ? "blue" : "red"; })
-	    .attr("y",function(d,i){
-	    	if(i==0){
-	    		totalVal = 0;
-	    	}
-	    	totalVal += frequencyScale(frequencies[frequencies.length-1] - d);
-	    	return parseFloat((globalHeight-40)-totalVal);
-	    })
-	    .attr("height", 0);
-			
-			layer.selectAll(".distRect").data(function(d){return d.frequency; }).transition().duration(function(d,i){
-				return Cure.duration*(i);
-			}).attr("height",function(d){
-	    	return frequencyScale(frequencies[frequencies.length-1] - d);
-			});
-			
-			if(!isNominal){
-				xLength = xLength - ((globalWidth-40)/(plotValues.length));
-				var splitScale = d3.scale.linear().domain([plotValues[0].value, plotValues[plotValues.length-1].value]).range([0,xLength]);
-				var reverseSplitScale = d3.scale.linear().domain([0,xLength]).range([plotValues[0].value, plotValues[plotValues.length-1].value]);
-				var splitPointGroup = SVG.append("g").attr("class","split_point")
-				.attr("transform",function(){
-					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(splitPoint));
-					var total = 0;
-					for(var i in plotValues[temp].frequency){
-						total += plotValues[temp].frequency[i];
-					}
-					return "translate("+translateX+",10)";
-				});
-				
-				var origin = [0,0];
-				var drag = d3.behavior.drag().origin(function() { 
-					var t = d3.select(this).attr("transform");
-					var origin = String(t).match(/-?[0-9\.]+/g);
-					return { x: parseFloat(origin[0]), y: parseFloat(origin[1]) }; 
-				}).on("dragstart", function(d) {
-					var t = d3.select(this).attr("transform");
-	        var origin = String(t).match(/-?[0-9\.]+/g);
-	        this.__customorigin__ = { x: parseFloat(origin[0]), y: parseFloat(origin[1]) };
-	      }).on("drag", function(){
-	      	var o = this.__customorigin__;
-	        var dist = parseFloat(d3.event.x);
-	        splitPoint = reverseSplitScale(dist-30-((globalWidth-40)/(plotValues.length*2)));
-	        d3.selectAll(".splitValueLabel").text(Math.round(splitPoint*100)/100);
-	        d3.select(this).attr("transform","translate("+d3.event.x+","+o.y+")");
-		    }).on("dragend",function(){
-		    	var options = thisModel.get('options');
-		    	options.set('split_point', splitPoint);
-		    	Cure.PlayerNodeCollection.sync();
-		    	delete this.__customorigin__;
-		    });
-		    
-				d3.selectAll(".split_point").call(drag);
-				
-				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
-				splitPointGroup.append("svg:text").attr("class","splitValueLabel").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
-				var dragHolder = splitPointGroup.append("svg:g").attr("transform","translate(-18,"+((globalHeight-40)/2)+")").attr("class","dragSplitPoint");
-				dragHolder.append("svg:rect").attr("height",15).attr("width",40).attr("fill","steelblue").attr("transform","translate(0,-10)");
-				dragHolder.append("svg:text").attr("fill","white").text("DRAG").style("font-size","10px").attr("transform","translate(2,2)");
-			}
+	showDistView: function(){
+		if(this.model.get('getSplitData')==false){
+			var newdistChartView = new distributionChartView({model: this.model.get('distribution_data')});
+			this.distributionChartRegion.show(newdistChartView);
 		}
 	},
 	error: function(){
@@ -270,32 +89,6 @@ NodeView = Marionette.Layout.extend({
 				border: "2px solid "+Cure.colorScale(Cure.CollaboratorCollection.indexOf(this.model.get('collaborator')))
 			});
 		}	
-	},
-	highlight: function(){
-		if(this.model.get('highlight')!=0){
-			this.$el.addClass("highlightNode");
-		} else {
-			this.$el.removeClass("highlightNode");
-		}
-	},
-	checkNodeAddition: function(children){
-		if(this.model.get('modifyAccLimit')){
-			this.setaccLimit(children);
-		}
-	},
-	setaccLimit : function(children){
-		if(children.get('options').get('kind')=="leaf_node") {
-			if(this.model.get('parentNode').get('modifyAccLimit')){
-				var accLimit = 0;
-				if(children.get('name')==Cure.negNodeName) {
-					accLimit += Cure.binScale(children.get('options').get('bin_size'))*(1-children.get('options').get('pct_correct'));
-				} else if(children.get('name') == Cure.posNodeName) {
-					accLimit += Cure.binScale(children.get('options').get('bin_size'))*(children.get('options').get('pct_correct'));
-				}
-				accLimit += this.model.get('parentNode').get('accLimit');
-				this.model.get('parentNode').set('accLimit',accLimit);
-			}
-		}
 	},
 	showNodeDetails: function(){
 		var datasetBinSize = Cure.PlayerNodeCollection.models[0].get('options').get('bin_size');
@@ -375,16 +168,6 @@ NodeView = Marionette.Layout.extend({
 		this.$el.addClass(options.get('kind'));
 		options.set("viewCSS", {'width':width});
 	}, 
-	onRender: function(){
-		if(this.model.get('options').get('kind')=="split_node" || this.model.get('options').get('kind')=="leaf_node"){
-			var newOptionsView = new optionsView({model: this.model.get('options')});
-			this.chartRegion.show(newOptionsView);
-		}
-		this.renderPlaceholder();	
-	},
-	onShow: function(){
-		this.render();//To draw chart for final element.
-	},
 	remove : function() {
 		//Remove and destroy current node.
 		this.$el.remove();
@@ -412,7 +195,17 @@ NodeView = Marionette.Layout.extend({
 			'model' : this.model
 		});
 		this.addGeneRegion.show(ShowGeneInfoWidget);
-	}
+	},
+	onRender: function(){
+		if(this.model.get('options').get('kind')=="split_node" || this.model.get('options').get('kind')=="leaf_node"){
+			var newOptionsView = new optionsView({model: this.model.get('options')});
+			this.chartRegion.show(newOptionsView);
+		}
+		this.renderPlaceholder();	
+	},
+	onShow: function(){
+		this.render();//To draw chart for final element.
+	},
 });
 return NodeView;
 });

@@ -261,7 +261,6 @@ display: block;
 }
 
 .distribution-chart{
-	display:none;
 	position:absolute;
 	top:0px;
 	left:120px;
