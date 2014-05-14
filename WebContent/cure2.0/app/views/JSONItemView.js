@@ -45,7 +45,7 @@ JSONItemView = Marionette.ItemView.extend({
 		var thisView = this,
 			summary = this.model.get("gene_summary").summaryText || "";
 		if (summary.length == 0) {
-			$.getJSON("http://mygene.info/v2/gene/" + thisView.model.get("options").id,
+			$.getJSON("http://mygene.info/v2/gene/" + thisView.model.get("options").get('unique_id'),
 					function(data) {
 						var summary = {
 							"summaryText" : data.summary,
@@ -61,14 +61,14 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") == -1) {
+		if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
 			return splitNodeGeneSummary({
 				id: serialized_model.cid,
 				name : name,
 				summary : serialized_model.gene_summary,
 				kind : serialized_model.options.kind
 			});
-		} else if (serialized_model.options.kind == "split_node" && serialized_model.options.id.indexOf("metabric") != -1){
+		} else if (serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") != -1){
 			return splitNodeCfSummary({
 				id: serialized_model.cid,
 				name : name,
@@ -87,16 +87,16 @@ JSONItemView = Marionette.ItemView.extend({
 	ShowJSON : function() {
 		var description =null;
 		var idFlag = 1;
-		if(this.model.get('options').kind == "split_node"){
-			if(this.model.get('options').id.indexOf("metabric") == -1){
+		if(this.model.get('options').get('kind') == "split_node"){
+			if(this.model.get('options').get('unique_id').indexOf("metabric") == -1){
 				idFlag = 0;
 				this.getSummary();
 			} else {
-				description = this.model.get('options').description;
+				description = this.model.get('options').get('description').replace("\\n","<br>");
 			}
-		} else if(this.model.get('options').kind == "split_value") {
-				if(this.model.get('parentNode').get('options').id.indexOf("metabric")!=-1){
-					var summaryTextArray = this.model.get('parentNode').get('options').description.split("\n");
+		} else if(this.model.get('options').get('kind') == "split_value") {
+				if(this.model.get('parentNode').get('options').get('unique_id').indexOf("metabric")!=-1){
+					var summaryTextArray = this.model.get('parentNode').get('options').get('description').split("\n");
 					for(var temp in summaryTextArray){
 						if(summaryTextArray[temp].match(this.model.get('name').replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))){//To escape +
 							description = summaryTextArray[temp]; 

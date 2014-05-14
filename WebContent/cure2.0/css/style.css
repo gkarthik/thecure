@@ -261,7 +261,6 @@ display: block;
 }
 
 .distribution-chart{
-	display:none;
 	position:absolute;
 	top:0px;
 	left:120px;
@@ -342,8 +341,6 @@ display: block;
 	display:none;
 }
 .shrink_leaf_node svg{
-	width: 70%;
-	height: 50px;
 	padding: 0px;
 }
 

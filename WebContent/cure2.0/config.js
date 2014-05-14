@@ -5,6 +5,7 @@ require.config({
         underscore : 'lib/underscore',
         backbone : 'lib/backbone',
         backboneRelational : 'lib/backbone-relational',
+        backboneDeepModel: 'lib/deep-model.min',
         marionette : 'lib/marionette.backbone.min',
         csb: "http://yako.io/jsapi/csb",
 
@@ -40,6 +41,10 @@ require.config({
         backboneRelational : {
           deps : [ 'backbone' ],
           exports : 'BackboneRelational'
+        },
+        backboneDeepModel: {
+        	deps : [ 'backbone' ],
+          exports : 'BackboneDeepModel'
         },
         marionette : {
           deps : [ 'jquery', 'underscore', 'backbone', 'backboneRelational' ],

@@ -7,7 +7,6 @@ define([
 	'text!app/templates/Collaborators.html'
     ], function($, Marionette, Collaborator, CollaboratorTemplate) {
 CollaboratorView = Marionette.ItemView.extend({
-	model : Node,
 	tagName : "tr",
 	template: CollaboratorTemplate,
 	initialize : function() {
