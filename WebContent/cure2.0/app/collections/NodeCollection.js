@@ -6,8 +6,10 @@ define([
    //Models
 	'app/models/Node',
 	'app/models/DistributionData',
+	//Views
+	'app/views/distributionChartView',
 	'text!app/templates/currentRank.html'
-    ], function($, Backbone, csb, Node, DistributionData, CurrentRankTemplate) {
+    ], function($, Backbone, csb, Node, DistributionData, distributionChartView, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
@@ -54,7 +56,7 @@ NodeCollection = Backbone.Collection.extend({
 			if(kindArray[temp].options.kind=="split_node"){
 				splitNodeArray.push({
 					'name': kindArray[temp].name,
-					'cid': kindArray[temp].cid,
+					'cid': kindArray[temp].options.cid,
 					'nodeGroup':[]//Holds the nodes that are pushed by syncSplitNodeArray in Score View.
 				});
 			}
@@ -66,9 +68,11 @@ NodeCollection = Backbone.Collection.extend({
 		setTimeout(function(){
 			if (node != null && json_node != null) {
 				for ( var key in json_node) {
-					if (key != "children") {
+					if (key != "children" && key!= "options") {
 						node.set(key, json_node[key]);
-					}
+					} else if(key=="options"){
+						node.get(key).set(json_node[key]);
+					} 
 				}
 				if (json_node.children.length > 0
 						&& json_node.children.length == node.get('children').length) {
@@ -191,7 +195,7 @@ NodeCollection = Backbone.Collection.extend({
 				requiredModel.get('distribution_data').set(data);
 			}
 			requiredModel.set('getSplitData',false);
-			requiredModel.set('displayDistChart',true);
+			requiredModel.set('showDistChart',true);
 		}
 	},
 	saveTree: function(){

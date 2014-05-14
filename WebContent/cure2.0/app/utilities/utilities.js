@@ -74,8 +74,7 @@ CureUtils.updatepositions = function(NodeCollection) {
 	});
 	for ( var temp in NodeCollection["models"]) {
 		for ( var innerTemp in d3nodes) {
-			if (String(d3nodes[innerTemp].cid) == String(NodeCollection["models"][temp]
-					.get('cid'))) {
+			if (String(d3nodes[innerTemp].options.cid) == String(NodeCollection["models"][temp].get('options').get('cid'))) {
 				NodeCollection["models"][temp].set({"x": d3nodes[innerTemp].x, "y": d3nodes[innerTemp].y});
 			}
 		}
@@ -112,9 +111,9 @@ CureUtils.render_network = function(dataset) {
 			.range([ 0, 100 ]);
 		dataset = [ {
 			'name' : '',
-			'cid' : 0,
 			'options' : {
 				"id" : "",
+				'cid' : 0,
 				"kind" : "split_node"
 			},
 			edit : 0,
@@ -348,12 +347,13 @@ CureUtils.getDepth = function(node){
 }
 
 CureUtils.drawChart = function(parentElement, limit, accLimit,radius, nodeKind, nodeName){
+	parentElement.selectAll(".chartWrapper").remove();
 	var chartWrapper = parentElement.attr("width",function(){
 		return (radius*20)+8;
 	}).attr("height",function(){
 		return (radius*20)+8;
 	}).append("svg:g").attr("class","chartWrapper").attr("transform","translate(3,3)");
-	chartWrapper.append("rect").attr("class","circleContainer "+nodeName).attr("height",function(){
+	chartWrapper.append("rect").attr("class","chartContainer").attr("height",function(){
 		if(nodeKind!="split_value"){
 			return (radius*20)+2;
 		}
@@ -427,7 +427,7 @@ CureUtils.drawEdges = function(node,binY,count){
 			target = tempNode.toJSON();
 			source.y = parseFloat(105 + source.y);
 			target.y = parseFloat(105 + target.y);
-			links.push({"source":source,"target":target,"bin_size":node.get('options').bin_size,"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
+			links.push({"source":source,"target":target,"bin_size":node.get('options').get('bin_size'),"name":node.get('name'),"linkNumber":leafNodeCount,"divLeft":0});
 			tempNode = tempNode.get('parentNode');
 		}
 		allLinks.push.apply(allLinks, links);
