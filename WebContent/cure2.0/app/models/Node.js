@@ -78,8 +78,7 @@ define([
 		includeInJSON: false,
 		reverseRelation : {
 			type : Backbone.HasOne,	
-			key : 'splitNode',
-			includeInJSON: false
+			key : 'splitNode'
 		}
 	},
 	{

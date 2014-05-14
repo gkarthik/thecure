@@ -172,7 +172,7 @@ DistChartView = Marionette.ItemView.extend({
 	      	var o = this.__customorigin__;
 	        var dist = parseFloat(d3.event.x);
 	        splitPoint = reverseSplitScale(dist-30-((globalWidth-40)/(plotValues.length*2)));
-	        d3.selectAll(".splitValueLabel").text(Math.round(splitPoint*100)/100);
+	        SVG.selectAll(".splitValueLabel").text(Math.round(splitPoint*100)/100);
 	        d3.select(this).attr("transform","translate("+d3.event.x+","+o.y+")");
 		    }).on("dragend",function(){
 		    	var options = thisModel.get('splitNode').get('options');
@@ -181,7 +181,7 @@ DistChartView = Marionette.ItemView.extend({
 		    	delete this.__customorigin__;
 		    });
 		    
-				d3.select(".split_point").call(drag);
+				SVG.select(".split_point").call(drag);
 				
 				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
 				splitPointGroup.append("svg:text").attr("class","splitValueLabel").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");

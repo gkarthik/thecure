@@ -1121,7 +1121,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
 
-			if(getSplitData){
+			if(Boolean.TRUE.equals(getSplitData)){
 				addDistributionData(data, m_Attribute, m_distributionData);
 			}
 

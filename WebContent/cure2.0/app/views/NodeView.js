@@ -34,8 +34,8 @@ NodeView = Marionette.Layout.extend({
 	},
 	regions: {
 		chartRegion: ".chartRegion",
-		distributionChartRegion: ".distributionChartRegion",
-		addGeneRegion : ".addgeneinfo"
+		addGeneRegion : ".addgeneinfo",
+		distributionChartRegion: ".distributionChartRegion"
 	},
 	events : {
 		'click button.addchildren' : 'addChildren',
@@ -84,6 +84,7 @@ NodeView = Marionette.Layout.extend({
       });
 	},
 	getDistributionData: function(){
+		console.log(this.model.get('name'));
 		if(this.model.get("options").get('kind')=="split_node"){
 			this.model.set("getSplitData",true);
 			Cure.PlayerNodeCollection.sync();
