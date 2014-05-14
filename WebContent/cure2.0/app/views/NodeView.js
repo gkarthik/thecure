@@ -47,12 +47,14 @@ NodeView = Marionette.Layout.extend({
 	},
 	initialize : function() {
 		_.bindAll(this, 'remove', 'addChildren', 'showSummary', 'renderPlaceholder');
-		this.listenTo(this.model, 'change:x', this.render);
-		this.listenTo(this.model, 'change:y', this.render);
+		this.listenTo(this.model, 'change:x', this.setWidthandPos);
+		this.listenTo(this.model, 'change:y', this.setWidthandPos);
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
-		this.listenTo(this.model, 'change:getSplitData',this.showDistView);
+		this.listenTo(this.model, 'change:showDistChart',this.showDistView);
 		this.listenTo(this.model.get('options'), 'change:kind', this.render);
+		this.listenTo(this.model, 'change:name', this.render);
+		this.listenTo(this.model.get('options'), 'change:accLimit', this.setNodeClass);
 		
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
@@ -88,8 +90,9 @@ NodeView = Marionette.Layout.extend({
 		}
 	},
 	showDistView: function(){
-		if(this.model.get('getSplitData')==false){
-			var newdistChartView = new distributionChartView({model: this.model.get('distribution_data')});
+		if(this.model.get('showDistChart')==true){
+			this.model.set('showDistChart',false);
+			var newdistChartView = new distributionChartView({model: this.model.get('distribution_data')});	
 			this.distributionChartRegion.show(newdistChartView);
 		}
 	},
@@ -123,8 +126,8 @@ NodeView = Marionette.Layout.extend({
 	showSummary : function() {
 			this.model.set("showJSON", 1);
 	},
-	onBeforeRender : function() {
-		//Render the positions of each node as obtained from d3.
+	setWidthandPos: function(){
+	//Render the positions of each node as obtained from d3.
 		var numNodes = Cure.utils.getNumNodesatDepth(Cure.PlayerNodeCollection.models[0], Cure.utils.getDepth(this.model));
 		
 		if(numNodes * 100 >= Cure.width-100){//TODO: find way to get width of node dynamically.
@@ -142,7 +145,7 @@ NodeView = Marionette.Layout.extend({
 			if(this.model.get('options').get('kind')=='leaf_node'||this.model.get('options').get('kind')=='split_node'){
 				try{
 					this.$el.css({
-						'width': parseFloat(this.model.get('parentNode').get('parentNode').get('options').get('viewCSS').width)+"px",
+						'width': parseFloat(this.model.get('parentNode').get('parentNode').get('options').get('viewWidth'))+"px",
 						'min-width': '0'
 					});
 				} catch(e){
@@ -153,17 +156,22 @@ NodeView = Marionette.Layout.extend({
 				} else {
 					if(this.model.get('parentNode')!=null){
 						this.$el.css({
-							'width': parseFloat(this.model.get('parentNode').get('options').get('viewCSS').width)+"px",
+							'width': parseFloat(this.model.get('parentNode').get('options').get('viewWidth'))+"px",
 							'min-width': '0'
 						});
 					}
 				}
 			}
 		var width = this.$el.outerWidth();
-		var nodeTop = (this.model.get('y')+71);
 		var styleObject = {
-			"left": (this.model.get('x') - ((width) / 2)) +"px",
-			"top": nodeTop +"px",
+				"left": (this.model.get('x') - ((width) / 2)) +"px",
+				"top": (this.model.get('y')+71) +"px"
+			};
+		this.$el.css(styleObject);
+		this.model.get('options').set("viewWidth", width);
+	},
+	setNodeClass: function(){
+		var styleObject = {
 			"background": "#FFF",
 			"border-color": "#000"
 		};
@@ -178,9 +186,15 @@ NodeView = Marionette.Layout.extend({
 		this.$el.css(styleObject);
 		var options = this.model.get('options');
 		this.$el.addClass(options.get('kind'));
-		options.set("viewCSS", {'width':width});
+	},
+	onBeforeRender : function() {
+		this.setWidthandPos();
+		this.setNodeClass();
+		if(this.chartRegion.currentView){
+			this.chartRegion.currentView.remove();
+		}
 	}, 
-	remove : function() {
+	remove : function() {		
 		//Remove and destroy current node.
 		this.$el.remove();
 		Cure.utils.delete_all_children(this.model);

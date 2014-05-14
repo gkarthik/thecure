@@ -127,7 +127,6 @@ DistChartView = Marionette.ItemView.extend({
 			//Insert rect on layerEnter
 			var totalVal = 0;
 			var layerRect = layerEnter.selectAll(".distRect").data(function(d){return d.frequency; });
-			console.log(plotValues);
 			layerRect.enter().append("rect").attr("class","distRect")
 			.attr("width", rectWidth)
 	    .style("fill", function(d,i) { return (i==0) ? "blue" : "red"; })
@@ -182,7 +181,7 @@ DistChartView = Marionette.ItemView.extend({
 		    	delete this.__customorigin__;
 		    });
 		    
-				d3.selectAll(".split_point").call(drag);
+				d3.select(".split_point").call(drag);
 				
 				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
 				splitPointGroup.append("svg:text").attr("class","splitValueLabel").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");

@@ -15,7 +15,6 @@ define([
 		modifyAccLimit: 1,
 		children : [],
 		manual_pct_correct: 0,
-		displayDistChart: false,
 		gene_summary : {
 			"summaryText" : "",
 			"goTerms" : {},
