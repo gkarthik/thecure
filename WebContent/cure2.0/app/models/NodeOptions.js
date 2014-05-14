@@ -9,8 +9,8 @@ define([
 		viewCSS: {}
 	},
 	initialize: function(){
-		this.listenTo(this,'change:pct_correct', this.updateAccLimit);
 		this.listenTo(this,'change:bin_size', this.updateAccLimit);
+		this.listenTo(this,'change:pct_correct', this.updateAccLimit);
 		this.updateAccLimit();
 	},
 	updateAccLimit: function(){
@@ -21,7 +21,7 @@ define([
 		}
 		var accLimit = Cure.binScale(this.get('bin_size'))*(this.get('pct_correct'));
 		this.set('accLimit',accLimit);
-	},
+	}
 });
 
 return NodeOptions;
