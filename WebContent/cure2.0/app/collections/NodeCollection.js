@@ -6,8 +6,10 @@ define([
    //Models
 	'app/models/Node',
 	'app/models/DistributionData',
+	//Views
+	'app/views/distributionChartView',
 	'text!app/templates/currentRank.html'
-    ], function($, Backbone, csb, Node, DistributionData, CurrentRankTemplate) {
+    ], function($, Backbone, csb, Node, DistributionData, distributionChartView, CurrentRankTemplate) {
 NodeCollection = Backbone.Collection.extend({
 	model : Node,
 	initialize : function() {
@@ -191,7 +193,6 @@ NodeCollection = Backbone.Collection.extend({
 				requiredModel.get('distribution_data').set(data);
 			}
 			requiredModel.set('getSplitData',false);
-			requiredModel.set('displayDistChart',true);
 		}
 	},
 	saveTree: function(){
