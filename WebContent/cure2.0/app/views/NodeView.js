@@ -52,17 +52,32 @@ NodeView = Marionette.Layout.extend({
 		this.listenTo(this.model, 'remove', this.remove);
 		this.listenTo(this.model, 'change:collaborator',this.renderPlaceholder);
 		this.listenTo(this.model, 'change:getSplitData',this.showDistView);
+		this.listenTo(this.model.get('options'), 'change:kind', this.render);
 		
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
 		
+		//Mouse close events
 		var thisView = this;
-		 $(document).mouseup(
+		 $(document).on("mouseup",
         function(e) {
           classToclose = $('.distribution-chart');
           if (!classToclose.is(e.target)
               && classToclose.has(e.target).length == 0) {
-	           thisView.distributionChartRegion.close();
+          	if (thisView.distributionChartRegion) {
+          		thisView.distributionChartRegion.close();
+            }
+          }
+          var container = $(".addnode_wrapper");
+          var geneList = $(".ui-autocomplete");
+          if (!container.is(e.target)
+              && container.has(e.target).length == 0
+              && !geneList.is(e.target)
+              && geneList.has(e.target).length == 0) {
+            $("input.mygene_query_target").val("");
+            if (thisView.addGeneRegion) {
+            	thisView.addGeneRegion.close();
+            }
           }
       });
 	},
@@ -104,9 +119,6 @@ NodeView = Marionette.Layout.extend({
 			content+="<p class='accuracyNodeDetail'><span class='percentDetails'>"+Math.round(this.model.get('options').get('pct_correct')*10000)/100+"%</span><span class='textDetail'>is the percentage accuracy at this node.</span></p>";
 		}
 		Cure.utils.showDetailsOfNode(content, this.$el.offset().top, this.$el.offset().left);
-	},
-	setHighlight: function(){
-		this.model.set('highlight',0);
 	},
 	showSummary : function() {
 			this.model.set("showJSON", 1);
@@ -180,7 +192,11 @@ NodeView = Marionette.Layout.extend({
 			Cure.utils.delete_all_children(this.model);
 			var prevAttr = this.model.get("previousAttributes");
 				for ( var key in prevAttr) {
+					if(key!="options"){
 						this.model.set(key, prevAttr[key]);
+					} else if(key=="options") {
+						this.model.get(key).set(prevAttr[key]);
+					}
 				}
 				this.model.set("previousAttributes", []);
 		} else {

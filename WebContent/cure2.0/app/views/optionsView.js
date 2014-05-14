@@ -19,7 +19,7 @@ optionsView = Marionette.ItemView.extend({
 		var width = this.model.get('viewCSS').width-20;
 		radius = parseFloat((width - 4)/20);
 		var limit = Cure.binScale(this.model.get('bin_size'));
-		console.log(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('kind'));
+		console.log(this.model.get('accLimit'));
 		Cure.utils.drawChart(d3.selectAll(id), limit, this.model.get('accLimit'), radius, this.model.get('kind'), this.model.get('AttributeNode').get('name'));
 		var classToChoose = {"className":" .posCircle","color":""};
 		if(this.model.get('AttributeNode').get('name') == Cure.negNodeName){

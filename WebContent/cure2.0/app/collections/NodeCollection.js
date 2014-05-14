@@ -68,9 +68,11 @@ NodeCollection = Backbone.Collection.extend({
 		setTimeout(function(){
 			if (node != null && json_node != null) {
 				for ( var key in json_node) {
-					if (key != "children") {
+					if (key != "children" && key!= "options") {
 						node.set(key, json_node[key]);
-					}
+					} else if(key=="options"){
+						node.get(key).set(json_node[key]);
+					} 
 				}
 				if (json_node.children.length > 0
 						&& json_node.children.length == node.get('children').length) {
