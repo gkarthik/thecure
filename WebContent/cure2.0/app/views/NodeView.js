@@ -56,13 +56,13 @@ NodeView = Marionette.Layout.extend({
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
 		
-		var thisModel = this.model;
+		var thisView = this;
 		 $(document).mouseup(
         function(e) {
           classToclose = $('.distribution-chart');
           if (!classToclose.is(e.target)
               && classToclose.has(e.target).length == 0) {
-	           thisModel.distributionChartRegion.close();
+	           thisView.distributionChartRegion.close();
           }
       });
 	},
