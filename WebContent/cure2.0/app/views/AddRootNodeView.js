@@ -125,7 +125,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 							index = Cure.CollaboratorCollection.indexOf(newCollaborator);
 						}
 						model.get("options").set({
-							id : ui.item.unique_id,
 							"unique_id" : ui.item.unique_id,
 							"kind" : "split_node",
 							"full_name" : ui.item.long_name,
@@ -135,7 +134,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 						var newNode = new Node({
 							'name' : ui.item.short_name.replace(/_/g," "),
 							"options" : {
-								id : ui.item.unique_id,
 								"unique_id" : ui.item.unique_id,
 								"kind" : "split_node",
 								"full_name" : ui.item.long_name,
@@ -251,7 +249,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.symbol);
 						model.get("options").set({
-							id : ui.item.id,
+							"unique_id" : ui.item.id,
 							"kind" : "split_node",
 							"full_name" : ui.item.name
 						});
@@ -259,7 +257,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 						var newNode = new Node({
 							'name' : ui.item.symbol,
 							"options" : {
-								id : ui.item.id,
+								"unique_id" : ui.item.id,
 								"kind" : "split_node",
 								"full_name" : ui.item.name
 							}

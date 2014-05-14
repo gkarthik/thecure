@@ -135,21 +135,8 @@ define(
 		        	}
 		        });
 		        
-		        $(document).mouseup(
+		        $(document).on("mouseup",
 		            function(e) {
-			            var container = $(".addnode_wrapper");
-			            var geneList = $(".ui-autocomplete");
-
-			            if (!container.is(e.target)
-			                && container.has(e.target).length == 0
-			                && !geneList.is(e.target)
-			                && geneList.has(e.target).length == 0) {
-				            $("input.mygene_query_target").val("");
-				            if (Cure.MyGeneInfoRegion) {
-					            Cure.MyGeneInfoRegion.close();
-				            }
-			            }
-
 			            var classToclose = $('.blurCloseElement');
 			            if (!classToclose.is(e.target)
 			                && classToclose.has(e.target).length == 0) {
