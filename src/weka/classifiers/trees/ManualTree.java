@@ -1124,12 +1124,24 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			if(Boolean.TRUE.equals(getSplitData)){
 				addDistributionData(data, m_Attribute, m_distributionData);
 			}
+			
+			int maxIndex = 0;
+			double maxCount = 0;
+			double errors = 0;
+			double pct_correct = 0;
+			double bin_size = 0;
 
 			for (int i = 0; i < distribution.length; i++) {
 				m_Successors[i] = new ManualTree();
 				m_Successors[i].setKValue(m_KValue);
 				m_Successors[i].setMaxDepth(getMaxDepth());
-
+				
+				//Compute pct_correct from distributions and send to split_node
+				bin_size = Utils.sum(distribution[i]);
+				maxIndex = Utils.maxIndex(distribution[i]);
+				maxCount = distribution[i][maxIndex];
+				errors += bin_size - maxCount;
+				
 				//test an instance to see which child node to send its subset down.
 				//after split, should hold for all in set
 				String child_name = "";
@@ -1177,7 +1189,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					}
 				}
 			}
-
+			
+			pct_correct = (quantity-errors)/quantity;
+			evalresults.put("pct_correct", pct_correct);
 			// If all successors are non-empty, we don't need to store the class distribution
 			boolean emptySuccessor = false;
 			for (int i = 0; i < subsets.length; i++) {
