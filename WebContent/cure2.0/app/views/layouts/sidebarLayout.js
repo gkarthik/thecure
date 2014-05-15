@@ -31,11 +31,15 @@ sidebarLayout = Marionette.Layout.extend({
     events:{
     	'click #current-tree-rank': 'showCurrentRank',
     	'click #tree-explanation-button': 'toggleTreeExp',
-    	'click #BadgesPlaceholder': 'showBadges'
+    	'click #BadgesPlaceholder': 'showBadges',
+    	'click #new-tree': 'createNewTree'
     },
     className: 'panel panel-default',
     initialize: function(){
     	_.bindAll(this,'toggleTreeExp');
+    },
+    createNewTree: function(){
+    	$("div.node:nth-child(1) > .delete").trigger('click');
     },
     showCurrentRank: function(){
     	$(this.ui.ScoreWrapper).show();
