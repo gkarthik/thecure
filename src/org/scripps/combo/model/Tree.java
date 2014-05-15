@@ -106,11 +106,20 @@ public class Tree {
 	 */
 	public static void main(String[] args) throws Exception {
 		Tree tree_ = new Tree();
+		/*
 		List<Tree> trees = tree_.getAll(); //add controls to get by user, get all	
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode treess = tree_.getTreeListAsJson(trees, mapper);
 		String json = mapper.writeValueAsString(treess);
 		System.out.println(json);
+		*/
+		Tree _tree = new Tree();
+		try {
+			_tree.migrateDatabase();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public ObjectNode getTreeListAsJson(List<Tree> trees, ObjectMapper mapper){
@@ -566,6 +575,48 @@ public class Tree {
 			if (conn.connection != null) try { conn.connection.close(); } catch (SQLException logOrIgnore) {}
 		}
 		return;
+	}
+	
+	//Change from id to unique_id as parameter to get attIndex.
+	public int migrateDatabase() throws JsonProcessingException, IOException{
+		JdbcConnection conn = new JdbcConnection();
+		String query = "select json_tree,id from tree";
+		ResultSet rslt = conn.executeQuery(query);
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jtree;
+		try {
+			while(rslt.next()){ 
+				jtree = mapper.readTree(rslt.getString("json_tree").replace("\n", "").replace("\r", ""));
+				findOrCreateUniqueId(jtree.get("treestruct"));
+				conn.executeUpdate("update tree set json_tree='"+jtree.toString().replace("\n", "").replace("\r", "")+"' where id="+rslt.getString("id"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 1;
+	}
+	
+	public void findOrCreateUniqueId(JsonNode node){
+		ObjectNode options  = (ObjectNode) node.get("options");
+		String kind = "";
+		String id = "";
+		if(options!=null){
+			kind = options.get("kind").asText();
+			if(kind.equals("split_node") || kind.equals("leaf_node")){
+				if(options.has("id")){
+					id = options.get("id").asText();
+					options.remove("id");
+					System.out.println(id);
+					options.put("unique_id", id);
+				}
+			}
+			if(node.get("children")!=null){
+				for(JsonNode child : node.get("children")){
+					findOrCreateUniqueId(child);
+				}
+			}
+		}
 	}
 
 	public int getPlayer_id() {
