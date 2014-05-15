@@ -98,8 +98,8 @@ CureUtils.delete_all_children = function(seednode) {
 //
 // -- Render d3 Network
 //
-CureUtils.render_network = function(dataset) {
-
+CureUtils.render_network = function() {
+	var dataset = Cure.PlayerNodeCollection.at(0) ? Cure.PlayerNodeCollection.at(0).toJSON() : undefined;
 	if (dataset) {
 		var binY = d3.scale.linear().domain([ 0, dataset.options.bin_size ])
 				.range([ 0, 30 ]);
@@ -142,7 +142,10 @@ CureUtils.render_network = function(dataset) {
 		});
 		
 		//Drawing Edges
-		var node = Cure.PlayerNodeCollection.models[0];
+		var node;
+		if(Cure.PlayerNodeCollection.length>0){
+			node = Cure.PlayerNodeCollection.at(0);
+		}
 		edgeCount = 0;
 		translateLeft = 0;
 		allLinks = [];
@@ -192,13 +195,16 @@ CureUtils.render_network = function(dataset) {
 				target : d.source
 			});
 		});
-	
+		
 		link.transition().duration(Cure.duration).attr("d",function(d){
 			return Cure.diagonal({
 				source : d.source,
 				target : d.target
 			});
-		}).transition().delay(Cure.duration).duration(Cure.duration).style("stroke-width", function(d){
+		});
+		
+		link.transition().delay(Cure.duration).style("stroke-width", function(d){
+			console.log(d.bin_size);
 			var edgeWidth = binY(d.bin_size);
 			if(edgeWidth<1){
 				edgeWidth = 1;
