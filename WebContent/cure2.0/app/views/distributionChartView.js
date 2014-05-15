@@ -7,7 +7,6 @@ define([
 	'text!app/templates/distributionChart.html'
     ], function($, Marionette, DistributionData, distributionTmpl) {
 DistChartView = Marionette.ItemView.extend({
-	tagName : "tr",
 	model: DistributionData,
 	template: distributionTmpl,
 	initialize: function(){

@@ -117,9 +117,11 @@ NodeCollection = Backbone.Collection.extend({
 					Cure.utils.showLoading(Cure.PlayerNodeCollection.length+" of "+Cure.PlayerNodeCollection.responseSize);
 			}	
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
+			thisCollection.numOfNodesAdded++;
 		}, 10);
 	},
 	responseSize : 0,
+	numOfNodesAdded: 0,
 	parseTreeinList: function(data){
 		Cure.utils.showLoading();
 		Backbone.Relational.store.reset();//To remove previous relations.
@@ -133,18 +135,19 @@ NodeCollection = Backbone.Collection.extend({
 	},
 	parseResponse : function(data) {
 		var jsonsize = Cure.utils.getNumNodesinJSON(data.treestruct);
+		Cure.PlayerNodeCollection.numOfNodesAdded = 0;
 		//If empty tree is returned, no tree rendered.
 		if (data["treestruct"].name) {
 			Cure.PlayerNodeCollection.responseSize = jsonsize;
 			Cure.PlayerNodeCollection.updateCollection(data["treestruct"], Cure.PlayerNodeCollection.models[0], null);
 		} else {
-		//If server returns json with tree render and update positions of nodes.
+		//If server returns json, render and update positions of nodes.
 			Cure.utils.updatepositions(Cure.PlayerNodeCollection);
 		}
 		var updateScore = true;
 		var renderT = window.setInterval(function(){
-			if(Cure.PlayerNodeCollection.length == parseInt(jsonsize) || parseInt(jsonsize)==1){
-				Cure.utils.render_network(Cure.PlayerNodeCollection.toJSON()[0]);
+			if(Cure.PlayerNodeCollection.numOfNodesAdded == parseInt(jsonsize) || parseInt(jsonsize)==1){
+				Cure.utils.render_network();
 				Cure.utils.hideLoading();
 				if(data.distribution_data){
 					if(data.distribution_data.dataArray){
@@ -173,7 +176,7 @@ NodeCollection = Backbone.Collection.extend({
 				Cure.TreeBranchCollection.updateCollection();
 				window.clearInterval(renderT);
 			}
-		},20);
+		},10);
 		if(Cure.PlayerNodeCollection.length == 0){
 			Cure.Comment.set("content","");
 			Cure.ScoreBoardView.render();
