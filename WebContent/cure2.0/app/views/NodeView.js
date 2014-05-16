@@ -85,7 +85,6 @@ NodeView = Marionette.Layout.extend({
       });
 	},
 	getDistributionData: function(){
-		console.log(this.model.get('name'));
 		if(this.model.get("options").get('kind')=="split_node"){
 			this.model.set("getSplitData",true);
 			Cure.PlayerNodeCollection.sync();

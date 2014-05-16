@@ -177,7 +177,8 @@ AddRootNodeView = Marionette.ItemView.extend({
 			offText: "<img title='Clinical Features' src='"+base_url+"cure2.0/img/doctor.png' class='switch-image' >",
 			labelText: '<img class="switch-image" title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png">',
 			offColor: 'primary',
-			size: 'small'
+			size: 'small',
+			animate: false
 		});
 		
 		$(this.ui.gene_query).genequery_autocomplete({

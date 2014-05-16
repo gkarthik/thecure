@@ -204,7 +204,6 @@ CureUtils.render_network = function() {
 		});
 		
 		link.transition().delay(Cure.duration).style("stroke-width", function(d){
-			console.log(d.bin_size);
 			var edgeWidth = binY(d.bin_size);
 			if(edgeWidth<1){
 				edgeWidth = 1;
