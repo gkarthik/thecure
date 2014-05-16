@@ -37,11 +37,12 @@ DistChartView = Marionette.ItemView.extend({
 			var splitPoint = this.model.get('splitNode').get('options').get('split_point');
 			var lowerLimit = data[1].value;
 			var upperLimit = data[data.length-2].value;
+			var noOfRangeBands = 10;
 			//Check if numeric or nominal attribute
 			if(data.length>0){
 				if(!isNominal){
 					var range = data[0].value;
-					for(var i = 0; i < 11; i++){
+					for(var i = 0; i < noOfRangeBands; i++){
 						plotValues.push({
 							"value": range,
 							"frequency": [0,0]//y,n
@@ -50,7 +51,7 @@ DistChartView = Marionette.ItemView.extend({
 					}
 					
 					for(var temp in data){
-						for(var i = 1; i<11; i ++){
+						for(var i = 1; i<noOfRangeBands; i ++){
 							if(data[temp].value <= plotValues[i].value){
 								if(data[temp].classprob==Cure.posNodeName){
 									plotValues[i].frequency[0]++;
@@ -112,15 +113,12 @@ DistChartView = Marionette.ItemView.extend({
 			SVG.append("svg:g").attr("class","distLayerGroup");
 			var layer = SVG.selectAll(".distLayerGroup").selectAll(".distLayer").data(plotValues);
 			
+			
 			var layerEnter = layer.enter().append("g").attr("class","distLayer")
 			.attr("transform",function(d){
 				var translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
 				if(!isNominal){
-					translateX = (30 - (rectWidth/2)) + parseFloat(valueScale(d.value));
-				}
-				var total = 0;
-				for(var i in plotValues[temp].frequency){
-					total += plotValues[temp].frequency[i];
+					translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length)) + parseFloat(valueScale(d.value));
 				}
 				return "translate("+translateX+",10)";
 			});
