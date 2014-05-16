@@ -36,8 +36,24 @@ DistChartView = Marionette.ItemView.extend({
 			var isNominal = this.model.get("isNominal");
 			var splitPoint = this.model.get('splitNode').get('options').get('split_point');
 			var origSplitPoint = this.model.get('splitNode').get('options').get('orig_split_point');
-			var lowerLimit = data[1].value;
-			var upperLimit = data[data.length-2].value;
+			var lowerLimit = data[0].value;
+			var upperLimit = data[data.length-1].value;
+			var lowerFlag = true, upperFlag = true;
+			
+			//Get lowerLimit and upperLimit to ensure each class has at least 1 instance.
+			for(var i = 0; i < data.length;i++){
+				if(data[i].value>lowerLimit && lowerFlag){
+					lowerLimit = data[i].value;
+					lowerFlag = false;
+				}
+				if(data[data.length-1-i].value<upperLimit && upperFlag){
+					upperLimit = data[data.length-1-i].value;
+					upperFlag = false;
+				}
+				if(!lowerFlag && !upperFlag){
+					break;
+				}
+			}
 			var noOfRangeBands = 10;
 			//Check if numeric or nominal attribute
 			if(data.length>0){
@@ -155,7 +171,7 @@ DistChartView = Marionette.ItemView.extend({
 					return "translate("+translateX+",10)";
 				});
 				splitPointIndicator.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","green");
-				splitPointIndicator.append("svg:text").attr("fill","green").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
+				splitPointIndicator.append("svg:text").attr("fill","green").text(Math.round(origSplitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
 				var splitPointGroup = SVG.append("g").attr("class","split_point")
 				.attr("transform",function(){
 					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(splitPoint));
