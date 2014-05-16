@@ -35,6 +35,7 @@ DistChartView = Marionette.ItemView.extend({
 			var frequencies = [];
 			var isNominal = this.model.get("isNominal");
 			var splitPoint = this.model.get('splitNode').get('options').get('split_point');
+			var origSplitPoint = this.model.get('splitNode').get('options').get('orig_split_point');
 			var lowerLimit = data[1].value;
 			var upperLimit = data[data.length-2].value;
 			var noOfRangeBands = 10;
@@ -47,7 +48,7 @@ DistChartView = Marionette.ItemView.extend({
 							"value": range,
 							"frequency": [0,0]//y,n
 						});
-						range += parseFloat((data[data.length-1].value - data[0].value)/10);
+						range += parseFloat((data[data.length-1].value - data[0].value)/(noOfRangeBands-1));
 					}
 					
 					for(var temp in data){
@@ -150,11 +151,7 @@ DistChartView = Marionette.ItemView.extend({
 				var reverseSplitScale = d3.scale.linear().domain([0,xLength]).range([plotValues[0].value, plotValues[plotValues.length-1].value]);
 				var splitPointIndicator = SVG.append("g").attr("class","split_point_indicator")
 				.attr("transform",function(){
-					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(splitPoint));
-					var total = 0;
-					for(var i in plotValues[temp].frequency){
-						total += plotValues[temp].frequency[i];
-					}
+					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(origSplitPoint));
 					return "translate("+translateX+",10)";
 				});
 				splitPointIndicator.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","green");
