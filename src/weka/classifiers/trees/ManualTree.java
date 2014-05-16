@@ -1093,11 +1093,13 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}else{
 			//System.out.println("non split node, name "+att_name+" type "+kind);
 		}
+		HashMap<String, Double> mp = new HashMap<String,Double>();
 		if(options.get("split_point")!=null){
-			splits[attIndex] = distribution(props, dists, attIndex, data, options.get("split_point").asDouble());
+			mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble());
 		} else {
-			splits[attIndex] = distribution(props, dists, attIndex, data, Double.NaN);	
+			mp = distribution(props, dists, attIndex, data, Double.NaN);
 		}
+		splits[attIndex] = mp.get("split_point"); 
 		vals[attIndex] = gain(dists[attIndex], priorVal(dists[attIndex]));
 
 		m_Attribute = attIndex;
@@ -1120,6 +1122,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			evalresults.put("bin_size", quantity);
 			evalresults.put("infogain",vals[m_Attribute]);
 			evalresults.put("split_point", m_SplitPoint);
+			evalresults.put("orig_split_point", mp.get("orig_split_point"));
 
 			if(Boolean.TRUE.equals(getSplitData)){
 				addDistributionData(data, m_Attribute, m_distributionData);
@@ -1398,10 +1401,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @throws Exception
 	 *             if something goes wrong
 	 */
-	protected double distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint)
+	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint)
 			throws Exception {
-
+		
+		HashMap<String,Double> mp = new HashMap<String,Double>();
 		double splitPoint = givenSplitPoint;
+		double origSplitPoint = 0;
 		Attribute attribute = data.attribute(att);
 		double[][] dist = null;
 		int indexOfFirstMissingValue = -1;
@@ -1477,6 +1482,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 							// Save split point
 							splitPoint = (inst.value(att) + currSplit) / 2.0;
+							origSplitPoint = splitPoint;
 
 							// Save distribution
 							for (int j = 0; j < currDist.length; j++) {
@@ -1491,21 +1497,33 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					currDist[1][(int) inst.classValue()] -= inst.weight();
 				}
 			} else {
+				double currSplit = data.instance(0).value(att);
+				double currVal, bestVal = -Double.MAX_VALUE;
 				// Split data set using given split point.
 				for (int i = 0; i < data.numInstances(); i++) {
 					Instance inst = data.instance(i);
 					if (inst.isMissing(att)) {
-
 						// Can stop as soon as we hit a missing value
 						break;
 					}
-
+					if (inst.value(att) > currSplit) {
+						// Compute gain for split point
+						currVal = gain(currDist, priorVal);
+						// Is the current split point the best point so far?
+						if (currVal > bestVal) {
+							// Store value of current point
+							bestVal = currVal;
+							// Save computed split point
+							origSplitPoint = (inst.value(att) + currSplit) / 2.0;
+						}
+					}
 					if (inst.value(att) <= splitPoint) {
-							// Save distribution
+							// Save distribution since split point is specified
 							for (int j = 0; j < currDist.length; j++) {
 								System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
 							}
 					}
+					currSplit = inst.value(att);
 					// Shift over the weight
 					currDist[0][(int) inst.classValue()] += inst.weight();
 					currDist[1][(int) inst.classValue()] -= inst.weight();
@@ -1552,7 +1570,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Return distribution and split point
 		dists[att] = dist;
-		return splitPoint;
+		mp.put("split_point",splitPoint);
+		mp.put("orig_split_point", origSplitPoint);
+		return mp;
 	}
 
 	/**
