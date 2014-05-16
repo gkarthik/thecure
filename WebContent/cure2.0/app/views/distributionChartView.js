@@ -35,6 +35,8 @@ DistChartView = Marionette.ItemView.extend({
 			var frequencies = [];
 			var isNominal = this.model.get("isNominal");
 			var splitPoint = this.model.get('splitNode').get('options').get('split_point');
+			var lowerLimit = data[1].value;
+			var upperLimit = data[data.length-2].value;
 			//Check if numeric or nominal attribute
 			if(data.length>0){
 				if(!isNominal){
@@ -180,9 +182,9 @@ DistChartView = Marionette.ItemView.extend({
 	      }).on("drag", function(){
 	      	var o = this.__customorigin__;
 	        var min = 30+((globalWidth-40)/(plotValues.length*2));
-	        splitPoint = reverseSplitScale(Math.min(Math.max(d3.event.x-min, 0), xLength));
+	        splitPoint = reverseSplitScale(Math.min(Math.max(d3.event.x-min, splitScale(lowerLimit)), splitScale(upperLimit)));
 	        SVG.selectAll(".splitValueLabel").text(Math.round(splitPoint*100)/100);
-	        var translateX =  Math.min(min+xLength,  Math.max(min,  d3.event.x));
+	        var translateX =  Math.min(splitScale(upperLimit)+min,  Math.max(splitScale(lowerLimit)+min,  d3.event.x));
 	        d3.select(this).attr("transform","translate("+translateX+","+o.y+")");
 		    }).on("dragend",function(){
 		    	var options = thisModel.get('splitNode').get('options');
