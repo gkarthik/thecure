@@ -68,6 +68,7 @@ NodeView = Marionette.Layout.extend({
               && classToclose.has(e.target).length == 0) {
           	if (thisView.distributionChartRegion) {
           		thisView.distributionChartRegion.close();
+          		thisView.$el.css({'z-index':'3'});
             }
           }
           var container = $(".addnode_wrapper");
@@ -95,6 +96,7 @@ NodeView = Marionette.Layout.extend({
 			this.model.set('showDistChart',false);
 			var newdistChartView = new distributionChartView({model: this.model.get('distribution_data')});	
 			this.distributionChartRegion.show(newdistChartView);
+			this.$el.css({'z-index':'9999'});
 		}
 	},
 	error: function(){
