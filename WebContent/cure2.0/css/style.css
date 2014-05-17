@@ -273,6 +273,12 @@ display: block;
 	cursor: move;
 }
 
+.resizeChart{
+	cursor: move;
+	font-size: 10px;
+	fill: grey;
+}
+
 .showDistribution{
 	position: absolute;
 	left: -10px;

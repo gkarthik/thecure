@@ -11,11 +11,21 @@ DistChartView = Marionette.ItemView.extend({
 	template: distributionTmpl,
 	initialize: function(){
 		this.model.set("cid",this.cid);
+		this.listenTo(this.model, "change:globalHeight", this.drawChart);
+		this.listenTo(this.model, "change:globalWidth", this.drawChart);
 	},
 	ui: {
 		distributionChart: ".distribution-chart"
 	},
+	onResize: function(){
+		this.drawChart();
+	},
 	onShow: function(){
+		this.model.set('globalHeight',200);
+  	this.model.set('globalWidth', 400);
+		this.drawChart();
+	},
+	drawChart: function(){
 			var data;
 			var thisModel = this.model;
 			try{
@@ -24,8 +34,8 @@ DistChartView = Marionette.ItemView.extend({
 				data = [];
 			}
 			var id = $(this.ui.distributionChart).attr("id");
-			var globalHeight = 200;
-			var globalWidth = 400;
+			var globalHeight = this.model.get('globalHeight');
+			var globalWidth = this.model.get('globalWidth');
 			d3.select("#"+id).select(".chartGroup").remove();
 			var SVG = d3.select("#"+id).attr({"height":globalHeight,"width":globalWidth}).append("svg:g").attr("class","chartGroup");
 			//Create JSON for value and frequency of value
@@ -210,6 +220,19 @@ DistChartView = Marionette.ItemView.extend({
 				dragHolder.append("svg:rect").attr("height",15).attr("width",40).attr("fill","steelblue").attr("transform","translate(0,-10)");
 				dragHolder.append("svg:text").attr("fill","white").text("DRAG").style("font-size","10px").attr("transform","translate(2,2)");
 			}
+			var newWidth = 0, newHeight = 0;
+			var resizedrag = d3.behavior.drag().origin(function(){return {x: 0, y: 0}; }).on("drag", function(){
+      	newWidth=globalWidth + d3.event.x;
+      	newHeight=globalHeight+d3.event.y;
+      	d3.select("#"+id).attr("width",newWidth).attr("height",newHeight);
+	    }).on("dragend",function(){
+	    	thisModel.set('globalHeight',newHeight);
+	    	thisModel.set('globalWidth',newWidth);
+	    });
+			
+			var resizeChart = SVG.append("svg:g").attr("class","resizeChart").attr("transform","translate("+(globalWidth-125)+","+(globalHeight-5)+")");
+			resizeChart.call(resizedrag);
+			resizeChart.append("svg:text").text("DRAG HERE TO RESIZE");
 	}
 });
 

@@ -4,7 +4,9 @@ define([
     ], function(Backbone) {
 DistributionData = Backbone.RelationalModel.extend({
 	defaults: {
-		dataArray: []
+		dataArray: [],
+		globalHeight: 200,
+		globalWidth: 400
 	}
 });
 return DistributionData;
