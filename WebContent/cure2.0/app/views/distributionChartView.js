@@ -12,26 +12,40 @@ DistChartView = Marionette.ItemView.extend({
 	className: 'distribution-chart-wrapper',
 	initialize: function(){
 		this.model.set("cid",this.cid);
-		this.listenTo(this.model, "change:globalHeight", this.drawChart);
-		this.listenTo(this.model, "change:globalWidth", this.drawChart);
+		this.listenTo(this.model, "change:globalHeight", this.onResize);
+		this.listenTo(this.model, "change:globalWidth", this.onResize);
 	},
 	ui: {
 		distributionChart: ".distribution-chart",
 		rangeInput: ".range-input"
 	},
 	events: {
-		'change .range-input': 'changeRange'
+		'change .range-input': 'changeRange',
+		'click .range-input': 'selectAllText'
 	},
 	onResize: function(){
-		this.drawChart();
+		if(this.model.get("isNominal")){
+			this.drawChart();
+		} else {
+			this.changeRange();
+		}
+	},
+	selectAllText: function(){
+		$(this.ui.rangeInput).select();
 	},
 	onShow: function(){
-		this.model.set('globalHeight',230);
-  	this.model.set('globalWidth', 400);
+		this.model.set('globalHeight',230,{'silent':true});
+  	this.model.set('globalWidth', 400, {'silent':true});
 		this.drawChart();
 	},
 	changeRange: function(){
-		
+		var value = parseFloat($(this.ui.rangeInput).val());
+		if(!isNaN(value)){
+			console.log(value);
+			this.drawChart(value);
+		} else {
+			Cure.utils.showAlert("Range must be a number.");
+		}
 	},
 	drawChart: function(globalRange){
 			var data;
@@ -72,19 +86,30 @@ DistChartView = Marionette.ItemView.extend({
 					break;
 				}
 			}
+			
 			var noOfRangeBands = 10;
+			var range = parseFloat(((data[data.length-1].value) - data[0].value)/(noOfRangeBands-1));
+			if(!isNaN(globalRange)){
+				noOfRangeBands = ((data[data.length-1].value - data[0].value)/globalRange)+1;
+				if(noOfRangeBands < 1){
+					Cure.utils.showAlert("Range > 0.");
+					noOfRangeBands = 10;
+				} else {
+					range = globalRange;
+				}
+			}
+			$(this.ui.rangeInput).val(range);
 			//Check if numeric or nominal attribute
 			if(data.length>0){
 				if(!isNominal){
-					var range = data[0].value;
+					var rangeIncrement = data[0].value;
 					for(var i = 0; i <= noOfRangeBands; i++){
 						plotValues.push({
-							"value": range,
+							"value": rangeIncrement,
 							"frequency": [0,0]//y,n
 						});
-						range += parseFloat(((data[data.length-1].value) - data[0].value)/(noOfRangeBands-1));
+						rangeIncrement += range;
 					}
-					$(this.ui.rangeInput).val(range);
 					for(var j=0; j<data.length; j++){
 						for(var i = 0; i<noOfRangeBands; i++){
 							if(data[j].value >= plotValues[i].value && data[j].value < (plotValues[i+1].value)){
@@ -138,7 +163,6 @@ DistChartView = Marionette.ItemView.extend({
 			if(isNominal){
 				rectWidth = rectWidth/2;
 			}
-			console.log(frequencies);
 			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
