@@ -70,17 +70,16 @@ DistChartView = Marionette.ItemView.extend({
 			if(data.length>0){
 				if(!isNominal){
 					var range = data[0].value;
-					for(var i = 0; i < noOfRangeBands; i++){
+					for(var i = 0; i <= noOfRangeBands; i++){
 						plotValues.push({
 							"value": range,
 							"frequency": [0,0]//y,n
 						});
-						range += parseFloat((data[data.length-1].value - data[0].value)/(noOfRangeBands-1));
+						range += parseFloat(((data[data.length-1].value) - data[0].value)/(noOfRangeBands-1));
 					}
-					
 					for(var j=0; j<data.length; j++){
-						for(var i = 1; i<noOfRangeBands; i++){
-							if(data[j].value <= plotValues[i].value){
+						for(var i = 0; i<noOfRangeBands; i++){
+							if(data[j].value >= plotValues[i].value && data[j].value < (plotValues[i+1].value)){
 								if(data[j].classprob==Cure.posNodeName){
 									plotValues[i].frequency[0]++;
 								} else if(data[j].classprob==Cure.negNodeName) {
@@ -147,11 +146,7 @@ DistChartView = Marionette.ItemView.extend({
 			.attr("transform",function(d){
 				var translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
 				if(!isNominal){
-					if(thisModel.get('splitNode').get('options').get("unique_id").contains("metabric")){
 						translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length)) + parseFloat(valueScale(d.value));
-					} else {
-						translateX = (30 - (rectWidth/2)) + parseFloat(valueScale(d.value));
-					}
 				}
 				return "translate("+translateX+",10)";
 			});
