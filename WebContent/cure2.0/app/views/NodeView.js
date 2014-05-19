@@ -63,7 +63,7 @@ NodeView = Marionette.Layout.extend({
 		var thisView = this;
 		 $(document).on("mouseup",
         function(e) {
-          classToclose = $('.distribution-chart');
+          classToclose = $('.distribution-chart-wrapper');
           if (!classToclose.is(e.target)
               && classToclose.has(e.target).length == 0) {
           	if (thisView.distributionChartRegion) {

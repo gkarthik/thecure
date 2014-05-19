@@ -9,6 +9,7 @@ define([
 DistChartView = Marionette.ItemView.extend({
 	model: DistributionData,
 	template: distributionTmpl,
+	className: 'distribution-chart-wrapper',
 	initialize: function(){
 		this.model.set("cid",this.cid);
 		this.listenTo(this.model, "change:globalHeight", this.drawChart);
@@ -21,7 +22,7 @@ DistChartView = Marionette.ItemView.extend({
 		this.drawChart();
 	},
 	onShow: function(){
-		this.model.set('globalHeight',200);
+		this.model.set('globalHeight',230);
   	this.model.set('globalWidth', 400);
 		this.drawChart();
 	},
@@ -40,7 +41,7 @@ DistChartView = Marionette.ItemView.extend({
 			var SVG = d3.select("#"+id).attr({"height":globalHeight,"width":globalWidth}).append("svg:g").attr("class","chartGroup");
 			//Create JSON for value and frequency of value
 			var xLength = globalWidth-40;
-			var yLength = globalHeight-40;
+			var yLength = globalHeight-50;
 			var plotValues = [];
 			var frequencies = [];
 			var isNominal = this.model.get("isNominal");
@@ -130,11 +131,12 @@ DistChartView = Marionette.ItemView.extend({
 			if(isNominal){
 				rectWidth = rectWidth/2;
 			}
+			console.log(frequencies);
 			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
 			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
-			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate(30,"+(globalHeight-30)+")").call(xAxis);
+			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate(30,"+(globalHeight-40)+")").call(xAxis);
 			SVG.append("g").attr("class","axis yaxis").attr("transform", "translate(30,10)").call(yAxis);
 			
 			SVG.append("svg:g").attr("class","distLayerGroup");
@@ -165,7 +167,7 @@ DistChartView = Marionette.ItemView.extend({
 	    		totalVal = 0;
 	    	}
 	    	totalVal += frequencyScale(frequencies[frequencies.length-1] - d);
-	    	return parseFloat((globalHeight-40)-totalVal);
+	    	return parseFloat((globalHeight-50)-totalVal);
 	    })
 	    .attr("height", 0);
 			
@@ -184,7 +186,7 @@ DistChartView = Marionette.ItemView.extend({
 					var translateX = 30 + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(splitScale(origSplitPoint));
 					return "translate("+translateX+",10)";
 				});
-				splitPointIndicator.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","green");
+				splitPointIndicator.append("svg:rect").attr("height",globalHeight-50).attr("width",2).attr("fill","green");
 				splitPointIndicator.append("svg:text").attr("fill","green").text(Math.round(origSplitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");
 				var splitPointGroup = SVG.append("g").attr("class","split_point")
 				.attr("transform",function(){
@@ -218,9 +220,9 @@ DistChartView = Marionette.ItemView.extend({
 		    	delete this.__customorigin__;
 		    });
 				SVG.select(".split_point").call(drag);
-				splitPointGroup.append("svg:rect").attr("height",globalHeight-40).attr("width",2).attr("fill","steelblue");
+				splitPointGroup.append("svg:rect").attr("height",globalHeight-50).attr("width",2).attr("fill","steelblue");
 				splitPointGroup.append("svg:text").attr("class","splitValueLabel").attr("fill","steelblue").text(Math.round(splitPoint*100)/100).attr("text-anchor","middle").style("font-size","10px");				
-				var dragHolder = splitPointGroup.append("svg:g").attr("transform","translate(-18,"+((globalHeight-40)/2)+")").attr("class","dragSplitPoint");
+				var dragHolder = splitPointGroup.append("svg:g").attr("transform","translate(-18,"+((globalHeight-50)/2)+")").attr("class","dragSplitPoint");
 				dragHolder.append("svg:rect").attr("height",15).attr("width",40).attr("fill","steelblue").attr("transform","translate(0,-10)");
 				dragHolder.append("svg:text").attr("fill","white").text("DRAG").style("font-size","10px").attr("transform","translate(2,2)");
 			}
@@ -234,9 +236,9 @@ DistChartView = Marionette.ItemView.extend({
 	    	thisModel.set('globalWidth',newWidth);
 	    });
 			
-			var resizeChart = SVG.append("svg:g").attr("class","resizeChart").attr("transform","translate("+(globalWidth-125)+","+(globalHeight-5)+")");
+			var resizeChart = SVG.append("svg:g").attr("class","resizeChart").attr("transform","translate("+(globalWidth-90)+","+(globalHeight-5)+")");
 			resizeChart.call(resizedrag);
-			resizeChart.append("svg:text").text("DRAG HERE TO RESIZE");
+			resizeChart.append('svg:text').text("DRAG TO RESIZE");
 	}
 });
 
