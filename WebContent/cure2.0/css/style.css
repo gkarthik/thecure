@@ -259,14 +259,22 @@ display: block;
 	border:2px solid #000;
 	text-align:center;
 }
-
-.distribution-chart{
+.distribution-chart-wrapper{
 	position:absolute;
 	top:0px;
 	left:120px;
 	background: #FFF;
-	border: 1px solid #000;
 	z-index: 10;
+}
+
+.distribution-chart{
+	background: #FFF;
+	border: 1px solid #000;
+}
+
+.distribution-chart-wrapper .range-input-wrapper{
+	width:300px;
+	margin-bottom:10px;
 }
 
 .dragSplitPoint{
