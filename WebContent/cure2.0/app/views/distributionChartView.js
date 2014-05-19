@@ -16,7 +16,11 @@ DistChartView = Marionette.ItemView.extend({
 		this.listenTo(this.model, "change:globalWidth", this.drawChart);
 	},
 	ui: {
-		distributionChart: ".distribution-chart"
+		distributionChart: ".distribution-chart",
+		rangeInput: ".range-input"
+	},
+	events: {
+		'change .range-input': 'changeRange'
 	},
 	onResize: function(){
 		this.drawChart();
@@ -26,7 +30,10 @@ DistChartView = Marionette.ItemView.extend({
   	this.model.set('globalWidth', 400);
 		this.drawChart();
 	},
-	drawChart: function(){
+	changeRange: function(){
+		
+	},
+	drawChart: function(globalRange){
 			var data;
 			var thisModel = this.model;
 			try{
@@ -77,6 +84,7 @@ DistChartView = Marionette.ItemView.extend({
 						});
 						range += parseFloat(((data[data.length-1].value) - data[0].value)/(noOfRangeBands-1));
 					}
+					$(this.ui.rangeInput).val(range);
 					for(var j=0; j<data.length; j++){
 						for(var i = 0; i<noOfRangeBands; i++){
 							if(data[j].value >= plotValues[i].value && data[j].value < (plotValues[i+1].value)){
