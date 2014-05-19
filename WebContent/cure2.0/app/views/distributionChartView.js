@@ -77,12 +77,12 @@ DistChartView = Marionette.ItemView.extend({
 						range += parseFloat((data[data.length-1].value - data[0].value)/(noOfRangeBands-1));
 					}
 					
-					for(var temp in data){
-						for(var i = 1; i<noOfRangeBands; i ++){
-							if(data[temp].value <= plotValues[i].value){
-								if(data[temp].classprob==Cure.posNodeName){
+					for(var j=0; j<data.length; j++){
+						for(var i = 1; i<noOfRangeBands; i++){
+							if(data[j].value <= plotValues[i].value){
+								if(data[j].classprob==Cure.posNodeName){
 									plotValues[i].frequency[0]++;
-								} else if(data[temp].classprob==Cure.negNodeName) {
+								} else if(data[j].classprob==Cure.negNodeName) {
 									plotValues[i].frequency[1]++;
 								}
 								break;
@@ -145,7 +145,11 @@ DistChartView = Marionette.ItemView.extend({
 			.attr("transform",function(d){
 				var translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
 				if(!isNominal){
-					translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length)) + parseFloat(valueScale(d.value));
+					if(thisModel.get('splitNode').get('options').get("unique_id").contains("metabric")){
+						translateX = (30 - (rectWidth/2)) + ((globalWidth-40)/(plotValues.length)) + parseFloat(valueScale(d.value));
+					} else {
+						translateX = (30 - (rectWidth/2)) + parseFloat(valueScale(d.value));
+					}
 				}
 				return "translate("+translateX+",10)";
 			});
