@@ -1,7 +1,7 @@
 <% if(!isNominal){ %>
 <div class="input-group range-input-wrapper">
-  <span class="input-group-addon">Range</span>
-  <input type="text" class="form-control range-input" placeholder="Range">
+  <span class="input-group-addon"><i class="glyphicon glyphicon-resize-horizontal"></i> Range</span>
+  <input type="text" id="range-input" class="form-control" placeholder="Range" value="<%= range %>">
 </div>
 <% } %>
 <svg id="distChart<%= cid %>" class="distribution-chart"></svg>

@@ -107,6 +107,13 @@ AddRootNodeView = Marionette.ItemView.extend({
 					} catch (exception) {
 					}
 					if (kind_value == "leaf_node") {
+						model.get("options").set({
+							"split_point": null,
+							"orig_split_point": null
+						});
+						model.get("distribution_data").set({
+							"range": -1
+						});
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
@@ -128,7 +135,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 							"unique_id" : ui.item.unique_id,
 							"kind" : "split_node",
 							"full_name" : ui.item.long_name,
-							"description" : ui.item.description
+							"description" : ui.item.description,
 						});
 					} else {
 						var newNode = new Node({
@@ -137,7 +144,8 @@ AddRootNodeView = Marionette.ItemView.extend({
 								"unique_id" : ui.item.unique_id,
 								"kind" : "split_node",
 								"full_name" : ui.item.long_name,
-								"description" : ui.item.description
+								"description" : ui.item.description,
+								"split_point": null
 							}
 						});
 					}
@@ -247,6 +255,15 @@ AddRootNodeView = Marionette.ItemView.extend({
 					}
 
 					if (kind_value == "leaf_node") {
+						if(model.get("options")){
+							model.get("options").unset("split_point");
+						}
+						
+						if(model.get("distribution_data")){
+							model.get("distribution_data").set({
+								"range": -1
+							});
+						}
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.symbol);
 						model.get("options").set({
