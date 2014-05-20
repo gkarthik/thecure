@@ -58,6 +58,17 @@ Player player = (Player) session.getAttribute("player");
 	</div>
 	</div>
 </div>
+<div id="score-board-outerWrapper" class="panel-outer-wrapper">
+	<h2 class="renderPink">
+		Score Board<span><button type="button" class="close"
+				data-dismiss="alert" aria-hidden="true">&times;</button></span>
+	</h2>
+	<div id="BadgesPlaceholder"></div>
+	<hr>
+	<div id="scoreboard_wrapper">
+		<div id='scoreboard_innerwrapper'></div>
+	</div>
+</div>
 <div id="NodeDetailsWrapper" class="blurCloseElement">
 	<div id="NodeDetailsContent"></div>
 </div>

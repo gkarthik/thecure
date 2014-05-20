@@ -95,7 +95,8 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	    "JSONSummaryRegion" : "#jsonSummary",
 	    "SideBarRegion": "#cure-panel-wrapper",
 	    "ZoomControlsRegion": "#zoom-controls",
-	    "LoginRegion": "#LoginRegion"
+	    "LoginRegion": "#LoginRegion",
+	    "ScoreBoardRegion" : "#scoreboard_innerwrapper"
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n",
