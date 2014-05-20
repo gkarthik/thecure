@@ -17,7 +17,6 @@ sidebarLayout = Marionette.Layout.extend({
     regions: {
     	"ScoreRegion" : "#ScoreRegion",
 	    "CommentRegion" : "#CommentRegion",
-	    "ScoreBoardRegion" : "#scoreboard_innerwrapper",
 	    "TreeBranchRegion": "#tree-explanation-wrapper",
 	    "CollaboratorsRegion": "#CollaboratorsRegion",
 	    "ScoreKeyRegion": "#ScoreKeyRegion",
@@ -74,9 +73,6 @@ sidebarLayout = Marionette.Layout.extend({
       Cure.CommentView = new CommentView({
         model : Cure.Comment
       });
-      Cure.ScoreBoardView = new ScoreBoardView({
-        collection : Cure.ScoreBoard
-      });
       Cure.TreeBranchCollectionView = new TreeBranchCollectionView({
       	collection: Cure.TreeBranchCollection
       });
@@ -90,7 +86,6 @@ sidebarLayout = Marionette.Layout.extend({
       	collection: Cure.BadgeCollection
       });
       this.ScoreRegion.show(Cure.ScoreView);
-      this.ScoreBoardRegion.show(Cure.ScoreBoardView);
       this.CommentRegion.show(Cure.CommentView);
       this.TreeBranchRegion.show(Cure.TreeBranchCollectionView);
       this.CollaboratorsRegion.show(Cure.CollaboratorCollectionView);

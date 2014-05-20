@@ -204,6 +204,10 @@ define(
 			        collection : Cure.PlayerNodeCollection
 		        });
 		        Cure.sidebarLayout = new sidebarLayout();
+		        Cure.ScoreBoardView = new ScoreBoardView({
+		          collection : Cure.ScoreBoard
+		        });
+		        Cure.ScoreBoardRegion.show(Cure.ScoreBoardView);
 		        Cure.PlayerTreeRegion.show(Cure.PlayerNodeCollectionView);
 		        Cure.JSONSummaryRegion.show(Cure.JSONCollectionView);
 		        Cure.SideBarRegion.show(Cure.sidebarLayout);
