@@ -147,7 +147,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 								"kind" : "split_node",
 								"full_name" : ui.item.long_name,
 								"description" : ui.item.description,
-								"split_point": null
 							}
 						});
 					}
