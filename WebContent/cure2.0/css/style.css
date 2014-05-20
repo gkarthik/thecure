@@ -287,6 +287,12 @@ display: block;
 	fill: grey;
 }
 
+.rangeKink{
+	fill: #3276B1;
+	font-size:10px;
+	cursor: move;
+}
+
 .showDistribution{
 	position: absolute;
 	left: -10px;
