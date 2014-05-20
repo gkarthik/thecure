@@ -25,9 +25,7 @@ DistChartView = Marionette.ItemView.extend({
 		'click #range-input': 'selectAllText'
 	},
 	onResize: function(){
-		if(this.model.get("isNominal")){
 			this.drawChart();
-		}
 	},
 	selectAllText: function(){
 		$(this.ui.rangeInput).select();
@@ -168,7 +166,13 @@ DistChartView = Marionette.ItemView.extend({
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
 			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
 			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate("+marginX+","+(yLength+10)+")").call(xAxis)
-				.append("svg:text").attr("transform","translate(0,30)").text("Gene Expression Values").style("fill","#808080");
+				.append("svg:text").attr("transform","translate(0,30)").text(function(){
+					if(thisModel.get('splitNode').get("options").get("unique_id").indexOf("metabric")==-1){
+						return "Gene Expression Values";
+					} else {
+						return thisModel.get('splitNode').get("name");
+					}
+				}).style("fill","#808080");
 			SVG.append("g").attr("class","axis yaxis").attr("transform", "translate("+marginX+",10)").call(yAxis)
 				 .append("svg:text").text("Number of Instances").attr("transform","translate(-30,"+yLength+")rotate(-90)").style("fill","#808080");
 			

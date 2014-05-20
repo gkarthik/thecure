@@ -107,13 +107,15 @@ AddRootNodeView = Marionette.ItemView.extend({
 					} catch (exception) {
 					}
 					if (kind_value == "leaf_node") {
-						model.get("options").set({
-							"split_point": null,
-							"orig_split_point": null
-						});
-						model.get("distribution_data").set({
-							"range": -1
-						});
+							if(model.get("options")){
+								model.get("options").unset("split_point");
+							}
+							
+							if(model.get("distribution_data")){
+								model.get("distribution_data").set({
+									"range": -1
+								});
+							}
 						model.set("previousAttributes", model.toJSON());
 						model.set("name", ui.item.short_name.replace(/_/g," "));
 						model.set('accLimit', 0, {silent:true});
