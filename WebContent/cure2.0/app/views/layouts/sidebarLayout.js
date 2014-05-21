@@ -99,6 +99,7 @@ sidebarLayout = Marionette.Layout.extend({
     },
     onShow: function(){
     	this.$el.attr('id',"cure-panel");
+    	this.$el.draggable({handle: '.panel-heading'});
   		var el = document.getElementById("score");
   		od = new Odometer({
   		  el: el,
