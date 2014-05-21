@@ -35,7 +35,7 @@ DistChartView = Marionette.ItemView.extend({
 		this.model.set('globalHeight',280,{'silent':true});
   	this.model.set('globalWidth', 450, {'silent':true});
 		this.drawChart();
-		this.$el.draggable({ handle: ".dragHandle" });
+		this.$el.draggable({ handle: ".dragHandle"});
 	},
 	changeRangeValue: function(){
 		var value = $(this.ui.rangeInput).val();
@@ -98,7 +98,7 @@ DistChartView = Marionette.ItemView.extend({
 				}
 			}
 			thisModel.set('range',range,{'silent':true});
-			$(this.ui.rangeInput).val(range);
+			$(this.ui.rangeInput).val(parseInt(range*100)/100);
 			//Check if numeric or nominal attribute
 			if(data.length>0){
 				if(!isNominal){
@@ -183,7 +183,7 @@ DistChartView = Marionette.ItemView.extend({
 				var reverseRangeScale = d3.scale.linear().domain([0,200]).range([0.1,data[data.length-1].value-data[0].value]);
 				var rangeAxis = d3.svg.axis().scale(rangeScale).orient("bottom");
 				SVG.append("g").attr("class","axis range").attr("transform", "translate("+marginX+","+(yLength+80)+")").call(rangeAxis)
-					 .append("svg:text").attr("transform","translate(-40,10)").text("Range").style("fill","#3276B1");
+					 .append("svg:text").attr("transform","translate(-45,10)").text("Interval").style("fill","#3276B1");
 				var newRange = 0;
 				var rangeDrag = d3.behavior.drag().origin(function() { 
 					var t = d3.select(this).attr("transform");
@@ -298,7 +298,7 @@ DistChartView = Marionette.ItemView.extend({
 				dragHolder.append("svg:rect").attr("height",15).attr("width",40).attr("fill","steelblue").attr("transform","translate(0,-10)");
 				dragHolder.append("svg:text").attr("fill","white").text("DRAG").style("font-size","10px").attr("transform","translate(2,2)");
 			}
-			var newWidth = 0, newHeight = 0;
+			var newWidth = globalWidth, newHeight = globalHeight;
 			var resizedrag = d3.behavior.drag().origin(function(){return {x: 0, y: 0}; }).on("drag", function(){
       	newWidth=globalWidth + d3.event.x;
       	newHeight=globalHeight+d3.event.y;
@@ -308,9 +308,8 @@ DistChartView = Marionette.ItemView.extend({
 	    	thisModel.set('globalWidth',newWidth);
 	    });
 			
-			var resizeChart = SVG.append("svg:g").attr("class","resizeChart").attr("transform","translate("+(globalWidth-90)+","+(globalHeight-5)+")");
+			var resizeChart = d3.select("#dragResize");
 			resizeChart.call(resizedrag);
-			resizeChart.append('svg:text').text("DRAG TO RESIZE");
 	}
 });
 
