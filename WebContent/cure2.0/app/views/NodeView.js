@@ -69,6 +69,7 @@ NodeView = Marionette.Layout.extend({
           	if (thisView.distributionChartRegion) {
           		thisView.distributionChartRegion.close();
           		thisView.$el.css({'z-index':'3'});
+          		$("#PlayerTreeRegionTree").css({'z-index':4});
             }
           }
           var container = $(".addnode_wrapper");
@@ -96,6 +97,7 @@ NodeView = Marionette.Layout.extend({
 			var newdistChartView = new distributionChartView({model: this.model.get('distribution_data')});	
 			this.distributionChartRegion.show(newdistChartView);
 			this.$el.css({'z-index':'9999'});
+			$("#PlayerTreeRegionTree").css({'z-index':6});
 		}
 	},
 	error: function(){
