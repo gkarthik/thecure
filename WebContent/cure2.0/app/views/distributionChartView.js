@@ -4,7 +4,8 @@ define([
 	//Models
 	'app/models/DistributionData',
 	//Templates
-	'text!app/templates/distributionChart.html'
+	'text!app/templates/distributionChart.html',
+	'jqueryui'
     ], function($, Marionette, DistributionData, distributionTmpl) {
 DistChartView = Marionette.ItemView.extend({
 	model: DistributionData,
@@ -34,6 +35,7 @@ DistChartView = Marionette.ItemView.extend({
 		this.model.set('globalHeight',280,{'silent':true});
   	this.model.set('globalWidth', 450, {'silent':true});
 		this.drawChart();
+		this.$el.draggable({ handle: ".dragHandle" });
 	},
 	changeRangeValue: function(){
 		var value = $(this.ui.rangeInput).val();
