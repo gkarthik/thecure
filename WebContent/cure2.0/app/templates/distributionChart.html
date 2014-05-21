@@ -1,8 +1,8 @@
 <div class="dragHandle"><span class="glyphicon glyphicon-move"></span> MOVE CHART</div>
+<svg id="distChart<%= cid %>" class="distribution-chart"></svg>
 <% if(!isNominal){ %>
 <div class="input-group range-input-wrapper">
-  <span class="input-group-addon"><i class="glyphicon glyphicon-resize-horizontal"></i> Range</span>
-  <input type="text" id="range-input" class="form-control" placeholder="Range" value="<%= range %>">
+  <input type="text" id="range-input" class="form-control" placeholder="Range" value="<% print(parseInt(range*100)/100) %>">
 </div>
 <% } %>
-<svg id="distChart<%= cid %>" class="distribution-chart"></svg>
+<div id="dragResize"><span class="glyphicon glyphicon-fullscreen"></span> Resize Chart</div>

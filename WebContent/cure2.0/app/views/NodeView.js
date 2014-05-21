@@ -66,10 +66,14 @@ NodeView = Marionette.Layout.extend({
           classToclose = $('.distribution-chart-wrapper');
           if (!classToclose.is(e.target)
               && classToclose.has(e.target).length == 0) {
-          	if (thisView.distributionChartRegion) {
-          		thisView.distributionChartRegion.close();
-          		thisView.$el.css({'z-index':'3'});
-          		$("#PlayerTreeRegionTree").css({'z-index':4});
+          	if (thisView.distributionChartRegion && thisView.distributionChartRegion.currentView) {
+          		var el = "."+thisView.distributionChartRegion.currentView.className+" .distribution-chart-wrapper";
+          		if(!$(el).hasClass("ui-draggable-dragging")){
+            		thisView.distributionChartRegion.close();
+            		thisView.$el.css({'z-index':'3'});
+            		//Replace IDs with variables.
+            		$("#PlayerTreeRegionTree").css({'z-index':4});
+          		}
             }
           }
           var container = $(".addnode_wrapper");
