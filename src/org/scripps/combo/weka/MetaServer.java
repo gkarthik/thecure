@@ -43,6 +43,7 @@ import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
+import org.scripps.combo.model.Pathway;
 import org.scripps.combo.model.Player;
 import org.scripps.combo.model.Tree;
 import org.scripps.combo.model.Badge;
@@ -252,6 +253,20 @@ public class MetaServer extends HttpServlet {
 									addBadge(data, request, response);
 								} else if(command.equals("get_badges")){
 									getBadges(data, request, response);
+								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to add bagde: "+json);
+							}	
+						} else if(command.contains("pathway")){  //get_trees_all, get_trees_ip, get_trees_user_id
+							//TODO clean this up so we aren't parsing the json twice.. 
+							JsonNode data = mapper.readTree(json);	
+							try{
+								if(command.equals("search_pathways")){
+									searchPathways(data, request, response);
+								} else if(command.equals("get_genes_of_pathway")){
+									getGenesOfPathway(data, request, response);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -752,6 +767,38 @@ public class MetaServer extends HttpServlet {
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		out.write(json_badges);
+		out.close();
+	}
+	
+	private void searchPathways(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
+		Pathway _pathway = new Pathway();
+		String searchString = data.get("query").asText();
+		ArrayList json_pathways = new ArrayList();
+		try{
+			json_pathways = _pathway.searchPathways(searchString);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String json = mapper.writeValueAsString(json_pathways);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(json);
+		out.close();
+	}
+	
+	private void getGenesOfPathway(JsonNode data, HttpServletRequest request, HttpServletResponse response) throws IOException{
+		Pathway _pathway = new Pathway();
+		String searchString = data.get("pathway_name").asText();
+		ArrayList json_pathways = new ArrayList();
+		try{
+			json_pathways = _pathway.getGenesOfPathway(searchString);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String json = mapper.writeValueAsString(json_pathways);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		out.write(json);
 		out.close();
 	}
 	

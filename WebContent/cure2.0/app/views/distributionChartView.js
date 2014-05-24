@@ -35,7 +35,26 @@ DistChartView = Marionette.ItemView.extend({
 		this.model.set('globalHeight',280,{'silent':true});
   	this.model.set('globalWidth', 450, {'silent':true});
 		this.drawChart();
-		this.$el.draggable({ handle: ".dragHandle"});
+		var click = {
+			x: 0,
+		  y: 0
+		};
+		this.$el.draggable({ 
+			handle: ".dragHandle" ,
+			start: function(event) {
+	        click.x = event.clientX;
+	        click.y = event.clientY;
+	    },
+	    drag: function(event, ui) {
+	        var zoom = Cure.Zoom.get('scaleLevel');
+	        var original = ui.originalPosition;
+	        ui.position = {
+	            left: (event.clientX - click.x + original.left) / zoom,
+	            top:  (event.clientY - click.y + original.top ) / zoom
+	        };
+
+	    }
+		});
 	},
 	changeRangeValue: function(){
 		var value = $(this.ui.rangeInput).val();
