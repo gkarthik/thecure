@@ -8,7 +8,7 @@ define([
 GeneCollectionView = Marionette.CollectionView.extend({
 	itemView : GeneItemView,
 	tagName: 'table',
-	className: 'table table-condensed'
+	className: 'table'
 });
 
 return GeneCollectionView;

@@ -55,7 +55,6 @@ NodeView = Marionette.Layout.extend({
 		this.listenTo(this.model.get('options'), 'change:kind', this.render);
 		this.listenTo(this.model, 'change:name', this.render);
 		this.listenTo(this.model.get('options'), 'change:accLimit', this.setNodeClass);
-		this.listenTo(this.model, 'change:highlight', this.setHighlight);
 		
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
@@ -89,13 +88,6 @@ NodeView = Marionette.Layout.extend({
             }
           }
       });
-	},
-	setHighlight: function(){
-		if(this.model.get('highlight')){
-			this.$el.addClass("highlightNode");
-		} else {
-			this.$el.removeClass("highlightNode");
-		}
 	},
 	getDistributionData: function(){
 		if(this.model.get("options").get('kind')=="split_node"){
@@ -189,59 +181,23 @@ NodeView = Marionette.Layout.extend({
 	setNodeClass: function(){
 		var styleObject = {
 			"background": "#FFF",
-			"borderColor": "#000"
+			"border-color": "#000"
 		};
-		if(this.model.get('options').get('kind')=="leaf_node"){
-			if(this.model.get('name')==Cure.negNodeName) {
-				styleObject.background = "rgba(255,0,0,0.2)";
-				styleObject.borderColor = "red";
-			} else if(this.model.get('name')==Cure.posNodeName) {
-				styleObject.background = "rgba(0,0,255,0.2)";
-				styleObject.borderColor = "blue";
-			}
+		if(this.model.get('name')==Cure.negNodeName) {
+			styleObject.background = "rgba(255,0,0,0.2)";
+			styleObject.borderColor = "red";
+		} else if(this.model.get('name')==Cure.posNodeName) {
+			styleObject.background = "rgba(0,0,255,0.2)";
+			styleObject.borderColor = "blue";
 		}
 		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
 		this.$el.css(styleObject);
 		var options = this.model.get('options');
 		this.$el.addClass(options.get('kind'));
-		var model = this.model;
-		if(this.model.get('options').get('kind')=="leaf_node"){
-			this.$el.droppable({
-				accept: ".gene-pool-item",
-				activeClass: "genepool-drop-active",
-				hoverClass: "genepool-drop-hover",
-				drop: function( event, ui ) {
-					if(model.get("options")){
-						model.get("options").unset("split_point");
-					}
-					
-					var index = $(ui.draggable).data("index");
-					var ui = Cure.GeneCollection.at(index).toJSON();
-					if(model.get("distribution_data")){
-						model.get("distribution_data").set({
-							"range": -1
-						});
-					}
-					model.set("previousAttributes", model.toJSON());
-					model.set("name", ui.short_name);
-					model.get("options").set({
-						"unique_id" : ui.unique_id,
-						"kind" : "split_node",
-						"full_name" : ui.long_name
-					});
-					Cure.PlayerNodeCollection.sync();
-				}
-			});
-		} else {
-			if(this.$el.data('ui-droppable')){
-				this.$el.droppable("destroy");
-			}
-		}
 	},
 	onBeforeRender : function() {
 		this.setWidthandPos();
 		this.setNodeClass();
-		this.setHighlight();
 		if(this.chartRegion.currentView){
 			this.chartRegion.currentView.remove();
 		}

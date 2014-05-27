@@ -7,11 +7,12 @@ define([
   'app/views/TreeBranchCollectionView', 'app/views/ScoreBoardView',
   'app/views/ScoreView', 'app/views/CollaboratorCollectionView', 
   'app/views/ScoreKey', 'app/views/BadgeCollectionView',
+  'app/views/layouts/PathwaySearchLayout',
 	//Templates
 	'text!app/templates/sidebarLayout.html',
 	//Plugins
 	'odometer'
-    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, ScoreKeyView, BadgeCollectionView, sidebarLayoutTemplate, Odometer) {
+    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, ScoreKeyView, BadgeCollectionView, PathwaySearchLayout, sidebarLayoutTemplate, Odometer) {
 sidebarLayout = Marionette.Layout.extend({
     template: sidebarLayoutTemplate,
     regions: {
@@ -21,7 +22,8 @@ sidebarLayout = Marionette.Layout.extend({
 	    "TreeBranchRegion": "#tree-explanation-wrapper",
 	    "CollaboratorsRegion": "#CollaboratorsRegion",
 	    "ScoreKeyRegion": "#ScoreKeyRegion",
-	    "BadgeRegion": "#BadgeRegion"
+	    "BadgeRegion": "#BadgeRegion",
+	    "PathwaySearchRegion": "#PathwaySearchRegion"
     },
     ui: {
     	ScoreWrapper: "#score-board-outerWrapper",
@@ -99,7 +101,7 @@ sidebarLayout = Marionette.Layout.extend({
     },
     onShow: function(){
     	this.$el.attr('id',"cure-panel");
-    	this.$el.draggable({handle: '.panel-heading'});
+    	this.$el.draggable({handle: '.panel-heading-main'});
   		var el = document.getElementById("score");
   		od = new Odometer({
   		  el: el,

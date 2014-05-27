@@ -1013,6 +1013,28 @@ text-align:left;
 	text-align: center;
 }
 
+#PathwaySearchRegion{
+	position: fixed;
+	left: 25%;
+	width: 50%;
+	top: 10%;
+	z-index: 1;
+}
+
+#GeneCollectionRegion{
+	height:350px;
+	overflow:auto;
+	margin-top:20px;
+}
+
+#PathwaySearchRegion .panel-content{
+	padding:5px;
+}
+
+#pathwaysearch_query{
+	width:100%;
+}
+
 /*
 Style for header links
 */

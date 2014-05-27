@@ -3,11 +3,9 @@ define([
 	'marionette',
 	//Views
 	'app/views/GeneCollectionView',
-	'app/views/GenePoolCollectionView',
-	'app/views/layouts/GenePoolLayout',
 	//Templates
 	'text!app/templates/PathwayLayout.html'
-    ], function($, Marionette, GeneCollectionView, GenePoolCollectionView, GenePoolLayout, PathwayLayoutTmpl) {
+    ], function($, Marionette, GeneCollectionView, PathwayLayoutTmpl) {
 PathwayLayout = Marionette.Layout.extend({
     template: PathwayLayoutTmpl,
     className: "panel panel-default",
@@ -16,21 +14,16 @@ PathwayLayout = Marionette.Layout.extend({
   		"pathwaysearch": "#pathwaysearch_query"
     },
     events: {
-    	'click .close-pathway-search': 'closePathwaySearch',
-    	'click #add-to-gene-pool': 'addGenestoPool'
+    	'click .close-pathway-search': 'closePathwaySearch'
     },
     regions: {
       GeneCollectionRegion: "#GeneCollectionRegion"
     },
     closePathwaySearch: function(){
     	Cure.sidebarLayout.PathwaySearchRegion.close();
-    },
-    initialize: function(options){
-    	this.aggNode = options.aggNode;
+    	Cure.GeneCollection.reset();
     },
     onRender: function(){
-    	Cure.GeneCollection.reset();
-    	Cure.GenePoolRegion.close();
     	Cure.GeneCollectionView = new GeneCollectionView({
       	collection: Cure.GeneCollection
       });
@@ -84,26 +77,6 @@ PathwayLayout = Marionette.Layout.extend({
   				$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
   				}
   			});
-    },
-    addGenestoPool: function(){
-    	var model;
-    	for(var i=0;i<Cure.GeneCollection.length;i++){
-    		model = Cure.GeneCollection.models[i];
-    		if(!model.get('keepInCollection')){
-    			model.destroy();
-    			i--;
-    		}
-    	}
-    	Cure.sidebarLayout.PathwaySearchRegion.close();
-    	console.log(this.aggNode);
-    	if(this.aggNode){
-    		var layout = Cure.sidebarLayout.AggNodeRegion.currentView;
-    		layout.addToGeneCollection(Cure.GeneCollection.toArray());
-    		Cure.GeneCollection.reset();
-    	} else {
-    		var genePoolLayout = new GenePoolLayout();
-    		Cure.GenePoolRegion.show(genePoolLayout);
-    	}
     }
 });
 return PathwayLayout;
