@@ -1,0 +1,11 @@
+<% if(short_name == "Short Name"){ %>
+<th><%= short_name %></th>
+<th><%= long_name %></th>
+<th><%= source %></th>
+<th><input type="checkbox" class="keepAll"></th>
+<% } else { %>
+<td><%= short_name %></td>
+<td><%= long_name %></td>
+<td><%= source %></td>
+<td><input type="checkbox" class="keepInCollection" <% if(keepInCollection){print("checked");} %>></td>
+<% } %>

@@ -5,6 +5,8 @@ define([
 	//Models
 	'app/models/Node',
 	'app/models/Collaborator',
+	//Views
+	'app/views/layouts/PathwaySearchLayout',
 	//Templates
 	'text!app/templates/GeneSummary.html',
 	'text!app/templates/ClinicalFeatureSummary.html',
@@ -13,7 +15,7 @@ define([
 	'myGeneAutocomplete',
 	'jqueryui',
 	 'bootstrapSwitch'
-    ], function($, Marionette, Node, Collaborator, geneinfosummary, cfsummary, AddNodeTemplate) {
+    ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this,'toggleCf');
@@ -24,11 +26,15 @@ AddRootNodeView = Marionette.ItemView.extend({
 		'toggleCf': '.bootstrap-switch-id-toggleCf',
 		"gene_query": '#gene_query',
 		'cf_query': '#cf_query',
-		"checkbox": ".switch-wrapper input[type='checkbox']",
-		"pathwaysearch": "#pathwaysearch_query"
+		"checkbox": ".switch-wrapper input[type='checkbox']"
 	},
 	events:{
 		'switchChange .bootstrap-switch-id-toggleCf': 'toggleCf',
+		'click .open-pathway-search': 'openPathwaySearch'
+	},
+	openPathwaySearch: function(){
+		Cure.PathwaySearchLayout = new PathwaySearchLayout();
+		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
 	},
 	toggleCf: function(event,state){
 		if(state.value){
@@ -191,53 +197,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 			size: 'small',
 			animate: false
 		});
-		
-		$(this.ui.pathwaysearch).autocomplete({
-			source: function( request, response ) {
-					var args = {
-  	        command : "search_pathways",
-  	        query: request.term
-  	      };
-  	      $.ajax({
-  	          type : 'POST',
-  	          url : thisURL,
-  	          data : JSON.stringify(args),
-  	          dataType : 'json',
-  	          contentType : "application/json; charset=utf-8",
-  	          success : function(data){
-  	          	response( $.map( data, function( item ) {
-  	          		return {
-  	          		  label: item,
-  	          		  value: item
-  	          	  };
-  	          	}));
-  	        }
-  	      });
-				},
-				minLength: 5,
-				select: function( event, ui ) {
-					var args = {
-	  	        command : "get_genes_of_pathway",
-	  	        pathway_name:	ui.item.value
-	  	      };
-	  	      $.ajax({
-	  	          type : 'POST',
-	  	          url : thisURL,
-	  	          data : JSON.stringify(args),
-	  	          dataType : 'json',
-	  	          contentType : "application/json; charset=utf-8",
-	  	          success : function(data){
-	  	          	
-	  	          }
-	  	      });
-				},
-				open: function() {
-				$( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
-				},
-				close: function() {
-				$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
-				}
-				});
 		
 		$(this.ui.gene_query).genequery_autocomplete({
 			open: function(event){

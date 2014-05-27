@@ -1,27 +1,33 @@
-define(
-    [
-    // Libraries
-    'marionette', 'd3', 'jquery',
-    // Collection
-    'app/collections/ClinicalFeatureCollection',
-        'app/collections/NodeCollection', 'app/collections/ScoreBoard',
-        'app/collections/TreeBranchCollection', 'app/collections/CollaboratorCollection',
-        'app/collections/BadgeCollection',
-        // Models
-        'app/models/Comment', 'app/models/Score',
-        'app/models/zoom', 'app/models/Player',
-        // Views
-        'app/views/JSONCollectionView',
-        'app/views/NodeCollectionView','app/views/layouts/sidebarLayout',
-        'app/views/zoomView', 'app/views/LoginView',
-        // Utilitites
-        'app/utilities/utilities',
-        //Tour
-        'app/tour/tour',
-        'app/tour/tree'
-        ],
+define([
+	    // Libraries
+	    'marionette', 'd3', 'jquery',
+	    // Collection
+	    'app/collections/ClinicalFeatureCollection',
+	    'app/collections/NodeCollection', 
+	    'app/collections/ScoreBoard',
+	    'app/collections/TreeBranchCollection', 
+	    'app/collections/CollaboratorCollection',
+	    'app/collections/BadgeCollection',
+	    'app/collections/GeneCollection',
+	    // Models
+	    'app/models/Comment', 
+	    'app/models/Score',
+	    'app/models/zoom', 
+	    'app/models/Player',
+	    // Views
+	    'app/views/JSONCollectionView',
+	    'app/views/NodeCollectionView',
+	    'app/views/layouts/sidebarLayout',
+	    'app/views/zoomView', 
+	    'app/views/LoginView',
+	    // Utilitites
+	    'app/utilities/utilities',
+	    //Tour
+	    'app/tour/tour',
+	    'app/tour/tree'
+    ],
     function(Marionette, d3, $, ClinicalFeatureCollection, NodeCollection,
-        ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, Comment, Score, Zoom, Player, JSONCollectionView,
+    		ScoreBoard, TreeBranchCollection, CollaboratorCollection, BadgeCollection, GeneCollection, Comment, Score, Zoom, Player, JSONCollectionView,
         NodeCollectionView, sidebarLayout, ZoomView, LoginView, CureUtils, InitTour, TreeTour) {
 
 	    Cure = new Marionette.Application();
@@ -190,6 +196,7 @@ define(
 		        Cure.Score = new Score();
 		        Cure.Zoom = new Zoom();
 		        Cure.BadgeCollection = new BadgeCollection();
+		        Cure.GeneCollection = new GeneCollection();
 		        Cure.ZoomView = new ZoomView({
 		        	model: Cure.Zoom
 		        });
