@@ -6,7 +6,8 @@ GeneItem = Backbone.RelationalModel.extend({
 	defaults: {
 		name: '',
 		unique_id: '',
-		keepInCollection: 0
+		keepInCollection: 0,
+		keepAll: 0
 	}
 });
 return GeneItem;
