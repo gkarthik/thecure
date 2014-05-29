@@ -1043,9 +1043,9 @@ text-align:left;
 	width: 150px;
 	font-size: 12px;
 	position: absolute;
-	top: 80px;
+	top: 200px;
 	z-index: 5;
-	right: 500px;
+	left: 0px;
 }
 
 #GenePoolRegion .list-group .list-group-item{
@@ -1055,12 +1055,12 @@ text-align:left;
 
 .genepool-drop-active{
 	border-color: rgba(255, 180, 0, 1); 
-	border: 5px dotted rgba(255, 180, 0, 1);
+	border: 5px dashed rgba(255, 180, 0, 1);
 }
 
 .genepool-drop-hover{
 	border-color: #000;
-	border: 5px dotted #000;
+	border: 5px dashed #000;
 }
 
 #drop-root-node{
@@ -1072,7 +1072,7 @@ text-align:left;
 	border-color: rgba(255, 180, 0, 1);
 	border-width:4px;
 	color: #999;
-	border: 5px dotted rgba(255, 180, 0, 1);
+	border: 5px dashed rgba(255, 180, 0, 1);
 	margin-top: 20px;
 }
 

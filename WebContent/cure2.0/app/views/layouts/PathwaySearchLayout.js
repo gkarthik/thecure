@@ -23,9 +23,10 @@ PathwayLayout = Marionette.Layout.extend({
     },
     closePathwaySearch: function(){
     	Cure.sidebarLayout.PathwaySearchRegion.close();
-    	Cure.GeneCollection.reset();
     },
     onRender: function(){
+    	Cure.GeneCollection.reset();
+    	Cure.GenePoolRegion.close();
     	Cure.GeneCollectionView = new GeneCollectionView({
       	collection: Cure.GeneCollection
       });
