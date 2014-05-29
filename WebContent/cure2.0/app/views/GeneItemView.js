@@ -26,7 +26,9 @@ GeneItemView = Marionette.ItemView.extend({
 		if($(this.ui.keepAll).is(':checked')){
 			this.model.set('keepAll',1);
 			Cure.GeneCollection.forEach(function(model, index) {
-		    model.set('keepInCollection', 1);
+				if(model.get('unique_id')!="Unique ID"){
+			    model.set('keepInCollection', 1);
+				}
 			});
 		} else {
 			this.model.set('keepAll',0);
