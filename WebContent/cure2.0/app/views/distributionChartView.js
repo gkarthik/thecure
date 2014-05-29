@@ -182,6 +182,7 @@ DistChartView = Marionette.ItemView.extend({
 			if(isNominal){
 				rectWidth = rectWidth/2;
 			}
+			console.log(plotValues);
 			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
 			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
@@ -242,6 +243,7 @@ DistChartView = Marionette.ItemView.extend({
 			.attr("transform",function(d){
 				var translateX = (marginX - (rectWidth/2)) + ((xLength)/(plotValues.length*2)) + parseFloat(valueScale(d.value));
 				if(!isNominal){
+					console.log(isNominal);
 						translateX = (marginX - (rectWidth/2)) + ((xLength)/(plotValues.length)) + parseFloat(valueScale(d.value));
 				}
 				return "translate("+translateX+",10)";
