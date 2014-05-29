@@ -181,7 +181,7 @@ NodeView = Marionette.Layout.extend({
 	setNodeClass: function(){
 		var styleObject = {
 			"background": "#FFF",
-			"border-color": "#000"
+			"borderColor": "#000"
 		};
 		if(this.model.get('name')==Cure.negNodeName) {
 			styleObject.background = "rgba(255,0,0,0.2)";
@@ -194,6 +194,39 @@ NodeView = Marionette.Layout.extend({
 		this.$el.css(styleObject);
 		var options = this.model.get('options');
 		this.$el.addClass(options.get('kind'));
+		var model = this.model;
+		if(this.model.get('options').get('kind')=="leaf_node"){
+			this.$el.droppable({
+				accept: ".gene-pool-item",
+				activeClass: "genepool-drop-active",
+				hoverClass: "genepool-drop-hover",
+				drop: function( event, ui ) {
+					if(model.get("options")){
+						model.get("options").unset("split_point");
+					}
+					
+					var index = $(ui.draggable).data("index");
+					var ui = Cure.GeneCollection.at(index).toJSON();
+					if(model.get("distribution_data")){
+						model.get("distribution_data").set({
+							"range": -1
+						});
+					}
+					model.set("previousAttributes", model.toJSON());
+					model.set("name", ui.short_name);
+					model.get("options").set({
+						"unique_id" : ui.unique_id,
+						"kind" : "split_node",
+						"full_name" : ui.long_name
+					});
+					Cure.PlayerNodeCollection.sync();
+				}
+			});
+		} else {
+			if(this.$el.data('ui-droppable')){
+				this.$el.droppable("destroy");
+			}
+		}
 	},
 	onBeforeRender : function() {
 		this.setWidthandPos();

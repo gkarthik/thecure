@@ -96,7 +96,8 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	    "SideBarRegion": "#cure-panel-wrapper",
 	    "ZoomControlsRegion": "#zoom-controls",
 	    "LoginRegion": "#LoginRegion",
-	    "ScoreBoardRegion" : "#scoreboard_innerwrapper"
+	    "ScoreBoardRegion" : "#scoreboard_innerwrapper",
+	    "GenePoolRegion": "#GenePoolRegion"
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n",

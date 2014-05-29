@@ -3,9 +3,10 @@ define([
 	'marionette',
 	//Views
 	'app/views/GeneCollectionView',
+	'app/views/GenePoolCollectionView',
 	//Templates
 	'text!app/templates/PathwayLayout.html'
-    ], function($, Marionette, GeneCollectionView, PathwayLayoutTmpl) {
+    ], function($, Marionette, GeneCollectionView, GenePoolCollectionView, PathwayLayoutTmpl) {
 PathwayLayout = Marionette.Layout.extend({
     template: PathwayLayoutTmpl,
     className: "panel panel-default",
@@ -14,7 +15,8 @@ PathwayLayout = Marionette.Layout.extend({
   		"pathwaysearch": "#pathwaysearch_query"
     },
     events: {
-    	'click .close-pathway-search': 'closePathwaySearch'
+    	'click .close-pathway-search': 'closePathwaySearch',
+    	'click #add-to-gene-pool': 'addGenestoPool'
     },
     regions: {
       GeneCollectionRegion: "#GeneCollectionRegion"
@@ -77,6 +79,21 @@ PathwayLayout = Marionette.Layout.extend({
   				$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
   				}
   			});
+    },
+    addGenestoPool: function(){
+    	var model;
+    	for(var i=0;i<Cure.GeneCollection.length;i++){
+    		model = Cure.GeneCollection.models[i];
+    		if(!model.get('keepInCollection')){
+    			model.destroy();
+    			i--;
+    		}
+    	}
+    	Cure.sidebarLayout.PathwaySearchRegion.close();
+    	Cure.GenePoolCollectionView = new GenePoolCollectionView({
+      	collection: Cure.GeneCollection
+      });
+    	Cure.GenePoolRegion.show(Cure.GenePoolCollectionView);
     }
 });
 return PathwayLayout;

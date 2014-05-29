@@ -1035,6 +1035,34 @@ text-align:left;
 	width:100%;
 }
 
+#GenePoolRegion .details{
+	display:none;
+}
+
+#GenePoolRegion{
+	width: 150px;
+	font-size: 12px;
+	position: absolute;
+	top: 80px;
+	z-index: 5;
+	right: 500px;
+}
+
+#GenePoolRegion .list-group .list-group-item{
+	background: #FBF9EE;
+	cursor: move;
+}
+
+.genepool-drop-active{
+	border-color: #FBF9EE; 
+	border: 5px dotted #FBF9EE;
+}
+
+.genepool-drop-hover{
+	border-color: #000;
+	border: 5px dotted #000;
+}
+
 /*
 Style for header links
 */

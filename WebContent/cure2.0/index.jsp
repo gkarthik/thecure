@@ -74,7 +74,7 @@ Player player = (Player) session.getAttribute("player");
                <li><a class="brand" href="/cure/">The Cure</a></li>
                <li><a href="#" id="showDataInf">Data</a></li>
                <li><a href="/cure/boardroom.jsp">View Cure 1.0 Boardgame</a></li>
-                <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
+               <li><a style="color:#FFF;" href="/cure/contact.jsp">Contact</a></li>
              </ul>
              	<div id="LoginRegion">
              	</div>
@@ -138,6 +138,8 @@ Player player = (Player) session.getAttribute("player");
 				<div id="PlayerTreeRegion"></div>
 				<div id="cure-panel-wrapper">
 						
+				</div>
+				<div id="GenePoolRegion">
 				</div>
 	<jsp:include page="/footer.jsp" />
   	<script type="text/javascript">
