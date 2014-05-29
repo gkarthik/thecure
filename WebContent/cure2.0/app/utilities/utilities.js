@@ -462,7 +462,7 @@ CureUtils.shiftNodes = function(translateX,translateY,nodeOffsets){
 
 CureUtils.highlightNodes = function(seednode, ListofIds){
 	var children = seednode.get('children');
-	if(jQuery.inArray( seednode.get('cid'), ListofIds )!= -1){
+	if(jQuery.inArray( seednode.get('options').get('cid'), ListofIds )!= -1){
 		seednode.set('highlight',1);
 	} else {
 		seednode.set('highlight',0);

@@ -11,7 +11,7 @@ TreeBranchCollection = Backbone.Collection.extend({
 	},
 	getTreeinText : function(node){
 		var tempBranches = [];
-		if(node.get('options').kind == "leaf_node" && node.get('children').length == 0){
+		if(node.get('options').get('kind') == "leaf_node" && node.get('children').length == 0){
 				var branch = {
 						splitnodes: [],
 						splitvalues: [],
@@ -20,13 +20,13 @@ TreeBranchCollection = Backbone.Collection.extend({
 				branch.leafnode = node.toJSON();
 				var tempNode = node.get('parentNode');
 				while(tempNode != null){
-					if(tempNode.get('options').kind == "split_node"){
-						if(tempNode.get('options').id.indexOf("metabric") == -1){
+					if(tempNode.get('options').get('kind') == "split_node"){
+						if(tempNode.get('options').get('unique_id').indexOf("metabric") == -1){
 							branch.splitnodes.push({node: tempNode.toJSON(), type: "gene"});
-						} else if(tempNode.get('options').id.indexOf("metabric") != -1) {
+						} else if(tempNode.get('options').get('unique_id').indexOf("metabric") != -1) {
 							branch.splitnodes.push({node: tempNode.toJSON(), type: "cf"});
 						} 
-					} else if(tempNode.get('options').kind == "split_value") {
+					} else if(tempNode.get('options').get('kind') == "split_value") {
 						branch.splitvalues.push(tempNode.toJSON());
 					}
 					tempNode = tempNode.get('parentNode');

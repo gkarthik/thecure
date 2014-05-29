@@ -55,6 +55,7 @@ NodeView = Marionette.Layout.extend({
 		this.listenTo(this.model.get('options'), 'change:kind', this.render);
 		this.listenTo(this.model, 'change:name', this.render);
 		this.listenTo(this.model.get('options'), 'change:accLimit', this.setNodeClass);
+		this.listenTo(this.model, 'change:highlight', this.setHighlight);
 		
 		var options = this.model.get('options');
 		options.set('cid',this.cid);
@@ -88,6 +89,13 @@ NodeView = Marionette.Layout.extend({
             }
           }
       });
+	},
+	setHighlight: function(){
+		if(this.model.get('highlight')){
+			this.$el.addClass("highlightNode");
+		} else {
+			this.$el.removeClass("highlightNode");
+		}
 	},
 	getDistributionData: function(){
 		if(this.model.get("options").get('kind')=="split_node"){
@@ -231,6 +239,7 @@ NodeView = Marionette.Layout.extend({
 	onBeforeRender : function() {
 		this.setWidthandPos();
 		this.setNodeClass();
+		this.setHighlight();
 		if(this.chartRegion.currentView){
 			this.chartRegion.currentView.remove();
 		}
