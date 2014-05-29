@@ -183,9 +183,9 @@ DistChartView = Marionette.ItemView.extend({
 				rectWidth = rectWidth/2;
 			}
 			console.log(plotValues);
-			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return isNominal ? d.value : Math.round(d.value*100)/100;})).rangeBands([0,xLength]);
+			var valueScale = d3.scale.ordinal().domain(plotValues.map(function(d){return d.value;})).rangeBands([0,xLength]);
 			var frequencyScale = d3.scale.linear().domain([0,frequencies[frequencies.length-1]]).range([yLength,0]);
-			var xAxis = d3.svg.axis().scale(valueScale).orient("bottom");
+			var xAxis = d3.svg.axis().tickFormat(function(d) { return isNominal ? d : Math.round(d*100)/100;}).scale(valueScale).orient("bottom");
 			var yAxis = d3.svg.axis().scale(frequencyScale).orient("left");
 			SVG.append("g").attr("class","axis xaxis").attr("transform", "translate("+marginX+","+(yLength+10)+")").call(xAxis)
 				.append("svg:text").attr("transform","translate(0,30)").text(function(){
@@ -246,6 +246,7 @@ DistChartView = Marionette.ItemView.extend({
 					console.log(isNominal);
 						translateX = (marginX - (rectWidth/2)) + ((xLength)/(plotValues.length)) + parseFloat(valueScale(d.value));
 				}
+				console.log(d.value,d.frequency);
 				return "translate("+translateX+",10)";
 			});
 			
