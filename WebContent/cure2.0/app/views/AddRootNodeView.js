@@ -163,16 +163,13 @@ AddRootNodeView = Marionette.ItemView.extend({
 					Cure.PlayerNodeCollection.sync();
 				}
 			},
-		}).data("ui-autocomplete")._renderItem = function (ul, item) {
+		}).bind('focus', function(){ $(this).autocomplete("search"); } )
+			.data("ui-autocomplete")._renderItem = function (ul, item) {
 		    return $("<li></li>")
 	        .data("item.autocomplete", item)
 	        .append("<a>" + item.label + "</a>")
 	        .appendTo(ul);
 	    };
-	    
-	    this.$el.find('#cf_query').focus(function(){
-	    	$(this).autocomplete("search", "");
-	    });	
 		$("#mygenecf_wrapper").show();
 	},
 	hideCf: function(){
@@ -297,7 +294,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 				}
 			}
 		});
-
+		$(this.ui.gene_query).focus();
 	}
 });
 
