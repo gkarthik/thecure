@@ -37,6 +37,7 @@ import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
 import weka.filters.unsupervised.attribute.AddExpression;
+import weka.filters.unsupervised.attribute.MathExpression;
 
 import java.awt.List;
 import java.io.ByteArrayOutputStream;
@@ -1087,9 +1088,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				attIndex = data.attribute(att_name.asText()).index();
 			} else if(feature_exp!=null) {
 				//WEKA Add Expression
-				AddExpression newFeature = new AddExpression();
-				newFeature.setExpression(feature_exp);
-				newFeature.setName("NewFeature");
+				evalAndAddNewFeatureValues(data, feature_exp);
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1639,12 +1638,20 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
 		String dataset = "metabric_with_clinical";
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-		System.out.println(getNewFeatureValues(weka.getTrain(), "a17^2"));
+		System.out.println(evalAndAddNewFeatureValues(weka.getTrain(), "a17^2"));
 	}
 	
-	public static ArrayList<Double> getNewFeatureValues(Instances data, String featureExpression) {
+	public static Instances evalAndAddNewFeatureValues(Instances data, String featureExpression) {
+		data.insertAttributeAt(data.attribute(data.numAttributes()-2), data.numAttributes()-2);
 		ArrayList<Double> featureValues = new ArrayList<Double>();
-		AddExpression newFeature = new AddExpression();
+		MathExpression newFeature = new MathExpression();
+		String[] options = null;
+		try {
+			newFeature.setOptions(options);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
 		try {
 			newFeature.setInputFormat(data);
@@ -1662,7 +1669,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				e.printStackTrace();
 			}
 		}		
-		return featureValues;
+		return data;
 	}
 
 	/**
