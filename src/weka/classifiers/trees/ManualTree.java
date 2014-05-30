@@ -1639,23 +1639,30 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
 		String dataset = "metabric_with_clinical";
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-		getNewFeatureValueofInstance(weka.getTrain());
+		System.out.println(getNewFeatureValues(weka.getTrain(), "a17^2"));
 	}
 	
-	public static void getNewFeatureValueofInstance(Instances data) {
+	public static ArrayList<Double> getNewFeatureValues(Instances data, String featureExpression) {
+		ArrayList<Double> featureValues = new ArrayList<Double>();
 		AddExpression newFeature = new AddExpression();
-		newFeature.setExpression("a17^2");//Attribute is supplied with index starting from 1
+		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
 		try {
 			newFeature.setInputFormat(data);
-			newFeature.input(data.instance(16));//Index here starts from 0.
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		int numAttr = newFeature.outputPeek().numAttributes();
-		System.out.println(numAttr);
-		System.out.println(data.instance(16).value(16));
-		System.out.println(newFeature.output().value(numAttr-1));
+		for(int i=0; i<data.numInstances(); i++){//Index here starts from 0.
+			try {
+				newFeature.input(data.instance(i));
+				int numAttr = newFeature.outputPeek().numAttributes();
+				featureValues.add(newFeature.output().value(numAttr-1));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+		return featureValues;
 	}
 
 	/**
