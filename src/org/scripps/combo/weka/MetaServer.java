@@ -90,7 +90,14 @@ public class MetaServer extends HttpServlet {
 		super();
 		name_dataset = new HashMap<String, Weka>();
 		mapper = new ObjectMapper();
+	}	
+	
+	/*
+	public void main(String[] args) throws Exception{
+		ManualTree t = new ManualTree();
+		t.getNewFeatureData(name_dataset.get("metabric_with_clinical").getTrain());
 	}
+	*/
 
 	/**
 	 * Initialize the service.  This only runs the first time a request is made to this servlet.  It reads local 
