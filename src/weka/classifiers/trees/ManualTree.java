@@ -36,17 +36,27 @@ import weka.core.RevisionUtils;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
+import weka.filters.unsupervised.attribute.AddExpression;
 
 import java.awt.List;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+
+import org.scripps.combo.weka.MetaServer;
+import org.scripps.combo.weka.Weka;
 import org.scripps.util.GenerateCSV;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1062,6 +1072,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
+		String feature_exp = options.get("feature_exp").asText();
 		Boolean getSplitData = false;
 
 		//this allows me to modify the json tree structure to add data about the evaluation
@@ -1070,9 +1081,16 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
-		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
+		if(kind!=null&&kind.equals("split_node")&&(att_name!=null || feature_exp !=null)){ //
 			//attIndex = data.attribute(node_id.asText()).index();
-			attIndex = data.attribute(att_name.asText()).index();
+			if(att_name!=null){
+				attIndex = data.attribute(att_name.asText()).index();
+			} else if(feature_exp!=null) {
+				//WEKA Add Expression
+				AddExpression newFeature = new AddExpression();
+				newFeature.setExpression(feature_exp);
+				newFeature.setName("NewFeature");
+			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
 			int c = 0;
@@ -1616,8 +1634,28 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @param argv
 	 *            the commandline parameters
 	 */
-	public static void main(String[] argv) {
-		runClassifier(new ManualTree(), argv);
+	public static void main(String argv[]) throws Exception{
+		Weka weka = new Weka();
+		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
+		String dataset = "metabric_with_clinical";
+		weka.buildWeka(new FileInputStream(train_file), null, dataset);
+		getNewFeatureValueofInstance(weka.getTrain());
+	}
+	
+	public static void getNewFeatureValueofInstance(Instances data) {
+		AddExpression newFeature = new AddExpression();
+		newFeature.setExpression("a17^2");//Attribute is supplied with index starting from 1
+		try {
+			newFeature.setInputFormat(data);
+			newFeature.input(data.instance(16));//Index here starts from 0.
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int numAttr = newFeature.outputPeek().numAttributes();
+		System.out.println(numAttr);
+		System.out.println(data.instance(16).value(16));
+		System.out.println(newFeature.output().value(numAttr-1));
 	}
 
 	/**
