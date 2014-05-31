@@ -23,13 +23,18 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	},
 	events:{
 		'click #build-feature': 'buildFeature',
+		'keydown #feature-expression': 'checkAndTagText',
 		'keyup #feature-expression': 'checkAndTagText'
 	},
 	checkAndTagText: function(e){
+		var value = $(this.ui.featureExpression).val();
 		if($(this.ui.featureExpression).get(0).scrollHeight-11 > $(this.ui.featureExpression).height()){
 			$(this.ui.featureExpression).css({'height': $(this.ui.featureExpression).get(0).scrollHeight+5});
 		}
-		var value = $(this.ui.featureExpression).val();
+		if($(this.ui.featureExpression).get(0).scrollWidth > $(this.ui.featureExpression).width()+2){
+			value = [value.slice(0, value.length-2), "\n", value.slice(value.length-2)].join('');
+		}
+		$(this.ui.featureExpression).val(value);
 		var keyword = "EGR3";
 		var index = value.toUpperCase().indexOf(keyword);
 		if(index!=-1){
