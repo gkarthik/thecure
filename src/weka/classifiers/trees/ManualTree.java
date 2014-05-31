@@ -1073,7 +1073,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
-		String feature_exp = options.get("feature_exp").asText();
+		JsonNode feature_exp = options.get("feature_exp");
 		Boolean getSplitData = false;
 
 		//this allows me to modify the json tree structure to add data about the evaluation
@@ -1084,11 +1084,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		//		String name = node_name.asText();
 		if(kind!=null&&kind.equals("split_node")&&(att_name!=null || feature_exp !=null)){ //
 			//attIndex = data.attribute(node_id.asText()).index();
-			if(att_name!=null){
+			if(!att_name.asText().equals("")){
 				attIndex = data.attribute(att_name.asText()).index();
-			} else if(feature_exp!=null) {
-				//WEKA Add Expression
-				evalAndAddNewFeatureValues(data, feature_exp);
+			} else if(!feature_exp.asText().equals("")) {
+				evalAndAddNewFeatureValues(data, feature_exp.asText());
+				attIndex = data.numAttributes()-2;
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1645,10 +1645,21 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		System.out.println(data.instance(13).value(numAttr));
 	}
 	
+	/**
+	 * Generates new values for feature and adds values to instances.
+	 * 
+	 * @param data
+	 *            Instances to add values to.
+	 * @param featureExpression
+	 *            Mathematical formula to evaluate new values.
+	 * @return
+	 * 		Instances with enw values added. 
+	 *                       
+	 */
 	public static Instances evalAndAddNewFeatureValues(Instances data, String featureExpression) {
 		AddExpression newFeature = new AddExpression();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
-		Attribute attr = new Attribute("New Feature");
+		Attribute attr = new Attribute("New Feature");//Must figure out a different name for new feature.
 		data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
 		try {
 			newFeature.setInputFormat(data);

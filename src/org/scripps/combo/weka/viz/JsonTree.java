@@ -248,6 +248,8 @@ public class JsonTree {
 				}else{
 					options.put("error", "no attribute found for given id ");
 				}
+			} else {
+				options.put("attribute_name", "");
 			}
 		}
 		ArrayNode children = (ArrayNode)node.get("children");
