@@ -1678,8 +1678,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				e.printStackTrace();
 			}
 		}	
-		//System.out.println(data);
-		System.out.println("done");
 		return data;
 	}
 

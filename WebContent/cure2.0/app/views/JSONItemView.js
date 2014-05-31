@@ -61,20 +61,29 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
-			return splitNodeGeneSummary({
-				id: serialized_model.cid,
-				name : name,
-				summary : serialized_model.gene_summary,
-				kind : serialized_model.options.kind
-			});
-		} else if (serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") != -1){
-			return splitNodeCfSummary({
-				id: serialized_model.cid,
-				name : name,
-				summary : serialized_model.gene_summary,
-				kind : serialized_model.options.kind
-			});
+		if(serialized_model.options.unique_id!=null){
+			if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
+				return splitNodeGeneSummary({
+					id: serialized_model.cid,
+					name : name,
+					summary : serialized_model.gene_summary,
+					kind : serialized_model.options.kind
+				});
+			} else if (serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") != -1){
+				return splitNodeCfSummary({
+					id: serialized_model.cid,
+					name : name,
+					summary : serialized_model.gene_summary,
+					kind : serialized_model.options.kind
+				});
+			} else {
+				return splitValueSummary({
+					id: serialized_model.cid,
+					name : name,
+					summary : serialized_model.gene_summary,
+					kind : serialized_model.options.kind
+				});
+			} 
 		} else {
 			return splitValueSummary({
 				id: serialized_model.cid,
@@ -83,6 +92,7 @@ JSONItemView = Marionette.ItemView.extend({
 				kind : serialized_model.options.kind
 			});
 		}
+		
 	},
 	ShowJSON : function() {
 		var description =null;
