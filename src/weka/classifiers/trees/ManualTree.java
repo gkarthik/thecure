@@ -1635,24 +1635,21 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 */
 	public static void main(String argv[]) throws Exception{
 		Weka weka = new Weka();
-		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
+		String train_file = "/home/skywalker/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
 		String dataset = "metabric_with_clinical";
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-		System.out.println(evalAndAddNewFeatureValues(weka.getTrain(), "a17^2"));
+		Instances data = evalAndAddNewFeatureValues(weka.getTrain(), "a17^2");
+		int numAttr = data.numAttributes()-2;
+		System.out.println(data.attribute(numAttr));
+		System.out.println(data.instance(13).value(16));
+		System.out.println(data.instance(13).value(numAttr));
 	}
 	
 	public static Instances evalAndAddNewFeatureValues(Instances data, String featureExpression) {
-		data.insertAttributeAt(data.attribute(data.numAttributes()-2), data.numAttributes()-2);
-		ArrayList<Double> featureValues = new ArrayList<Double>();
-		MathExpression newFeature = new MathExpression();
-		String[] options = null;
-		try {
-			newFeature.setOptions(options);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		AddExpression newFeature = new AddExpression();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
+		Attribute attr = new Attribute("New Feature");
+		data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
 		try {
 			newFeature.setInputFormat(data);
 		} catch (Exception e) {
@@ -1663,12 +1660,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			try {
 				newFeature.input(data.instance(i));
 				int numAttr = newFeature.outputPeek().numAttributes();
-				featureValues.add(newFeature.output().value(numAttr-1));
+		//		System.out.println(newFeature.output().value(numAttr-1));
+				data.instance(i).setValue(data.attribute(numAttr-3), newFeature.output().value(numAttr-1));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}		
+		}	
+		//System.out.println(data);
+		System.out.println("done");
 		return data;
 	}
 
