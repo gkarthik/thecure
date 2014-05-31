@@ -237,7 +237,7 @@ public class JsonTree {
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
-			if(unique_id!=null){
+			if(unique_id!=null && unique_id.asText()!=""){
 				List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
 				if(atts!=null&&atts.size()>0){
 
