@@ -1083,10 +1083,39 @@ text-align:left;
 	width: 20%;
 	left: 40%;
 	z-index: 4;
-	padding: 5px;
 	text-align: center;
 	border: 1px solid #F69;
-	border-radius: 10px;
+	font-size: 12px;
+}
+
+#feature-expression{
+	font-size: 12px;
+	font-family: inherit;
+	background: none;
+	border: 0px;
+	border-bottom: 1px solid #777;
+	width:100%;
+	height:30px;
+	overflow: hidden;
+}
+
+#hidden-span{
+	font-family: inherit;
+	height:auto;
+	width: auto;
+	position:absolute;
+	padding:0px;
+	font-size: 12px;
+	text-align: left;
+}
+
+.highlight-tag{
+	background: lightblue;
+	z-index:-1;
+	position:absolute;
+	width: auto;
+	height: auto;
+	padding:0px;
 }
 
 /*
