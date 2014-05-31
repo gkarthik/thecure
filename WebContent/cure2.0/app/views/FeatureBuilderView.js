@@ -31,7 +31,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		if($(this.ui.featureExpression).get(0).scrollHeight-11 > $(this.ui.featureExpression).height()){
 			$(this.ui.featureExpression).css({'height': $(this.ui.featureExpression).get(0).scrollHeight+5});
 		}
-		if($(this.ui.featureExpression).get(0).scrollWidth > $(this.ui.featureExpression).width()+2){
+		if($(this.ui.featureExpression).get(0).scrollWidth > $(this.ui.featureExpression).innerWidth()){
 			value = [value.slice(0, value.length-2), "\n", value.slice(value.length-2)].join('');
 		}
 		$(this.ui.featureExpression).val(value);
