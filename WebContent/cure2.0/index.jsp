@@ -141,6 +141,8 @@ Player player = (Player) session.getAttribute("player");
 				</div>
 				<div id="GenePoolRegion">
 				</div>
+				<div id="FeatureBuilderRegion">
+				</div>
 	<jsp:include page="/footer.jsp" />
   	<script type="text/javascript">
     var cure_user_experience = "<%=player_experience%>",

@@ -1076,6 +1076,19 @@ text-align:left;
 	margin-top: 20px;
 }
 
+#FeatureBuilderRegion{
+	top: 100px;
+	background: #FFF;
+	position: absolute;
+	width: 20%;
+	left: 40%;
+	z-index: 4;
+	padding: 5px;
+	text-align: center;
+	border: 1px solid #F69;
+	border-radius: 10px;
+}
+
 /*
 Style for header links
 */
