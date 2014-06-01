@@ -26,6 +26,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	events:{
 		'click #build-feature': 'buildFeature',
 		'keydown #feature-expression': 'checkAndTagText',
+		'keyup #feature-expression': 'checkAndTagText',
 		'click .gene-autocomplete-option':'getTags'
 	},
 	tagsList: [],
@@ -41,7 +42,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		if(value.length > prevExp.length){
 			while(indexofDiff==-1){
 				if(value.substring(0,counter)!=prevExp.substring(0,counter)){
-					indexofDiff = counter;
+					indexofDiff = counter-1;
 					break;
 				}
 				counter++;
