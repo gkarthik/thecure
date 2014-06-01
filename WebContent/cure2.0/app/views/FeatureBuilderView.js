@@ -112,7 +112,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 				var re = new RegExp(keyword, "g");
 				value = value.replace(re,tagText);
 				$(this.ui.featureExpression).val(value);
-				this.tagsList.push({text:tagText,id:index});
+				this.tagsList.push({text:tagText,id:index, entrezid: entrezid});
 				this.addTag(value,index,tagText,entrezid);
 				this.prevExp = value;
 			}
@@ -133,8 +133,17 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		this.$el.append("<span id='tag"+index+"' class='highlight-tag'>"+value.substring(index,index+keyword.length)+"</span>");
 		this.setTagPos(value,index,keyword);
 	},
+	getFeatureExp: function(value){
+		var tagsList = this.tagsList;
+		var re;
+		for(var temp in tagsList){
+			re = new RegExp(tagsList[temp].text, "g");
+			value = value.replace(re,"@"+tagsList[temp].entrezid);
+		}
+		return value;
+	},
 	buildFeature: function(){
-		var feature_exp = $(this.ui.featureExpression).val();
+		var feature_exp = this.getFeatureExp($(this.ui.featureExpression).val());
 		if(feature_exp != ""){
 			if(!Cure.initTour.ended()){
 				Cure.initTour.end();
