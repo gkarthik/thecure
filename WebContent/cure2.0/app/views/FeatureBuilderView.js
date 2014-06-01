@@ -10,6 +10,7 @@ define([
     ], function($, Marionette, FeatureBuilderTemplate) {
 FeatureBuilderView = Marionette.ItemView.extend({
 	initialize : function() {
+		_.bindAll(this,'checkAndTagText');
 		$.valHooks.textarea = {
 			get: function( elem ) {
 				return elem.value;
@@ -19,15 +20,69 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	template: FeatureBuilderTemplate,
 	ui : {
 		'featureExpression': '#feature-expression',
-		'hiddenSpan': '#hidden-span'
+		'hiddenSpan': '#hidden-span',
+		"GeneAutoComplete": "#gene-autocomplete-wrapper"
 	},
 	events:{
 		'click #build-feature': 'buildFeature',
 		'keydown #feature-expression': 'checkAndTagText',
-		'keyup #feature-expression': 'checkAndTagText'
+		'click .gene-autocomplete-option':'getTags'
 	},
+	tagsList: [],
+	prevExp: "",
 	checkAndTagText: function(e){
-		var value = $(this.ui.featureExpression).val();
+		var thisView = this;
+		var featureExpEl = $(this.ui.featureExpression);
+		var autocompEl = $(this.ui.GeneAutoComplete);
+		var value = featureExpEl.val();
+		var indexofDiff = -1;
+		var prevExp = this.prevExp;
+		var counter = 1;
+		if(value.length > prevExp.length){
+			while(indexofDiff==-1){
+				if(value.substring(0,counter)!=prevExp.substring(0,counter)){
+					indexofDiff = counter;
+					break;
+				}
+				counter++;
+			}
+		}
+		for(var temp in this.tagsList){
+			var id = this.tagsList[temp].id;
+			if(id>=indexofDiff && indexofDiff!=-1){
+				this.tagsList[temp].id+=1;
+				console.log(this.tagsList[temp].id);
+				$("#tag"+id).attr("id","tag"+this.tagsList[temp].id);
+				id+=1;
+				this.setTagPos(value,this.tagsList[temp].id,this.tagsList[temp].text);
+			}
+			if(value.substring(id,this.tagsList[temp].text.length+id)!=this.tagsList[temp].text){
+				$("#tag"+id).remove();
+				value = value.substring(0,id)+value.substring(this.tagsList[temp].text.length+id-2,value.length-1);
+				featureExpEl.val(value);
+				this.tagsList.splice(temp,1);
+			}
+		}	
+		query = (value.match(/@([A-Za-z0-9])+/g)!=null) ? value.match(/@([A-Za-z0-9])+/g)[0] : "";
+		if(query.length>1){
+			var t = window.setTimeout(function(){
+				query = (featureExpEl.val().match(/@([A-Za-z0-9])+/g)!=null) ? featureExpEl.val().match(/@([A-Za-z0-9])+/g)[0] : "";
+				if(query.length>1){
+					if(query!=""){
+						autocompEl.html("<li>Loading</li>");
+						$.getJSON( "http://mygene.info/v2/query?q="+query.replace("@","")+"&fields=symbol,entrezgene&userfilter=bgood_metabric&callback=?", function( data ) {
+							var items = [];
+							for(var temp in data.hits){
+								items.push( "<li id='" + data.hits[temp].entrezgene + "' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
+							}
+							autocompEl.html(items.join(""));
+							autocompEl.show();
+						});
+					}
+				}
+				window.clearInterval(t);
+			},500);
+		}
 		if($(this.ui.featureExpression).get(0).scrollHeight-11 > $(this.ui.featureExpression).height()){
 			$(this.ui.featureExpression).css({'height': $(this.ui.featureExpression).get(0).scrollHeight+5});
 		}
@@ -35,13 +90,34 @@ FeatureBuilderView = Marionette.ItemView.extend({
 			value = [value.slice(0, value.length-2), "\n", value.slice(value.length-2)].join('');
 		}
 		$(this.ui.featureExpression).val(value);
-		var keyword = "EGR3";
-		var index = value.toUpperCase().indexOf(keyword);
-		if(index!=-1){
-			this.addTag(value,index,keyword);
+		this.prevExp = value;
+	},
+	getTags: function(e){
+		$(this.ui.GeneAutoComplete).hide();
+		var el = e.target;
+		var symbol = $(el).data('symbol');
+		var entrezid = $(el).data('id');
+		var tags = $(this.ui.featureExpression).val().toUpperCase().match(/@([A-Za-z0-9])+/g);
+		var value = $(this.ui.featureExpression).val();
+		var index = 0;
+		for(tag in tags){
+			index = -1;
+			if(symbol.indexOf(tags[tag].replace("@",""))!=-1){
+				index = value.toUpperCase().indexOf(tags[tag]);
+			}
+			if(index!=-1){
+				var keyword = value.substring(index,tags[tag].length+index);
+				var tagText = symbol;
+				var re = new RegExp(keyword, "g");
+				value = value.replace(re,tagText);
+				$(this.ui.featureExpression).val(value);
+				this.tagsList.push({text:tagText,id:index});
+				this.addTag(value,index,tagText,entrezid);
+				this.prevExp = value;
+			}
 		}
 	},
-	addTag: function(value,index,keyword){
+	setTagPos: function(value,index,keyword){
 		var textBeforeKey = value.substring(0,index);
 		$(this.ui.hiddenSpan).html(textBeforeKey+keyword);
 		var pos = [];
@@ -49,11 +125,12 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var lines = textBeforeKey.split("\n");
 		$(this.ui.hiddenSpan).html(lines[lines.length-1]);
 		pos[0] = $(this.ui.hiddenSpan).width()+1;
-		console.log(pos);
-		//var pos = [$(this.ui.hiddenSpan).width(),$(this.ui.hiddenSpan).height()]
-		this.$el.append("<span id='"+keyword+"-tag' class='highlight-tag'>"+value.substring(index,index+keyword.length)+"</span>");
-		var tag = $("#"+keyword+"-tag");
+		var tag = $("#tag"+index);
 		tag.css({'left':pos[0],'top':pos[1]-tag.height()});
+	},
+	addTag: function(value,index,keyword){
+		this.$el.append("<span id='tag"+index+"' class='highlight-tag'>"+value.substring(index,index+keyword.length)+"</span>");
+		this.setTagPos(value,index,keyword);
 	},
 	buildFeature: function(){
 		var feature_exp = $(this.ui.featureExpression).val();
