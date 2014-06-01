@@ -1107,10 +1107,31 @@ text-align:left;
 	padding:0px;
 	font-size: 12px;
 	text-align: left;
+	visibility: hidden;
+}
+
+#gene-autocomplete-wrapper{
+	position: absolute;
+	z-index: 1;
+	list-style: none;
+	background: #FFF;
+	border: 1px solid #777;
+	padding: 2px;
+	width: 120px;
+}
+
+#gene-autocomplete-wrapper li{
+	cursor: pointer;
+	border-bottom: 1px solid #777
+}
+
+#gene-autocomplete-wrapper li:hover{
+	background: #eee;
 }
 
 .highlight-tag{
 	background: lightblue;
+	color: lightblue;
 	z-index:-1;
 	position:absolute;
 	width: auto;
