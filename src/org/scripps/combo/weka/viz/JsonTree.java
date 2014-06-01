@@ -16,6 +16,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openjena.atlas.json.JsonArray;
 import org.scripps.combo.evaluation.ClassifierEvaluation;
@@ -237,10 +239,10 @@ public class JsonTree {
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
+			JsonNode feature_exp = options.get("feature_exp");
 			if(unique_id!=null && unique_id.asText()!=""){
 				List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
 				if(atts!=null&&atts.size()>0){
-
 					for(Attribute att : atts){
 						String att_name = att.getName();
 						options.put("attribute_name", att_name);
@@ -248,8 +250,30 @@ public class JsonTree {
 				}else{
 					options.put("error", "no attribute found for given id ");
 				}
-			} else {
+			} else if(feature_exp!=null && feature_exp.asText()!=""){
 				options.put("attribute_name", "");
+				Instances data = weka.getTrain();
+				String exp = feature_exp.asText();
+				Pattern p = Pattern.compile("@([A-Za-z0-9])+"); 
+				Matcher m = p.matcher(exp);
+				String entrezid = "";
+				String att_name = "";
+				int index = 0;
+				while(m.find()){
+					entrezid = m.group().replace("@", "");
+					List<Attribute> atts = Attribute.getByFeatureUniqueId(entrezid,dataset);
+					if(atts!=null&&atts.size()>0){
+						for(Attribute att : atts){
+							att_name = att.getName();
+						}
+						index = data.attribute(att_name).index();
+						index++;//WEKA AddExpression() accepts index starting from 1.
+						exp = exp.replace("@"+entrezid, "a"+index);
+					}else{
+						options.put("error", "gene in formula cannot be matched to attribute index in dataset");
+					}
+				}
+				options.put("feature_exp", exp);
 			}
 		}
 		ArrayNode children = (ArrayNode)node.get("children");

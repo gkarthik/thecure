@@ -1658,6 +1658,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 */
 	public static Instances evalAndAddNewFeatureValues(Instances data, String featureExpression) {
 		AddExpression newFeature = new AddExpression();
+		System.out.println(featureExpression);
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
 		Attribute attr = new Attribute("New Feature");//Must figure out a different name for new feature.
 		data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
@@ -1668,15 +1669,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			e.printStackTrace();
 		}
 		for(int i=0; i<data.numInstances(); i++){//Index here starts from 0.
-			try {
-				newFeature.input(data.instance(i));
-				int numAttr = newFeature.outputPeek().numAttributes();
-		//		System.out.println(newFeature.output().value(numAttr-1));
-				data.instance(i).setValue(data.attribute(numAttr-3), newFeature.output().value(numAttr-1));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				try {
+					newFeature.input(data.instance(i));
+					int numAttr = newFeature.outputPeek().numAttributes();
+			//		System.out.println(newFeature.output().value(numAttr-1));
+					data.instance(i).setValue(data.attribute(numAttr-3), newFeature.output().value(numAttr-1));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+				//	e.printStackTrace();
+				}
 		}	
 		return data;
 	}
