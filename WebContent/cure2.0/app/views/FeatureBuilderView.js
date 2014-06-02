@@ -123,8 +123,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 			if(index!=-1){
 				var keyword = value.substring(index,tags[tag].length+index);
 				var tagText = symbol;
-				var re = new RegExp(keyword, "g");
-				value = value.replace(re,tagText);
+				value = value.replace(keyword,tagText);
 				$(this.ui.featureExpression).val(value);
 				this.tagsList.push({text:tagText,id:index, entrezid: entrezid});
 				this.addTag(value,index,tagText,entrezid);
