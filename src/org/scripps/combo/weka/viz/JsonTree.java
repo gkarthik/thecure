@@ -127,7 +127,7 @@ public class JsonTree {
 		//		System.out.println(entrez_ids);
 
 		Tree tree = new Tree();
-		tree = tree.getById("32");
+		//tree = tree.getById("32");
 		String jtree = tree.getJson_tree();
 		ManualTree readtree = t.parseJsonTree(weka, jtree, dataset);
 		Evaluation maneval = new Evaluation(weka.getTrain());

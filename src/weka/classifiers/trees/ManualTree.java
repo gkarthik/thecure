@@ -44,7 +44,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -590,7 +592,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Build tree 
 		if(jsontree!=null){
-			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData);
+			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData, data);
 		}else{
 			System.out.println("No json tree specified, failing to process tree");
 		}
@@ -1016,7 +1018,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData, Instances allInst) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1087,7 +1089,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			if(!att_name.asText().equals("")){
 				attIndex = data.attribute(att_name.asText()).index();
 			} else if(!feature_exp.asText().equals("")) {
-				evalAndAddNewFeatureValues(data, feature_exp.asText());
+				evalAndAddNewFeatureValues(feature_exp.asText(), allInst);
 				attIndex = data.numAttributes()-2;
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
@@ -1127,7 +1129,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		if (kind!=null&&kind.equals("split_node")&&att_name!=null) {
 			// Build subtrees
 			m_SplitPoint = splits[m_Attribute];
-			m_Prop = props[m_Attribute];
+			m_Prop = props[m_Attribute];			
 			Instances[] subsets = splitData(data);
 			m_Successors = new ManualTree[distribution.length];
 
@@ -1184,7 +1186,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 				JsonNode son = sons.get(child_name);
 				if(son!=null){
-					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData);
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData, allInst);
 				}else{
 					//if we are a split node with no input children, we need to add them into the tree
 					//JsonNode split_values = node.get("children");
@@ -1201,11 +1203,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						child.put("options", c_options);
 						children.add(child);
 						_node.put("children",children);
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData, allInst);
 
 					}else{
 						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData, allInst);
 					}
 				}
 			}
@@ -1360,7 +1362,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 			// Get instance
 			Instance inst = data.instance(i);
-
+			
 			// Does the instance have a missing value?
 			if (inst.isMissing(m_Attribute)) {
 
@@ -1633,12 +1635,13 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @param argv
 	 *            the commandline parameters
 	 */
-	public static void main(String argv[]) throws Exception{
+	public void main(String argv[]) throws Exception{
 		Weka weka = new Weka();
-		String train_file = "/home/skywalker/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
+		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
 		String dataset = "metabric_with_clinical";
 		weka.buildWeka(new FileInputStream(train_file), null, dataset);
-		Instances data = evalAndAddNewFeatureValues(weka.getTrain(), "a17^2");
+		evalAndAddNewFeatureValues("a17^2",weka.getTrain());
+		Instances data = m_wekaObject.getTrain();
 		int numAttr = data.numAttributes()-2;
 		System.out.println(data.attribute(numAttr));
 		System.out.println(data.instance(13).value(16));
@@ -1656,11 +1659,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 		Instances with enw values added. 
 	 *                       
 	 */
-	public static Instances evalAndAddNewFeatureValues(Instances data, String featureExpression) {
+	public void evalAndAddNewFeatureValues(String featureExpression, Instances data) {
 		AddExpression newFeature = new AddExpression();
-		System.out.println(featureExpression);
+		Date date= new java.util.Date();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
-		Attribute attr = new Attribute("New Feature");//Must figure out a different name for new feature.
+		Attribute attr = new Attribute("Feature"+new Timestamp(date.getTime()));//Must figure out a different name for new feature.
 		data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
 		try {
 			newFeature.setInputFormat(data);
@@ -1679,7 +1682,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				//	e.printStackTrace();
 				}
 		}	
-		return data;
 	}
 
 	/**
