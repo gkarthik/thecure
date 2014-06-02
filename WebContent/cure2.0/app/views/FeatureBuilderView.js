@@ -144,6 +144,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	},
 	buildFeature: function(){
 		var feature_exp = this.getFeatureExp($(this.ui.featureExpression).val());
+		var model = this.model;
 		if(feature_exp != ""){
 			if(!Cure.initTour.ended()){
 				Cure.initTour.end();
@@ -181,9 +182,9 @@ FeatureBuilderView = Marionette.ItemView.extend({
 					index = Cure.CollaboratorCollection.indexOf(newCollaborator);
 				}
 				model.get("options").set({
-					"unique_id" : '',
+					"unique_id" : "",
 					"kind" : "split_node",
-					"full_name" : 'New Feature',
+					"full_name" : '',
 					"description" : feature_exp,
 					"feature_exp": feature_exp
 				});
@@ -200,6 +201,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 				});
 			}
 			Cure.PlayerNodeCollection.sync();
+			Cure.FeatureBuilderRegion.close();
 		}
 	}
 });
