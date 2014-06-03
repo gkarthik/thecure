@@ -49,9 +49,9 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		query = (value.match(/@([A-Za-z0-9])+/g)!=null) ? value.match(/@([A-Za-z0-9])+/g)[0] : "";
 		if(query.length>1){
 			var t = window.setTimeout(function(){
+				window.clearTimeout(t);
 				query = (featureExpEl.val().match(/@([A-Za-z0-9])+/g)!=null) ? featureExpEl.val().match(/@([A-Za-z0-9])+/g)[0] : "";
-				if(query.length>1){
-					if(query!=""){
+				if(query.length>2){
 						if(autocompEl.html()==""){
 							autocompEl.html("<li>Loading</li>");
 						}
@@ -64,10 +64,8 @@ FeatureBuilderView = Marionette.ItemView.extend({
 							thisView.setAutoCompPos(featureExpEl.val(),featureExpEl.val().indexOf(query),query);
 							autocompEl.show();
 						});
-					}
 				}
-				window.clearInterval(t);
-			},500);
+			},1000);
 		} else {
 			autocompEl.hide();
 		}
@@ -196,7 +194,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 						});
 					}
 				model.set("previousAttributes", model.toJSON());
-				model.set("name", "New Feature");
+				model.set("name", "Custom Feature");
 				model.set('accLimit', 0, {silent:true});
 				
 				var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
@@ -216,17 +214,17 @@ FeatureBuilderView = Marionette.ItemView.extend({
 					"unique_id" : "",
 					"kind" : "split_node",
 					"full_name" : '',
-					"description" : feature_exp,
+					"description" : $(this.ui.featureExpression).val(),
 					"feature_exp": feature_exp
 				});
 			} else {
 				new Node({
-					'name' : 'New Feature',
+					'name' : 'Custom Feature',
 					"options" : {
 						"unique_id" : '',
 						"kind" : "split_node",
 						"full_name" : '',
-						"description" : feature_exp,
+						"description" : $(this.ui.featureExpression).val(),
 						"feature_exp": feature_exp
 					}
 				});
