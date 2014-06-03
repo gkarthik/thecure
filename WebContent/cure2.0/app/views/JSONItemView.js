@@ -6,8 +6,9 @@ define([
 	//Templates
 	'text!app/templates/JSONSplitNodeGeneSummary.html',	
 	'text!app/templates/JSONSplitValueSummary.html',
-	'text!app/templates/JSONSplitNodeCfSummary.html'
-    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary) {
+	'text!app/templates/JSONSplitNodeCfSummary.html',
+	'text!app/templates/CustomFeature_splitnode.html'
+    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customfeatureSummaryTmpl) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
@@ -61,7 +62,7 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.unique_id!=null){
+		if(serialized_model.options.unique_id!=null && serialized_model.options.unique_id!=""){
 			if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
 				return splitNodeGeneSummary({
 					id: serialized_model.cid,
@@ -85,10 +86,10 @@ JSONItemView = Marionette.ItemView.extend({
 				});
 			} 
 		} else {
-			return splitValueSummary({
+			return customfeatureSummaryTmpl({
 				id: serialized_model.cid,
 				name : name,
-				summary : serialized_model.gene_summary,
+				description : serialized_model.options.description,
 				kind : serialized_model.options.kind
 			});
 		}
@@ -98,11 +99,15 @@ JSONItemView = Marionette.ItemView.extend({
 		var description =null;
 		var idFlag = 1;
 		if(this.model.get('options').get('kind') == "split_node"){
-			if(this.model.get('options').get('unique_id').indexOf("metabric") == -1){
-				idFlag = 0;
-				this.getSummary();
+			if(this.model.get('options').get('unique_id')!="" && this.model.get('options').get('unique_id')!=null){
+				if(this.model.get('options').get('unique_id').indexOf("metabric") == -1){
+					idFlag = 0;
+					this.getSummary();
+				} else {
+					description = this.model.get('options').get('description').replace("\\n","<br>");
+				}
 			} else {
-				description = this.model.get('options').get('description').replace("\\n","<br>");
+				//For Custom Features
 			}
 		} else if(this.model.get('options').get('kind') == "split_value") {
 				if(this.model.get('parentNode').get('options').get('unique_id').indexOf("metabric")!=-1){
