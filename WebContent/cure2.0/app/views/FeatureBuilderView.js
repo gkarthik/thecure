@@ -45,34 +45,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var featureExpEl = $(this.ui.featureExpression);
 		var autocompEl = $(this.ui.GeneAutoComplete);
 		var value = featureExpEl.val();
-		var indexofDiff = -1;
-		var prevExp = this.prevExp;
-		var counter = 1;
-		if(value.length > prevExp.length){
-			while(indexofDiff==-1){
-				if(value.substring(0,counter)!=prevExp.substring(0,counter)){
-					indexofDiff = counter-1;
-					break;
-				}
-				counter++;
-			}
-		}
-		for(var temp in this.tagsList){
-			var id = this.tagsList[temp].id;
-			if(id>=indexofDiff && indexofDiff!=-1){
-				this.tagsList[temp].id+=1;
-				console.log(this.tagsList[temp].id);
-				$("#tag"+id).attr("id","tag"+this.tagsList[temp].id);
-				id+=1;
-				this.setTagPos(value,this.tagsList[temp].id,this.tagsList[temp].text);
-			}
-			if(value.substring(id,this.tagsList[temp].text.length+id)!=this.tagsList[temp].text){
-				$("#tag"+id).remove();
-				value = value.substring(0,id)+value.substring(this.tagsList[temp].text.length+id-2,value.length-1);
-				featureExpEl.val(value);
-				this.tagsList.splice(temp,1);
-			}
-		}	
+		value = this.adjustIndices(1);//Only 1 char difference occurs here	
 		query = (value.match(/@([A-Za-z0-9])+/g)!=null) ? value.match(/@([A-Za-z0-9])+/g)[0] : "";
 		if(query.length>1){
 			var t = window.setTimeout(function(){
@@ -85,7 +58,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 						$.getJSON( "http://mygene.info/v2/query?q="+query.replace("@","")+"&fields=symbol,entrezgene&userfilter=bgood_metabric&callback=?", function( data ) {
 							var items = [];
 							for(var temp in data.hits){
-								items.push( "<li id='" + data.hits[temp].entrezgene + "' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
+								items.push( "<li id='" + data.hits[temp].entrezgene + "' data-query='"+query+"' data-stringindex= '"+featureExpEl.val().indexOf(query)+"' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
 							}
 							autocompEl.html(items.join(""));
 							thisView.setAutoCompPos(featureExpEl.val(),featureExpEl.val().indexOf(query),query);
@@ -107,29 +80,64 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		$(this.ui.featureExpression).val(value);
 		this.prevExp = value;
 	},
+	adjustIndices: function(length,id,symbol){
+		var featureExpEl = $(this.ui.featureExpression);
+		var value = featureExpEl.val();
+		var indexofDiff = -1;
+		var prevExp = this.prevExp;
+		var counter = 0;
+		var lowerCheck = -1;
+		var upperCheck = -1;
+		if(value.length != prevExp.length){
+			while(indexofDiff==-1){
+				if(value.substring(0,counter)!=prevExp.substring(0,counter)){
+					indexofDiff = counter-1;
+					break;
+				}
+				counter++;
+			}
+		}
+		length = length * (value.length-prevExp.length)/Math.abs(value.length-prevExp.length);
+		if(id !=undefined && symbol!=undefined){
+			lowerCheck = id;
+			upperCheck = id+symbol;
+		}
+		for(var temp in this.tagsList){
+			var id = this.tagsList[temp].id;
+			if(id<lowerCheck || id>upperCheck){
+				if(id>=(indexofDiff) && indexofDiff!=-1){
+					this.tagsList[temp].id+=length;
+					console.log(this.tagsList[temp].id);
+					$("#tag"+id).attr("id","tag"+this.tagsList[temp].id);
+					id+=length;
+					this.setTagPos(value,this.tagsList[temp].id,this.tagsList[temp].text);
+				}
+			}
+			if(value.substring(id,this.tagsList[temp].text.length+id)!=this.tagsList[temp].text){
+				$("#tag"+id).remove();
+				value = value.substring(0,id)+value.substring(this.tagsList[temp].text.length+id-2,value.length-1);
+				featureExpEl.val(value);
+				this.tagsList.splice(temp,1);
+			}
+		}
+		return value;
+	},
 	getTags: function(e){
 		$(this.ui.GeneAutoComplete).hide();
 		var el = e.target;
 		var symbol = $(el).data('symbol');
 		var entrezid = $(el).data('id');
-		var tags = $(this.ui.featureExpression).val().toUpperCase().match(/@([A-Za-z0-9])+/g);
+		var query = $(el).data('query');
+		var stringIndex = $(el).data('stringindex');
+		//var tags = $(this.ui.featureExpression).val().toUpperCase().match(query);
 		var value = $(this.ui.featureExpression).val();
-		var index = 0;
-		for(tag in tags){
-			index = -1;
-			if(symbol.indexOf(tags[tag].replace("@",""))!=-1){
-				index = value.toUpperCase().indexOf(tags[tag]);
-			}
-			if(index!=-1){
-				var keyword = value.substring(index,tags[tag].length+index);
-				var tagText = symbol;
-				value = value.replace(keyword,tagText);
-				$(this.ui.featureExpression).val(value);
-				this.tagsList.push({text:tagText,id:index, entrezid: entrezid});
-				this.addTag(value,index,tagText,entrezid);
-				this.prevExp = value;
-			}
-		}
+		value = value.substring(0,stringIndex)+symbol+value.substring(query.length+stringIndex,value.length);
+		$(this.ui.featureExpression).val(value);
+		this.tagsList.push({text:symbol,id:stringIndex, entrezid: entrezid});
+		var length = Math.abs(symbol.length-query.length);
+		this.addTag(value,stringIndex,symbol,entrezid);
+		this.adjustIndices(length,stringIndex,symbol);//Length of tag - Length of query
+		this.prevExp = value;
 	},
 	setTagPos: function(value,index,keyword){
 		var textBeforeKey = value.substring(0,index);
