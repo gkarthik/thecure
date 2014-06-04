@@ -27,28 +27,25 @@
           <div id="sections" class="section">
             <h3 class="about">About</h3>
             <div id="about" style="display: none;">
-              <p>The Cure is a serious, biology-based card game. Assemble the best hands and you can win - just like poker. The challenge with The Cure is that we don't know the rules yet! Until you play, we can't tell you if you have the equivalent of a royal flush or a pair of 2s. By playing the game, you will be both teaching and learning the rules of nature.</p>
+              <p>Branch is a new Web-based tool for the interactive construction of decision trees from genomic datasets. Branch offers the ability to</p>
+              <ol class="unordered-list"> 
+	              <li>Construct decision trees by manually selecting features such as genes for a gene expression dataset.</li> 
+	              <li>Collaboratively edit and built decision trees. </li>
+	              <li>Create feature functions that aggregate content from multiple independent features into single decision nodes (e.g. pathways)</li> 
+	              <li>Evaluate decision tree classifiers in terms of precision and recall.</li> 
+              </ol>
+              <p>The tool is optimized for genomic use cases through the inclusion of gene and pathway-based search functions. </p>
             </div>
             <h3 class="background">Background</h3>
             <div id="background" style="display: none;">
-              <p>Using the latest technology we can now assess the activity level of more than 20,000 known human genes and identify literally millions of variations in every human genome. The challenge now is to make use of all of this data. For example, if a woman has been diagnosed with breast cancer we would like to be able to predict whether the cancer will metastasize and how quickly because we can use this information to make decisions about treatment - e.g. whether or not she should receive chemotherapy. Given a collection of samples from tumors that did and did not end up spreading, we take measurements using all the technology at our disposal and then attempt to identify consistent patterns. If a particular gene is much more active than normal in all the samples that eventually spread, this might be a good signal to look for in future patients.</p>
+              <p>A crucial task in modern biology is the prediction of complex phenotypes, such as breast cancer prognosis, from genome-wide measurements.  Machine learning algorithms can sometimes infer predictive patterns, but there is rarely enough data to train and test them effectively and the patterns that they identify are often expressed in forms (e.g. support vector machines, neural networks, random forests composed of 10s of thousands of trees) that are highly difficult to understand. </p>
             </div>
-            <h3 class="challenge">Challenge</h3>
-            <div id="challenge" style="display: none;">
-              <p>In seeking these patterns we are faced with two key problems, reproducibility and a combinatorial explosion. First, it often happens that patterns observed in one dataset do not appear with the same strength in new datasets. This is partly caused by natural biological variability and partly by the relative immaturity of the measuring technology that is being applied. Aside from reproducibility, the patterns themselves may be very complex. It may take a unique combination of 25 different variables to produce an excellent predictive pattern. The trouble is that it is impossible to test all such potential combinations. If we assume 20,000 human genes, there are on the order of 10<sup>82</sup> possible 25 gene combinations! (People estimate that the <a href="http://en.wikipedia.org/wiki/Observable_universe">total number of atoms in the universe</a> is close to 10<sup>80</sup>.)</p>
-            </div>
-            <h3 class="idea">The idea</h3>
-            <div id="idea" style="display: none;">
-              <p>One advantage when it comes to addressing these problems is our increasing understanding of biology. Our knowledge of genes, biological mechanisms and disease is growing exponentially and much of this knowledge is available on the Web. When we start looking for predictive patterns in a dataset such as the breast cancer example, we can use this knowledge to guide our search. TheCure was created as a fun way to solicit help in guiding the search for stable patterns that can be used to make biologically and medically important predictions.  When people play TheCure they use their knowledge (or their ability to search the Web or their social networks) to make informed decisions about the best combinations of variables (e.g. genes) to use to build predictive patterns. These combos are the &lsquo;hands&rsquo; in TheCure card game. Every time a game is played, the hands are evaluated and stored. Eventually predictors will be developed using advanced machine learning algorithms that are informed by the hands played in the game.</p>
-            </div>
-            <h3 class="mission">Current mission: <br /> <span class="pink">Griffith MetaStudy</span></h3>
-            <div id="mission" style="display: none;">
-              <p>The Cure team is currently working on creating the world&#8217;s best genomics-driven predictor of breast cancer prognosis.  To meet this ambitious objective, we are currently recruiting players with knowledge (or an interest in learning about) cancer biology.  <a href="login.jsp">Join us now!</a></p>
-            </div>
+            
             <h3 class="contact">Contact</h3>
             <div id="contact" style="display: none;">
             <p>Please feel free to get in touch with us via email, twitter, messenger pigeon etc.  See our details on the <a href="contact.jsp">contact page</a>.
             </div>
+            <!--
             <h3 class="faq">FAQ</h3>
             <div id="faq" style="display: none;">
               <ol>
@@ -62,7 +59,7 @@
               </li>
               </ol>
               </div>
-
+			-->
           </div>
           </div>
           <div id="column2">
