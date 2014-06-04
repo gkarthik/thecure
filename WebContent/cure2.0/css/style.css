@@ -1174,6 +1174,15 @@ text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.25);
 	 background: transparent;
 }
 
+a.brand{
+	font-family: "HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue",Helvetica,Arial,"Lucida Grande",sans-serif;
+font-weight: 300;
+letter-spacing: 4px;
+font-size: 28px;
+padding: 6px;
+margin: 0px;
+}
+
 /*
 Style for right control panel
 */
