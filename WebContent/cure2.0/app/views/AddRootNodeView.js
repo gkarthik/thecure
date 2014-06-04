@@ -7,6 +7,7 @@ define([
 	'app/models/Collaborator',
 	//Views
 	'app/views/layouts/PathwaySearchLayout',
+	'app/views/FeatureBuilderView',
 	//Templates
 	'text!app/templates/GeneSummary.html',
 	'text!app/templates/ClinicalFeatureSummary.html',
@@ -15,7 +16,7 @@ define([
 	'myGeneAutocomplete',
 	'jqueryui',
 	 'bootstrapSwitch'
-    ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, geneinfosummary, cfsummary, AddNodeTemplate) {
+    ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, FeatureBuilder, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 		_.bindAll(this,'toggleCf');
@@ -30,7 +31,12 @@ AddRootNodeView = Marionette.ItemView.extend({
 	},
 	events:{
 		'switchChange .bootstrap-switch-id-toggleCf': 'toggleCf',
-		'click .open-pathway-search': 'openPathwaySearch'
+		'click .open-pathway-search': 'openPathwaySearch',
+		'click .open-feature-builder': 'openFeatureBuilder'
+	},
+	openFeatureBuilder: function(){
+		Cure.FeatureBuilderView = new FeatureBuilder({model:this.model});
+		Cure.FeatureBuilderRegion.show(Cure.FeatureBuilderView);
 	},
 	openPathwaySearch: function(){
 		Cure.PathwaySearchLayout = new PathwaySearchLayout();

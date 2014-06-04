@@ -6,7 +6,8 @@ define([
 	defaults : {
 		kind: "",  
 		cid: 0, 
-		viewCSS: {}
+		viewCSS: {},
+		feature_exp: ""
 	},
 	initialize: function(){
 		this.listenTo(this,'change:bin_size', this.updateAccLimit);
