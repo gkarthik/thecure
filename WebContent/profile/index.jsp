@@ -51,10 +51,10 @@ if(request.getParameter("playerid")==null){
 					class="icon-bar"></span> <span class="icon-bar"></span>
 				</a>
 				<ul class="nav navbar-nav">
-					<li><a class="brand" href="/cure/">The Cure</a></li>
-					<li><a href="/cure/cure2%2E0/index.jsp">Cure 2.0</a></li>
-					<li><a style="color: #FFF;" href="/cure/contact.jsp">Contact</a></li>
-					<li><a style="color: #FFF;" href="/cure/logout.jsp">logout</a></li>
+					<li><a class="brand" href="/">Branch</a></li>
+					<li><a href="/cure2%2E0/index.jsp">Tree Builder</a></li>
+					<li><a style="color: #FFF;" href="/contact.jsp">Contact</a></li>
+					<li><a style="color: #FFF;" href="/logout.jsp">logout</a></li>
 				</ul>
 			</div>
 		</div>

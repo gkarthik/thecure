@@ -19,7 +19,7 @@
 			<div class="container">
 				<a class="btn btn-navbar" data-toggle="collapse"
 					data-target=".nav-collapse"> <span class="icon-bar"></span> </a> <a
-					class="brand" href="/cure/">The Cure</a>
+					class="brand" href="/cure/">Branch</a>
 			</div>
 		</div>
 	</div>

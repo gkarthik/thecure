@@ -20,10 +20,9 @@
         <!-- Add your site or application content here -->
         <div id="topBar"></div>
         <div id="main">
-          
-          <h1>The Cure</h1>
-          <h2>Play Games, Defeat Cancer</h2>
-
+        <center>
+          	<img src="images/branch/logo.png" />
+          	</center>
           <div id="column1">
           <div id="sections" class="section">
             <h3 class="about">About</h3>
