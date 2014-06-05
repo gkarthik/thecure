@@ -72,8 +72,10 @@ import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.converters.DatabaseSaver;
 
 /**
  * Servlet implementation class WekaServer
@@ -115,6 +117,12 @@ public class MetaServer extends HttpServlet {
 		String active_data_name = "";
 		String testing_data = "";
 		String testing_data_name = "";
+		//db 
+		String serverLocation = "";
+		String db = "";
+		String user = "";
+		String password = "";
+		DatabaseSaver save = null;
 		try{
 	        InputStream in = MetaServer.class.getResourceAsStream("/props/game.properties");	        
 	        Properties props = new Properties();
