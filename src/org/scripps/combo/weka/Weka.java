@@ -259,17 +259,20 @@ public class Weka {
 		try {
 			fc.buildClassifier(getTrain());
 			// evaluate classifier and print some statistics
-			eval = new Evaluation(getTest());
+			eval = null;
 			if(eval_method.equals("cross_validation")){
+				eval = new Evaluation(getTrain());
 				//this makes the game more stable in terms of scores
 				for(int r=0; r<n_runs_of_cv; r++){
-					eval.crossValidateModel(fc, getTest(), 10, rand);
+					eval.crossValidateModel(fc, getTrain(), 10, rand);
 					avg_pct_correct += eval.pctCorrect();
 				}
 				avg_pct_correct = avg_pct_correct/n_runs_of_cv;
 			}else if(eval_method.equals("test_set")){
+				eval = new Evaluation(getTest());
 				eval.evaluateModel(fc, getTest());
 			}else {
+				eval = new Evaluation(getTrain());
 				eval.evaluateModel(fc, getTrain());
 			}
 			//System.out.println(fc.getClassifier().toString()+"\n\n"+eval.toSummaryString("\nResults\n======\n", false));
