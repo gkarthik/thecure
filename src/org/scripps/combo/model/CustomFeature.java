@@ -67,7 +67,7 @@ public class CustomFeature {
 		JdbcConnection conn = new JdbcConnection();		
 		PreparedStatement statement = null;
 	    ResultSet generatedKeys = null;
-		String insert = "insert into custom_feature(name,expression) values()";
+		String insert = "insert into custom_feature(name,expression) values(?,?)";
 		statement = (PreparedStatement) conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
         statement.setString(1, name);
         statement.setString(2, feature_exp);
