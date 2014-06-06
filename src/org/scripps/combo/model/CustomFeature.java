@@ -39,7 +39,7 @@ public class CustomFeature {
 	String name;
 	String expression;
 	
-	public int getOrCreateCustomFeature(String name, String feature_exp, Feature[] features) throws Exception{
+	public int getOrCreateCustomFeatureId(String name, String feature_exp, List<Feature> features) throws Exception{
 		int cFeatureId = 0;
 		JdbcConnection conn = new JdbcConnection();
 		String getattr = "select * from custom_feature";
@@ -56,13 +56,13 @@ public class CustomFeature {
 			}
 		}
 		if(!exists){
-			insert(name, feature_exp,features);
+			cFeatureId = insert(name, feature_exp, features);
 		}
 		conn.connection.close();
 		return cFeatureId;
 	}
 	
-	public int insert(String name, String feature_exp, Feature[] features) throws Exception{
+	public int insert(String name, String feature_exp, List<Feature> features) throws Exception{
 		int id = 0;
 		JdbcConnection conn = new JdbcConnection();		
 		PreparedStatement statement = null;
@@ -76,11 +76,16 @@ public class CustomFeature {
         if (affectedRows == 0) {
             throw new SQLException("Creating custom feature failed, no rows affected.");
         }
-
         generatedKeys = statement.getGeneratedKeys();
         if (generatedKeys.next()) {
             id = generatedKeys.getInt(1);
         }
+        
+        for(Feature f : features){
+        	insert="INSERT INTO custom_feature_feature(custom_feature_id,feature_id) VALUES("+id+","+f.getId()+")";
+        	conn.executeUpdate(insert);
+        }
+        conn.connection.close();
 		return id;
 	}	
 	

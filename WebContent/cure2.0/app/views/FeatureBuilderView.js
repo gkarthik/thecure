@@ -30,7 +30,8 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	ui : {
 		'featureExpression': '#feature-expression',
 		'hiddenSpan': '#hidden-span',
-		"GeneAutoComplete": "#gene-autocomplete-wrapper"
+		"GeneAutoComplete": "#gene-autocomplete-wrapper",
+		"featureName": ".feature-name"
 	},
 	events:{
 		'click #build-feature': 'buildFeature',
@@ -173,8 +174,9 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	},
 	buildFeature: function(){
 		var feature_exp = this.getFeatureExp($(this.ui.featureExpression).val());
+		var feature_name = $(this.ui.featureName).val();
 		var model = this.model;
-		if(feature_exp != ""){
+		if(feature_exp != "" && feature_name != ""){
 			if(!Cure.initTour.ended()){
 				Cure.initTour.end();
 			}
@@ -194,7 +196,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 						});
 					}
 				model.set("previousAttributes", model.toJSON());
-				model.set("name", "Custom Feature");
+				model.set("name", feature_name);
 				model.set('accLimit', 0, {silent:true});
 				
 				var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
@@ -215,17 +217,19 @@ FeatureBuilderView = Marionette.ItemView.extend({
 					"kind" : "split_node",
 					"full_name" : '',
 					"description" : $(this.ui.featureExpression).val(),
-					"feature_exp": feature_exp
+					"feature_exp": feature_exp,
+					"custom_feature_name": feature_name
 				});
 			} else {
 				new Node({
-					'name' : 'Custom Feature',
+					'name' : feature_name,
 					"options" : {
 						"unique_id" : '',
 						"kind" : "split_node",
 						"full_name" : '',
 						"description" : $(this.ui.featureExpression).val(),
-						"feature_exp": feature_exp
+						"feature_exp": feature_exp,
+						"custom_feature_name": feature_name
 					}
 				});
 			}
