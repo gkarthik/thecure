@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.openjena.atlas.json.JsonArray;
 import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Attribute;
+import org.scripps.combo.model.CustomFeature;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Tree;
 import org.scripps.combo.weka.Weka;
@@ -237,9 +238,12 @@ public class JsonTree {
 
 	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset){
 		ObjectNode options = (ObjectNode)node.get("options");		
+		CustomFeature cfeature = new CustomFeature();
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
 			JsonNode feature_exp = options.get("feature_exp");
+			JsonNode feature_id = options.get("custom_feature_id");
+			JsonNode feature_name = options.get("custom_feature_name");
 			if(unique_id!=null && unique_id.asText()!=""){
 				List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
 				if(atts!=null&&atts.size()>0){
@@ -253,6 +257,8 @@ public class JsonTree {
 			} else if(feature_exp!=null && feature_exp.asText()!=""){
 				options.put("attribute_name", "");
 				Instances data = weka.getTrain();
+				Feature _feature = new Feature(); 
+				List<Feature> allFeatures = new ArrayList<Feature>();
 				String exp = feature_exp.asText();
 				Pattern p = Pattern.compile("@([A-Za-z0-9])+"); 
 				Matcher m = p.matcher(exp);
@@ -267,6 +273,7 @@ public class JsonTree {
 							att_name = att.getName();
 						}
 						index = data.attribute(att_name).index();
+						allFeatures.add(_feature.getByUniqueId(entrezid));
 						index++;//WEKA AddExpression() accepts index starting from 1.
 						exp = exp.replace("@"+entrezid, "a"+index);
 					}else{
@@ -274,6 +281,15 @@ public class JsonTree {
 					}
 				}
 				options.put("feature_exp", exp);
+				if(feature_id.asText()==""){
+					try {
+						int cFeatureId = cfeature.getOrCreateCustomFeatureId(feature_name.asText(), exp, allFeatures);
+						options.put("custom_feature_id", cFeatureId);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 		ArrayNode children = (ArrayNode)node.get("children");

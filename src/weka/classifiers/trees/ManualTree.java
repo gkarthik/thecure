@@ -37,8 +37,10 @@ import weka.core.RevisionUtils;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
 import weka.core.Capabilities.Capability;
+import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.AddExpression;
 import weka.filters.unsupervised.attribute.MathExpression;
+import weka.filters.unsupervised.attribute.Remove;
 
 import java.awt.List;
 import java.io.ByteArrayOutputStream;
@@ -1090,7 +1092,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			if(!att_name.asText().equals("")){
 				attIndex = data.attribute(att_name.asText()).index();
 			} else if(!feature_exp.asText().equals("")) {
-				attIndex = evalAndAddNewFeatureValues(feature_exp.asText(), allInst);
+				attIndex = evalAndAddNewFeatureValues(options.get("custom_feature_name").asText(),feature_exp.asText(), allInst);
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1659,22 +1661,13 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 		Instances with values added. 
 	 *                       
 	 */
-	public int evalAndAddNewFeatureValues(String featureExpression, Instances data) {
+	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data) {
 		int attIndex = 0;
 		AddExpression newFeature = new AddExpression();
 		Date date= new java.util.Date();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
-		Attribute attr = new Attribute("Feature"+new Timestamp(date.getTime()));//Must figure out a different name for new feature.
-		Boolean equalTo = false;
-		//Check if weka object in current session has the required attribute.
-		for(int j=0;j<data.numAttributes();j++){
-			if(data.attribute(j).equals(attr)){
-				equalTo = true;
-				attIndex = (j+1);
-			}
-		}
-		if(!equalTo){
-			//Check if attribute exists in database or to add it.
+		Attribute attr = new Attribute(feature_name);
+			//Check if attribute exists in dataset or to add it.
 			data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
 			try {
 				newFeature.setInputFormat(data);
@@ -1686,15 +1679,38 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					try {
 						newFeature.input(data.instance(i));
 						int numAttr = newFeature.outputPeek().numAttributes();
-						//System.out.println(newFeature.output().value(numAttr-1));
-						data.instance(i).setValue(data.attribute(numAttr-3), newFeature.output().value(numAttr-1));
+						Instance out = newFeature.output();
+						data.instance(i).setValue(data.attribute(numAttr-3), out.value(numAttr-1));
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						// e.printStackTrace();
 					}
 			}
 			attIndex = data.numAttributes()-2;
-		}
+			System.out.println(data.numAttributes());
+			Boolean equalTo = false;
+			//Check if weka object in current session has the required attribute.
+			for(int j=0;j<data.numAttributes();j++){
+				if(data.attribute(j).equals(data.attribute(attIndex)) && (attIndex)!=(j)){
+					equalTo = true;
+					attIndex = j;
+					System.out.println(data.attribute(j).name());
+					break;
+				}
+			}
+			if(equalTo){
+				 Remove remove = new Remove();
+			     remove.setAttributeIndices(String.valueOf((attIndex)));
+			     remove.setInvertSelection(true);
+			     try {
+			    	 remove.setInputFormat(data);
+					data = Filter.useFilter(data, remove);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    System.out.println(data.numAttributes());
+			}
 		return attIndex;
 	}
 

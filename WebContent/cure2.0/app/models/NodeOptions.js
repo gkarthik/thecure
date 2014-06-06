@@ -7,7 +7,9 @@ define([
 		kind: "",  
 		cid: 0, 
 		viewCSS: {},
-		feature_exp: ""
+		feature_exp: "",
+		custom_feature_id: "",
+		custom_feature_name: ""
 	},
 	initialize: function(){
 		this.listenTo(this,'change:bin_size', this.updateAccLimit);
