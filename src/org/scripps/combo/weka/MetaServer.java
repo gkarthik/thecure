@@ -464,10 +464,12 @@ public class MetaServer extends HttpServlet {
 			//create the weka tree structure
 			JsonTree t = new JsonTree();
 			ManualTree readtree = new ManualTree();
+			Instances insts = weka.getTrain();
 			readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset);
 			List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
 			int numnodes = readtree.numNodes();
 			//evaluate it on the data
+			weka.setTrain(readtree.getAllInstances());
 			Evaluation eval = new Evaluation(weka.getTrain());
 			eval.evaluateModel(readtree, weka.getTrain());
 			HashMap distributionData = readtree.getDistributionData();

@@ -137,6 +137,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	
 	/** distribution array **/
 	protected HashMap m_distributionData = new HashMap();
+	
+	Instances allInstances;
 
 	/** for building up the json tree **/
 	ObjectMapper mapper;
@@ -1069,7 +1071,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
-
+		
+		this.allInstances = allInst;
 		//options child added by web client developer
 		//TODO work with him to make a more meaningful structure...
 		JsonNode options = node.get("options");		
@@ -1092,7 +1095,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			if(!att_name.asText().equals("")){
 				attIndex = data.attribute(att_name.asText()).index();
 			} else if(!feature_exp.asText().equals("")) {
-				attIndex = evalAndAddNewFeatureValues(options.get("custom_feature_name").asText(),feature_exp.asText(), allInst);
+				attIndex = evalAndAddNewFeatureValues(options.get("custom_feature_name").asText(),feature_exp.asText(), allInst, data);
+				header = new Instances(allInst, 0);
+				m_Info = header;
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1661,14 +1666,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 		Instances with values added. 
 	 *                       
 	 */
-	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data) {
+	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data, Instances subData) {
 		int attIndex = 0;
 		AddExpression newFeature = new AddExpression();
-		Date date= new java.util.Date();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
 		Attribute attr = new Attribute(feature_name);
 			//Check if attribute exists in dataset or to add it.
-			data.insertAttributeAt(attr, data.numAttributes()-1);//Insert Attribute just before class value
+		attIndex = data.numAttributes()-1;
+			data.insertAttributeAt(attr, attIndex);//Insert Attribute just before class value
 			try {
 				newFeature.setInputFormat(data);
 			} catch (Exception e) {
@@ -1680,15 +1685,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						newFeature.input(data.instance(i));
 						int numAttr = newFeature.outputPeek().numAttributes();
 						Instance out = newFeature.output();
-						data.instance(i).setValue(data.attribute(numAttr-3), out.value(numAttr-1));
+						data.instance(i).setValue(data.attribute(attIndex), out.value(numAttr-1));
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
-						// e.printStackTrace();
+						e.printStackTrace();
 					}
 			}
-			attIndex = data.numAttributes()-2;
-			System.out.println(data.numAttributes());
 			Boolean equalTo = false;
+			/*
 			//Check if weka object in current session has the required attribute.
 			for(int j=0;j<data.numAttributes();j++){
 				if(data.attribute(j).equals(data.attribute(attIndex)) && (attIndex)!=(j)){
@@ -1698,6 +1702,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					break;
 				}
 			}
+			/*
+			
 			if(equalTo){
 				 Remove remove = new Remove();
 			     remove.setAttributeIndices(String.valueOf((attIndex)));
@@ -1710,6 +1716,31 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					e.printStackTrace();
 				}
 			    System.out.println(data.numAttributes());
+			}
+			*/ 
+			if(subData!=data){
+				newFeature = new AddExpression();
+				newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
+				attr = new Attribute(feature_name);
+					//Check if attribute exists in dataset or to add it.
+					subData.insertAttributeAt(attr, attIndex);//Insert Attribute just before class value
+					try {
+						newFeature.setInputFormat(subData);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					for(int i=0; i<subData.numInstances(); i++){//Index here starts from 0.
+							try {
+								newFeature.input(subData.instance(i));
+								int numAttr = newFeature.outputPeek().numAttributes();
+								Instance out = newFeature.output();
+								subData.instance(i).setValue(subData.attribute(attIndex), out.value(numAttr-1));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+					}
 			}
 		return attIndex;
 	}
@@ -1808,6 +1839,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	public ObjectMapper getMapper() {
 		return mapper;
+	}
+	
+	public Instances getAllInstances() {
+		return allInstances;
 	}
 
 	public void setMapper(ObjectMapper mapper) {
