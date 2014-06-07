@@ -1692,18 +1692,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					}
 			}
 			Boolean equalTo = false;
-			/*
 			//Check if weka object in current session has the required attribute.
 			for(int j=0;j<data.numAttributes();j++){
 				if(data.attribute(j).equals(data.attribute(attIndex)) && (attIndex)!=(j)){
 					equalTo = true;
 					attIndex = j;
-					System.out.println(data.attribute(j).name());
 					break;
 				}
 			}
-			/*
-			
 			if(equalTo){
 				 Remove remove = new Remove();
 			     remove.setAttributeIndices(String.valueOf((attIndex)));
@@ -1715,9 +1711,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			    System.out.println(data.numAttributes());
-			}
-			*/ 
+			} 
 			if(subData!=data){
 				newFeature = new AddExpression();
 				newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
