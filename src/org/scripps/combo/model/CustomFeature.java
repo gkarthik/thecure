@@ -37,7 +37,12 @@ import java.text.SimpleDateFormat;
 
 public class CustomFeature {
 	String name;
-	String expression;
+	String expression;	
+	
+	public ArrayList searchCustomFeatures(String query, String type){
+		ArrayList results = new ArrayList();
+		return results;
+	}
 	
 	public int getOrCreateCustomFeatureId(String name, String feature_exp, List<Feature> features) throws Exception{
 		int cFeatureId = 0;
