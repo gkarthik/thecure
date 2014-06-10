@@ -17,8 +17,6 @@ class AddNode():
 		def clearTour(driver):
 			WebDriverWait(driver,15).until(EC.element_to_be_clickable((By.CSS_SELECTOR,".popover-navigation > .btn")))
 			driver.find_element_by_css_selector(".popover-navigation > .btn").click()
-                def newTree(driver):
-                        driver.find_element_by_id("gene_query").click()
 		clearTour(driver)
 		WebDriverWait(driver,10).until(EC.presence_of_element_located((By.ID,"gene_query")))
 		geneElement = driver.find_element_by_id("gene_query")
@@ -36,9 +34,6 @@ class AddNode():
 			WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"div.node:nth-child(5)")))
 		except:
 			print "Tree not rendered."
-                clearTour(driver)
-                newTree(driver)
-
 
 
 		
