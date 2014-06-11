@@ -42,11 +42,12 @@ public class CustomFeature {
 	public ArrayList searchCustomFeatures(String query){
 		ArrayList results = new ArrayList();
 		HashMap mp = new HashMap();
-		String statement = "select custom_feature.name, custom_feature.description, custom_feature.expression from custom_feature where (custom_feature.name like '%"+query+"%' or custom_feature.description like '%"+query+"%') group by name";
+		String statement = "select name, description, expression from custom_feature where name like '%"+query+"%' or description like '%"+query+"%'";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(statement);
 		try {
 			while(rslt.next()){
+				mp = new HashMap();
 				mp.put("name",rslt.getString("name"));
 				mp.put("description",rslt.getString("description"));
 				mp.put("feature_exp",rslt.getString("expression"));
