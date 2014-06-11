@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
+import org.scripps.combo.model.CustomFeature;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
 import org.scripps.combo.model.Pathway;
@@ -283,6 +284,15 @@ public class MetaServer extends HttpServlet {
 								} else if(command.equals("get_genes_of_pathway")){
 									getGenesOfPathway(data, request, response);
 								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed to add bagde: "+json);
+							}	
+						} else if(command.contains("search_custom_feature")){
+							JsonNode data = mapper.readTree(json);	
+							try{
+								getCustomFeatures(data, request, response);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -598,6 +608,17 @@ public class MetaServer extends HttpServlet {
 	}
 
 //	
+	private void getCustomFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		//String command = data.get("command").asText(); //get_clinical_features 
+		ArrayList results = new ArrayList();
+		CustomFeature _cfeature = new CustomFeature();
+		results = _cfeature.searchCustomFeatures(data.get("query").asText());
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String json = mapper.writeValueAsString(results);
+		out.write(json);
+		out.close();
+	}
 	
 	private void getClinicalFeatures(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
 		//String command = data.get("command").asText(); //get_clinical_features 

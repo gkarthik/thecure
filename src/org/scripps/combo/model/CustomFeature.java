@@ -39,12 +39,27 @@ public class CustomFeature {
 	String name;
 	String expression;	
 	
-	public ArrayList searchCustomFeatures(String query, String type){
+	public ArrayList searchCustomFeatures(String query){
 		ArrayList results = new ArrayList();
+		HashMap mp = new HashMap();
+		String statement = "select custom_feature.name, custom_feature.description, custom_feature.expression from custom_feature where (custom_feature.name like '%"+query+"%' or custom_feature.description like '%"+query+"%') group by name";
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(statement);
+		try {
+			while(rslt.next()){
+				mp.put("name",rslt.getString("name"));
+				mp.put("description",rslt.getString("description"));
+				mp.put("feature_exp",rslt.getString("expression"));
+				results.add(mp);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return results;
 	}
 	
-	public int getOrCreateCustomFeatureId(String name, String feature_exp, List<Feature> features) throws Exception{
+	public int getOrCreateCustomFeatureId(String name, String feature_exp, String description, List<Feature> features) throws Exception{
 		int cFeatureId = 0;
 		JdbcConnection conn = new JdbcConnection();
 		String getattr = "select * from custom_feature";
@@ -61,21 +76,22 @@ public class CustomFeature {
 			}
 		}
 		if(!exists){
-			cFeatureId = insert(name, feature_exp, features);
+			cFeatureId = insert(name, feature_exp, description, features);
 		}
 		conn.connection.close();
 		return cFeatureId;
 	}
 	
-	public int insert(String name, String feature_exp, List<Feature> features) throws Exception{
+	public int insert(String name, String feature_exp, String description, List<Feature> features) throws Exception{
 		int id = 0;
 		JdbcConnection conn = new JdbcConnection();		
 		PreparedStatement statement = null;
 	    ResultSet generatedKeys = null;
-		String insert = "insert into custom_feature(name,expression) values(?,?)";
+		String insert = "insert into custom_feature(name,expression, description) values(?,?,?)";
 		statement = (PreparedStatement) conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
         statement.setString(1, name);
         statement.setString(2, feature_exp);
+        statement.setString(3, description);
 
         int affectedRows = statement.executeUpdate();
         if (affectedRows == 0) {

@@ -135,16 +135,12 @@ margin: 0 auto;
 	margin-top: 20px;
 }
 
-#mygenecf_wrapper{
+.category-wrapper{
 	display: none;
 }
 
-#mygene_addnode{
-	margin-top: 5px;
-}
-
-#mygene_addnode_cf{
-	margin-top: 5px;
+#genes_wrapper{
+	display: block;
 }
 
 #PlayerTreeRegionTree{

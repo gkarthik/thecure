@@ -1,14 +1,30 @@
-<span class="switch-wrapper"><input type="checkbox" title="Switch To Choosing Clinical Features" id="toggleCf" checked></span>
-<div id="mygeneinfo_wrapper">
-  		<div id="mygene_addnode">
+<div id="choose-category" class="btn-group" data-toggle="buttons">
+  <label class="btn btn-primary choose-category" id="genes">
+    <input type="radio"><img title="Switch to Genes" src="<% print(base_url) %>cure2.0/img/doctor.png" class="switch-image" >
+  </label>
+  <label class="btn btn-primary choose-category" id="clinicalfeatures">
+    <input type="radio"><img title="Switch to Clinical Features" src="<% print(base_url) %>cure2.0/img/dna.png" class="switch-image" >
+  </label>
+  <label class="btn btn-primary choose-category" id="customfeatures">
+    <input type="radio"><img title="Switch to Custom Features" src="<% print(base_url) %>cure2.0/img/customfeature.png" class="switch-image" >
+  </label>
+</div>
+<div id="genes_wrapper" class="category-wrapper">
+  		<div id="addnode_genes">
   			<strong>Add Genes</strong>
   			<input id="gene_query" class="mygene_query_target query_target">
   		</div>
 </div>
-<div id="mygenecf_wrapper">
- 	<div id="mygene_addnode_cf">
+<div id="clinicalfeatures_wrapper" class="category-wrapper">
+ 	<div id="addnode_clinicalfeatures">
 		<strong>Add Clinical Features</strong>
   		<input id="cf_query" class="cf_query_target query_target">
+  	</div>
+</div>
+<div id="customfeatures_wrapper" class="category-wrapper">
+ 	<div id="addnode_customfeatures">
+		<strong>Add Custom Features</strong>
+  		<input id="customfeature_query" class="customfeature_query_target query_target">
   	</div>
 </div>
 <div class="btn-group">
