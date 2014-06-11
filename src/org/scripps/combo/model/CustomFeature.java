@@ -59,7 +59,7 @@ public class CustomFeature {
 		return results;
 	}
 	
-	public int getOrCreateCustomFeatureId(String name, String feature_exp, String description, List<Feature> features) throws Exception{
+	public int getOrCreateCustomFeatureId(String name, String feature_exp, String description, int userid, List<Feature> features) throws Exception{
 		int cFeatureId = 0;
 		JdbcConnection conn = new JdbcConnection();
 		String getattr = "select * from custom_feature";
@@ -76,22 +76,23 @@ public class CustomFeature {
 			}
 		}
 		if(!exists){
-			cFeatureId = insert(name, feature_exp, description, features);
+			cFeatureId = insert(name, feature_exp, description, userid, features);
 		}
 		conn.connection.close();
 		return cFeatureId;
 	}
 	
-	public int insert(String name, String feature_exp, String description, List<Feature> features) throws Exception{
+	public int insert(String name, String feature_exp, String description, int userid, List<Feature> features) throws Exception{
 		int id = 0;
 		JdbcConnection conn = new JdbcConnection();		
 		PreparedStatement statement = null;
 	    ResultSet generatedKeys = null;
-		String insert = "insert into custom_feature(name,expression, description) values(?,?,?)";
+		String insert = "insert into custom_feature(name,expression, description, player_id) values(?,?,?,?)";
 		statement = (PreparedStatement) conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
         statement.setString(1, name);
         statement.setString(2, feature_exp);
         statement.setString(3, description);
+        statement.setInt(4, userid);
 
         int affectedRows = statement.executeUpdate();
         if (affectedRows == 0) {

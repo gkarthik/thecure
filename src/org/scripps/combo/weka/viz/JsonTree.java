@@ -261,6 +261,7 @@ public class JsonTree {
 				List<Feature> allFeatures = new ArrayList<Feature>();
 				String exp = feature_exp.asText();
 				String description = options.get("description").asText();
+				int userid = node.get("collaborator").get("id").asInt();
 				Pattern p = Pattern.compile("@([A-Za-z0-9])+"); 
 				Matcher m = p.matcher(exp);
 				String entrezid = "";
@@ -284,7 +285,7 @@ public class JsonTree {
 				options.put("feature_exp", exp);
 				if(feature_id.asText()==""){
 					try {
-						int cFeatureId = cfeature.getOrCreateCustomFeatureId(feature_name.asText(), exp, description, allFeatures);
+						int cFeatureId = cfeature.getOrCreateCustomFeatureId(feature_name.asText(), exp, description, userid, allFeatures);
 						options.put("custom_feature_id", cFeatureId);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block

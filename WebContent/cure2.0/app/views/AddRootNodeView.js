@@ -46,6 +46,8 @@ AddRootNodeView = Marionette.ItemView.extend({
 	},
 	chooseCategory: function(e){
 		var id = $(e.currentTarget).attr("id");
+		$(this.ui.chooseCategory).removeClass("active");
+		$(e.currentTarget).addClass("active");
 		$(this.ui.categoryWrappers).hide();
 		if(id=="clinicalfeatures"){
 			this.showCf();
@@ -53,6 +55,10 @@ AddRootNodeView = Marionette.ItemView.extend({
 		$("#"+id+"_wrapper").show();
 	},
 	showCustomFeatures: function(){
+		 if(this.model){
+			 var model = this.model;
+		 }
+			  
 		 var thisURL = this.url;
 	      $(this.ui.customfeature_query).autocomplete({
 	  			source: function( request, response ) {
