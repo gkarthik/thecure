@@ -19,20 +19,22 @@ define([
     ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, FeatureBuilder, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
-		_.bindAll(this,'toggleCf');
 	},
 	ui : {
 		'input' : '.mygene_query_target',
-		'cfWrapper': '#mygenecf_wrapper',
-		'toggleCf': '.bootstrap-switch-id-toggleCf',
 		"gene_query": '#gene_query',
 		'cf_query': '#cf_query',
-		"checkbox": ".switch-wrapper input[type='checkbox']"
+		'customfeature_query': '#customfeature_query',
+		"geneWrapper": "#genes_wrapper",
+		'cfWrapper': '#clinicalfeatures_wrapper',
+		'customFeatureWrapper': '#customfeatures_wrapper',
+		'categoryWrappers': ".category-wrapper",
+		'chooseCategory': '.choose-category'
 	},
 	events:{
-		'switchChange .bootstrap-switch-id-toggleCf': 'toggleCf',
 		'click .open-pathway-search': 'openPathwaySearch',
-		'click .open-feature-builder': 'openFeatureBuilder'
+		'click .open-feature-builder': 'openFeatureBuilder',
+		'click .choose-category': 'chooseCategory'
 	},
 	openFeatureBuilder: function(){
 		Cure.FeatureBuilderView = new FeatureBuilder({model:this.model});
@@ -42,20 +44,109 @@ AddRootNodeView = Marionette.ItemView.extend({
 		Cure.PathwaySearchLayout = new PathwaySearchLayout();
 		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
 	},
-	toggleCf: function(event,state){
-		if(state.value){
-			this.hideCf();
-			$(this.ui.checkbox).bootstrapSwitch('labelText','<img title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png" class="switch-image" >');
-		} else {
+	chooseCategory: function(e){
+		var id = $(e.currentTarget).attr("id");
+		$(this.ui.categoryWrappers).hide();
+		if(id=="clinicalfeatures"){
 			this.showCf();
-			$(this.ui.checkbox).bootstrapSwitch('labelText','<img title="Switch to Genes" src="'+base_url+'cure2.0/img/dna.png" class="switch-image" >');
 		}
+		$("#"+id+"_wrapper").show();
+	},
+	showCustomFeatures: function(){
+		 var thisURL = this.url;
+	      $(this.ui.customfeature_query).autocomplete({
+	  			source: function( request, response ) {
+	  					var args = {
+	    	        command : "search_custom_feature",
+	    	        query: request.term
+	    	      };
+	    	      $.ajax({
+	    	          type : 'POST',
+	    	          url : thisURL,
+	    	          data : JSON.stringify(args),
+	    	          dataType : 'json',
+	    	          contentType : "application/json; charset=utf-8",
+	    	          success : function(data){
+	    	          	response( $.map( data, function( item ) {
+	    	          		return {
+	    	          		  label: item.name+": "+item.description,
+	    	          		  value: item.name,
+	    	          		  data: item
+	    	          	  };
+	    	          	}));
+	    	        }
+	    	      });
+	  				},
+	  				minLength: 3,
+	  				select: function( event, ui ) {
+	  					if(ui.item.label != undefined){//To ensure "no gene name has been selected" is not accepted.
+	  						if(!Cure.initTour.ended()){
+	  							Cure.initTour.end();
+	  						}
+	  						$("#SpeechBubble").remove();
+	  						var kind_value = "";
+	  						try {
+	  							kind_value = model.get("options").get('kind');
+	  						} catch (exception) {
+	  						}
+	  						if (kind_value == "leaf_node") {
+	  								if(model.get("options")){
+	  									model.get("options").unset("split_point");
+	  								}
+	  								
+	  								if(model.get("distribution_data")){
+	  									model.get("distribution_data").set({
+	  										"range": -1
+	  									});
+	  								}
+	  							model.set("previousAttributes", model.toJSON());
+	  							model.set("name", ui.item.data.name);
+	  							model.set('accLimit', 0, {silent:true});
+	  							
+	  							var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
+	  							var newCollaborator;
+	  							if(index!=-1){
+	  								newCollaborator = Cure.CollaboratorCollection.at(index);
+	  							} else {
+	  								newCollaborator = new Collaborator({
+	  									"name": cure_user_name,
+	  									"id": Cure.Player.get('id'),
+	  									"created" : new Date()
+	  								});
+	  								Cure.CollaboratorCollection.add(newCollaborator);
+	  								index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+	  							}
+	  							model.get("options").set({
+	  								"unique_id" : "",
+	  								"kind" : "split_node",
+	  								"full_name" : '',
+	  								"description" : ui.item.data.description,
+	  								"feature_exp": ui.item.data.feature_exp,
+	  								"custom_feature_name":  ui.item.data.name
+	  							});
+	  						} else {
+	  							new Node({
+	  								'name' : ui.item.data.name,
+	  								"options" : {
+	  									"unique_id" : '',
+	  									"kind" : "split_node",
+	  									"full_name" : '',
+	  									"description" : ui.item.data.description,
+		  								"feature_exp": ui.item.data.feature_exp,
+		  								"custom_feature_name":  ui.item.data.name
+	  								}
+	  							});
+	  						}
+	  						Cure.PlayerNodeCollection.sync();
+	  					}
+	  				},
+	  			});
 	},
 	showCf: function(){
-		$("#mygeneinfo_wrapper").hide();
 		if (this.model) {
 			var model = this.model;
 		}
+		var thisUi = this.ui;
 		
 		//Clinical Features Autocomplete
 		var availableTags = Cure.ClinicalFeatureCollection.toJSON();
@@ -81,7 +172,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 						long_name : ui.item.long_name,
 						description : ui.item.description
 					});
-					var dropdown = $("#cf_query").data('ui-autocomplete').bindings[1];
+					var dropdown = $(thisUi.cf_query).data('ui-autocomplete').bindings[1];
 					var offset = $(dropdown).offset();
 					var uiwidth = $(dropdown).width();
 					var width = 0.9 * (offset.left);
@@ -163,9 +254,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 							}
 						});
 					}
-					if (Cure.MyGeneInfoRegion) {
-						Cure.MyGeneInfoRegion.close();
-					}
 					Cure.PlayerNodeCollection.sync();
 				}
 			},
@@ -176,11 +264,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 	        .append("<a>" + item.label + "</a>")
 	        .appendTo(ul);
 	    };
-		$("#mygenecf_wrapper").show();
-	},
-	hideCf: function(){
-		$("#mygenecf_wrapper").hide();
-		$("#mygeneinfo_wrapper").show();
 	},
 	template : AddNodeTemplate,
 	url: base_url+"MetaServer",
@@ -188,19 +271,9 @@ AddRootNodeView = Marionette.ItemView.extend({
 		if (this.model) {
 			var model = this.model;
 		}
-		var thisURL = this.url;
-		//Create Switch
-		$(this.ui.checkbox).bootstrapSwitch({
-			size: 'normal',
-			state: 'true',
-			onText: '<img title="Genes" src="'+base_url+'cure2.0/img/dna.png" class="switch-image" >',
-			offText: "<img title='Clinical Features' src='"+base_url+"cure2.0/img/doctor.png' class='switch-image' >",
-			labelText: '<img class="switch-image" title="Switch to Clinical Features" src="'+base_url+'cure2.0/img/doctor.png">',
-			offColor: 'primary',
-			size: 'small',
-			animate: false
-		});
-		
+		this.showCustomFeatures();
+		this.showCf();
+		var thisUi = this.ui;
 		$(this.ui.gene_query).genequery_autocomplete({
 			open: function(event){
 				var scrollTop = $(event.target).offset().top-400;
@@ -226,7 +299,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 					}, {
 						variable : 'args'
 					});
-					var dropdown = $("#gene_query").data('my-genequery_autocomplete').bindings[0];
+					var dropdown = $(thisUi.gene_query).data('my-genequery_autocomplete').bindings[0];
 					var offset = $(dropdown).offset();
 					var uiwidth = $(dropdown).width();
 					var width = 0.9 * (offset.left);
@@ -292,9 +365,6 @@ AddRootNodeView = Marionette.ItemView.extend({
 								"full_name" : ui.item.name
 							}
 						});
-					}
-					if (Cure.MyGeneInfoRegion) {
-						Cure.MyGeneInfoRegion.close();
 					}
 					Cure.PlayerNodeCollection.sync();
 				}
