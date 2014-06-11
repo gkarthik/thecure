@@ -83,7 +83,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 	    	        }
 	    	      });
 	  				},
-	  				minLength: 3,
+	  				minLength: 1,
 	  				select: function( event, ui ) {
 	  					if(ui.item.label != undefined){//To ensure "no gene name has been selected" is not accepted.
 	  						if(!Cure.initTour.ended()){

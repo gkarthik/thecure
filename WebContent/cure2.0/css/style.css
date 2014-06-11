@@ -1092,6 +1092,7 @@ text-align:left;
 	width:100%;
 	height:30px;
 	overflow: hidden;
+	resize: none;
 }
 
 #hidden-span{
@@ -1103,6 +1104,10 @@ text-align:left;
 	font-size: 12px;
 	text-align: left;
 	visibility: hidden;
+}
+
+.details-wrapper .input-group{
+	margin:5px;
 }
 
 #gene-autocomplete-wrapper{

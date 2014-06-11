@@ -1,5 +1,5 @@
 <div id="choose-category" class="btn-group" data-toggle="buttons">
-  <label class="btn btn-primary choose-category" id="genes">
+  <label class="btn btn-primary active choose-category" id="genes">
     <input type="radio"><img title="Switch to Genes" src="<% print(base_url) %>cure2.0/img/doctor.png" class="switch-image" >
   </label>
   <label class="btn btn-primary choose-category" id="clinicalfeatures">
@@ -11,24 +11,24 @@
 </div>
 <div id="genes_wrapper" class="category-wrapper">
   		<div id="addnode_genes">
-  			<strong>Add Genes</strong>
+  			<span class="label label-default">Add Genes</span>
   			<input id="gene_query" class="mygene_query_target query_target">
   		</div>
 </div>
 <div id="clinicalfeatures_wrapper" class="category-wrapper">
  	<div id="addnode_clinicalfeatures">
-		<strong>Add Clinical Features</strong>
+		<span class="label label-default">Add Clinical Features</span>
   		<input id="cf_query" class="cf_query_target query_target">
   	</div>
 </div>
 <div id="customfeatures_wrapper" class="category-wrapper">
  	<div id="addnode_customfeatures">
-		<strong>Add Custom Features</strong>
+		<span class="label label-default">Add Custom Features</span>
   		<input id="customfeature_query" class="customfeature_query_target query_target">
   	</div>
 </div>
 <div class="btn-group">
-	<button class="btn btn-primary open-pathway-search">Pathway Search</button>
-	<button class="btn btn-primary open-feature-builder">Build Feature</button>
+	<button class="btn btn-sm btn-primary open-pathway-search">Pathway Search</button>
+	<button class="btn btn-sm btn-primary open-feature-builder">Build Feature</button>
 </div>
 	
