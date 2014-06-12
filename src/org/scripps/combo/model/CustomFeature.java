@@ -16,11 +16,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.jasper.tagplugins.jstl.core.Set;
 import org.scripps.combo.weka.Weka;
+import org.scripps.combo.weka.viz.JsonTree;
 import org.scripps.util.JdbcConnection;
 
 import weka.classifiers.trees.ManualTree;
@@ -94,7 +96,7 @@ public class CustomFeature {
 			}
 		}
 		if(!exists){
-			cFeatureId = insert(name, feature_exp, description, userid, features);
+			cFeatureId = insert(name, feature_exp, description, userid, features, dataset);
 			evalAndAddNewFeatureValues("custom_feature_"+cFeatureId, feature_exp, weka.getTrain());
 			message = "Feature has been successfully created.";
 		}
@@ -105,17 +107,18 @@ public class CustomFeature {
 		return mp;
 	}
 	
-	public int insert(String name, String feature_exp, String description, int userid, List<Feature> features) throws Exception{
+	public int insert(String name, String feature_exp, String description, int userid, List<Feature> features, String dataset) throws Exception{
 		int id = 0;
 		JdbcConnection conn = new JdbcConnection();		
 		PreparedStatement statement = null;
 	    ResultSet generatedKeys = null;
-		String insert = "insert into custom_feature(name,expression, description, player_id) values(?,?,?,?)";
+		String insert = "insert into custom_feature(name,expression, description, player_id, dataset) values(?,?,?,?,?)";
 		statement = (PreparedStatement) conn.connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
         statement.setString(1, name);
         statement.setString(2, feature_exp);
         statement.setString(3, description);
         statement.setInt(4, userid);
+        statement.setString(5, dataset);
 
         int affectedRows = statement.executeUpdate();
         if (affectedRows == 0) {
@@ -232,6 +235,44 @@ public class CustomFeature {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public HashMap getTestCase(String id, Weka weka){
+		HashMap mp = new HashMap();
+		id = id.replace("custom_feature_", "");
+		String query = "select * from custom_feature_feature where custom_feature_id = "+id;
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(query);
+		Feature _feature;
+		org.scripps.combo.model.Attribute _attr;
+		Instances data = weka.getTrain();
+		String att_name = "";
+		int attIndex = 0;
+		Random rand = new Random(); 
+		int instanceIndex = rand.nextInt(data.numInstances()); 
+		HashMap feature_values = new HashMap();
+		try {
+			while(rslt.next()){
+				_feature = new Feature();
+				_feature = _feature.getByDbId(rslt.getInt("feature_id"));
+				_attr = new org.scripps.combo.model.Attribute();
+				List<org.scripps.combo.model.Attribute> attrs = _attr.getByFeatureDbId(String.valueOf(rslt.getInt("feature_id")));
+				att_name = "";
+				for(org.scripps.combo.model.Attribute attr: attrs){
+					att_name = attr.getName();
+				}
+				attIndex = data.attribute(att_name).index();
+				feature_values.put(_feature.getShort_name(), data.instance(instanceIndex).value(attIndex));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		mp.put("features", feature_values);
+		attIndex = data.attribute("custom_feature_"+id).index();
+		mp.put("custom_feature", data.instance(instanceIndex).value(attIndex));
+		mp.put("sample", instanceIndex);
+		return mp;
 	}
 
 	

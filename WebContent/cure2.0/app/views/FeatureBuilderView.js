@@ -207,6 +207,10 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	    	});
 		}
 	},
+	error : function(data) {
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
+	},
 	validateFeatureName: function(data){
 		$(this.ui.buildFeature).removeClass("disabled");
 		$(this.ui.buildFeature).val("Build Feature");
