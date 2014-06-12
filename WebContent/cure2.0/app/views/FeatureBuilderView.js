@@ -203,8 +203,6 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		}
 	},
 	addFeatureId: function(data){
-		console.log(data);
-		/*
 		var kind_value = "";
 		var model = this.model;
 		try {
@@ -222,7 +220,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 					});
 				}
 			model.set("previousAttributes", model.toJSON());
-			model.set("name", feature_name);
+			model.set("name", data.name);
 			model.set('accLimit', 0, {silent:true});
 			
 			var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
@@ -239,29 +237,24 @@ FeatureBuilderView = Marionette.ItemView.extend({
 				index = Cure.CollaboratorCollection.indexOf(newCollaborator);
 			}
 			model.get("options").set({
-				"unique_id" : "",
+				"unique_id" : data.id,
 				"kind" : "split_node",
 				"full_name" : '',
-				"description" : $(this.ui.featureExpression).val(),
-				"feature_exp": feature_exp,
-				"custom_feature_name": feature_name
+				"description" : data.description 
 			});
 		} else {
 			new Node({
-				'name' : feature_name,
+				'name' : data.name,
 				"options" : {
-					"unique_id" : '',
+					"unique_id" : data.id,
 					"kind" : "split_node",
 					"full_name" : '',
-					"description" : $(this.ui.featureExpression).val(),
-					"feature_exp": feature_exp,
-					"custom_feature_name": feature_name
+					"description" : data.description
 				}
 			});
 		}
 		Cure.PlayerNodeCollection.sync();
 		Cure.FeatureBuilderRegion.close();
-		*/
 	},
 	error: function(data){
 		console.log("error");
