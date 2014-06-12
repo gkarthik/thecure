@@ -238,25 +238,22 @@ public class JsonTree {
 
 	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset){
 		ObjectNode options = (ObjectNode)node.get("options");		
-		CustomFeature cfeature = new CustomFeature();
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
-			JsonNode feature_exp = options.get("feature_exp");
-			JsonNode feature_id = options.get("custom_feature_id");
-			JsonNode feature_name = options.get("custom_feature_name");
 			if(unique_id!=null && unique_id.asText()!=""){
-				List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
-				if(atts!=null&&atts.size()>0){
-					for(Attribute att : atts){
-						String att_name = att.getName();
-						options.put("attribute_name", att_name);
+				if(!unique_id.asText().contains("custom_feature_")){
+					List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
+					if(atts!=null&&atts.size()>0){
+						for(Attribute att : atts){
+							String att_name = att.getName();
+							options.put("attribute_name", att_name);
+						}
+					}else{
+						options.put("error", "no attribute found for given id ");
 					}
-				}else{
-					options.put("error", "no attribute found for given id ");
+				} else {
+					options.put("attribute_name", unique_id.asText());
 				}
-			} else if(feature_exp!=null && feature_exp.asText()!=""){
-				options.put("attribute_name", "");
-				
 			}
 		}
 		ArrayNode children = (ArrayNode)node.get("children");

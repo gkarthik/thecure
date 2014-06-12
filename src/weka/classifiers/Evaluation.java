@@ -336,7 +336,6 @@ public class Evaluation
    */
   public Evaluation(Instances data, CostMatrix costMatrix) 
   throws Exception {
-
     m_NumClasses = data.numClasses();
     m_NumFolds = 1;
     m_ClassIsNominal = data.classAttribute().isNominal();

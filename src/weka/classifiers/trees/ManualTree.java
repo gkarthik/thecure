@@ -137,8 +137,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	
 	/** distribution array **/
 	protected HashMap m_distributionData = new HashMap();
-	
-	Instances allInstances;
 
 	/** for building up the json tree **/
 	ObjectMapper mapper;
@@ -1647,45 +1645,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		System.out.println(data.attribute(numAttr));
 		System.out.println(data.instance(13).value(16));
 		System.out.println(data.instance(13).value(numAttr));
-	}
-	
-	/**
-	 * Generates new values for feature and adds values to instances.
-	 * 
-	 * @param data
-	 *            Instances to add values to.
-	 * @param featureExpression
-	 *            Mathematical formula to evaluate new values.
-	 * @return
-	 * 		Instances with values added. 
-	 *                       
-	 */
-	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data) {
-		int attIndex = 0;
-		AddExpression newFeature = new AddExpression();
-		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
-		Attribute attr = new Attribute(feature_name);
-		attIndex = data.numAttributes()-1;
-			data.insertAttributeAt(attr, attIndex);//Insert Attribute just before class value
-			try {
-				newFeature.setInputFormat(data);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			for(int i=0; i<data.numInstances(); i++){//Index here starts from 0.
-					try {
-						newFeature.input(data.instance(i));
-						int numAttr = newFeature.outputPeek().numAttributes();
-						Instance out = newFeature.output();
-						data.instance(i).setValue(data.attribute(attIndex), out.value(numAttr-1));
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-			}
-		return attIndex;
-	}
+	}	
 
 	/**
 	 * Returns graph describing the tree.
@@ -1781,10 +1741,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	public ObjectMapper getMapper() {
 		return mapper;
-	}
-	
-	public Instances getAllInstances() {
-		return allInstances;
 	}
 
 	public void setMapper(ObjectMapper mapper) {
