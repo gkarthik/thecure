@@ -62,7 +62,7 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.unique_id!=null && serialized_model.options.unique_id!=""){
+		if(serialized_model.options.unique_id!=null && serialized_model.options.unique_id!="" && serialized_model.options.unique_id.indexOf("custom_feature_")==-1){
 			if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
 				return splitNodeGeneSummary({
 					id: serialized_model.cid,
