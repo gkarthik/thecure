@@ -1073,24 +1073,31 @@ text-align:left;
 }
 
 #FeatureBuilderRegion{
-	top: 100px;
-	background: #FFF;
+	top: 300px;
+	background: none repeat scroll 0% 0% #FFF;
 	position: fixed;
-	width: 20%;
-	left: 40%;
+	width: 40%;
+	left: 30%;
 	z-index: 4;
 	text-align: center;
 	font-size: 12px;
+	box-shadow: 0px 0px 10px 0px #999;
 }
 
 #feature-expression{
 	font-size: 12px;
 	font-family: inherit;
-	background: none;
-	border: 0px;
-	border-bottom: 1px solid #777;
-	width:100%;
-	height:30px;
+	background: none repeat scroll 0% 0% transparent;
+	border-width: 0px 0px 1px;
+	border-style: none none solid;
+	border-color: -moz-use-text-color -moz-use-text-color #777;
+	-moz-border-top-colors: none;
+	-moz-border-right-colors: none;
+	-moz-border-bottom-colors: none;
+	-moz-border-left-colors: none;
+	border-image: none;
+	width: 100%;
+	height: 70px;
 	overflow: hidden;
 	resize: none;
 }

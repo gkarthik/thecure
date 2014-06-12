@@ -45,6 +45,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	},
 	tagsList: [],
 	prevExp: "",
+	timoutVar: null,
 	checkAndTagText: function(e){
 		var thisView = this;
 		var featureExpEl = $(this.ui.featureExpression);
@@ -52,15 +53,14 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var value = featureExpEl.val();
 		value = this.adjustIndices(1);//Only 1 char difference occurs here	
 		query = (value.match(/@([A-Za-z0-9])+/g)!=null) ? value.match(/@([A-Za-z0-9])+/g)[0] : "";
-		if(query.length>1){
-			var t = window.setTimeout(function(){
-				window.clearTimeout(t);
+		if(query.length>0){
+			thisView.timoutVar = window.setTimeout(function(){
 				query = (featureExpEl.val().match(/@([A-Za-z0-9])+/g)!=null) ? featureExpEl.val().match(/@([A-Za-z0-9])+/g)[0] : "";
-				if(query.length>2){
+				if(query.length>0){
 						if(autocompEl.html()==""){
 							autocompEl.html("<li>Loading</li>");
 						}
-						$.getJSON( "http://mygene.info/v2/query?q="+query.replace("@","")+"&fields=symbol,entrezgene&userfilter=bgood_metabric&callback=?", function( data ) {
+						$.getJSON( "http://mygene.info/v2/query?q=%28symbol%3A"+query.replace("@","")+"+OR+symbol%3A+"+query.replace("@","")+"*+OR+name%3A"+query.replace("@","")+"*+OR+alias%3A+"+query.replace("@","")+"*+OR+summary%3A"+query.replace("@","")+"*%29&limit=20&fields=name%2Csymbol%2Ctaxid%2Centrezgene&species=human&userfilter=bgood_metabric&callback=?", function( data ) {
 							var items = [];
 							for(var temp in data.hits){
 								items.push( "<li id='" + data.hits[temp].entrezgene + "' data-query='"+query+"' data-stringindex= '"+featureExpEl.val().indexOf(query)+"' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
@@ -70,7 +70,8 @@ FeatureBuilderView = Marionette.ItemView.extend({
 							autocompEl.show();
 						});
 				}
-			},1000);
+				window.clearTimeout(thisView.timoutVar);
+			},300);
 		} else {
 			autocompEl.hide();
 		}
