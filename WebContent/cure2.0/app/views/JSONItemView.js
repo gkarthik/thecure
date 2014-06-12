@@ -13,15 +13,18 @@ JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
 		jsondata : ".jsonview_data",
-		showjson : ".showjson"
+		showjson : ".showjson",
+		sampleTable: '#sample-wrapper'
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
-		'click button.close' : 'HideJSON'
+		'click button.close' : 'HideJSON',
+		'click #text-exp': 'testExp'
 	},
 	tagName : "tr",
+	url:base_url+"MetaServer",
 	initialize : function() {
-		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON');
+		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase');
 		this.model.bind('change', this.render);
 		this.model.bind('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
@@ -41,6 +44,39 @@ JSONItemView = Marionette.ItemView.extend({
 		if (this.model.get('showJSON') != 0) {
 			this.ShowJSON();
 		}
+	},
+	testExp: function(){
+		var args = {
+    	        command : "custom_feature_testcase",
+    	        id: this.model.get('options').get('unique_id'),
+    	        dataset: "metabric_with_clinical"
+    	      };
+    	      $.ajax({
+    	          type : 'POST',
+    	          url : this.url,
+    	          data : JSON.stringify(args),
+    	          dataType : 'json',
+    	          contentType : "application/json; charset=utf-8",
+    	          success : this.renderTestCase,
+    	          error: this.error
+    	});
+	},
+	renderTestCase: function(data){
+		var html = "<h3>Sample No: "+data.sample+"</h3>"; 
+		html += "<table id='sample-data' class='table pull-right'><tr><th>Attribute</th><th>Value</th></tr>";
+		for(var temp in data.features){
+			html+="<tr><td>";
+			html+=temp;
+			html+="</td><td>";
+			html+=data.features[temp];
+			html+="</td></tr>";
+		}
+		html+="<tr class='info'><td>"+this.model.get('name')+"</td><td>"+data.custom_feature+"</td></tr></table>";
+		$(this.ui.sampleTable).html(html);
+	},
+	error : function(data) {
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
 	},
 	getSummary : function() {
 		var thisView = this,

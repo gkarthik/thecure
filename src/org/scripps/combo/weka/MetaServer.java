@@ -298,6 +298,8 @@ public class MetaServer extends HttpServlet {
 									getCustomFeatures(data, request, response);
 								} else if(command.equals("custom_feature_create")){
 									createCustomFeature(data,request,response);
+								} else if(command.equals("custom_feature_testcase")){
+									getTestCaseforCustomFeature(data,request,response);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -617,6 +619,18 @@ public class MetaServer extends HttpServlet {
 		ArrayList results = new ArrayList();
 		CustomFeature _cfeature = new CustomFeature();
 		results = _cfeature.searchCustomFeatures(data.get("query").asText());
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String json = mapper.writeValueAsString(results);
+		out.write(json);
+		out.close();
+	}
+	
+	private void getTestCaseforCustomFeature(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		//String command = data.get("command").asText(); //get_clinical_features 
+		HashMap results = new HashMap();
+		CustomFeature _cfeature = new CustomFeature();
+		results = _cfeature.getTestCase(data.get("id").asText(), name_dataset.get(data.get("dataset").asText()));
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		String json = mapper.writeValueAsString(results);
