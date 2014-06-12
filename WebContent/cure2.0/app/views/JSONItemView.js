@@ -99,7 +99,7 @@ JSONItemView = Marionette.ItemView.extend({
 		var description =null;
 		var idFlag = 1;
 		if(this.model.get('options').get('kind') == "split_node"){
-			if(this.model.get('options').get('unique_id')!="" && this.model.get('options').get('unique_id')!=null){
+			if(this.model.get('options').get('unique_id')!="" && this.model.get('options').get('unique_id')!=null && this.model.get('options').get('unique_id').indexOf("custom_feature_")==-1){
 				if(this.model.get('options').get('unique_id').indexOf("metabric") == -1){
 					idFlag = 0;
 					this.getSummary();
