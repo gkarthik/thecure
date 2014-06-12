@@ -16,11 +16,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.jasper.tagplugins.jstl.core.Set;
+import org.scripps.combo.weka.Weka;
 import org.scripps.util.JdbcConnection;
 
+import weka.classifiers.trees.ManualTree;
 import weka.core.AttributeExpression;
+import weka.core.Instances;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -60,7 +65,7 @@ public class CustomFeature {
 		return results;
 	}
 	
-	public int getOrCreateCustomFeatureId(String name, String feature_exp, String description, int userid, List<Feature> features) throws Exception{
+	public int findOrCreateCustomFeatureId(String name, String feature_exp, String description, int userid, List<Feature> features, Weka weka, String dataset) throws Exception{
 		int cFeatureId = 0;
 		JdbcConnection conn = new JdbcConnection();
 		String getattr = "select * from custom_feature";
@@ -74,10 +79,13 @@ public class CustomFeature {
 			_attrExp.convertInfixToPostfix(exp);
 			if(exp.equals(feature_exp)){
 				exists = true;
+				cFeatureId = resultSet.getInt("id");
 			}
 		}
 		if(!exists){
 			cFeatureId = insert(name, feature_exp, description, userid, features);
+			ManualTree _t = new ManualTree();
+			_t.evalAndAddNewFeatureValues("custom_feature_"+cFeatureId, feature_exp, weka.getTrain());
 		}
 		conn.connection.close();
 		return cFeatureId;
@@ -111,6 +119,45 @@ public class CustomFeature {
         conn.connection.close();
 		return id;
 	}	
+	
+	public HashMap findOrCreateCustomFeature(String feature_name, String exp, String description, int user_id, Weka weka, String dataset){
+		HashMap mp = new HashMap();
+		mp.put("success", true);
+		Instances data = weka.getTrain();
+		Feature _feature = new Feature(); 
+		List<Feature> allFeatures = new ArrayList<Feature>();
+		Pattern p = Pattern.compile("@([A-Za-z0-9])+"); 
+		Matcher m = p.matcher(exp);
+		String entrezid = "";
+		String att_name = "";
+		int index = 0;
+		while(m.find()){
+			entrezid = m.group().replace("@", "");
+			List<Attribute> atts = Attribute.getByFeatureUniqueId(entrezid,dataset);
+			if(atts!=null&&atts.size()>0){
+				for(Attribute att : atts){
+					att_name = att.getName();
+				}
+				index = data.attribute(att_name).index();
+				allFeatures.add(_feature.getByUniqueId(entrezid));
+				index++;//WEKA AddExpression() accepts index starting from 1.
+				exp = exp.replace("@"+entrezid, "a"+index);
+			}else{
+				mp.put("message", "Not Created. Couldn't map Genes to Dataset.");
+				mp.put("success", false);
+			}
+		}
+		CustomFeature cfeature = new CustomFeature();
+		try {
+			int cFeatureId = cfeature.findOrCreateCustomFeatureId(feature_name, exp, description, user_id, allFeatures, weka, dataset);
+			mp.put("custom_feature_id", cFeatureId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			mp.put("success", false);
+		}
+		return mp;
+	}
 	
 	public String getName(){
 		return name;

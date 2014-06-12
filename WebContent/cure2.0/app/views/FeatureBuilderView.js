@@ -25,6 +25,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
           }
       });
 	},
+	url: base_url+"MetaServer",
 	className :"feature-builder-wrapper",
 	template: FeatureBuilderTemplate,
 	ui : {
@@ -176,66 +177,94 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var feature_exp = this.getFeatureExp($(this.ui.featureExpression).val());
 		var feature_name = $(this.ui.featureName).val();
 		var model = this.model;
+		//feature_name, exp, description, user_id, name_dataset.get(dataset), dataset
+		
 		if(feature_exp != "" && feature_name != ""){
 			if(!Cure.initTour.ended()){
 				Cure.initTour.end();
 			}
-			var kind_value = "";
-			try {
-				kind_value = model.get("options").get('kind');
-			} catch (exception) {
-			}
-			if (kind_value == "leaf_node") {
-					if(model.get("options")){
-						model.get("options").unset("split_point");
-					}
-					
-					if(model.get("distribution_data")){
-						model.get("distribution_data").set({
-							"range": -1
-						});
-					}
-				model.set("previousAttributes", model.toJSON());
-				model.set("name", feature_name);
-				model.set('accLimit', 0, {silent:true});
-				
-				var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
-				var newCollaborator;
-				if(index!=-1){
-					newCollaborator = Cure.CollaboratorCollection.at(index);
-				} else {
-					newCollaborator = new Collaborator({
-						"name": cure_user_name,
-						"id": Cure.Player.get('id'),
-						"created" : new Date()
-					});
-					Cure.CollaboratorCollection.add(newCollaborator);
-					index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+			var args = {
+	    	        command : "custom_feature_create",
+	    	        name: feature_name,
+	    	        expression: feature_exp,
+	    	        description: $(this.ui.featureExpression).val(),
+	    	        dataset: "metabric_with_clinical",
+	    	        user_id: Cure.Player.get('id')
+	    	      };
+	    	      $.ajax({
+	    	          type : 'POST',
+	    	          url : this.url,
+	    	          data : JSON.stringify(args),
+	    	          dataType : 'json',
+	    	          contentType : "application/json; charset=utf-8",
+	    	          success : this.addFeatureId,
+	    	          error: this.error
+	    	});
+		}
+	},
+	addFeatureId: function(data){
+		console.log(data);
+		/*
+		var kind_value = "";
+		var model = this.model;
+		try {
+			kind_value = model.get("options").get('kind');
+		} catch (exception) {
+		}
+		if (kind_value == "leaf_node") {
+				if(model.get("options")){
+					model.get("options").unset("split_point");
 				}
-				model.get("options").set({
-					"unique_id" : "",
+				
+				if(model.get("distribution_data")){
+					model.get("distribution_data").set({
+						"range": -1
+					});
+				}
+			model.set("previousAttributes", model.toJSON());
+			model.set("name", feature_name);
+			model.set('accLimit', 0, {silent:true});
+			
+			var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
+			var newCollaborator;
+			if(index!=-1){
+				newCollaborator = Cure.CollaboratorCollection.at(index);
+			} else {
+				newCollaborator = new Collaborator({
+					"name": cure_user_name,
+					"id": Cure.Player.get('id'),
+					"created" : new Date()
+				});
+				Cure.CollaboratorCollection.add(newCollaborator);
+				index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+			}
+			model.get("options").set({
+				"unique_id" : "",
+				"kind" : "split_node",
+				"full_name" : '',
+				"description" : $(this.ui.featureExpression).val(),
+				"feature_exp": feature_exp,
+				"custom_feature_name": feature_name
+			});
+		} else {
+			new Node({
+				'name' : feature_name,
+				"options" : {
+					"unique_id" : '',
 					"kind" : "split_node",
 					"full_name" : '',
 					"description" : $(this.ui.featureExpression).val(),
 					"feature_exp": feature_exp,
 					"custom_feature_name": feature_name
-				});
-			} else {
-				new Node({
-					'name' : feature_name,
-					"options" : {
-						"unique_id" : '',
-						"kind" : "split_node",
-						"full_name" : '',
-						"description" : $(this.ui.featureExpression).val(),
-						"feature_exp": feature_exp,
-						"custom_feature_name": feature_name
-					}
-				});
-			}
-			Cure.PlayerNodeCollection.sync();
-			Cure.FeatureBuilderRegion.close();
+				}
+			});
 		}
+		Cure.PlayerNodeCollection.sync();
+		Cure.FeatureBuilderRegion.close();
+		*/
+	},
+	error: function(data){
+		console.log("error");
 	}
 });
 

@@ -256,42 +256,7 @@ public class JsonTree {
 				}
 			} else if(feature_exp!=null && feature_exp.asText()!=""){
 				options.put("attribute_name", "");
-				Instances data = weka.getTrain();
-				Feature _feature = new Feature(); 
-				List<Feature> allFeatures = new ArrayList<Feature>();
-				String exp = feature_exp.asText();
-				String description = options.get("description").asText();
-				int userid = node.get("collaborator").get("id").asInt();
-				Pattern p = Pattern.compile("@([A-Za-z0-9])+"); 
-				Matcher m = p.matcher(exp);
-				String entrezid = "";
-				String att_name = "";
-				int index = 0;
-				while(m.find()){
-					entrezid = m.group().replace("@", "");
-					List<Attribute> atts = Attribute.getByFeatureUniqueId(entrezid,dataset);
-					if(atts!=null&&atts.size()>0){
-						for(Attribute att : atts){
-							att_name = att.getName();
-						}
-						index = data.attribute(att_name).index();
-						allFeatures.add(_feature.getByUniqueId(entrezid));
-						index++;//WEKA AddExpression() accepts index starting from 1.
-						exp = exp.replace("@"+entrezid, "a"+index);
-					}else{
-						options.put("error", "gene in formula cannot be matched to attribute index in dataset");
-					}
-				}
-				options.put("feature_exp", exp);
-				if(feature_id.asText()==""){
-					try {
-						int cFeatureId = cfeature.getOrCreateCustomFeatureId(feature_name.asText(), exp, description, userid, allFeatures);
-						options.put("custom_feature_id", cFeatureId);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+				
 			}
 		}
 		ArrayNode children = (ArrayNode)node.get("children");
