@@ -163,6 +163,8 @@ public class MetaServer extends HttpServlet {
 			Weka weka = new Weka();
 			weka.buildWeka(train_loc, test_loc, dataset);	
 			weka.setEval_method("test_set");
+			CustomFeature c = new CustomFeature();
+			c.addInstances(weka);
 			name_dataset.put(dataset, weka);	
 			train_loc.close();
 		} catch (IOException e) {

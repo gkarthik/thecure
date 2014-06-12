@@ -205,6 +205,20 @@ public class CustomFeature {
 			}
 		return attIndex;
 	}
+	
+	public void addInstances(Weka weka){
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery("select id, expression from custom_feature");
+		try {
+			while(rslt.next()){
+				evalAndAddNewFeatureValues("custom_feature_"+rslt.getString("id"), rslt.getString("expression"), weka.getTrain());
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 
 	
 	public String getName(){
