@@ -69,7 +69,8 @@ public class CustomFeature {
 		return results;
 	}
 	
-	public int findOrCreateCustomFeatureId(String name, String feature_exp, String description, int userid, List<Feature> features, Weka weka, String dataset) throws Exception{
+	public HashMap findOrCreateCustomFeatureId(String name, String feature_exp, String description, int userid, List<Feature> features, Weka weka, String dataset) throws Exception{
+		HashMap mp = new HashMap();
 		int cFeatureId = 0;
 		JdbcConnection conn = new JdbcConnection();
 		String getattr = "select * from custom_feature";
@@ -78,20 +79,30 @@ public class CustomFeature {
 		_attrExp.convertInfixToPostfix(feature_exp);
 		String exp = "";
 		Boolean exists = false;
+		String message = "";
 		while(resultSet.next()){
 			exp = resultSet.getString("expression");
 			_attrExp.convertInfixToPostfix(exp);
 			if(exp.equals(feature_exp)){
 				exists = true;
 				cFeatureId = resultSet.getInt("id");
+				message = "Feature already exists.";
+			} else if(resultSet.getString("name").equals(name)) {
+				exists = true;
+				cFeatureId = resultSet.getInt("id");
+				message = "Feature name has already been taken.";
 			}
 		}
 		if(!exists){
 			cFeatureId = insert(name, feature_exp, description, userid, features);
 			evalAndAddNewFeatureValues("custom_feature_"+cFeatureId, feature_exp, weka.getTrain());
+			message = "Feature has been successfully created.";
 		}
 		conn.connection.close();
-		return cFeatureId;
+		mp.put("feature_id",cFeatureId);
+		mp.put("exists",exists);
+		mp.put("message",message);
+		return mp;
 	}
 	
 	public int insert(String name, String feature_exp, String description, int userid, List<Feature> features) throws Exception{
@@ -151,7 +162,10 @@ public class CustomFeature {
 			}
 		}
 		try {
-			int cFeatureId = findOrCreateCustomFeatureId(feature_name, exp, description, user_id, allFeatures, weka, dataset);
+			HashMap temp = (HashMap) findOrCreateCustomFeatureId(feature_name, exp, description, user_id, allFeatures, weka, dataset);
+			int cFeatureId = (int) temp.get("feature_id");
+			mp.put("exists",(Boolean) temp.get("exists"));
+			mp.put("message",temp.get("message"));
 			JdbcConnection conn = new JdbcConnection();
 			String query = "select * from custom_feature where id="+cFeatureId;
 			ResultSet rslt = conn.executeQuery(query);

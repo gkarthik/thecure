@@ -10,7 +10,7 @@ define([
     ], function($, Marionette, FeatureBuilderTemplate) {
 FeatureBuilderView = Marionette.ItemView.extend({
 	initialize : function() {
-		_.bindAll(this,'checkAndTagText');
+		_.bindAll(this,'checkAndTagText', 'validateFeatureName');
 		$.valHooks.textarea = {
 			get: function( elem ) {
 				return elem.value;
@@ -32,13 +32,16 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		'featureExpression': '#feature-expression',
 		'hiddenSpan': '#hidden-span',
 		"GeneAutoComplete": "#gene-autocomplete-wrapper",
-		"featureName": ".feature-name"
+		"featureName": ".feature-name",
+		"msgWrapper":"#message-wrapper",
+		'buildFeature': "#build-feature"
 	},
 	events:{
 		'click #build-feature': 'buildFeature',
 		'keydown #feature-expression': 'checkAndTagText',
 		'keyup #feature-expression': 'checkAndTagText',
-		'click .gene-autocomplete-option':'getTags'
+		'click .gene-autocomplete-option':'getTags',
+		'click .duplicate_feature':'addDuplicateFeature'
 	},
 	tagsList: [],
 	prevExp: "",
@@ -183,6 +186,8 @@ FeatureBuilderView = Marionette.ItemView.extend({
 			if(!Cure.initTour.ended()){
 				Cure.initTour.end();
 			}
+			$(this.ui.buildFeature).addClass("disabled");
+			$(this.ui.buildFeature).val("Loading...");
 			var args = {
 	    	        command : "custom_feature_create",
 	    	        name: feature_name,
@@ -197,10 +202,27 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	    	          data : JSON.stringify(args),
 	    	          dataType : 'json',
 	    	          contentType : "application/json; charset=utf-8",
-	    	          success : this.addFeatureId,
+	    	          success : this.validateFeatureName,
 	    	          error: this.error
 	    	});
 		}
+	},
+	validateFeatureName: function(data){
+		$(this.ui.buildFeature).removeClass("disabled");
+		$(this.ui.buildFeature).val("Build Feature");
+		if(data.exists==true){
+			$(this.ui.msgWrapper).html("<span class='text-danger error-message'>"+data.message+"</span><br><p class='bg-info duplicate_feature' data-name='"+data.name+"' data-description='"+data.description+"' data-id='"+data.id+"'>"+data.name+": "+data.description+"</p>");
+		} else {
+			this.addFeatureId(data);
+		}
+	},
+	addDuplicateFeature: function(e){
+		var data = {};
+		console.log(e);
+		data.id = $(e.currentTarget).data('id');
+		data.description = $(e.currentTarget).data('description');
+		data.name = $(e.currentTarget).data('name');
+		this.addFeatureId(data);
 	},
 	addFeatureId: function(data){
 		var kind_value = "";

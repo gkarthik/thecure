@@ -1095,6 +1095,22 @@ text-align:left;
 	resize: none;
 }
 
+#message-wrapper{
+	font-size: 12px;	
+}
+
+#message-wrapper .error-message{
+	
+}
+
+#message-wrapper .duplicate_feature{
+	cursor: pointer;
+	margin: 5px;
+	padding: 2px;
+	font-size: 12px;
+	font-weight: bold;
+}
+
 #hidden-span{
 	font-family: inherit;
 	height:auto;
