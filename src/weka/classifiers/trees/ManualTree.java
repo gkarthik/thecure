@@ -597,7 +597,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Build tree 
 		if(jsontree!=null){
-			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData, data);
+			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData);
 		}else{
 			System.out.println("No json tree specified, failing to process tree");
 		}
@@ -1023,7 +1023,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData, Instances allInst) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1071,8 +1071,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
-		
-		this.allInstances = allInst;
+
 		//options child added by web client developer
 		//TODO work with him to make a more meaningful structure...
 		JsonNode options = node.get("options");		
@@ -1081,7 +1080,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 		String kind = options.get("kind").asText();
 		JsonNode att_name = options.get("attribute_name");
-		JsonNode feature_exp = options.get("feature_exp");
 		Boolean getSplitData = false;
 
 		//this allows me to modify the json tree structure to add data about the evaluation
@@ -1090,14 +1088,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		Map<String,JsonNode> sons = new HashMap<String, JsonNode>();
 		//		String name = node_name.asText();
-		if(kind!=null&&kind.equals("split_node")&&(att_name!=null || feature_exp !=null)){ //
+		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
 			//attIndex = data.attribute(node_id.asText()).index();
 			if(!att_name.asText().equals("")){
 				attIndex = data.attribute(att_name.asText()).index();
-			} else if(!feature_exp.asText().equals("")) {
-				attIndex = evalAndAddNewFeatureValues(options.get("custom_feature_name").asText(),feature_exp.asText(), allInst, data);
-				header = new Instances(allInst, 0);
-				m_Info = header;
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1193,7 +1187,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 				JsonNode son = sons.get(child_name);
 				if(son!=null){
-					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData, allInst);
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData);
 				}else{
 					//if we are a split node with no input children, we need to add them into the tree
 					//JsonNode split_values = node.get("children");
@@ -1210,11 +1204,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						child.put("options", c_options);
 						children.add(child);
 						_node.put("children",children);
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData, allInst);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData);
 
 					}else{
 						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData, allInst);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData);
 					}
 				}
 			}
@@ -1666,12 +1660,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * 		Instances with values added. 
 	 *                       
 	 */
-	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data, Instances subData) {
+	public int evalAndAddNewFeatureValues(String feature_name, String featureExpression, Instances data) {
 		int attIndex = 0;
 		AddExpression newFeature = new AddExpression();
 		newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
 		Attribute attr = new Attribute(feature_name);
-			//Check if attribute exists in dataset or to add it.
 		attIndex = data.numAttributes()-1;
 			data.insertAttributeAt(attr, attIndex);//Insert Attribute just before class value
 			try {
@@ -1689,51 +1682,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					}
-			}
-			Boolean equalTo = false;
-			//Check if weka object in current session has the required attribute.
-			for(int j=0;j<data.numAttributes();j++){
-				if(data.attribute(j).equals(data.attribute(attIndex)) && (attIndex)!=(j)){
-					equalTo = true;
-					attIndex = j;
-					break;
-				}
-			}
-			if(equalTo){
-				 Remove remove = new Remove();
-			     remove.setAttributeIndices(String.valueOf((attIndex)));
-			     remove.setInvertSelection(true);
-			     try {
-			    	 remove.setInputFormat(data);
-					data = Filter.useFilter(data, remove);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} 
-			if(subData!=data){
-				newFeature = new AddExpression();
-				newFeature.setExpression(featureExpression);//Attribute is supplied with index starting from 1
-				attr = new Attribute(feature_name);
-					//Check if attribute exists in dataset or to add it.
-					subData.insertAttributeAt(attr, attIndex);//Insert Attribute just before class value
-					try {
-						newFeature.setInputFormat(subData);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					for(int i=0; i<subData.numInstances(); i++){//Index here starts from 0.
-							try {
-								newFeature.input(subData.instance(i));
-								int numAttr = newFeature.outputPeek().numAttributes();
-								Instance out = newFeature.output();
-								subData.instance(i).setValue(subData.attribute(attIndex), out.value(numAttr-1));
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
 					}
 			}
 		return attIndex;

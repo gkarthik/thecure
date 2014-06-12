@@ -273,7 +273,7 @@ public class MetaServer extends HttpServlet {
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to add bagde: "+json);
+								handleBadRequest(request, response, "Failed: "+json);
 							}	
 						} else if(command.contains("pathway")){  //get_trees_all, get_trees_ip, get_trees_user_id
 							//TODO clean this up so we aren't parsing the json twice.. 
@@ -287,16 +287,20 @@ public class MetaServer extends HttpServlet {
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to add bagde: "+json);
+								handleBadRequest(request, response, "Failed: "+json);
 							}	
-						} else if(command.contains("search_custom_feature")){
+						} else if(command.contains("custom_feature")){
 							JsonNode data = mapper.readTree(json);	
 							try{
-								getCustomFeatures(data, request, response);
+								if(command.equals("custom_feature_search")){
+									getCustomFeatures(data, request, response);
+								} else if(command.equals("custom_feature_create")){
+									createCustomFeature(data,request,response);
+								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								handleBadRequest(request, response, "Failed to add bagde: "+json);
+								handleBadRequest(request, response, "Failed: "+json);
 							}	
 						}
 						/*
@@ -616,6 +620,23 @@ public class MetaServer extends HttpServlet {
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		String json = mapper.writeValueAsString(results);
+		out.write(json);
+		out.close();
+	}
+	
+	private void createCustomFeature(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		//String command = data.get("command").asText(); //get_clinical_features 
+		HashMap mp = new HashMap();
+		CustomFeature _cfeature = new CustomFeature();
+		String dataset = data.get("dataset").asText();
+		String feature_name = data.get("name").asText();
+		String exp = data.get("expression").asText();
+		String description = data.get("description").asText();
+		int user_id = data.get("user_id").asInt();
+		mp = _cfeature.findOrCreateCustomFeature(feature_name, exp, description, user_id, name_dataset.get(dataset), dataset);
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String json = mapper.writeValueAsString(mp);
 		out.write(json);
 		out.close();
 	}

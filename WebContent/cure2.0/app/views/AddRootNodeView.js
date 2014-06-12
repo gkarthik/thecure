@@ -63,7 +63,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 	      $(this.ui.customfeature_query).autocomplete({
 	  			source: function( request, response ) {
 	  					var args = {
-	    	        command : "search_custom_feature",
+	    	        command : "custom_feature_search",
 	    	        query: request.term
 	    	      };
 	    	      $.ajax({
