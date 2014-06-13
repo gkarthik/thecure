@@ -57,6 +57,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var selectOptions = $("#"+autocompEl.attr("id")+" .gene-autocomplete-option");
 		var tempIndex = 0;
 		if(((e.which == 38) || (e.which==40)) && selectOptions.length>0 && e.type=="keydown"){
+			e.preventDefault();
 			switch(e.which){
 				case 38:
 					tempIndex = -1;
@@ -136,7 +137,6 @@ FeatureBuilderView = Marionette.ItemView.extend({
 			if(id<lowerCheck || id>upperCheck){
 				if(id>=(indexofDiff) && indexofDiff!=-1){
 					this.tagsList[temp].id+=length;
-					console.log(this.tagsList[temp].id);
 					$("#tag"+id).attr("id","tag"+this.tagsList[temp].id);
 					id+=length;
 					this.setTagPos(value,this.tagsList[temp].id,this.tagsList[temp].text);
