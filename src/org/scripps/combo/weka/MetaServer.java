@@ -647,7 +647,12 @@ public class MetaServer extends HttpServlet {
 		String exp = data.get("expression").asText();
 		String description = data.get("description").asText();
 		int user_id = data.get("user_id").asInt();
-		mp = _cfeature.findOrCreateCustomFeature(feature_name, exp, description, user_id, name_dataset.get(dataset), dataset);
+		try{
+			mp = _cfeature.findOrCreateCustomFeature(feature_name, exp, description, user_id, name_dataset.get(dataset), dataset);
+		} catch (Exception e) {
+			e.printStackTrace();
+			mp.put("error", "The expression could not be parsed.");
+		}
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		String json = mapper.writeValueAsString(mp);
