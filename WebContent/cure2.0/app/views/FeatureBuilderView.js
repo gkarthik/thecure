@@ -215,11 +215,16 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	validateFeatureName: function(data){
 		$(this.ui.buildFeature).removeClass("disabled");
 		$(this.ui.buildFeature).val("Build Feature");
-		if(data.exists==true){
-			$(this.ui.msgWrapper).html("<span class='text-danger error-message'>"+data.message+"</span><br><p class='bg-info duplicate_feature' data-name='"+data.name+"' data-description='"+data.description+"' data-id='"+data.id+"'>"+data.name+": "+data.description+"</p>");
+		if(data.success==true){
+			if(data.exists==true){
+				$(this.ui.msgWrapper).html("<span class='text-danger error-message'>"+data.message+"</span><br><p class='bg-info duplicate_feature' data-name='"+data.name+"' data-description='"+data.description+"' data-id='"+data.id+"'>"+data.name+": "+data.description+"</p>");
+			} else {
+				this.addFeatureId(data);
+			}
 		} else {
-			this.addFeatureId(data);
+			$(this.ui.msgWrapper).html("<span class='text-danger error-message'>"+data.message+"</span>");
 		}
+
 	},
 	addDuplicateFeature: function(e){
 		var data = {};

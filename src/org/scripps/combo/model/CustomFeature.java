@@ -78,32 +78,37 @@ public class CustomFeature {
 		String getattr = "select * from custom_feature";
 		ResultSet resultSet = conn.executeQuery(getattr);
 		AttributeExpression _attrExp = new AttributeExpression();
-		_attrExp.convertInfixToPostfix(feature_exp);
-		String exp = "";
-		Boolean exists = false;
-		String message = "";
-		while(resultSet.next()){
-			exp = resultSet.getString("expression");
-			_attrExp.convertInfixToPostfix(exp);
-			if(exp.equals(feature_exp)){
-				exists = true;
-				cFeatureId = resultSet.getInt("id");
-				message = "Feature already exists.";
-			} else if(resultSet.getString("name").equals(name)) {
-				exists = true;
-				cFeatureId = resultSet.getInt("id");
-				message = "Feature name has already been taken.";
+		try{
+			_attrExp.convertInfixToPostfix(feature_exp);
+			String exp = "";
+			Boolean exists = false;
+			String message = "";
+			while(resultSet.next()){
+				exp = resultSet.getString("expression");
+				_attrExp.convertInfixToPostfix(exp);
+				if(exp.equals(feature_exp)){
+					exists = true;
+					cFeatureId = resultSet.getInt("id");
+					message = "Feature already exists.";
+				} else if(resultSet.getString("name").equals(name)) {
+					exists = true;
+					cFeatureId = resultSet.getInt("id");
+					message = "Feature name has already been taken.";
+				}
 			}
+			if(!exists){
+				cFeatureId = insert(name, feature_exp, description, userid, features, dataset);
+				evalAndAddNewFeatureValues("custom_feature_"+cFeatureId, feature_exp, weka.getTrain());
+				message = "Feature has been successfully created.";
+			}
+			conn.connection.close();
+			mp.put("feature_id",cFeatureId);
+			mp.put("exists",exists);
+			mp.put("message",message);
+		} catch(Exception e){
+			e.printStackTrace();
+			mp.put("message", "Expression could not be parsed.<br>Please check if all the attributes have been tagged. Refer to Help Section.");
 		}
-		if(!exists){
-			cFeatureId = insert(name, feature_exp, description, userid, features, dataset);
-			evalAndAddNewFeatureValues("custom_feature_"+cFeatureId, feature_exp, weka.getTrain());
-			message = "Feature has been successfully created.";
-		}
-		conn.connection.close();
-		mp.put("feature_id",cFeatureId);
-		mp.put("exists",exists);
-		mp.put("message",message);
 		return mp;
 	}
 	
@@ -166,16 +171,21 @@ public class CustomFeature {
 		}
 		try {
 			HashMap temp = (HashMap) findOrCreateCustomFeatureId(feature_name, exp, description, user_id, allFeatures, weka, dataset);
-			int cFeatureId = (int) temp.get("feature_id");
-			mp.put("exists",(Boolean) temp.get("exists"));
-			mp.put("message",temp.get("message"));
-			JdbcConnection conn = new JdbcConnection();
-			String query = "select * from custom_feature where id="+cFeatureId;
-			ResultSet rslt = conn.executeQuery(query);
-			while(rslt.next()){
-				mp.put("id", "custom_feature_"+rslt.getString("id"));
-				mp.put("name", rslt.getString("name"));
-				mp.put("description", rslt.getString("description"));
+			if(temp.containsKey("feature_id")){
+				int cFeatureId = (int) temp.get("feature_id");
+				mp.put("exists",(Boolean) temp.get("exists"));
+				mp.put("message",temp.get("message"));
+				JdbcConnection conn = new JdbcConnection();
+				String query = "select * from custom_feature where id="+cFeatureId;
+				ResultSet rslt = conn.executeQuery(query);
+				while(rslt.next()){
+					mp.put("id", "custom_feature_"+rslt.getString("id"));
+					mp.put("name", rslt.getString("name"));
+					mp.put("description", rslt.getString("description"));
+				}
+			} else {
+				mp.put("success", false);
+				mp.put("message",temp.get("message"));
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
