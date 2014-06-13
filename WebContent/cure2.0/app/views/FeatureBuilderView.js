@@ -45,6 +45,7 @@ FeatureBuilderView = Marionette.ItemView.extend({
 	},
 	tagsList: [],
 	prevExp: "",
+	focusOptions: -1,
 	timoutVar: null,
 	checkAndTagText: function(e){
 		var thisView = this;
@@ -53,36 +54,60 @@ FeatureBuilderView = Marionette.ItemView.extend({
 		var value = featureExpEl.val();
 		value = this.adjustIndices(1);//Only 1 char difference occurs here	
 		query = (value.match(/@([A-Za-z0-9])+/g)!=null) ? value.match(/@([A-Za-z0-9])+/g)[0] : "";
-		if(query.length>0){
-			thisView.timoutVar = window.setTimeout(function(){
-				query = (featureExpEl.val().match(/@([A-Za-z0-9])+/g)!=null) ? featureExpEl.val().match(/@([A-Za-z0-9])+/g)[0] : "";
-				if(query.length>0){
-						if(autocompEl.html()==""){
-							autocompEl.html("<li>Loading</li>");
-						}
-						$.getJSON( "http://mygene.info/v2/query?q=%28symbol%3A"+query.replace("@","")+"+OR+symbol%3A+"+query.replace("@","")+"*+OR+name%3A"+query.replace("@","")+"*+OR+alias%3A+"+query.replace("@","")+"*+OR+summary%3A"+query.replace("@","")+"*%29&limit=20&fields=name%2Csymbol%2Ctaxid%2Centrezgene&species=human&userfilter=bgood_metabric&callback=?", function( data ) {
-							var items = [];
-							for(var temp in data.hits){
-								items.push( "<li id='" + data.hits[temp].entrezgene + "' data-query='"+query+"' data-stringindex= '"+featureExpEl.val().indexOf(query)+"' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
+		var selectOptions = $("#"+autocompEl.attr("id")+" .gene-autocomplete-option");
+		var tempIndex = 0;
+		if(((e.which == 38) || (e.which==40)) && selectOptions.length>0 && e.type=="keydown"){
+			switch(e.which){
+				case 38:
+					tempIndex = -1;
+					break;
+				case 40:
+					tempIndex = 1;
+					break;
+			}
+			if(selectOptions[this.focusOptions+tempIndex]){
+				this.focusOptions+=tempIndex;
+				selectOptions.removeClass("focus-option");
+				$(selectOptions[this.focusOptions]).addClass("focus-option");
+			}
+		} else if(e.which == 13 && selectOptions.length>0 && e.type=="keyup") {
+			e.preventDefault();
+			$(selectOptions[this.focusOptions]).trigger('click');
+		} else if(e.which == 13 && selectOptions.length>0 && e.type=="keydown") {
+			e.preventDefault();
+		} else if(e.which!=38 && e.which!=40 && e.which!=13) {
+			if(query.length>0){
+				thisView.timoutVar = window.setTimeout(function(){
+					query = (featureExpEl.val().match(/@([A-Za-z0-9])+/g)!=null) ? featureExpEl.val().match(/@([A-Za-z0-9])+/g)[0] : "";
+					if(query.length>0){
+							if(autocompEl.html()==""){
+								autocompEl.html("<li>Loading</li>");
 							}
-							autocompEl.html(items.join(""));
-							thisView.setAutoCompPos(featureExpEl.val(),featureExpEl.val().indexOf(query),query);
-							autocompEl.show();
-						});
-				}
-				window.clearTimeout(thisView.timoutVar);
-			},300);
-		} else {
-			autocompEl.hide();
+							$.getJSON( "http://mygene.info/v2/query?q=%28symbol%3A"+query.replace("@","")+"+OR+symbol%3A+"+query.replace("@","")+"*+OR+name%3A"+query.replace("@","")+"*+OR+alias%3A+"+query.replace("@","")+"*+OR+summary%3A"+query.replace("@","")+"*%29&limit=20&fields=name%2Csymbol%2Ctaxid%2Centrezgene&species=human&userfilter=bgood_metabric&callback=?", function( data ) {
+								thisView.focusOptions = -1;
+								var items = [];
+								for(var temp in data.hits){
+									items.push( "<li id='" + data.hits[temp].entrezgene + "' data-query='"+query+"' data-stringindex= '"+featureExpEl.val().indexOf(query)+"' data-id='"+data.hits[temp].entrezgene+"' data-symbol='"+data.hits[temp].symbol+"' class='gene-autocomplete-option'>" + data.hits[temp].symbol + "</li>" );
+								}
+								autocompEl.html(items.join(""));
+								thisView.setAutoCompPos(featureExpEl.val(),featureExpEl.val().indexOf(query),query);
+								autocompEl.show();
+							});
+					}
+					window.clearTimeout(thisView.timoutVar);
+				},300);
+			} else {
+				autocompEl.hide();
+			}
+			if($(this.ui.featureExpression).get(0).scrollHeight-11 > $(this.ui.featureExpression).height()){
+				$(this.ui.featureExpression).css({'height': $(this.ui.featureExpression).get(0).scrollHeight+5});
+			}
+			if($(this.ui.featureExpression).get(0).scrollWidth > $(this.ui.featureExpression).innerWidth()){
+				value = [value.slice(0, value.length-2), "\n", value.slice(value.length-2)].join('');
+			}
+			$(this.ui.featureExpression).val(value);
+			this.prevExp = value;
 		}
-		if($(this.ui.featureExpression).get(0).scrollHeight-11 > $(this.ui.featureExpression).height()){
-			$(this.ui.featureExpression).css({'height': $(this.ui.featureExpression).get(0).scrollHeight+5});
-		}
-		if($(this.ui.featureExpression).get(0).scrollWidth > $(this.ui.featureExpression).innerWidth()){
-			value = [value.slice(0, value.length-2), "\n", value.slice(value.length-2)].join('');
-		}
-		$(this.ui.featureExpression).val(value);
-		this.prevExp = value;
 	},
 	adjustIndices: function(length,id,symbol){
 		var featureExpEl = $(this.ui.featureExpression);

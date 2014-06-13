@@ -1102,6 +1102,10 @@ text-align:left;
 	resize: none;
 }
 
+.focus-option{
+	background: #eee;
+}
+
 #message-wrapper{
 	font-size: 14px;
 	padding: 5px;
