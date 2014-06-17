@@ -74,8 +74,8 @@ public class CustomClassifier {
 			statement = (PreparedStatement) conn.connection.prepareStatement("insert into custom_classifier(name,type,description,player_id) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 	        statement.setString(1, name);
 	        statement.setInt(2, classifierType);
-	        statement.setString(1, description);
-	        statement.setInt(2, player_id);
+	        statement.setString(3, description);
+	        statement.setInt(4, player_id);
 	        custom_classifier_id = statement.executeUpdate();
 	        if (custom_classifier_id == 0) {
 	            throw new SQLException("Creating custom classifier failed, no rows affected.");
@@ -110,18 +110,18 @@ public class CustomClassifier {
 		return mp;
 	}
 	
-	public int getOrCreateClassifierId(String[] entrezIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset) throws SQLException{
+	public HashMap getOrCreateClassifierId(List entrezIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset) throws SQLException{
 		int index = 0;
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
 		ResultSet rslt2 = null;
 		Boolean exists = false;
-		String[] featureDbIds = new String[entrezIds.length];
+		String[] featureDbIds = new String[entrezIds.toArray().length];
 		Feature f;
 		int ctr = 0;
-		for(String entrezId : entrezIds){
-			f = Feature.getByUniqueId(entrezId);
+		for(Object entrezId : entrezIds.toArray()){
+			f = Feature.getByUniqueId(entrezId.toString());
 			featureDbIds[ctr] = String.valueOf(f.getId());
 		}
 		while(rslt.next()){
@@ -152,9 +152,22 @@ public class CustomClassifier {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (int) mp.get("custom_classifier_id");
+		HashMap results = new HashMap();
+		query = "select * from custom_feature where id="+(int) mp.get("id");
+		System.out.println(query);
+		rslt = conn.executeQuery(query);
+		while(rslt.next()){
+			results.put("name",rslt.getString("name"));
+			results.put("description",rslt.getString("description"));
+			results.put("type",rslt.getInt("type"));
+			results.put("id",rslt.getInt("id"));
+			results.put("exists",exists);
+		}
+		
+		return results;
 	}
 	
+	//On init
 	public Classifier[] getClassifiersfromDb(Weka weka, String dataset) throws SQLException{
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
