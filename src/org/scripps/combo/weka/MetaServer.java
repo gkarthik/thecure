@@ -310,6 +310,7 @@ public class MetaServer extends HttpServlet {
 							}	
 						} else if(command.contains("custom_classifier")){
 							JsonNode data = mapper.readTree(json);	
+							System.out.println("executed");
 							try{
 								if(command.equals("custom_classifier_create")){
 									getOrCreateCustomClassifier(data, custom_classifiers, request, response);
