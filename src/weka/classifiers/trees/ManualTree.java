@@ -23,6 +23,7 @@
 package weka.classifiers.trees;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Attribute;
 import weka.core.AttributeExpression;
 import weka.core.Capabilities;
@@ -538,7 +539,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @throws Exception
 	 *             if something goes wrong or the data doesn't fit
 	 */
-	public void buildClassifier(Instances data) throws Exception {
+	public void buildClassifier(Instances data, HashMap<String,FilteredClassifier> custom_classifiers) throws Exception {
 		// Make sure K value is in range
 		if (m_KValue > data.numAttributes() - 1)
 			m_KValue = data.numAttributes() - 1;
@@ -595,7 +596,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Build tree 
 		if(jsontree!=null){
-			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData);
+			buildTree(train, classProbs, new Instances(data, 0), m_Debug,  0, jsontree, 0, m_distributionData, custom_classifiers);
 		}else{
 			System.out.println("No json tree specified, failing to process tree");
 		}
@@ -1021,7 +1022,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData, HashMap<String,FilteredClassifier> custom_classifiers) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1115,12 +1116,12 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		}
 		HashMap<String, Double> mp = new HashMap<String,Double>();
 		if(att_name.asText().contains("custom_classifier")){
-			mp = distribution(props, dists, attIndex, data, Double.NaN, att_name.asText().replace("custom_classifier_", ""));
+			mp = distribution(props, dists, attIndex, data, Double.NaN, att_name.asText(), custom_classifiers);
 		} else {
 			if(options.get("split_point")!=null){
-				mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble(), null);
+				mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble(), null, custom_classifiers);
 			} else {
-				mp = distribution(props, dists, attIndex, data, Double.NaN, null);
+				mp = distribution(props, dists, attIndex, data, Double.NaN, null, custom_classifiers);
 			}
 		}
 		
@@ -1192,7 +1193,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 				JsonNode son = sons.get(child_name);
 				if(son!=null){
-					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData);
+					m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, son, attIndex, m_distributionData, custom_classifiers);
 				}else{
 					//if we are a split node with no input children, we need to add them into the tree
 					//JsonNode split_values = node.get("children");
@@ -1209,11 +1210,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						child.put("options", c_options);
 						children.add(child);
 						_node.put("children",children);
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, child, attIndex, m_distributionData, custom_classifiers);
 
 					}else{
 						//for leaf nodes, calling again ends the cycle and fills up the bins appropriately
-						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData);
+						m_Successors[i].buildTree(subsets[i], distribution[i], header, m_Debug, depth + 1, node, attIndex, m_distributionData, custom_classifiers);
 					}
 				}
 			}
@@ -1426,7 +1427,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @throws Exception
 	 *             if something goes wrong
 	 */
-	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint, String CustomClassifierIndex)
+	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint, String CustomClassifierId, HashMap<String,FilteredClassifier> custom_classifiers)
 			throws Exception {
 		
 		HashMap<String,Double> mp = new HashMap<String,Double>();
@@ -1436,7 +1437,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		double[][] dist = null;
 		int indexOfFirstMissingValue = -1;
 		
-		if(CustomClassifierIndex==null){
+		if(CustomClassifierId==null){
 			if (attribute.isNominal()) {
 				// For nominal attributes
 				dist = new double[attribute.numValues()][data.numClasses()];
@@ -1554,6 +1555,44 @@ WeightedInstancesHandler, Randomizable, Drawable {
 						currDist[1][(int) inst.classValue()] -= inst.weight();
 					}
 				}
+			}
+		} else {
+			double[][] currDist = new double[2][data.numClasses()];
+			dist = new double[2][data.numClasses()];
+
+			// Sort data
+			data.sort(att);
+
+			// Move all instances into second subset
+			for (int j = 0; j < data.numInstances(); j++) {
+				Instance inst = data.instance(j);
+				if (inst.isMissing(att)) {
+
+					// Can stop as soon as we hit a missing value
+					indexOfFirstMissingValue = j;
+					break;
+				}
+				currDist[1][(int) inst.classValue()] += inst.weight();
+			}
+
+			// Save initial distribution
+			for (int j = 0; j < currDist.length; j++) {
+				System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
+			}
+			FilteredClassifier fc = custom_classifiers.get(CustomClassifierId);
+			System.out.println(CustomClassifierId);
+			Instance inst;
+			for(int i=0; i < data.numInstances(); i++){
+				inst = data.instance(i);
+				double predictedClass = fc.classifyInstance(inst);
+				System.out.println(predictedClass);
+				if(predictedClass!=Instance.missingValue()){
+					currDist[0][(int) inst.classValue()] += inst.weight();
+					currDist[1][(int) inst.classValue()] -= inst.weight();
+				}
+			}
+			for (int j = 0; j < currDist.length; j++) {
+				System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
 			}
 		}
 		

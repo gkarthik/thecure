@@ -61,9 +61,11 @@ public class CustomClassifier {
 	public static void main(String args[]) throws FileNotFoundException, Exception{
 		CustomClassifier c = new CustomClassifier();
 		List entrezIds = new ArrayList();
-		//entrezIds.add("8459");//Tpst2
+		entrezIds.add("8459");//Tpst2
 		entrezIds.add("1960");//Egr3
 		entrezIds.add("6790");//Aurka
+		entrezIds.add("7155");//Top2B
+		entrezIds.add("675");//brca2
 		Weka weka = new Weka();
 		String dataset="metabric_with_clinical";
 		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
@@ -132,9 +134,10 @@ public class CustomClassifier {
 				indices += String.valueOf(data.attribute(att_name).index())+",";
 			}
 		}
+		System.out.println(indices);
 		Remove rm = new Remove();
-		rm.setAttributeIndices(indices+"last");
-		rm.setInvertSelection(true);
+		//rm.setAttributeIndices(indices+"last");
+		rm.setInvertSelection(false);
 		// build a classifier using only these attributes
 		FilteredClassifier fc = new FilteredClassifier();
 		fc.setFilter(rm);
