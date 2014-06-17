@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -70,6 +71,7 @@ import weka.attributeSelection.ASEvaluation;
 import weka.attributeSelection.ReliefFAttributeEval;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
@@ -86,7 +88,7 @@ public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
 	ObjectMapper mapper;
-	ArrayList<Classifier> custom_classifiers = new ArrayList<Classifier>();
+	HashMap<String,FilteredClassifier> custom_classifiers = new HashMap<String, FilteredClassifier>();
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -167,6 +169,9 @@ public class MetaServer extends HttpServlet {
 			weka.setEval_method("test_set");
 			CustomFeature c = new CustomFeature();
 			c.addInstances(weka);
+			//Store all custom classifiers in global object
+			CustomClassifier _c = new CustomClassifier();
+			custom_classifiers = _c.getClassifiersfromDb(weka, dataset);
 			name_dataset.put(dataset, weka);	
 			train_loc.close();
 		} catch (IOException e) {
@@ -674,7 +679,7 @@ public class MetaServer extends HttpServlet {
 		out.close();
 	}
 	
-	private void getOrCreateCustomClassifier(JsonNode data, ArrayList<Classifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
+	private void getOrCreateCustomClassifier(JsonNode data, HashMap<String,FilteredClassifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
 		HashMap mp = new HashMap();
 		CustomClassifier _cclassifier = new CustomClassifier();
 		List entrezIds = new ArrayList();
@@ -688,7 +693,7 @@ public class MetaServer extends HttpServlet {
 		String dataset = data.get("dataset").asText();
 		Weka weka = name_dataset.get(dataset);
 		try{
-			mp = _cclassifier.getOrCreateClassifierId(entrezIds, classifierType, name, description, player_id, weka, dataset);
+			mp = _cclassifier.getOrCreateClassifierId(entrezIds, classifierType, name, description, player_id, weka, dataset, custom_classifiers);
 		} catch (Exception e) {
 			e.printStackTrace();
 			mp.put("error", "The expression could not be parsed.");
