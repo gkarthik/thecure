@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import org.scripps.combo.evaluation.ClassifierEvaluation;
 import org.scripps.combo.model.Board;
 import org.scripps.combo.model.Card;
+import org.scripps.combo.model.CustomClassifier;
 import org.scripps.combo.model.CustomFeature;
 import org.scripps.combo.model.Feature;
 import org.scripps.combo.model.Game;
@@ -85,6 +86,7 @@ public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
 	ObjectMapper mapper;
+	ArrayList<Classifier> custom_classifiers = new ArrayList<Classifier>();
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -300,6 +302,17 @@ public class MetaServer extends HttpServlet {
 									createCustomFeature(data,request,response);
 								} else if(command.equals("custom_feature_testcase")){
 									getTestCaseforCustomFeature(data,request,response);
+								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								handleBadRequest(request, response, "Failed: "+json);
+							}	
+						} else if(command.contains("custom_classifier")){
+							JsonNode data = mapper.readTree(json);	
+							try{
+								if(command.equals("custom_classifier_create")){
+									getOrCreateCustomClassifier(data, custom_classifiers, request, response);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -649,6 +662,32 @@ public class MetaServer extends HttpServlet {
 		int user_id = data.get("user_id").asInt();
 		try{
 			mp = _cfeature.findOrCreateCustomFeature(feature_name, exp, description, user_id, name_dataset.get(dataset), dataset);
+		} catch (Exception e) {
+			e.printStackTrace();
+			mp.put("error", "The expression could not be parsed.");
+		}
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String json = mapper.writeValueAsString(mp);
+		out.write(json);
+		out.close();
+	}
+	
+	private void getOrCreateCustomClassifier(JsonNode data, ArrayList<Classifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
+		HashMap mp = new HashMap();
+		CustomClassifier _cclassifier = new CustomClassifier();
+		List entrezIds = new ArrayList();
+		for(JsonNode el : data.path("unique_ids")){
+			entrezIds.add(el.toString());
+		}
+		String name = data.get("name").asText();
+		String description = data.get("description").asText();
+		int player_id = data.get("user_id").asInt();
+		int classifierType = data.get("type").asInt();
+		String dataset = data.get("dataset").asText();
+		Weka weka = name_dataset.get(dataset);
+		try{
+			mp = _cclassifier.getOrCreateClassifierId(entrezIds, classifierType, name, description, player_id, weka, dataset);
 		} catch (Exception e) {
 			e.printStackTrace();
 			mp.put("error", "The expression could not be parsed.");
