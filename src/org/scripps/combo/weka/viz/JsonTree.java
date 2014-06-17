@@ -46,6 +46,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
 import weka.classifiers.Evaluation;
+import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.DecisionStump;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
@@ -196,14 +197,14 @@ public class JsonTree {
 		return tree;
 	}
 
-	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset){
+	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset, HashMap<String,FilteredClassifier> custom_classifiers){
 		ManualTree tree = new ManualTree();
 		try {
 			if(!dataset.equals("mammal")){
 				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset);
 			}
 			tree.setTreeStructure(rootNode);
-			tree.buildClassifier(weka.getTrain());
+			tree.buildClassifier(weka.getTrain(), custom_classifiers);
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -241,7 +242,7 @@ public class JsonTree {
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
 			if(unique_id!=null && unique_id.asText()!=""){
-				if(!unique_id.asText().contains("custom_feature_")){
+				if(!unique_id.asText().contains("custom_feature_") && !unique_id.asText().contains("custom_classifier_")){
 					List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
 					if(atts!=null&&atts.size()>0){
 						for(Attribute att : atts){
