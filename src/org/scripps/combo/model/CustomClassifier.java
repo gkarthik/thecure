@@ -248,7 +248,7 @@ public class CustomClassifier {
 		String[] featuresDbId = new String[count];
 		int ctr = 0;
 		while(rslt.next()){
-			featuresDbId[ctr] = rslt.getString("id");
+			featuresDbId[ctr] = rslt.getString("feature_id");
 			ctr++;
 		} 
 		return buildCustomClasifier(weka, featuresDbId, classifierType);
