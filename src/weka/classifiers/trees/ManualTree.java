@@ -1088,8 +1088,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		//		String name = node_name.asText();
 		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
 			//attIndex = data.attribute(node_id.asText()).index();
-			if(!att_name.asText().equals("")){
+			if(!att_name.asText().equals("") && !att_name.asText().contains("custom_classifier")){
 				attIndex = data.attribute(att_name.asText()).index();
+			} else {
+				attIndex = data.numInstances()+Integer.valueOf(att_name.asText().replace("custom_classifier_", ""));
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1112,11 +1114,16 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			//System.out.println("non split node, name "+att_name+" type "+kind);
 		}
 		HashMap<String, Double> mp = new HashMap<String,Double>();
-		if(options.get("split_point")!=null){
-			mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble());
+		if(att_name.asText().contains("custom_classifier")){
+			mp = distribution(props, dists, attIndex, data, Double.NaN, att_name.asText().replace("custom_classifier_", ""));
 		} else {
-			mp = distribution(props, dists, attIndex, data, Double.NaN);
+			if(options.get("split_point")!=null){
+				mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble(), null);
+			} else {
+				mp = distribution(props, dists, attIndex, data, Double.NaN, null);
+			}
 		}
+		
 		splits[attIndex] = mp.get("split_point"); 
 		vals[attIndex] = gain(dists[attIndex], priorVal(dists[attIndex]));
 
@@ -1419,7 +1426,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @throws Exception
 	 *             if something goes wrong
 	 */
-	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint)
+	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint, String CustomClassifierIndex)
 			throws Exception {
 		
 		HashMap<String,Double> mp = new HashMap<String,Double>();
@@ -1428,128 +1435,130 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		Attribute attribute = data.attribute(att);
 		double[][] dist = null;
 		int indexOfFirstMissingValue = -1;
-
-		if (attribute.isNominal()) {
-
-			// For nominal attributes
-			dist = new double[attribute.numValues()][data.numClasses()];
-			for (int i = 0; i < data.numInstances(); i++) {
-				Instance inst = data.instance(i);
-				if (inst.isMissing(att)) {
-
-					// Skip missing values at this stage
-					if (indexOfFirstMissingValue < 0) {
-						indexOfFirstMissingValue = i;
-					}
-					continue;
-				}
-				dist[(int) inst.value(att)][(int) inst.classValue()] += inst.weight();
-			}
-		} else {
-
-			// For numeric attributes
-			double[][] currDist = new double[2][data.numClasses()];
-			dist = new double[2][data.numClasses()];
-
-			// Sort data
-			data.sort(att);
-
-			// Move all instances into second subset
-			for (int j = 0; j < data.numInstances(); j++) {
-				Instance inst = data.instance(j);
-				if (inst.isMissing(att)) {
-
-					// Can stop as soon as we hit a missing value
-					indexOfFirstMissingValue = j;
-					break;
-				}
-				currDist[1][(int) inst.classValue()] += inst.weight();
-			}
-
-			// Value before splitting
-			double priorVal = priorVal(currDist);
-
-			// Save initial distribution
-			for (int j = 0; j < currDist.length; j++) {
-				System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
-			}
-			
-			if(Double.isNaN(splitPoint)){
-				// Try all possible split points
-				double currSplit = data.instance(0).value(att);
-				double currVal, bestVal = -Double.MAX_VALUE;
+		
+		if(CustomClassifierIndex==null){
+			if (attribute.isNominal()) {
+				// For nominal attributes
+				dist = new double[attribute.numValues()][data.numClasses()];
 				for (int i = 0; i < data.numInstances(); i++) {
 					Instance inst = data.instance(i);
 					if (inst.isMissing(att)) {
 
-						// Can stop as soon as we hit a missing value
-						break;
-					}
-
-					// Can we place a sensible split point here?
-					if (inst.value(att) > currSplit) {
-
-						// Compute gain for split point
-						currVal = gain(currDist, priorVal);
-
-						// Is the current split point the best point so far?
-						if (currVal > bestVal) {
-
-							// Store value of current point
-							bestVal = currVal;
-
-							// Save split point
-							splitPoint = (inst.value(att) + currSplit) / 2.0;
-							origSplitPoint = splitPoint;
-
-							// Save distribution
-							for (int j = 0; j < currDist.length; j++) {
-								System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
-							}
+						// Skip missing values at this stage
+						if (indexOfFirstMissingValue < 0) {
+							indexOfFirstMissingValue = i;
 						}
+						continue;
 					}
-					currSplit = inst.value(att);
-
-					// Shift over the weight
-					currDist[0][(int) inst.classValue()] += inst.weight();
-					currDist[1][(int) inst.classValue()] -= inst.weight();
+					dist[(int) inst.value(att)][(int) inst.classValue()] += inst.weight();
 				}
 			} else {
-				double currSplit = data.instance(0).value(att);
-				double currVal, bestVal = -Double.MAX_VALUE;
-				// Split data set using given split point.
-				for (int i = 0; i < data.numInstances(); i++) {
-					Instance inst = data.instance(i);
+
+				// For numeric attributes
+				double[][] currDist = new double[2][data.numClasses()];
+				dist = new double[2][data.numClasses()];
+
+				// Sort data
+				data.sort(att);
+
+				// Move all instances into second subset
+				for (int j = 0; j < data.numInstances(); j++) {
+					Instance inst = data.instance(j);
 					if (inst.isMissing(att)) {
+
 						// Can stop as soon as we hit a missing value
+						indexOfFirstMissingValue = j;
 						break;
 					}
-					if (inst.value(att) > currSplit) {
-						// Compute gain for split point
-						currVal = gain(currDist, priorVal);
-						// Is the current split point the best point so far?
-						if (currVal > bestVal) {
-							// Store value of current point
-							bestVal = currVal;
-							// Save computed split point
-							origSplitPoint = (inst.value(att) + currSplit) / 2.0;
+					currDist[1][(int) inst.classValue()] += inst.weight();
+				}
+
+				// Value before splitting
+				double priorVal = priorVal(currDist);
+
+				// Save initial distribution
+				for (int j = 0; j < currDist.length; j++) {
+					System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
+				}
+				
+				if(Double.isNaN(splitPoint)){
+					// Try all possible split points
+					double currSplit = data.instance(0).value(att);
+					double currVal, bestVal = -Double.MAX_VALUE;
+					for (int i = 0; i < data.numInstances(); i++) {
+						Instance inst = data.instance(i);
+						if (inst.isMissing(att)) {
+
+							// Can stop as soon as we hit a missing value
+							break;
 						}
-					}
-					if (inst.value(att) <= splitPoint) {
-							// Save distribution since split point is specified
-							for (int j = 0; j < currDist.length; j++) {
-								System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
+
+						// Can we place a sensible split point here?
+						if (inst.value(att) > currSplit) {
+
+							// Compute gain for split point
+							currVal = gain(currDist, priorVal);
+
+							// Is the current split point the best point so far?
+							if (currVal > bestVal) {
+
+								// Store value of current point
+								bestVal = currVal;
+
+								// Save split point
+								splitPoint = (inst.value(att) + currSplit) / 2.0;
+								origSplitPoint = splitPoint;
+
+								// Save distribution
+								for (int j = 0; j < currDist.length; j++) {
+									System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
+								}
 							}
+						}
+						currSplit = inst.value(att);
+
+						// Shift over the weight
+						currDist[0][(int) inst.classValue()] += inst.weight();
+						currDist[1][(int) inst.classValue()] -= inst.weight();
 					}
-					currSplit = inst.value(att);
-					// Shift over the weight
-					currDist[0][(int) inst.classValue()] += inst.weight();
-					currDist[1][(int) inst.classValue()] -= inst.weight();
+				} else {
+					double currSplit = data.instance(0).value(att);
+					double currVal, bestVal = -Double.MAX_VALUE;
+					// Split data set using given split point.
+					for (int i = 0; i < data.numInstances(); i++) {
+						Instance inst = data.instance(i);
+						if (inst.isMissing(att)) {
+							// Can stop as soon as we hit a missing value
+							break;
+						}
+						if (inst.value(att) > currSplit) {
+							// Compute gain for split point
+							currVal = gain(currDist, priorVal);
+							// Is the current split point the best point so far?
+							if (currVal > bestVal) {
+								// Store value of current point
+								bestVal = currVal;
+								// Save computed split point
+								origSplitPoint = (inst.value(att) + currSplit) / 2.0;
+							}
+						}
+						if (inst.value(att) <= splitPoint) {
+								// Save distribution since split point is specified
+								for (int j = 0; j < currDist.length; j++) {
+									System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
+								}
+						}
+						currSplit = inst.value(att);
+						// Shift over the weight
+						currDist[0][(int) inst.classValue()] += inst.weight();
+						currDist[1][(int) inst.classValue()] -= inst.weight();
+					}
 				}
 			}
 		}
+		
 
-		// Compute weights for subsets
+		// Compute weights for subsetsCustomClassifierIndex
 		props[att] = new double[dist.length];
 		for (int k = 0; k < props[att].length; k++) {
 			props[att][k] = Utils.sum(dist[k]);
@@ -1635,6 +1644,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *            the commandline parameters
 	 */
 	public void main(String argv[]) throws Exception{
+		/*
 		Weka weka = new Weka();
 		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
 		String dataset = "metabric_with_clinical";
@@ -1645,6 +1655,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		System.out.println(data.attribute(numAttr));
 		System.out.println(data.instance(13).value(16));
 		System.out.println(data.instance(13).value(numAttr));
+		*/
 	}	
 
 	/**
