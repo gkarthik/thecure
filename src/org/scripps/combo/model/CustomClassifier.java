@@ -4,6 +4,8 @@
 package org.scripps.combo.model;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -11,8 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +42,10 @@ import weka.core.Instances;
 import weka.filters.unsupervised.attribute.AddExpression;
 import weka.filters.unsupervised.attribute.Remove;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -48,10 +54,28 @@ import com.hp.hpl.jena.mem.ArrayBunch;
 import com.mysql.jdbc.PreparedStatement;
 
 import java.security.MessageDigest;
-import java.sql.ResultSetMetaData;
 import java.text.SimpleDateFormat;
 
 public class CustomClassifier {
+	
+	public static void main(String args[]) throws FileNotFoundException, Exception{
+		CustomClassifier c = new CustomClassifier();
+		List entrezIds = new ArrayList();
+		entrezIds.add("8459");//Tpst2
+		entrezIds.add("1960");//Egr3
+		entrezIds.add("6790");//Aurka
+		Weka weka = new Weka();
+		String dataset="metabric_with_clinical";
+		String train_file = "/home/karthik/workspace/cure/WebContent/WEB-INF/data/Metabric_clinical_expression_DSS_sample_filtered.arff";
+		try {
+			weka.buildWeka(new FileInputStream(train_file), null, dataset);
+			System.out.println(c.getOrCreateClassifierId(entrezIds, 0, "test", "testing classifier",  -1, weka, dataset));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public HashMap buildOrCreateClassifier(String[] featureDbIds, int classifierType, Boolean exists, String name, String description,  int player_id, Weka weka, String dataset) throws Exception{
 		HashMap mp = new HashMap();
 		Instances data = weka.getTrain();
@@ -66,6 +90,7 @@ public class CustomClassifier {
 				}
 				indices += String.valueOf(data.attribute(att_name).index())+",";
 			}
+			System.out.println(featureDbId);
 		}
 		if(!exists){
 			//Insert into Database
@@ -76,7 +101,14 @@ public class CustomClassifier {
 	        statement.setInt(2, classifierType);
 	        statement.setString(3, description);
 	        statement.setInt(4, player_id);
-	        custom_classifier_id = statement.executeUpdate();
+	        int affectedRows = statement.executeUpdate();
+	        if (affectedRows == 0) {
+	            throw new SQLException("Creating custom classifier failed, no rows affected.");
+	        }
+	        ResultSet generatedKeys = statement.getGeneratedKeys();
+	        if(generatedKeys.next()){
+	        	custom_classifier_id = generatedKeys.getInt(1);
+	        }
 	        if (custom_classifier_id == 0) {
 	            throw new SQLException("Creating custom classifier failed, no rows affected.");
 	        }
@@ -84,7 +116,7 @@ public class CustomClassifier {
 				statement = (PreparedStatement) conn.connection.prepareStatement("insert into custom_classifier_feature(custom_classifier_id, feature_id) values(?,?)", Statement.RETURN_GENERATED_KEYS);
 		        statement.setString(1, String.valueOf(custom_classifier_id));
 		        statement.setString(2, id);
-		        int affectedRows = statement.executeUpdate();
+		        affectedRows = statement.executeUpdate();
 		        if (affectedRows == 0) {
 		            throw new SQLException("Creating custom classifier failed, no rows affected.");
 		        }
@@ -112,6 +144,7 @@ public class CustomClassifier {
 	
 	public HashMap getOrCreateClassifierId(List entrezIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset) throws SQLException{
 		int index = 0;
+		int row_id = 0;
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
@@ -123,39 +156,48 @@ public class CustomClassifier {
 		for(Object entrezId : entrezIds.toArray()){
 			f = Feature.getByUniqueId(entrezId.toString());
 			featureDbIds[ctr] = String.valueOf(f.getId());
+			ctr++;
 		}
 		while(rslt.next()){
 			query = "select * from custom_classifier_feature where custom_classifier_id="+rslt.getInt("id");
 			if(rslt.getInt("type")==classifierType){
+				System.out.println(classifierType);
 				rslt2 = conn.executeQuery(query);
-				ResultSetMetaData metaData = rslt.getMetaData();
-				int count = metaData.getColumnCount();
+				rslt2.last();
+				int count = rslt2.getRow();
+				rslt2.beforeFirst();
+				int match = 0;
+				HashSet hs;
+				HashSet hs_orig;
 				if(count==featureDbIds.length){
-					Boolean flag = true;
+					hs = new HashSet();
+					hs_orig = new HashSet(Arrays.asList(featureDbIds));
 					while(rslt2.next()){
-						for(String featureDbId : featureDbIds){
-							if(!featureDbId.equals(rslt.getString("feature_id"))){
-								flag = false;
-							}
-						}
+						hs.add(rslt2.getString("feature_id"));
 					}
-					if(flag){
+					if(hs.containsAll(hs_orig)){
 						exists = true;
+						row_id = rslt.getInt("id");
+						break;
 					}
 				}
 			}
 		}
 		HashMap mp = new HashMap();
 		try {
-			mp = buildOrCreateClassifier(featureDbIds, classifierType, exists, name, description, 0, weka, dataset);
+			mp = buildOrCreateClassifier(featureDbIds, classifierType, exists, name, description, player_id, weka, dataset);
+			//0 returned if exists == true.
+			if((int) mp.get("id")!=0){
+				row_id = (int) mp.get("id");
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		HashMap results = new HashMap();
-		query = "select * from custom_feature where id="+(int) mp.get("id");
+		query = "select * from custom_classifier where id="+row_id;
 		System.out.println(query);
 		rslt = conn.executeQuery(query);
+		HashMap results = new HashMap();
 		while(rslt.next()){
 			results.put("name",rslt.getString("name"));
 			results.put("description",rslt.getString("description"));
@@ -172,8 +214,9 @@ public class CustomClassifier {
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
-		ResultSetMetaData metaData = rslt.getMetaData();
-		int count = metaData.getColumnCount();
+		rslt.last();
+		int count = rslt.getRow();
+		rslt.beforeFirst();
 		Classifier[] listOfClassifiers = new Classifier[count];
 		Classifier c = null;
 		int id = -1;
@@ -199,8 +242,9 @@ public class CustomClassifier {
 		String query = "select * from custom_classifier_feature where custom_classifier_id="+id;
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
-		ResultSetMetaData metaData = rslt.getMetaData();
-		int count = metaData.getColumnCount();
+		rslt.last();
+		int count = rslt.getRow();
+		rslt.beforeFirst();
 		String[] featuresDbId = new String[count];
 		int ctr = 0;
 		while(rslt.next()){
