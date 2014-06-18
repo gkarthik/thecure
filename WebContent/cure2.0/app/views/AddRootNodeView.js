@@ -7,6 +7,7 @@ define([
 	'app/models/Collaborator',
 	//Views
 	'app/views/layouts/PathwaySearchLayout',
+	'app/views/layouts/AggregateNodeLayout',
 	'app/views/FeatureBuilderView',
 	//Templates
 	'text!app/templates/GeneSummary.html',
@@ -16,7 +17,7 @@ define([
 	'myGeneAutocomplete',
 	'jqueryui',
 	 'bootstrapSwitch'
-    ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, FeatureBuilder, geneinfosummary, cfsummary, AddNodeTemplate) {
+    ], function($, Marionette, Node, Collaborator, PathwaySearchLayout, AggNodeLayout, FeatureBuilder, geneinfosummary, cfsummary, AddNodeTemplate) {
 AddRootNodeView = Marionette.ItemView.extend({
 	initialize : function() {
 	},
@@ -31,6 +32,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 	},
 	events:{
 		'click .open-pathway-search': 'openPathwaySearch',
+		'click .open-addnode': 'openAggNode',
 		'click .open-feature-builder': 'openFeatureBuilder',
 		'click .choose-category': 'chooseCategory'
 	},
@@ -41,6 +43,10 @@ AddRootNodeView = Marionette.ItemView.extend({
 	openPathwaySearch: function(){
 		Cure.PathwaySearchLayout = new PathwaySearchLayout();
 		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
+	},
+	openAggNode: function(){
+		Cure.AggNodeLayout = new AggNodeLayout();
+		Cure.sidebarLayout.AggNodeRegion.show(Cure.AggNodeLayout);
 	},
 	chooseCategory: function(e){
 		var id = $(e.currentTarget).attr("id");

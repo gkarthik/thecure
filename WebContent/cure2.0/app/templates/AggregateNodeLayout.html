@@ -1,46 +1,9 @@
 <div class="panel-heading">Build Aggregate Node<button type="button" class="close-aggnode close" data-dismiss="alert" aria-hidden="true">&times;</button></div>
-<div class="panel-body">
-<div id="aggnode_wrapper">
-	<div class="input-group input-elements">
-	  <span class="input-group-addon">Name</span>
-	  <input id="name_input" type="text" class="form-control" placeholder="Name of Classifier">
-	</div>
-	<div class="input-group input-elements">
-	  <span class="input-group-addon">Description</span>
-	  <input id="desc_input" type="text" class="form-control" placeholder="Description of Classifier">
-	</div>
-	<label class="label label-default">Classifier Type</label>
-	<div class="radio input-elements">
-	  <label>
-	    <input type="radio" name="classifierType" id="optionsRadios1" value="0" checked>
-	    J48
-	  </label>
-	</div>
-	<div class="radio input-elements">
-	  <label>
-	    <input type="radio" name="classifierType" id="optionsRadios2" value="1">
-	    SMO
-	  </label>
-	</div>
-	<div class="radio input-elements">
-	  <label>
-	    <input type="radio" name="classifierType" id="optionsRadios2" value="2">
-	    Naive Bayes
-	  </label>
-	</div>
- 	<div id="add_gene_to_aggNode_wrapper" class="input-elements">
- 		<span class="label label-default">Add Genes</span>
+<div class="panel-body"><div id="aggnode_wrapper">
+ 	<div id="add_gene_to_aggNode_wrapper">
   		<input id="add_gene_to_aggNode_query" class="query_target" placeholder="Enter Gene">
   	</div>
-  	<div id="add_cf_to_aggNode_wrapper" class="input-elements">
- 		<span class="label label-default">Add Clinical Features</span>
-  		<input id="add_cf_to_aggNode_query" class="query_target" placeholder="Enter Clinical Feature">
-  	</div>
-  	<button type="button" class="btn btn-primary btn-small open-pathway-search input-elements">Pathway Search</button>
 </div>
-	<div id="Aggnode_GeneCollectionRegion" class="pull-right"></div>
-	<button type="button" class="btn btn-primary build-aggnode input-elements">Build Classifier</button>
-</div>
-<div class="message-wrapper"></div>
-<div class="duplicate-customclassifier-wrapper"></div>
+<div id="Aggnode_GeneCollectionRegion"></div>
+<button type="button" class="btn btn-primary" id="add-to-gene-pool">Add Genes</button>
 	

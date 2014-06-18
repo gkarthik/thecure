@@ -8,11 +8,12 @@ define([
   'app/views/ScoreView', 'app/views/CollaboratorCollectionView', 
   'app/views/ScoreKey', 'app/views/BadgeCollectionView',
   'app/views/layouts/PathwaySearchLayout',
+  'app/views/layouts/AggregateNodeLayout',
 	//Templates
 	'text!app/templates/sidebarLayout.html',
 	//Plugins
 	'odometer'
-    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, ScoreKeyView, BadgeCollectionView, PathwaySearchLayout, sidebarLayoutTemplate, Odometer) {
+    ], function($, Marionette, AddRootNodeView, CommentView, TreeBranchCollectionView, ScoreBoardView, ScoreView, CollaborativeCollectionView, ScoreKeyView, BadgeCollectionView, PathwaySearchLayout, AggNodeLayout, sidebarLayoutTemplate, Odometer) {
 sidebarLayout = Marionette.Layout.extend({
     template: sidebarLayoutTemplate,
     regions: {
@@ -23,7 +24,8 @@ sidebarLayout = Marionette.Layout.extend({
 	    "CollaboratorsRegion": "#CollaboratorsRegion",
 	    "ScoreKeyRegion": "#ScoreKeyRegion",
 	    "BadgeRegion": "#BadgeRegion",
-	    "PathwaySearchRegion": "#PathwaySearchRegion"
+	    "PathwaySearchRegion": "#PathwaySearchRegion",
+	    "AggNodeRegion":"#AggNodeRegion"
     },
     ui: {
     	ScoreWrapper: "#score-board-outerWrapper",
