@@ -138,7 +138,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	
 	/** distribution array **/
 	protected HashMap m_distributionData = new HashMap();
-
+	
+	/** Number of data Instances  **/
+	protected int m_numAttributes = 0; 
+	
 	/** for building up the json tree **/
 	ObjectMapper mapper;
 	
@@ -640,7 +643,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		double[] returnedDist = null;
 
-		if (m_Attribute > -1) {
+		if (m_Attribute > -1 && m_Attribute<m_numAttributes) {
 
 			// Node is not a leaf
 			if (instance.isMissing(m_Attribute)) {
@@ -674,6 +677,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 							.distributionForInstance(instance);
 				}
 			}
+		} else if(m_Attribute > m_numAttributes) {
+			System.out.println(m_Attribute);
+			returnedDist = m_Successors[(int) instance.classValue()]
+					.distributionForInstance(instance);
 		}
 
 
@@ -1179,16 +1186,22 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					continue; 
 				}
 				Instance inst = subset.instance(0);
-				//which nominal attribute is this split linked to?
-				if (subset.attribute(m_Attribute).isNominal()) {
-					child_name = inst.attribute(m_Attribute).value((int)inst.value(m_Attribute));
-				}
-				// otherwise, if we have a numeric attribute, are we going high or low?
-				else if (data.attribute(m_Attribute).isNumeric()) {
-					if(inst.value(m_Attribute) < m_SplitPoint){
-						child_name = "low";
-					}else{
-						child_name = "high";
+				if(m_Attribute>data.numAttributes()){
+					double predictedClass = custom_classifiers.get(att_name).classifyInstance(inst);
+					child_name = m_Info.classAttribute().value((int) predictedClass);
+					
+				} else {
+					//which nominal attribute is this split linked to?
+					if (subset.attribute(m_Attribute).isNominal()) {
+						child_name = inst.attribute(m_Attribute).value((int)inst.value(m_Attribute));
+					}
+					// otherwise, if we have a numeric attribute, are we going high or low?
+					else if (data.attribute(m_Attribute).isNumeric()) {
+						if(inst.value(m_Attribute) < m_SplitPoint){
+							child_name = "low";
+						}else{
+							child_name = "high";
+						}
 					}
 				}
 				JsonNode son = sons.get(child_name);
@@ -1557,42 +1570,15 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			}
 		} else {
-			double[][] currDist = new double[2][data.numClasses()];
-			dist = new double[2][data.numClasses()];
-
-			// Sort data
-			data.sort(att);
-
-			// Move all instances into second subset
-			for (int j = 0; j < data.numInstances(); j++) {
-				Instance inst = data.instance(j);
-				if (inst.isMissing(att)) {
-
-					// Can stop as soon as we hit a missing value
-					indexOfFirstMissingValue = j;
-					break;
-				}
-				currDist[1][(int) inst.classValue()] += inst.weight();
-			}
-
-			// Save initial distribution
-			for (int j = 0; j < currDist.length; j++) {
-				System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
-			}
+			dist = new double[data.numClasses()][data.numClasses()];
 			FilteredClassifier fc = custom_classifiers.get(CustomClassifierId);
-			System.out.println(CustomClassifierId);
 			Instance inst;
-			for(int i=0; i < data.numInstances(); i++){
+			for (int i = 0; i < data.numInstances(); i++) {
 				inst = data.instance(i);
 				double predictedClass = fc.classifyInstance(inst);
-				System.out.println(predictedClass);
 				if(predictedClass!=Instance.missingValue()){
-					currDist[0][(int) inst.classValue()] += inst.weight();
-					currDist[1][(int) inst.classValue()] -= inst.weight();
+					dist[(int) predictedClass][(int) inst.classValue()] += inst.weight();
 				}
-			}
-			for (int j = 0; j < currDist.length; j++) {
-				System.arraycopy(currDist[j], 0, dist[j], 0, dist[j].length);
 			}
 		}
 		
@@ -1795,6 +1781,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 	public void setMapper(ObjectMapper mapper) {
 		this.mapper = mapper;
+	}
+	
+	public void setNumInstances(int num){
+		this.m_numAttributes = num;
 	}
 
 }
