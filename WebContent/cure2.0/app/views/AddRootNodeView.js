@@ -25,9 +25,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 		"gene_query": '#gene_query',
 		'cf_query': '#cf_query',
 		'customfeature_query': '#customfeature_query',
-		"geneWrapper": "#genes_wrapper",
-		'cfWrapper': '#clinicalfeatures_wrapper',
-		'customFeatureWrapper': '#customfeatures_wrapper',
+		'aggregatenode_query':'#aggregatenode_query',
 		'categoryWrappers': ".category-wrapper",
 		'chooseCategory': '.choose-category'
 	},
@@ -53,6 +51,96 @@ AddRootNodeView = Marionette.ItemView.extend({
 			this.showCf();
 		}
 		$("#"+id+"_wrapper").show();
+	},
+	showAggregateNodes: function(){
+		if(this.model){
+			 var model = this.model;
+		 }
+			  
+		 var thisURL = this.url;
+	      $(this.ui.aggregatenode_query).autocomplete({
+	  			source: function( request, response ) {
+	  					var args = {
+	    	        command : "custom_classifier_search",
+	    	        query: request.term
+	    	      };
+	    	      $.ajax({
+	    	          type : 'POST',
+	    	          url : thisURL,
+	    	          data : JSON.stringify(args),
+	    	          dataType : 'json',
+	    	          contentType : "application/json; charset=utf-8",
+	    	          success : function(data){
+	    	          	response( $.map( data, function( item ) {
+	    	          		return {
+	    	          		  label: item.name+": "+item.description,
+	    	          		  value: item.name,
+	    	          		  data: item
+	    	          	  };
+	    	          	}));
+	    	        }
+	    	      });
+	  				},
+	  				minLength: 1,
+	  				select: function( event, ui ) {
+	  					if(ui.item.label != undefined){//To ensure "no gene name has been selected" is not accepted.
+	  						if(!Cure.initTour.ended()){
+	  							Cure.initTour.end();
+	  						}
+	  						$("#SpeechBubble").remove();
+	  						var kind_value = "";
+	  						try {
+	  							kind_value = model.get("options").get('kind');
+	  						} catch (exception) {
+	  						}
+	  						if (kind_value == "leaf_node") {
+	  								if(model.get("options")){
+	  									model.get("options").unset("split_point");
+	  								}
+	  								
+	  								if(model.get("distribution_data")){
+	  									model.get("distribution_data").set({
+	  										"range": -1
+	  									});
+	  								}
+	  							model.set("previousAttributes", model.toJSON());
+	  							model.set("name", ui.item.data.name);
+	  							model.set('accLimit', 0, {silent:true});
+	  							
+	  							var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
+	  							var newCollaborator;
+	  							if(index!=-1){
+	  								newCollaborator = Cure.CollaboratorCollection.at(index);
+	  							} else {
+	  								newCollaborator = new Collaborator({
+	  									"name": cure_user_name,
+	  									"id": Cure.Player.get('id'),
+	  									"created" : new Date()
+	  								});
+	  								Cure.CollaboratorCollection.add(newCollaborator);
+	  								index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+	  							}
+	  							model.get("options").set({
+	  								"unique_id" : ui.item.data.id,
+	  								"kind" : "split_node",
+	  								"full_name" : '',
+	  								"description" : ui.item.data.description
+	  							});
+	  						} else {
+	  							new Node({
+	  								'name' : ui.item.data.name,
+	  								"options" : {
+	  									"unique_id" : ui.item.data.id,
+		  								"kind" : "split_node",
+		  								"full_name" : '',
+		  								"description" : ui.item.data.description
+	  								}
+	  							});
+	  						}
+	  						Cure.PlayerNodeCollection.sync();
+	  					}
+	  				},
+	  			});
 	},
 	showCustomFeatures: function(){
 		 if(this.model){
@@ -275,6 +363,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 		}
 		this.showCustomFeatures();
 		this.showCf();
+		this.showAggregateNodes();
 		var thisUi = this.ui;
 		$(this.ui.gene_query).genequery_autocomplete({
 			open: function(event){

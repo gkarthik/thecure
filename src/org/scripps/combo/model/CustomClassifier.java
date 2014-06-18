@@ -136,8 +136,8 @@ public class CustomClassifier {
 		}
 		System.out.println(indices);
 		Remove rm = new Remove();
-		//rm.setAttributeIndices(indices+"last");
-		rm.setInvertSelection(false);		// build a classifier using only these attributes
+		rm.setAttributeIndices(indices+"last");
+		rm.setInvertSelection(true);		// build a classifier using only these attributes
 		FilteredClassifier fc = new FilteredClassifier();
 		fc.setFilter(rm);
 		switch(classifierType){
@@ -254,5 +254,26 @@ public class CustomClassifier {
 			ctr++;
 		} 
 		return buildCustomClasifier(weka, featuresDbId, classifierType);
+	}
+	
+	public ArrayList searchCustomClassifiers(String query){
+		ArrayList results = new ArrayList();
+		HashMap mp = new HashMap();
+		String statement = "select * from custom_classifier where name like '%"+query+"%' or description like '%"+query+"%'";
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(statement);
+		try {
+			while(rslt.next()){
+				mp = new HashMap();
+				mp.put("name",rslt.getString("name"));
+				mp.put("description",rslt.getString("description"));
+				mp.put("id", "custom_classifier_"+rslt.getInt("id"));
+				results.add(mp);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return results;
 	}
 }

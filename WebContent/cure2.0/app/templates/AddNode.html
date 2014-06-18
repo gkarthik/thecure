@@ -8,6 +8,9 @@
   <label class="btn btn-primary choose-category" id="customfeatures">
     <input type="radio"><img title="Switch to Custom Features" src="<% print(base_url) %>cure2.0/img/customfeature.png" class="switch-image" >
   </label>
+  <label class="btn btn-primary choose-category" id="aggregatenodes">
+    <input type="radio"><img title="Switch to Aggregate Nodes" src="<% print(base_url) %>cure2.0/img/aggregatenode.png" class="switch-image" >
+  </label>
 </div>
 <div id="genes_wrapper" class="category-wrapper">
   		<div id="addnode_genes">
@@ -25,6 +28,12 @@
  	<div id="addnode_customfeatures">
 		<span class="label label-default">Add Custom Features</span>
   		<input id="customfeature_query" class="customfeature_query_target query_target">
+  	</div>
+</div>
+<div id="aggregatenodes_wrapper" class="category-wrapper">
+ 	<div id="addnode_customfeatures">
+		<span class="label label-default">Add Aggregate Node</span>
+  		<input id="aggregatenode_query" class="aggregatenode_query_target query_target">
   	</div>
 </div>
 <div class="btn-group">
