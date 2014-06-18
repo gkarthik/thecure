@@ -145,6 +145,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	/** for building up the json tree **/
 	ObjectMapper mapper;
 	
+	/** Custom Classifier Object **/
+	protected HashMap<String,FilteredClassifier> listOfFc = new HashMap<String,FilteredClassifier>(); 
+	
 
 	/**
 	 * Returns a string describing classifier
@@ -678,7 +681,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			}
 		} else if(m_Attribute > m_numAttributes) {
-			System.out.println(m_Attribute);
 			returnedDist = m_Successors[(int) instance.classValue()]
 					.distributionForInstance(instance);
 		}
@@ -849,7 +851,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		try {
 			StringBuffer text = new StringBuffer();
 
-			if (m_Attribute == -1) {
+			if (m_Attribute == -1 || m_Attribute>=m_Info.numAttributes()) {
 
 				// Output leaf info
 				return leafString();
@@ -1057,6 +1059,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		// Check if node doesn't contain enough instances or is pure
 		// or maximum depth reached
 		m_ClassDistribution = (double[]) classProbs.clone();
+		listOfFc = custom_classifiers;
 
 		//		if (Utils.sum(m_ClassDistribution) < 2 * m_MinNum
 		//				|| Utils.eq(m_ClassDistribution[Utils.maxIndex(m_ClassDistribution)], Utils
@@ -1070,10 +1073,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		// Compute class distributions and value of splitting
 		// criterion for each attribute
-		double[] vals = new double[data.numAttributes()];
-		double[][][] dists = new double[data.numAttributes()][0][0];
-		double[][] props = new double[data.numAttributes()][0];
-		double[] splits = new double[data.numAttributes()];
+		System.out.println(data.numAttributes()+custom_classifiers.size());
+		double[] vals = new double[data.numAttributes()+custom_classifiers.size()];
+		double[][][] dists = new double[data.numAttributes()+custom_classifiers.size()][0][0];
+		double[][] props = new double[data.numAttributes()+custom_classifiers.size()][0];
+		double[] splits = new double[data.numAttributes()+custom_classifiers.size()];
 
 		// Investigate the selected attribute
 		int attIndex = parent_index;
@@ -1099,7 +1103,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			if(!att_name.asText().equals("") && !att_name.asText().contains("custom_classifier")){
 				attIndex = data.attribute(att_name.asText()).index();
 			} else {
-				attIndex = data.numInstances()+Integer.valueOf(att_name.asText().replace("custom_classifier_", ""));
+				attIndex = (data.numAttributes()-1)+Integer.valueOf(att_name.asText().replace("custom_classifier_", ""));
 			}
 			getSplitData = node.get("getSplitData").asBoolean();
 			JsonNode split_values = node.get("children");
@@ -1122,13 +1126,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			//System.out.println("non split node, name "+att_name+" type "+kind);
 		}
 		HashMap<String, Double> mp = new HashMap<String,Double>();
-		if(att_name.asText().contains("custom_classifier")){
-			mp = distribution(props, dists, attIndex, data, Double.NaN, att_name.asText(), custom_classifiers);
+		if(attIndex>=data.numAttributes()){
+			System.out.println(att_name);
+			mp = distribution(props, dists, attIndex, data, Double.NaN, custom_classifiers);
 		} else {
 			if(options.get("split_point")!=null){
-				mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble(), null, custom_classifiers);
+				mp = distribution(props, dists, attIndex, data, options.get("split_point").asDouble(), custom_classifiers);
 			} else {
-				mp = distribution(props, dists, attIndex, data, Double.NaN, null, custom_classifiers);
+				mp = distribution(props, dists, attIndex, data, Double.NaN, custom_classifiers);
 			}
 		}
 		
@@ -1186,8 +1191,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 					continue; 
 				}
 				Instance inst = subset.instance(0);
-				if(m_Attribute>data.numAttributes()){
-					double predictedClass = custom_classifiers.get(att_name).classifyInstance(inst);
+				if(m_Attribute>=data.numAttributes()){
+					double predictedClass = custom_classifiers.get(att_name.asText()).classifyInstance(inst);
 					child_name = m_Info.classAttribute().value((int) predictedClass);
 					
 				} else {
@@ -1376,47 +1381,67 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		for (int i = 0; i < m_Prop.length; i++) {
 			subsets[i] = new Instances(data, data.numInstances());
 		}
+		
+		if(m_Attribute>=data.numAttributes()){
+			FilteredClassifier fc;
+			double predictedClass;
+			// Go through the data
+			for (int i = 0; i < data.numInstances(); i++) {
 
-		// Go through the data
-		for (int i = 0; i < data.numInstances(); i++) {
-
-			// Get instance
-			Instance inst = data.instance(i);
-			
-			// Does the instance have a missing value?
-			if (inst.isMissing(m_Attribute)) {
-
-				// Split instance up
-				for (int k = 0; k < m_Prop.length; k++) {
-					if (m_Prop[k] > 0) {
-						Instance copy = (Instance)inst.copy();
-						copy.setWeight(m_Prop[k] * inst.weight());
-						subsets[k].add(copy);
-					}
+				// Get instance
+				Instance inst = data.instance(i);
+				fc = listOfFc.get("custom_classifier_"+String.valueOf(m_Attribute-(data.numAttributes()-1)));
+				predictedClass = fc.classifyInstance(inst);
+				if(predictedClass!=Instance.missingValue()){
+					subsets[(int) predictedClass].add(inst);
+					continue;
 				}
 
-				// Proceed to next instance
-				continue;
+				// Else throw an exception
+				throw new IllegalArgumentException("Unknown attribute type");
 			}
+		} else {
+			// Go through the data
+			for (int i = 0; i < data.numInstances(); i++) {
 
-			// Do we have a nominal attribute?
-			if (data.attribute(m_Attribute).isNominal()) {
-				subsets[(int)inst.value(m_Attribute)].add(inst);
+				// Get instance
+				Instance inst = data.instance(i);
+				
+				// Does the instance have a missing value?
+				if (inst.isMissing(m_Attribute)) {
 
-				// Proceed to next instance
-				continue;
+					// Split instance up
+					for (int k = 0; k < m_Prop.length; k++) {
+						if (m_Prop[k] > 0) {
+							Instance copy = (Instance)inst.copy();
+							copy.setWeight(m_Prop[k] * inst.weight());
+							subsets[k].add(copy);
+						}
+					}
+
+					// Proceed to next instance
+					continue;
+				}
+
+				// Do we have a nominal attribute?
+				if (data.attribute(m_Attribute).isNominal()) {
+					subsets[(int)inst.value(m_Attribute)].add(inst);
+
+					// Proceed to next instance
+					continue;
+				}
+
+				// Do we have a numeric attribute?
+				if (data.attribute(m_Attribute).isNumeric()) {
+					subsets[(inst.value(m_Attribute) < m_SplitPoint) ? 0 : 1].add(inst);
+
+					// Proceed to next instance
+					continue;
+				}
+
+				// Else throw an exception
+				throw new IllegalArgumentException("Unknown attribute type");
 			}
-
-			// Do we have a numeric attribute?
-			if (data.attribute(m_Attribute).isNumeric()) {
-				subsets[(inst.value(m_Attribute) < m_SplitPoint) ? 0 : 1].add(inst);
-
-				// Proceed to next instance
-				continue;
-			}
-
-			// Else throw an exception
-			throw new IllegalArgumentException("Unknown attribute type");
 		}
 
 		// Save memory
@@ -1440,7 +1465,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 * @throws Exception
 	 *             if something goes wrong
 	 */
-	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint, String CustomClassifierId, HashMap<String,FilteredClassifier> custom_classifiers)
+	protected HashMap<String,Double> distribution(double[][] props, double[][][] dists, int att, Instances data, double givenSplitPoint, HashMap<String,FilteredClassifier> custom_classifiers)
 			throws Exception {
 		
 		HashMap<String,Double> mp = new HashMap<String,Double>();
@@ -1449,7 +1474,10 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		Attribute attribute = data.attribute(att);
 		double[][] dist = null;
 		int indexOfFirstMissingValue = -1;
-		
+		String CustomClassifierId = null;
+		if(att>=data.numAttributes()){
+			CustomClassifierId = "custom_classifier_"+String.valueOf(att-(data.numAttributes()-1));
+		}
 		if(CustomClassifierId==null){
 			if (attribute.isNominal()) {
 				// For nominal attributes
@@ -1571,6 +1599,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			}
 		} else {
 			dist = new double[data.numClasses()][data.numClasses()];
+			System.out.println(dist.length);
 			FilteredClassifier fc = custom_classifiers.get(CustomClassifierId);
 			Instance inst;
 			for (int i = 0; i < data.numInstances(); i++) {

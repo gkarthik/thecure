@@ -136,7 +136,7 @@ public class CustomClassifier {
 		}
 		System.out.println(indices);
 		Remove rm = new Remove();
-		rm.setAttributeIndices(indices/*+"last"*/);
+		//rm.setAttributeIndices(indices+"last");
 		rm.setInvertSelection(false);		// build a classifier using only these attributes
 		FilteredClassifier fc = new FilteredClassifier();
 		fc.setFilter(rm);
