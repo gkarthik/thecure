@@ -166,6 +166,7 @@ public class CustomClassifier {
 		Boolean exists = false;
 		String[] featureDbIds = new String[entrezIds.toArray().length];
 		Feature f;
+		String message = "Classifier training completed.";
 		int ctr = 0;
 		for(Object entrezId : entrezIds.toArray()){
 			f = Feature.getByUniqueId(entrezId.toString());
@@ -173,6 +174,12 @@ public class CustomClassifier {
 			ctr++;
 		}
 		while(rslt.next()){
+			if(rslt.getString("name").equals(name)){
+				exists = true;
+				row_id = rslt.getInt("id");
+				message = "Classifier with same name already exists.";
+				break;
+			}
 			query = "select * from custom_classifier_feature where custom_classifier_id="+rslt.getInt("id");
 			if(rslt.getInt("type")==classifierType){
 				rslt2 = conn.executeQuery(query);
@@ -191,6 +198,7 @@ public class CustomClassifier {
 					if(hs.containsAll(hs_orig)){
 						exists = true;
 						row_id = rslt.getInt("id");
+						message = "Classifier with same attributes already exists.";
 						break;
 					}
 				}
@@ -214,6 +222,7 @@ public class CustomClassifier {
 			results.put("type",rslt.getInt("type"));
 			results.put("id",rslt.getInt("id"));
 			results.put("exists",exists);
+			results.put("message", message);
 		}
 		return results;
 	}

@@ -8,7 +8,8 @@ GeneItem = Backbone.RelationalModel.extend({
 		unique_id: '',
 		keepInCollection: 0,
 		keepAll: 0
-	}
+	},
+	url:base_url
 });
 return GeneItem;
 });
