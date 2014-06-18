@@ -191,12 +191,14 @@ NodeView = Marionette.Layout.extend({
 			"background": "#FFF",
 			"borderColor": "#000"
 		};
-		if(this.model.get('name')==Cure.negNodeName) {
-			styleObject.background = "rgba(255,0,0,0.2)";
-			styleObject.borderColor = "red";
-		} else if(this.model.get('name')==Cure.posNodeName) {
-			styleObject.background = "rgba(0,0,255,0.2)";
-			styleObject.borderColor = "blue";
+		if(this.model.get('options').get('kind')=="leaf_node"){
+			if(this.model.get('name')==Cure.negNodeName) {
+				styleObject.background = "rgba(255,0,0,0.2)";
+				styleObject.borderColor = "red";
+			} else if(this.model.get('name')==Cure.posNodeName) {
+				styleObject.background = "rgba(0,0,255,0.2)";
+				styleObject.borderColor = "blue";
+			}
 		}
 		this.$el.attr('class','node dragHtmlGroup');//To refresh class every time node is rendered.
 		this.$el.css(styleObject);
