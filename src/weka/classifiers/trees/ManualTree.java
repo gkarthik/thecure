@@ -1600,9 +1600,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			}
 		} else {
-			dist = new double[data.numClasses()][data.numClasses()];
-			System.out.println(dist.length);
 			FilteredClassifier fc = custom_classifiers.get(CustomClassifierId);
+			dist = new double[data.numClasses()][data.numClasses()];
 			Instance inst;
 			for (int i = 0; i < data.numInstances(); i++) {
 				inst = data.instance(i);

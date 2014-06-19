@@ -131,9 +131,10 @@ public class CustomClassifier {
 				for(Attribute att : atts){
 					att_name = att.getName();
 				}
-				indices += String.valueOf(data.attribute(att_name).index())+",";
+				indices += String.valueOf(data.attribute(att_name).index()+1)+",";
 			}
 		}
+		System.out.println("Building Classifier");
 		System.out.println(indices);
 		Remove rm = new Remove();
 		rm.setAttributeIndices(indices+"last");
@@ -149,6 +150,7 @@ public class CustomClassifier {
 		}
 		try {
 			fc.buildClassifier(data);
+			System.out.println("Built Classifier");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
