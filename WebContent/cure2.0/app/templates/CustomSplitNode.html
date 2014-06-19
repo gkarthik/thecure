@@ -5,9 +5,11 @@
 				</div>
 				<div id="summary_content">
 				Formula: <b><%= description %></b>
+				<% if(options.unique_id.indexOf("custom_classifier_")==-1){ %>
 				<button class="btn btn-primary pull-right" id="text-exp">Test Expression</button>
 				<div id="sample-wrapper">
 					
 				</div>
+				<% } %>
 				</div>
 	</div>

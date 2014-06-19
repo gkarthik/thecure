@@ -18,6 +18,7 @@ AggNodeLayout = Marionette.Layout.extend({
     template: AggNodeTmpl,
     className: "panel panel-default",
     initialize: function(){
+    	_.bindAll(this,'buildAggNode');
     	this.listenTo(this,'onBeforeDestroy',this.destroyAllCollections);
     },
     destroyAllCollections: function(){
@@ -29,10 +30,14 @@ AggNodeLayout = Marionette.Layout.extend({
     	nameInput: "#name_input",
     	descInput: "#desc_input",
     	classifierType: 'input:radio[name=classifierType]',
+    	buildAggNode: '.build-aggnode',
+    	msgWrapper: '.message-wrapper',
+    	duplicateClassifier: '.duplicate-customclassifier-wrapper'
     },
     events: {
     	'click .close-aggnode': 'closeAggNode',
-    	'click .build-aggnode': 'sendRequest'
+    	'click .build-aggnode': 'sendRequest',
+    	'click .duplicate_customclassifier':'addDuplicateEntry'
     },
     regions: {
       GeneCollectionRegion: "#Aggnode_GeneCollectionRegion"
@@ -119,6 +124,8 @@ AggNodeLayout = Marionette.Layout.extend({
     	var uniqueIds = this.newGeneCollection.pluck("id");
     	uniqueIds.splice(0,1);//Removing "Short Name"
     	if($(this.ui.nameInput).val()!="" && $(this.ui.descInput).val()!="" && uniqueIds.length>0){
+    		$(this.ui.buildAggNode).val("Building classifier ... ");
+    		$(this.ui.buildAggNode).addClass("disabled");
     		var args = {
         	        command : "custom_classifier_create",
         	        unique_ids: uniqueIds,
@@ -135,13 +142,82 @@ AggNodeLayout = Marionette.Layout.extend({
         	          data : JSON.stringify(args),
         	          dataType : 'json',
         	          contentType : "application/json; charset=utf-8",
-        	          success : this.buildAggNode
+        	          success : this.buildAggNode,
+        	          error: this.error
         	        });
     	}
     },
     buildAggNode: function(data){
+    	$(this.ui.buildAggNode).removeClass("disabled");
+		$(this.ui.buildAggNode).val("Build Classifier");
+			if(data.exists==true){
+				$(this.ui.msgWrapper).html("<span class='text-danger error-message'>"+data.message+"</span><br><p class='bg-info duplicate_customclassifier' data-name='"+data.name+"' data-description='"+data.description+"' data-id='"+data.id+"'>"+data.name+": "+data.description+"</p>");
+			} else {
+				this.addCustomClassifier(data);
+			}
+    },
+    addDuplicateEntry: function(e){
+    	var data = $(e.target).data();
     	console.log(data);
-    }
+    	this.addCustomClassifier(data);
+    },
+    addCustomClassifier: function(data){
+    	var kind_value = "";
+			try {
+				kind_value = model.get("options").get('kind');
+			} catch (exception) {
+			}
+			if (kind_value == "leaf_node") {
+					if(model.get("options")){
+						model.get("options").unset("split_point");
+					}
+					
+					if(model.get("distribution_data")){
+						model.get("distribution_data").set({
+							"range": -1
+						});
+					}
+				model.set("previousAttributes", model.toJSON());
+				model.set("name", data.name);
+				model.set('accLimit', 0, {silent:true});
+				
+				var index = Cure.CollaboratorCollection.pluck("id").indexOf(Cure.Player.get('id'));
+				var newCollaborator;
+				if(index!=-1){
+					newCollaborator = Cure.CollaboratorCollection.at(index);
+				} else {
+					newCollaborator = new Collaborator({
+						"name": cure_user_name,
+						"id": Cure.Player.get('id'),
+						"created" : new Date()
+					});
+					Cure.CollaboratorCollection.add(newCollaborator);
+					index = Cure.CollaboratorCollection.indexOf(newCollaborator);
+				}
+				model.get("options").set({
+					"unique_id" : "custom_classifier_"+data.id,
+					"kind" : "split_node",
+					"full_name" : '',
+					"description" : description
+				});
+			} else {
+				new Node({
+					'name' : data.name,
+					"options" : {
+						"unique_id" : "custom_classifier_"+data.id,
+						"kind" : "split_node",
+						"full_name" : '',
+						"description" : data.description
+					}
+				});
+			}
+			Cure.PlayerNodeCollection.sync();
+			this.closeAggNode();
+    },
+    error : function(data) {
+		Cure.utils
+    .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
+	}
 });
 return AggNodeLayout;
 });
