@@ -7,13 +7,15 @@ define([
 	'app/collections/GeneCollection',
 	//Views
 	'app/views/GeneListCollectionView',
+	//Layouts
+	'app/views/layouts/PathwaySearchLayout',
 	//Templates
 	'text!app/templates/AggregateNodeLayout.html',
 	'text!app/templates/GeneSummary.html',
 	//Plugins
 	'myGeneAutocomplete',
 	'jqueryui',
-    ], function($, Marionette, GeneItem, GeneCollection, GeneCollectionView, AggNodeTmpl, geneinfosummary) {
+    ], function($, Marionette, GeneItem, GeneCollection, GeneCollectionView, PathwaySearchLayout, AggNodeTmpl, geneinfosummary) {
 AggNodeLayout = Marionette.Layout.extend({
     template: AggNodeTmpl,
     className: "panel panel-default",
@@ -37,7 +39,8 @@ AggNodeLayout = Marionette.Layout.extend({
     events: {
     	'click .close-aggnode': 'closeAggNode',
     	'click .build-aggnode': 'sendRequest',
-    	'click .duplicate_customclassifier':'addDuplicateEntry'
+    	'click .duplicate_customclassifier':'addDuplicateEntry',
+    	'click .open-pathway-search': 'openPathwaySearch'
     },
     regions: {
       GeneCollectionRegion: "#Aggnode_GeneCollectionRegion"
@@ -45,6 +48,10 @@ AggNodeLayout = Marionette.Layout.extend({
     closeAggNode: function(){
     	Cure.sidebarLayout.AggNodeRegion.close();
     },
+	openPathwaySearch: function(){
+		Cure.PathwaySearchLayout = new PathwaySearchLayout({aggNode: true});
+		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
+	},
     onRender: function(){
     	this.newGeneCollection = new GeneCollection();
     	var newGeneView = new GeneCollectionView({collection:this.newGeneCollection});
