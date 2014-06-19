@@ -381,7 +381,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		Enumeration enu = super.listOptions();
 		while (enu.hasMoreElements()) {
-			newVector.addElement(enu.nextElement());
+			newVector.addElement((Option) enu.nextElement());
 		}
 
 		return newVector.elements();
@@ -1601,6 +1601,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 			}
 		} else {
 			FilteredClassifier fc = custom_classifiers.get(CustomClassifierId);
+			System.out.println("Num Instances: "+data.numInstances());
 			dist = new double[data.numClasses()][data.numClasses()];
 			Instance inst;
 			for (int i = 0; i < data.numInstances(); i++) {
