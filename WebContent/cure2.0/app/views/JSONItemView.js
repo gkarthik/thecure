@@ -7,8 +7,8 @@ define([
 	'text!app/templates/JSONSplitNodeGeneSummary.html',	
 	'text!app/templates/JSONSplitValueSummary.html',
 	'text!app/templates/JSONSplitNodeCfSummary.html',
-	'text!app/templates/CustomFeature_splitnode.html'
-    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customfeatureSummaryTmpl) {
+	'text!app/templates/CustomSplitNode.html'
+    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customNodeSummaryTmpl) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
@@ -98,7 +98,7 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.unique_id!=null && serialized_model.options.unique_id!="" && serialized_model.options.unique_id.indexOf("custom_feature_")==-1){
+		if(serialized_model.options.hasOwnProperty("unique_id") && serialized_model.options.unique_id.indexOf("custom_feature_")==-1 && serialized_model.options.unique_id.indexOf("custom_classifier_")==-1 ){
 			if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
 				return splitNodeGeneSummary({
 					id: serialized_model.cid,
@@ -121,12 +121,20 @@ JSONItemView = Marionette.ItemView.extend({
 					kind : serialized_model.options.kind
 				});
 			} 
+		} else if(!serialized_model.options.hasOwnProperty("unique_id")) {
+			return splitValueSummary({
+				id: serialized_model.cid,
+				name : name,
+				summary : serialized_model.gene_summary,
+				kind : serialized_model.options.kind
+			});
 		} else {
-			return customfeatureSummaryTmpl({
+			return customNodeSummaryTmpl({
 				id: serialized_model.cid,
 				name : name,
 				description : serialized_model.options.description,
-				kind : serialized_model.options.kind
+				kind : serialized_model.options.kind,
+				options: options
 			});
 		}
 		

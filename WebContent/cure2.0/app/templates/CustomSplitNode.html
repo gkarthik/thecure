@@ -1,26 +1,15 @@
 <div class="jsonview_data" id="jsonview_data<%= id %>">
 				<div id="summary_header">
-					<button type="button" class="close close-json-view">&times;</button>
+					<button type="button" class="close">&times;</button>
 					<h2><%= name %></h2>
 				</div>
 				<div id="summary_content">
-				<% if(options.unique_id.indexOf("custom_feature")!=-1){ %>
-					Formula: <b><%= description %></b>
-					<button class="btn btn-primary pull-right" id="text-exp">Test Expression</button>
-					<div id="sample-wrapper">
-						
-					</div>
-				<% } else if(options.unique_id.indexOf("custom_classifier")!=-1) { %>
-					<b><%= description %></b>
-					<div class="features-in-classifier">
-						
-					</div>
-				<% } else if(options.unique_id.indexOf("custom_tree")!=-1) { %>
-					<b><%= description %></b>
-					<div class="tree-structure">
-						<div class="tree-details pull-left"></div>
-						<svg id="tree-structure-<%= id %>" class="pull-right"></svg>
-					</div>
+				Formula: <b><%= description %></b>
+				<% if(options.unique_id.indexOf("custom_classifier_")==-1){ %>
+				<button class="btn btn-primary pull-right" id="text-exp">Test Expression</button>
+				<div id="sample-wrapper">
+					
+				</div>
 				<% } %>
 				</div>
 	</div>

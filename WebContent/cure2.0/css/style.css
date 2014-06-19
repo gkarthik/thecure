@@ -1035,6 +1035,24 @@ text-align:left;
 	width: 300px;
 }
 
+#AggNodeRegion .message-wrapper{
+	text-align: center;
+}
+
+#AggNodeRegion .duplicate-customclassifier-wrapper{
+	text-align: center;
+}
+
+#AggNodeRegion .build-aggnode{
+	width: 200px;
+	display: block;
+	margin:0 auto;
+}
+
+#AggNodeRegion .duplicate_customclassifier{
+	cursor: pointer;
+}
+
 #GeneCollectionRegion{
 	height:350px;
 	overflow:auto;
