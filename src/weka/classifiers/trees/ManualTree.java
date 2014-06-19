@@ -139,9 +139,6 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	/** distribution array **/
 	protected HashMap m_distributionData = new HashMap();
 	
-	/** Number of data Instances  **/
-	protected int m_numAttributes = 0; 
-	
 	/** for building up the json tree **/
 	ObjectMapper mapper;
 	
@@ -646,7 +643,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 
 		double[] returnedDist = null;
 
-		if (m_Attribute > -1 && m_Attribute<m_numAttributes) {
+		if (m_Attribute > -1 && m_Attribute<m_Info.numAttributes()) {
 
 			// Node is not a leaf
 			if (instance.isMissing(m_Attribute)) {
@@ -680,9 +677,14 @@ WeightedInstancesHandler, Randomizable, Drawable {
 							.distributionForInstance(instance);
 				}
 			}
-		} else if(m_Attribute > m_numAttributes) {
-			returnedDist = m_Successors[(int) instance.classValue()]
-					.distributionForInstance(instance);
+		} else if(m_Attribute >= m_Info.numAttributes()) {
+			String id = "custom_classifier_"+(m_Attribute-(m_Info.numAttributes()-1));
+			FilteredClassifier fc = listOfFc.get(id);
+			double predictedClass = fc.classifyInstance(instance);
+			if(predictedClass!=Instance.missingValue()){
+				returnedDist = m_Successors[(int) predictedClass]
+						.distributionForInstance(instance);
+			}
 		}
 
 
@@ -1812,9 +1814,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		this.mapper = mapper;
 	}
 	
-	public void setNumInstances(int num){
-		this.m_numAttributes = num;
+	public void setListOfFc(HashMap<String, FilteredClassifier> listOfFc){
+		this.listOfFc = listOfFc;
 	}
-
 }
 
