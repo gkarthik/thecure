@@ -96,8 +96,9 @@ PathwayLayout = Marionette.Layout.extend({
     	Cure.sidebarLayout.PathwaySearchRegion.close();
     	console.log(this.aggNode);
     	if(this.aggNode){
-    		//Agg Node 
-    		console.log("Agg Node");
+    		var layout = Cure.sidebarLayout.AggNodeRegion.currentView;
+    		layout.addToGeneCollection(Cure.GeneCollection.toArray());
+    		Cure.GeneCollection.reset();
     	} else {
     		Cure.GenePoolCollectionView = new GenePoolCollectionView({
     	      	collection: Cure.GeneCollection

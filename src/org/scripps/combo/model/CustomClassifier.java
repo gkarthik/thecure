@@ -131,6 +131,7 @@ public class CustomClassifier {
 				for(Attribute att : atts){
 					att_name = att.getName();
 				}
+				System.out.println(att_name);
 				indices += String.valueOf(data.attribute(att_name).index()+1)+",";
 			}
 		}
@@ -171,6 +172,7 @@ public class CustomClassifier {
 		String message = "Classifier training completed.";
 		int ctr = 0;
 		for(Object entrezId : entrezIds.toArray()){
+			System.out.println(entrezId.toString());
 			f = Feature.getByUniqueId(entrezId.toString());
 			featureDbIds[ctr] = String.valueOf(f.getId());
 			ctr++;

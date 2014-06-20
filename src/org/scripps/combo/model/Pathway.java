@@ -22,7 +22,7 @@ public class Pathway {
 	public ArrayList getGenesOfPathway(String pathwayName) throws Exception {		
 		ArrayList pathways = new ArrayList();
 		JdbcConnection conn = new JdbcConnection();
-		String searchString = "select feature.short_name,feature.long_name,cpdb_pathway.entrez_id, cpdb_pathway.source_db from cpdb_pathway,feature where name='"+pathwayName+"' and cpdb_pathway.entrez_id=feature.unique_id group by cpdb_pathway.entrez_id";
+		String searchString = "select feature.short_name,feature.long_name,cpdb_pathway.entrez_id, cpdb_pathway.source_db from cpdb_pathway,feature,attribute where cpdb_pathway.name='"+pathwayName+"' and cpdb_pathway.entrez_id=feature.unique_id and feature.id=attribute.feature_id and attribute.dataset='metabric_with_clinical' group by cpdb_pathway.entrez_id";
 		ResultSet rslt = conn.executeQuery(searchString);
 		while (rslt.next()){
 			HashMap row = new HashMap();
