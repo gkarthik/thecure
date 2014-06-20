@@ -52,6 +52,9 @@ AggNodeLayout = Marionette.Layout.extend({
 		Cure.PathwaySearchLayout = new PathwaySearchLayout({aggNode: true});
 		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
 	},
+	addToGeneCollection: function(models){
+		this.newGeneCollection.add(models);
+	},
     onRender: function(){
     	this.newGeneCollection = new GeneCollection();
     	var newGeneView = new GeneCollectionView({collection:this.newGeneCollection});
@@ -117,7 +120,7 @@ AggNodeLayout = Marionette.Layout.extend({
 				if(ui.item.name != undefined){//To ensure "no gene name has been selected" is not accepted.
 					$("#SpeechBubble").remove();
 					thisCollection.add([{
-						id: ui.item.entrezgene,
+						unique_id: ui.item.entrezgene,
 						short_name: ui.item.symbol,
 						long_name: ui.item.label
 					}]);
@@ -128,7 +131,10 @@ AggNodeLayout = Marionette.Layout.extend({
 		$(this.ui.gene_query).focus();
     },
     sendRequest: function(){
-    	var uniqueIds = this.newGeneCollection.pluck("id");
+    	var uniqueIds = this.newGeneCollection.pluck("unique_id");
+    	uniqueIds = $.map(uniqueIds, function(val,i) { 
+    	     return parseInt(val); 
+    	 });
     	uniqueIds.splice(0,1);//Removing "Short Name"
     	if($(this.ui.nameInput).val()!="" && $(this.ui.descInput).val()!="" && uniqueIds.length>0){
     		$(this.ui.buildAggNode).val("Building classifier ... ");
