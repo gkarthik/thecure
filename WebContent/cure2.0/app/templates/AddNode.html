@@ -11,6 +11,9 @@
   <label class="btn btn-primary choose-category" id="aggregatenodes">
     <input type="radio"><img title="Switch to Aggregate Nodes" src="<% print(base_url) %>cure2.0/img/aggregatenode.png" class="switch-image" >
   </label>
+  <label class="btn btn-primary choose-category" id="choosetrees">
+    <input type="radio"><i class="switch-image glyphicon glyphicon-folder-open" ></i>
+  </label>
 </div>
 <div id="genes_wrapper" class="category-wrapper">
   		<div id="addnode_genes">
@@ -34,6 +37,12 @@
  	<div id="addnode_customfeatures">
 		<span class="label label-default">Add Aggregate Node</span>
   		<input id="aggregatenode_query" class="aggregatenode_query_target query_target">
+  	</div>
+</div>
+<div id="choosetrees_wrapper" class="category-wrapper">
+ 	<div id="addnode_customfeatures">
+		<span class="label label-default">Add Trees</span>
+  		<input id="tree_query" class="tree_query_target query_target">
   	</div>
 </div>
 <div class="btn-group">
