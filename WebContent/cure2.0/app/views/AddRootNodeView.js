@@ -97,7 +97,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 	  						}
 	  						$("#SpeechBubble").remove();
 	  						var kind_value = "";
-	  						var name_node = ui.item.data.player_name+": "+ui.item.data.comment+" | Created: "+ui.item.data.created;
+	  						var name_node = ui.item.data.player_name+" Tree ID: "+ui.item.data.id;
 	  						try {
 	  							kind_value = model.get("options").get('kind');
 	  						} catch (exception) {
@@ -133,16 +133,16 @@ AddRootNodeView = Marionette.ItemView.extend({
 	  								"unique_id" : "custom_tree_"+ui.item.data.id,
 	  								"kind" : "split_node",
 	  								"full_name" : '',
-	  								"description" : ui.item.data.description
+	  								"description" : name_node+ "| Created: "+ui.item.data.created
 	  							});
 	  						} else {
 	  							new Node({
 	  								'name' : name_node,
 	  								"options" : {
-	  									"unique_id" : ui.item.data.id,
+	  									"unique_id" : "custom_tree_"+ui.item.data.id,
 		  								"kind" : "split_node",
 		  								"full_name" : '',
-		  								"description" : ui.item.data.description
+		  								"description" : name_node+ "| Created: "+ui.item.data.created
 	  								}
 	  							});
 	  						}
