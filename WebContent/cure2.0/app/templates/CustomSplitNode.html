@@ -18,7 +18,8 @@
 				<% } else if(options.unique_id.indexOf("custom_tree")!=-1) { %>
 					<b><%= description %></b>
 					<div class="tree-structure">
-						
+						<div class="tree-details pull-left"></div>
+						<svg id="tree-structure-<%= id %>" class="pull-right"></svg>
 					</div>
 				<% } %>
 				</div>

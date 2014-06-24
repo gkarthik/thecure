@@ -1,0 +1,29 @@
+<h4>Tree Details</h4>
+<table class="table">
+<tr>
+	<th style="color: #1f77b4">Accuracy</th>
+		<th style="color: #ff7f0e">Size</th>
+	<th style="color: #2ca02c">Novelty</th>
+	<th style="color: #F69">Score</th>
+</tr>
+<tr>
+	<td style="color: #1f77b4"><%= Math.round(json_tree.pct_correct*100)/100 %>%</td>
+	<td style="color: #ff7f0e"><%= json_tree.size %></td>
+	<td style="color: #2ca02c"><%= Math.round(json_tree.novelty*100) %>%</td>
+	<td style="color: #F69"><% 
+		var score =  Cure.scoreWeights.size * (1 / json_tree.size) + Cure.scoreWeights.novelty
+					* json_tree.novelty + Cure.scoreWeights.pct_correct * json_tree.pct_correct;
+		print(score);
+	 %></td>
+</tr>
+</table>
+<table class="table">
+<tr>
+	<th>Player</th>
+	<td><%= player_name %></td>
+</tr>
+<tr>
+	<th>Comment</th>
+	<td><%= comment %></td>
+</tr>
+</table>
