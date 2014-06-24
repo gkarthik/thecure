@@ -176,6 +176,7 @@ AggNodeLayout = Marionette.Layout.extend({
     },
     addCustomClassifier: function(data){
     	var kind_value = "";
+    	var model = this.model;
 			try {
 				kind_value = model.get("options").get('kind');
 			} catch (exception) {
@@ -211,7 +212,7 @@ AggNodeLayout = Marionette.Layout.extend({
 					"unique_id" : "custom_classifier_"+data.id,
 					"kind" : "split_node",
 					"full_name" : '',
-					"description" : description
+					"description" : data.description
 				});
 			} else {
 				new Node({
