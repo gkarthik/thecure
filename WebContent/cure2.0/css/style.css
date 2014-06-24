@@ -1080,6 +1080,24 @@ text-align:left;
 	left: 0px;
 }
 
+#GenePoolRegion .drag-pool{
+	cursor: move;
+	font-weight: bold;
+	background: none repeat scroll 0% 0% #ECECEC;
+	padding: 0px 10px;
+	font-size: 15px;
+}
+
+#GenePoolRegion .close-gene-pool{
+	cursor: pointer;
+}
+
+#GenePoolRegion .available-genes{
+	height: 300px;
+	overflow: auto;
+	background: #ececec;
+}
+
 #GenePoolRegion .list-group .list-group-item{
 	background: rgba(255, 180, 0, 1);
 	cursor: move;

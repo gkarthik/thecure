@@ -4,9 +4,10 @@ define([
 	//Views
 	'app/views/GeneCollectionView',
 	'app/views/GenePoolCollectionView',
+	'app/views/layouts/GenePoolLayout',
 	//Templates
 	'text!app/templates/PathwayLayout.html'
-    ], function($, Marionette, GeneCollectionView, GenePoolCollectionView, PathwayLayoutTmpl) {
+    ], function($, Marionette, GeneCollectionView, GenePoolCollectionView, GenePoolLayout, PathwayLayoutTmpl) {
 PathwayLayout = Marionette.Layout.extend({
     template: PathwayLayoutTmpl,
     className: "panel panel-default",
@@ -100,10 +101,8 @@ PathwayLayout = Marionette.Layout.extend({
     		layout.addToGeneCollection(Cure.GeneCollection.toArray());
     		Cure.GeneCollection.reset();
     	} else {
-    		Cure.GenePoolCollectionView = new GenePoolCollectionView({
-    	      	collection: Cure.GeneCollection
-    	      });
-    		Cure.GenePoolRegion.show(Cure.GenePoolCollectionView);
+    		var genePoolLayout = new GenePoolLayout();
+    		Cure.GenePoolRegion.show(genePoolLayout);
     	}
     }
 });
