@@ -88,7 +88,7 @@ public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
 	ObjectMapper mapper;
-	HashMap<String,Classifier> custom_classifiers = new HashMap<String, Classifier>();
+	LinkedHashMap<String,Classifier> custom_classifiers = new LinkedHashMap<String, Classifier>();
 
 	/**
 	 * @see HttpServlet#HttpServlet()

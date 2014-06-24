@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -171,7 +172,7 @@ public class JsonTree {
 	 * @param jsontree
 	 * @return
 	 */
-	public ManualTree parseJsonTree(Weka weka, String jsontree, String dataset, HashMap<String, Classifier> custom_classifiers){
+	public ManualTree parseJsonTree(Weka weka, String jsontree, String dataset, LinkedHashMap<String, Classifier> custom_classifiers){
 		ManualTree tree = new ManualTree();
 		try {
 			JsonNode rootNode = mapper.readTree(jsontree);
@@ -198,7 +199,7 @@ public class JsonTree {
 		return tree;
 	}
 
-	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset, HashMap<String,Classifier> custom_classifiers){
+	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset, LinkedHashMap<String,Classifier> custom_classifiers){
 		ManualTree tree = new ManualTree();
 		try {
 			if(!dataset.equals("mammal")){
@@ -239,7 +240,7 @@ public class JsonTree {
 	}
 
 
-	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset, HashMap<String,Classifier> custom_classifiers){
+	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset, LinkedHashMap<String,Classifier> custom_classifiers){
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
@@ -255,7 +256,6 @@ public class JsonTree {
 						options.put("error", "no attribute found for given id ");
 					}
 				} else {
-					System.out.println("UNique ID: "+unique_id.asText());
 					if(unique_id.asText().contains("custom_tree_")){
 						ManualTree.addCustomTree(unique_id.asText(), weka, custom_classifiers, dataset);
 					}
