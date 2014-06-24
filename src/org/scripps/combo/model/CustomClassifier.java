@@ -35,7 +35,9 @@ import org.scripps.combo.model.Attribute;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.SimpleLinearRegression;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.ManualTree;
@@ -152,6 +154,10 @@ public class CustomClassifier {
 			fc.setClassifier(new SMO());
 			System.out.println("SMO");
 			break;
+		case 2:
+			fc.setClassifier(new NaiveBayes());
+			System.out.println("NaiveBayes");
+			break;		
 		}
 		try {
 			fc.buildClassifier(data);
