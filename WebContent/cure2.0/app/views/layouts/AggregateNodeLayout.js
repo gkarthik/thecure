@@ -12,10 +12,11 @@ define([
 	//Templates
 	'text!app/templates/AggregateNodeLayout.html',
 	'text!app/templates/GeneSummary.html',
+	'text!app/templates/ClinicalFeatureSummary.html',
 	//Plugins
 	'myGeneAutocomplete',
 	'jqueryui',
-    ], function($, Marionette, GeneItem, GeneCollection, GeneCollectionView, PathwaySearchLayout, AggNodeTmpl, geneinfosummary) {
+    ], function($, Marionette, GeneItem, GeneCollection, GeneCollectionView, PathwaySearchLayout, AggNodeTmpl, geneinfosummary, cfsummary) {
 AggNodeLayout = Marionette.Layout.extend({
     template: AggNodeTmpl,
     className: "panel panel-default",
@@ -34,7 +35,10 @@ AggNodeLayout = Marionette.Layout.extend({
     	classifierType: 'input:radio[name=classifierType]',
     	buildAggNode: '.build-aggnode',
     	msgWrapper: '.message-wrapper',
-    	duplicateClassifier: '.duplicate-customclassifier-wrapper'
+    	duplicateClassifier: '.duplicate-customclassifier-wrapper',
+    	customfeature_query: "#add_customfeature_to_aggNode_query",
+    	cf_query: "#add_cf_to_aggNode_query"
+    	
     },
     events: {
     	'click .close-aggnode': 'closeAggNode',
@@ -63,6 +67,7 @@ AggNodeLayout = Marionette.Layout.extend({
     onShow: function(){
     	var thisUi = this.ui;
     	var thisCollection = this.newGeneCollection;
+    	this.showCf();
     	$(this.ui.gene_query).genequery_autocomplete({
 			open: function(event){
 				var scrollTop = $(event.target).offset().top-400;
@@ -132,9 +137,6 @@ AggNodeLayout = Marionette.Layout.extend({
     },
     sendRequest: function(){
     	var uniqueIds = this.newGeneCollection.pluck("unique_id");
-    	uniqueIds = $.map(uniqueIds, function(val,i) { 
-    	     return parseInt(val); 
-    	 });
     	uniqueIds.splice(0,1);//Removing "Short Name"
     	if($(this.ui.nameInput).val()!="" && $(this.ui.descInput).val()!="" && uniqueIds.length>0){
     		$(this.ui.buildAggNode).val("Building classifier ... ");
@@ -228,6 +230,81 @@ AggNodeLayout = Marionette.Layout.extend({
 			Cure.PlayerNodeCollection.sync();
 			this.closeAggNode();
     },
+	showCf: function(){
+		var thisUi = this.ui;
+		var thisCollection = this.newGeneCollection;
+		
+		//Clinical Features Autocomplete
+		var availableTags = Cure.ClinicalFeatureCollection.toJSON();
+		
+		$(this.ui.cf_query).autocomplete({
+			source : availableTags,
+			minLength: 0,
+			open: function(event){
+				var scrollTop = $(event.target).offset().top-400;
+				$("html, body").animate({scrollTop:scrollTop}, '500');
+			},
+			close: function(){
+				$(this).val("");
+			},
+			minLength: 0,
+			focus: function( event, ui ) {
+				focueElement = $(event.currentTarget);//Adding PopUp to .ui-auocomplete
+				if($("#SpeechBubble")){
+					$("#SpeechBubble").remove();
+				}
+				focueElement.append("<div id='SpeechBubble'></div>")
+					var html = cfsummary({
+						long_name : ui.item.long_name,
+						description : ui.item.description
+					});
+					var dropdown = $(thisUi.cf_query).data('ui-autocomplete').bindings[1];
+					var offset = $(dropdown).offset();
+					var uiwidth = $(dropdown).width();
+					var width = 0.9 * (offset.left);
+					var left = 0;
+					if(window.innerWidth - (offset.left+uiwidth) > offset.left ){
+						left = offset.left+uiwidth+10;
+						width = 0.9 * (window.innerWidth - (offset.left+uiwidth));
+					}
+					$("#SpeechBubble").css({
+						"top": "10%",
+						"left": left,
+						"height": "50%",
+						"width": width,
+						"display": "block"
+					});
+					$("#SpeechBubble").html(html);
+					$("#SpeechBubble .summary_header").css({
+						"width": (0.9*width)
+					});
+					$("#SpeechBubble .summary_content").css({
+						"margin-top": $("#SpeechBubble .summary_header").height()+10
+					});
+			},
+			search: function( event, ui ) {
+				$("#SpeechBubble").remove();
+			},
+			select : function(event, ui) {
+				console.log(ui.item);
+				if(ui.item.short_name != undefined){//To ensure "no gene name has been selected" is not accepted.
+						$("#SpeechBubble").remove();
+						thisCollection.add([{
+							unique_id: ui.item.unique_id,
+							short_name: ui.item.short_name.replace(/_/g," "),
+							long_name: ui.item.description
+						}]);
+						$(this).val("");
+					}
+			},
+		}).bind('focus', function(){ $(this).autocomplete("search"); } )
+			.data("ui-autocomplete")._renderItem = function (ul, item) {
+		    return $("<li></li>")
+	        .data("item.autocomplete", item)
+	        .append("<a>" + item.label + "</a>")
+	        .appendTo(ul);
+	    };
+	},
     error : function(data) {
 		Cure.utils
     .showAlert("<strong>Server Error</strong><br>Please try saving again in a while.", 0);
