@@ -46,7 +46,7 @@ AddRootNodeView = Marionette.ItemView.extend({
 		Cure.sidebarLayout.PathwaySearchRegion.show(Cure.PathwaySearchLayout);
 	},
 	openAggNode: function(){
-		Cure.AggNodeLayout = new AggNodeLayout();
+		Cure.AggNodeLayout = new AggNodeLayout({model: this.model});
 		Cure.sidebarLayout.AggNodeRegion.show(Cure.AggNodeLayout);
 	},
 	chooseCategory: function(e){

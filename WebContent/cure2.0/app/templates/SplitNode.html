@@ -7,4 +7,6 @@
     <button class="btn delete" href="#">
       <i class=" glyphicon glyphicon-remove"></i>
     </button>
-    <button class="btn btn-primary showDistribution">Class Distribution</button>
+    <% if(options.unique_id.indexOf("custom_tree_")==-1 &&options.unique_id.indexOf("custom_classifier_")==-1){ %>
+    	<button class="btn btn-primary showDistribution">Class Distribution</button>
+    <% } %>

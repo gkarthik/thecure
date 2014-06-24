@@ -1108,7 +1108,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		//		String name = node_name.asText();
 		if(kind!=null&&kind.equals("split_node")&&att_name!=null){ //
 			//attIndex = data.attribute(node_id.asText()).index();
-			if(!att_name.asText().equals("") && !att_name.asText().contains("custom_")){
+			if(!att_name.asText().equals("") && !att_name.asText().contains("custom_classifier") && !att_name.asText().contains("custom_tree")){
 				attIndex = data.attribute(att_name.asText()).index();
 			} else {
 				int ctr = 0;
@@ -1492,6 +1492,8 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		double[][] dist = null;
 		int indexOfFirstMissingValue = -1;
 		String CustomClassifierId = null;
+		System.out.println("Attribute: "+att);
+		System.out.println("Total Attributes: "+data.numAttributes());
 		if(att>=data.numAttributes()){
 			CustomClassifierId = getKeyinMap(custom_classifiers, att, data);
 		} else {
