@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -147,7 +148,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	ObjectMapper mapper;
 	
 	/** Custom Classifier Object **/
-	protected HashMap<String, Classifier> listOfFc = new HashMap<String,Classifier>(); 
+	protected LinkedHashMap<String, Classifier> listOfFc = new LinkedHashMap<String,Classifier>(); 
 	
 	/**
 	 * Returns a string describing classifier
@@ -684,6 +685,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		} else if(m_Attribute >= m_Info.numAttributes()) {
 			String classifierId = "";
 			classifierId = getKeyinMap(listOfFc, m_Attribute, m_Info);
+			System.out.println("distributionForInstance: "+classifierId);
 			Classifier fc = listOfFc.get(classifierId);
 			double predictedClass = fc.classifyInstance(instance);
 			if(predictedClass!=Instance.missingValue()){
@@ -1038,7 +1040,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *             if generation fails
 	 */
 	protected void buildTree(Instances data, double[] classProbs, Instances header,
-			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData, HashMap<String,Classifier> custom_classifiers) throws Exception {
+			boolean debug, int depth, JsonNode node, int parent_index, HashMap m_distributionData, LinkedHashMap<String,Classifier> custom_classifiers) throws Exception {
 
 		if(mapper ==null){
 			mapper = new ObjectMapper();
@@ -1118,7 +1120,9 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 				attIndex = (data.numAttributes()-1)+ctr;
 			}
-			getSplitData = node.get("getSplitData").asBoolean();
+			if(node.get("getSplitData")!=null){
+				getSplitData = node.get("getSplitData").asBoolean();
+			}
 			JsonNode split_values = node.get("children");
 			int c = 0;
 			if(split_values!=null&&split_values.size()>0){
@@ -1613,6 +1617,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				}
 			}
 		} else {
+			System.out.println("Custom Classifier Id: "+CustomClassifierId);
 			Classifier fc = custom_classifiers.get(CustomClassifierId);
 			dist = new double[data.numClasses()][data.numClasses()];
 			Instance inst;
@@ -1679,17 +1684,16 @@ WeightedInstancesHandler, Randomizable, Drawable {
 	 *            
 	 */
 	
-	public static void addCustomTree(String id, Weka weka, HashMap<String,Classifier> custom_classifiers, String dataset){
+	public static void addCustomTree(String id, Weka weka, LinkedHashMap<String,Classifier> custom_classifiers, String dataset){
 		System.out.println("ID befoire add: "+id);
 		System.out.println("Contains: "+custom_classifiers.containsKey(id));
-		//if(!custom_classifiers.containsKey(id)){
+		if(!custom_classifiers.containsKey(id)){
 			JdbcConnection conn = new JdbcConnection();
 			String query = "select json_tree from tree where id="+id.replace("custom_tree_", "");
 			ResultSet rslt = conn.executeQuery(query);
 			try {
 				while(rslt.next()){
 					try {
-						System.out.println(rslt.getString("json_tree"));
 						ManualTree tree = new ManualTree();
 						ObjectMapper mapper = new ObjectMapper();
 						JsonNode rootNode = mapper.readTree(rslt.getString("json_tree")).get("treestruct");
@@ -1711,7 +1715,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				e.printStackTrace();
 			}
 		}
-	//}
+	}
 
 	/**
 	 * Computes value of splitting criterion before split.
@@ -1869,7 +1873,7 @@ WeightedInstancesHandler, Randomizable, Drawable {
 		this.mapper = mapper;
 	}
 	
-	public void setListOfFc(HashMap<String, Classifier> listOfFc){
+	public void setListOfFc(LinkedHashMap<String, Classifier> listOfFc){
 		this.listOfFc = listOfFc;
 	}
 	

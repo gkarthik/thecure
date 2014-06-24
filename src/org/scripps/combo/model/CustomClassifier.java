@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -232,11 +233,11 @@ public class CustomClassifier {
 	}
 	
 	//On init
-	public HashMap<String, Classifier> getClassifiersfromDb(Weka weka, String dataset) throws SQLException{
+	public LinkedHashMap<String, Classifier> getClassifiersfromDb(Weka weka, String dataset) throws SQLException{
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
-		HashMap<String, Classifier> listOfClassifiers = new HashMap<String, Classifier>();
+		LinkedHashMap<String, Classifier> listOfClassifiers = new LinkedHashMap<String, Classifier>();
 		int id = -1;
 		int classifierType = 0;
 		while(rslt.next()){
