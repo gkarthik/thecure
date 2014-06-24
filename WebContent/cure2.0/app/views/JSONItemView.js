@@ -8,8 +8,9 @@ define([
 	'text!app/templates/JSONSplitValueSummary.html',
 	'text!app/templates/JSONSplitNodeCfSummary.html',
 	'text!app/templates/CustomSplitNode.html',
-	'text!app/templates/ClassifierInString.html'
-    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customNodeSummaryTmpl, classifierInString) {
+	'text!app/templates/ClassifierInString.html',
+	'text!app/templates/TreeDetails.html'
+    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customNodeSummaryTmpl, classifierInString, treeDetails) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
@@ -17,7 +18,8 @@ JSONItemView = Marionette.ItemView.extend({
 		showjson : ".showjson",
 		sampleTable: '#sample-wrapper',
 		featuresInClassifier: ".features-in-classifier",
-		treeStructure: ".tree-structure"
+		treeStructure: ".tree-structure .tree-details",
+		SvgPreview: ".tree-structure svg"
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
@@ -27,7 +29,7 @@ JSONItemView = Marionette.ItemView.extend({
 	tagName : "tr",
 	url:base_url+"MetaServer",
 	initialize : function() {
-		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase');
+		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase', 'drawTreeStructure');
 		this.listenTo(this.model,'change:gene_summary', this.render);
 		this.model.bind('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
@@ -150,6 +152,56 @@ JSONItemView = Marionette.ItemView.extend({
 			});
 		}
 		
+	},
+	getCustomTreeStructure: function(){
+		var args = {
+				command:"get_tree_by_id",
+				treeid: this.model.get('options').get('unique_id').replace("custom_tree_",""),
+    	        dataset: "metabric_with_clinical"
+    	      };
+    	      $.ajax({
+    	          type : 'POST',
+    	          url : this.url,
+    	          data : JSON.stringify(args),
+    	          dataType : 'json',
+    	          contentType : "application/json; charset=utf-8",
+    	          success : this.drawTreeStructure,
+    	          error: this.error
+    	});
+	},
+	drawTreeStructure: function(data){
+		$(this.ui.treeStructure).html(treeDetails(data.trees[0]));
+		var treestruct = data.trees[0].json_tree.treestruct;
+		var id = $(this.ui.SvgPreview).attr('id');
+		var svg = d3.select("#"+id)
+			.attr("width",300)
+			.attr("height",300)
+			.append("g")
+			.attr("transform","translate(0,20)");
+		var cluster = d3.layout.tree().size([ 250, 250 ]);
+		var diagonal = d3.svg.diagonal().projection(function(d) { return [d.x, d.y]; });
+		var json = JSON.stringify(treestruct);
+		var nodes = cluster.nodes(JSON.parse(json)),
+    links = cluster.links(nodes);
+	  var link = svg.selectAll(".link")
+	      .data(links)
+	    .enter().append("path")
+	      .attr("class", "link")
+	      .attr("d", diagonal)
+	      .style("stroke","steelblue")
+	      .style("stroke-width", "2");
+	
+	  var node = svg.selectAll(".node")
+	      .data(nodes)
+	    .enter().append("g")
+	      .attr("class", "node")
+	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	
+	  node.append("text")
+	      .attr("dx", function(d) { return d.children ? -8 : 8; })
+	      .attr("dy", 3)
+	      .style("text-anchor", "middle")
+	      .text(function(d) { return d.name; });
 	},
 	getCustomClassifierFeatures: function(){
 		var thisView = this;
