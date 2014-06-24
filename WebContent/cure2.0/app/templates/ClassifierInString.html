@@ -1,0 +1,16 @@
+<div class="classifier-in-string">
+<h4>Classifier Description</h4>
+<% 
+var text = classifierString;
+var ar = text.split("\n");
+ar.splice(0,4);
+text = ar.join("<br>");
+var re;
+for(var temp in features){
+	re = new RegExp(features[temp], 'g')
+	text = text.replace(re,temp);
+}
+text = text.replace(/@attribute/g,"Feature: ");
+print(text);
+ %>
+</div>

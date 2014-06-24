@@ -319,8 +319,10 @@ public class MetaServer extends HttpServlet {
 							try{
 								if(command.equals("custom_classifier_create")){
 									getOrCreateCustomClassifier(data, custom_classifiers, request, response);
-								} if(command.equals("custom_classifier_search")){
+								} else if(command.equals("custom_classifier_search")){
 									getCustomClassifiers(data, request, response);
+								} else if(command.equals("custom_classifier_getById")){
+									getCustomClassifierById(data,request,response);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -711,6 +713,17 @@ public class MetaServer extends HttpServlet {
 		ArrayList results = new ArrayList();
 		CustomClassifier _fc = new CustomClassifier();
 		results = _fc.searchCustomClassifiers(data.get("query").asText());
+		response.setContentType("text/json");
+		PrintWriter out = response.getWriter();
+		String json = mapper.writeValueAsString(results);
+		out.write(json);
+		out.close();
+	}
+	
+	private void getCustomClassifierById(JsonNode data, HttpServletRequest request_, HttpServletResponse response) throws Exception {
+		HashMap results = new HashMap();
+		CustomClassifier _fc = new CustomClassifier();
+		results = _fc.getClassifierDetailsByDbId(data.get("id").asInt(), data.get("dataset").asText(), custom_classifiers);
 		response.setContentType("text/json");
 		PrintWriter out = response.getWriter();
 		String json = mapper.writeValueAsString(results);

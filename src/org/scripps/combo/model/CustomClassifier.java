@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -132,7 +133,6 @@ public class CustomClassifier {
 				for(Attribute att : atts){
 					att_name = att.getName();
 				}
-				System.out.println(att_name);
 				indices += String.valueOf(data.attribute(att_name).index()+1)+",";
 			}
 		}
@@ -144,11 +144,14 @@ public class CustomClassifier {
 		FilteredClassifier fc = new FilteredClassifier();
 		fc.setFilter(rm);
 		switch(classifierType){
+		case 0:
+			fc.setClassifier(new J48());
+			System.out.println("J48");
+			break;
 		case 1:
 			fc.setClassifier(new SMO());
+			System.out.println("SMO");
 			break;
-		default:
-			fc.setClassifier(new J48());
 		}
 		try {
 			fc.buildClassifier(data);
@@ -268,6 +271,32 @@ public class CustomClassifier {
 			ctr++;
 		} 
 		return buildCustomClasifier(weka, featuresDbId, classifierType);
+	}
+	
+	public HashMap getClassifierDetailsByDbId(int id, String dataset, LinkedHashMap<String, Classifier> custom_classifiers) throws Exception{
+		HashMap mp = new HashMap();
+		String query = "select * from custom_classifier where id="+id;
+		JdbcConnection conn = new JdbcConnection();
+		ResultSet rslt = conn.executeQuery(query);
+		ResultSetMetaData metaData = rslt.getMetaData();
+		int count = metaData.getColumnCount();
+		while(rslt.next()){
+			for (int i = 1; i <= count; i++)
+			{
+				mp.put(metaData.getColumnLabel(i),rslt.getObject(i));
+			}
+		}
+		query = "select feature.short_name, attribute.name from custom_classifier_feature, feature, attribute where custom_classifier_id = "+id+" and feature.id = custom_classifier_feature.feature_id and attribute.feature_id = feature.id and attribute.dataset='"+dataset+"'";
+		rslt = conn.executeQuery(query);
+		HashMap features = new HashMap();
+		while(rslt.next()){
+			features.put(rslt.getString("short_name"),rslt.getString("name"));
+		}
+		String classifierString = custom_classifiers.get("custom_classifier_"+id).toString();
+		mp.put("features", features);
+		mp.put("classifierString",classifierString);
+		conn.connection.close();
+		return mp;
 	}
 	
 	public ArrayList searchCustomClassifiers(String query){
