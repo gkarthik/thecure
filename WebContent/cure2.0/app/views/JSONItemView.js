@@ -24,12 +24,13 @@ JSONItemView = Marionette.ItemView.extend({
 	events : {
 		'click .showjson' : 'ShowJSON',
 		'click button.close' : 'HideJSON',
-		'click #text-exp': 'testExp'
+		'click #text-exp': 'testExp',
+		'click .close-json-view': 'HideView'
 	},
 	tagName : "tr",
 	url:base_url+"MetaServer",
 	initialize : function() {
-		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase', 'drawTreeStructure');
+		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase', 'drawTreeStructure', 'HideView');
 		this.listenTo(this.model,'change:gene_summary', this.render);
 		this.model.bind('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
@@ -263,6 +264,7 @@ JSONItemView = Marionette.ItemView.extend({
 			summary.name = this.model.get('name');
 			summary.summaryText = description;
 			this.model.set("gene_summary",summary);
+			this.model.set("showJSON", 1);
 		}
 		
 		this.$el.find(this.ui.showjson).addClass("disabled");
@@ -270,6 +272,10 @@ JSONItemView = Marionette.ItemView.extend({
 			'display' : 'block'
 		});
 		return 1;
+	},
+	HideView: function(e){
+		e.preventDefault();
+		this.HideJSON();
 	},
 	HideJSON : function() {
 		$(this.ui.jsondata).css({

@@ -13,7 +13,7 @@
 	<td style="color: #F69"><% 
 		var score =  Cure.scoreWeights.size * (1 / json_tree.size) + Cure.scoreWeights.novelty
 					* json_tree.novelty + Cure.scoreWeights.pct_correct * json_tree.pct_correct;
-		print(score);
+		print(Math.round(score));
 	 %></td>
 </tr>
 </table>
