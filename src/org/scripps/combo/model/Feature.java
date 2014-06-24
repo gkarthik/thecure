@@ -86,6 +86,10 @@ public class Feature {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+//		Feature f = new Feature();
+//		String id = "metabric_with_clinical_6";
+//		f = f.getByUniqueId(String.valueOf(id));
+//		System.out.println(f.getId());
 	}
 
 	public void getAllMetadataFromDb(){

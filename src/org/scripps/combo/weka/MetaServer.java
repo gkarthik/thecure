@@ -688,7 +688,7 @@ public class MetaServer extends HttpServlet {
 		CustomClassifier _cclassifier = new CustomClassifier();
 		List entrezIds = new ArrayList();
 		for(JsonNode el : data.path("unique_ids")){
-			entrezIds.add(el.toString());
+			entrezIds.add(el.asText());
 		}
 		String name = data.get("name").asText();
 		String description = data.get("description").asText();

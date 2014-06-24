@@ -176,8 +176,10 @@ public class CustomClassifier {
 		String message = "Classifier training completed.";
 		int ctr = 0;
 		for(Object entrezId : entrezIds.toArray()){
+			f = new Feature();
 			System.out.println(entrezId.toString());
 			f = Feature.getByUniqueId(entrezId.toString());
+			System.out.println(f.getId());
 			featureDbIds[ctr] = String.valueOf(f.getId());
 			ctr++;
 		}
