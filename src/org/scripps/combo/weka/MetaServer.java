@@ -88,7 +88,7 @@ public class MetaServer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Map<String, Weka> name_dataset;
 	ObjectMapper mapper;
-	HashMap<String,FilteredClassifier> custom_classifiers = new HashMap<String, FilteredClassifier>();
+	HashMap<String,Classifier> custom_classifiers = new HashMap<String, Classifier>();
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -587,7 +587,7 @@ public class MetaServer extends HttpServlet {
 		try {
 			while(outerRslt.next()){
 				JsonTree t = new JsonTree();
-				ManualTree classifier = t.parseJsonTree(weka, outerRslt.getString("json_tree"), dataset);
+				ManualTree classifier = t.parseJsonTree(weka, outerRslt.getString("json_tree"), dataset, custom_classifiers);
 				classifiers[i] = classifier;
 				i++;
 			}
@@ -681,7 +681,7 @@ public class MetaServer extends HttpServlet {
 		out.close();
 	}
 	
-	private void getOrCreateCustomClassifier(JsonNode data, HashMap<String,FilteredClassifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
+	private void getOrCreateCustomClassifier(JsonNode data, HashMap<String,Classifier> custom_classifiers, HttpServletRequest request_, HttpServletResponse response) throws Exception { 
 		HashMap mp = new HashMap();
 		CustomClassifier _cclassifier = new CustomClassifier();
 		List entrezIds = new ArrayList();

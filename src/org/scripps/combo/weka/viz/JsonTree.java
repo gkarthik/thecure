@@ -45,6 +45,7 @@ import com.hp.hpl.jena.rdf.model.RDFWriter;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 
+import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.DecisionStump;
@@ -170,7 +171,7 @@ public class JsonTree {
 	 * @param jsontree
 	 * @return
 	 */
-	public ManualTree parseJsonTree(Weka weka, String jsontree, String dataset){
+	public ManualTree parseJsonTree(Weka weka, String jsontree, String dataset, HashMap<String, Classifier> custom_classifiers){
 		ManualTree tree = new ManualTree();
 		try {
 			JsonNode rootNode = mapper.readTree(jsontree);
@@ -179,7 +180,7 @@ public class JsonTree {
 				rootNode = treestruct; //database stores extra info with tree embedded as an object...
 			}
 			if(!dataset.equals("mammal")){
-				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset);
+				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset, custom_classifiers);
 			}
 			tree.setTreeStructure(rootNode);
 			String mapped = mapper.writeValueAsString(rootNode);
@@ -197,14 +198,15 @@ public class JsonTree {
 		return tree;
 	}
 
-	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset, HashMap<String,FilteredClassifier> custom_classifiers){
+	public ManualTree parseJsonTree(Weka weka, JsonNode rootNode, String dataset, HashMap<String,Classifier> custom_classifiers){
 		ManualTree tree = new ManualTree();
 		try {
 			if(!dataset.equals("mammal")){
-				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset);
+				rootNode = mapEntrezIdsToAttNames(weka, rootNode, dataset, custom_classifiers);
 			}
 			tree.setTreeStructure(rootNode);
-			tree.buildClassifier(weka.getTrain(), custom_classifiers);
+			tree.setListOfFc(custom_classifiers);
+			tree.buildClassifier(weka.getTrain());
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -237,12 +239,12 @@ public class JsonTree {
 	}
 
 
-	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset){
+	public JsonNode mapEntrezIdsToAttNames(Weka weka, JsonNode node, String dataset, HashMap<String,Classifier> custom_classifiers){
 		ObjectNode options = (ObjectNode)node.get("options");		
 		if(options!=null){
 			JsonNode unique_id = options.get("unique_id");
 			if(unique_id!=null && unique_id.asText()!=""){
-				if(!unique_id.asText().contains("custom_feature_") && !unique_id.asText().contains("custom_classifier_")){
+				if(!unique_id.asText().contains("custom_")){
 					List<Attribute> atts = Attribute.getByFeatureUniqueId(unique_id.asText(),dataset);
 					if(atts!=null&&atts.size()>0){
 						for(Attribute att : atts){
@@ -253,6 +255,10 @@ public class JsonTree {
 						options.put("error", "no attribute found for given id ");
 					}
 				} else {
+					System.out.println("UNique ID: "+unique_id.asText());
+					if(unique_id.asText().contains("custom_tree_")){
+						ManualTree.addCustomTree(unique_id.asText(), weka, custom_classifiers, dataset);
+					}
 					options.put("attribute_name", unique_id.asText());
 				}
 			}
@@ -260,7 +266,7 @@ public class JsonTree {
 		ArrayNode children = (ArrayNode)node.get("children");
 		if(children!=null){
 			for(JsonNode child : children){
-				mapEntrezIdsToAttNames(weka, child, dataset);
+				mapEntrezIdsToAttNames(weka, child, dataset, custom_classifiers);
 			}
 		}
 		return node;

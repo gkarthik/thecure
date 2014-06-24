@@ -72,7 +72,7 @@ public class CustomClassifier {
 		HashMap<String,FilteredClassifier> _c = new HashMap<String,FilteredClassifier>();
 		try {
 			weka.buildWeka(new FileInputStream(train_file), null, dataset);
-			System.out.println(c.getOrCreateClassifierId(entrezIds, 0, "test", "testing classifier",  -1, weka, dataset,_c));
+			//System.out.println(c.getOrCreateClassifierId(entrezIds, 0, "test", "testing classifier",  -1, weka, dataset,_c));
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,7 +84,7 @@ public class CustomClassifier {
 	 * After that function used to create classifiers and add them to global object, custom_classifiers 
 	 */
 	
-	public int insertandAddCustomClassifier(String[] featureDbIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset, HashMap<String,FilteredClassifier> custom_classifiers) throws Exception{
+	public int insertandAddCustomClassifier(String[] featureDbIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset, HashMap<String,Classifier> custom_classifiers) throws Exception{
 		HashMap mp = new HashMap();
 		int custom_classifier_id = 0;
 		FilteredClassifier fc = buildCustomClasifier(weka, featureDbIds, classifierType);
@@ -159,7 +159,7 @@ public class CustomClassifier {
 		return fc;
 	}
 	
-	public HashMap getOrCreateClassifierId(List entrezIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset, HashMap<String,FilteredClassifier> custom_classifiers) throws SQLException{
+	public HashMap getOrCreateClassifierId(List entrezIds, int classifierType, String name, String description,  int player_id, Weka weka, String dataset, HashMap<String,Classifier> custom_classifiers) throws SQLException{
 		int index = 0;
 		int row_id = -1;
 		String query = "select * from custom_classifier";
@@ -232,11 +232,11 @@ public class CustomClassifier {
 	}
 	
 	//On init
-	public HashMap<String, FilteredClassifier> getClassifiersfromDb(Weka weka, String dataset) throws SQLException{
+	public HashMap<String, Classifier> getClassifiersfromDb(Weka weka, String dataset) throws SQLException{
 		String query = "select * from custom_classifier";
 		JdbcConnection conn = new JdbcConnection();
 		ResultSet rslt = conn.executeQuery(query);
-		HashMap<String, FilteredClassifier> listOfClassifiers = new HashMap<String, FilteredClassifier>();
+		HashMap<String, Classifier> listOfClassifiers = new HashMap<String, Classifier>();
 		int id = -1;
 		int classifierType = 0;
 		while(rslt.next()){
