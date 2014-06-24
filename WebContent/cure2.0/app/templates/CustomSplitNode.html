@@ -4,12 +4,22 @@
 					<h2><%= name %></h2>
 				</div>
 				<div id="summary_content">
-				Formula: <b><%= description %></b>
-				<% if(options.unique_id.indexOf("custom_classifier_")==-1){ %>
-				<button class="btn btn-primary pull-right" id="text-exp">Test Expression</button>
-				<div id="sample-wrapper">
-					
-				</div>
+				<% if(options.unique_id.indexOf("custom_feature")!=-1){ %>
+					Formula: <b><%= description %></b>
+					<button class="btn btn-primary pull-right" id="text-exp">Test Expression</button>
+					<div id="sample-wrapper">
+						
+					</div>
+				<% } else if(options.unique_id.indexOf("custom_classifier")!=-1) { %>
+					<b><%= description %></b>
+					<div class="features-in-classifier">
+						
+					</div>
+				<% } else if(options.unique_id.indexOf("custom_tree")!=-1) { %>
+					<b><%= description %></b>
+					<div class="tree-structure">
+						
+					</div>
 				<% } %>
 				</div>
 	</div>

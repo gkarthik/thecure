@@ -1197,7 +1197,11 @@ WeightedInstancesHandler, Randomizable, Drawable {
 				bin_size = Utils.sum(distribution[i]);
 				maxIndex = Utils.maxIndex(distribution[i]);
 				maxCount = distribution[i][maxIndex];
-				errors += bin_size - maxCount;
+				if(m_Info.classAttribute().value(maxIndex).equals("y")){//Somehow get the favorable className programatically.
+					errors += bin_size - maxCount;
+				} else {
+					errors += maxCount;
+				}
 				
 				//test an instance to see which child node to send its subset down.
 				//after split, should hold for all in set

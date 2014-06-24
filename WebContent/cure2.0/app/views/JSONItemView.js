@@ -7,14 +7,17 @@ define([
 	'text!app/templates/JSONSplitNodeGeneSummary.html',	
 	'text!app/templates/JSONSplitValueSummary.html',
 	'text!app/templates/JSONSplitNodeCfSummary.html',
-	'text!app/templates/CustomSplitNode.html'
-    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customNodeSummaryTmpl) {
+	'text!app/templates/CustomSplitNode.html',
+	'text!app/templates/ClassifierInString.html'
+    ], function($, Marionette, Node, splitNodeGeneSummary, splitValueSummary, splitNodeCfSummary, customNodeSummaryTmpl, classifierInString) {
 JSONItemView = Marionette.ItemView.extend({
 	model : Node,
 	ui : {
 		jsondata : ".jsonview_data",
 		showjson : ".showjson",
-		sampleTable: '#sample-wrapper'
+		sampleTable: '#sample-wrapper',
+		featuresInClassifier: ".features-in-classifier",
+		treeStructure: ".tree-structure"
 	},
 	events : {
 		'click .showjson' : 'ShowJSON',
@@ -25,10 +28,12 @@ JSONItemView = Marionette.ItemView.extend({
 	url:base_url+"MetaServer",
 	initialize : function() {
 		_.bindAll(this, 'getSummary', 'ShowJSON', 'HideJSON', 'renderTestCase');
-		this.model.bind('change', this.render);
+		this.listenTo(this.model,'change:gene_summary', this.render);
 		this.model.bind('change:showJSON', function() {
 			if (this.model.get('showJSON') != 0) {
 				this.ShowJSON();
+			} else {
+				this.HideJSON();
 			}
 		}, this);
 		var thisView = this;
@@ -43,6 +48,13 @@ JSONItemView = Marionette.ItemView.extend({
 	onRender : function() {
 		if (this.model.get('showJSON') != 0) {
 			this.ShowJSON();
+		}
+		if(this.model.get('options').toJSON().hasOwnProperty("unique_id")){
+			if(this.model.get('options').get('unique_id').indexOf("custom_classifier")!=-1){
+				this.getCustomClassifierFeatures();
+			} else if(this.model.get('options').get('unique_id').indexOf("custom_tree")!=-1) {
+				this.getCustomTreeStructure();
+			}
 		}
 	},
 	testExp: function(){
@@ -98,7 +110,7 @@ JSONItemView = Marionette.ItemView.extend({
 	template : function(serialized_model) {
 		var name = serialized_model.name;
 		var options = serialized_model.options;
-		if(serialized_model.options.hasOwnProperty("unique_id") && serialized_model.options.unique_id.indexOf("custom_feature_")==-1 && serialized_model.options.unique_id.indexOf("custom_classifier_")==-1 ){
+		if(serialized_model.options.hasOwnProperty("unique_id") && serialized_model.options.unique_id.indexOf("custom_")==-1){
 			if(serialized_model.options.kind == "split_node" && serialized_model.options.unique_id.indexOf("metabric") == -1) {
 				return splitNodeGeneSummary({
 					id: serialized_model.cid,
@@ -139,11 +151,31 @@ JSONItemView = Marionette.ItemView.extend({
 		}
 		
 	},
+	getCustomClassifierFeatures: function(){
+		var thisView = this;
+		var args = {
+				command:"custom_classifier_getById",
+				id: this.model.get('options').get('unique_id').replace("custom_classifier_",""),
+    	        dataset: "metabric_with_clinical"
+    	      };
+    	      $.ajax({
+    	          type : 'POST',
+    	          url : this.url,
+    	          data : JSON.stringify(args),
+    	          dataType : 'json',
+    	          contentType : "application/json; charset=utf-8",
+    	          success : function(data){
+    	        	  console.log(classifierInString(data));
+    	        	  $(thisView.ui.featuresInClassifier).html(classifierInString(data));
+    	          },
+    	          error: this.error
+    	});
+	},
 	ShowJSON : function() {
 		var description =null;
 		var idFlag = 1;
 		if(this.model.get('options').get('kind') == "split_node"){
-			if(this.model.get('options').get('unique_id')!="" && this.model.get('options').get('unique_id')!=null && this.model.get('options').get('unique_id').indexOf("custom_feature_")==-1){
+			if(this.model.get('options').get('unique_id')!="" && this.model.get('options').get('unique_id')!=null && this.model.get('options').get('unique_id').indexOf("custom_")==-1){
 				if(this.model.get('options').get('unique_id').indexOf("metabric") == -1){
 					idFlag = 0;
 					this.getSummary();
