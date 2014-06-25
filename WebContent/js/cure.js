@@ -2,13 +2,15 @@ var CURE = CURE || {};
 
 CURE.load = function() {
   var utils = CURE.utilities;
-  var page = window.location.href.split("/cure/")[1];
+  var page = window.location.href.split(window.location.origin+"/")[1];
   if ( page.indexOf('?') > 0 ) {
     page = page.substring(0, page.indexOf('?'));
   }
-  CURE.page = page.replace(".jsp","");
+  page = page.split("/");
+  
+  CURE.page = page[page.length-1].replace(".jsp","");
   CURE.isiPad = navigator.userAgent.match(/iPad/i) != null;
-
+  
   switch(CURE.page)
   {
     case "about":
