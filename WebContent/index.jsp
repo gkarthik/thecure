@@ -66,7 +66,7 @@
 
             <div id="chart"></div>
             <div id="action">
-              <input class="playnow" type="submit" value="Play Now" />
+              <input class="playnow" type="submit" value="Login Now" />
             </div>
          <!--  <h4>Round 3 started! <br/>View results from <a href="round1.jsp"> Round 1</a>, <a href="round2.jsp"> Round 2 </a></h4> --> 
           <div id="twitterUserFeed">

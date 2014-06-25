@@ -60,6 +60,7 @@ define([
 		        Cure.posNodeName = options["posNodeName"];
 		        Cure.negNodeName = options["negNodeName"];
 		        Cure.scoreWeights = options.scoreWeights;
+		        Cure.startTour = options.startTour;
 
 		        // Scales
 		        Cure.accuracyScale = d3.scale.linear().domain([ 0, 100 ]).range(
@@ -135,7 +136,9 @@ define([
 		        	window.localStorage.clear();
 		        	if(Cure.PlayerNodeCollection.length==0){
 			        	Cure.initTour.init();
-			        	Cure.initTour.start();
+			        	if(Cure.tour.startTour){
+				        	Cure.initTour.start();
+			        	}
 		        	} else {
 		        		alert("Taking a tour will delete your current tree. Refresh page once you're done working to take the tour.");
 		        	}

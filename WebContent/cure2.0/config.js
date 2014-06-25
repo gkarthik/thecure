@@ -102,6 +102,7 @@ require([ "csb", "app/core" ], function(csb, Cure) {
 	  },
 	  posNodeName : "y",
 	  negNodeName : "n",
+	  startTour: false,
 	  scoreWeights: {
 	  	pct_correct: 1000,
 	  	novelty: 500,
