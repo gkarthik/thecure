@@ -22,7 +22,9 @@ emptyLayout = Marionette.Layout.extend({
     	this.AddRootNode.on("show", function(view){
     		window.setTimeout(function(){
     			Cure.initTour.init();
-    			Cure.initTour.start();
+    			if(Cure.startTour){
+        			Cure.initTour.start();
+    			}
     		},600);
     	});
     	this.AddRootNode.show(new AddRootNodeView());
