@@ -126,7 +126,7 @@ define([
 				        $(this).parent().hide();
 			        } else if($(this).parent().attr('id')=="HelpText"){
 			        	Cure.utils.ToggleHelp(true);
-			        } else if(!$(this.hasClass("close-json-view"))) {
+			        } else if(!$(this).hasClass("close-json-view")) {
 				        $(this).parent().parent().parent().hide();
 			        }
 		        });
