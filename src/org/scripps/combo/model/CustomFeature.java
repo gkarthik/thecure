@@ -239,6 +239,7 @@ public class CustomFeature {
 		try {
 			while(rslt.next()){
 				evalAndAddNewFeatureValues("custom_feature_"+rslt.getString("id"), rslt.getString("expression"), weka.getTrain());
+				evalAndAddNewFeatureValues("custom_feature_"+rslt.getString("id"), rslt.getString("expression"), weka.getTest());
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

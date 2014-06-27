@@ -508,8 +508,8 @@ public class MetaServer extends HttpServlet {
 			readtree = t.parseJsonTree(weka, data.get("treestruct"), dataset, custom_classifiers);
 			List<String> entrez_ids = t.getEntrezIds(data.get("treestruct"), new ArrayList<String>());
 			int numnodes = readtree.numNodes();
-			Evaluation eval = new Evaluation(weka.getTrain());
-			eval.evaluateModel(readtree, weka.getTrain());
+			Evaluation eval = new Evaluation(weka.getTest());
+			eval.evaluateModel(readtree, weka.getTest());
 			HashMap distributionData = readtree.getDistributionData();
 			ObjectNode result = mapper.createObjectNode();
 			result.put("pct_correct", eval.pctCorrect());
